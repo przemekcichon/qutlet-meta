@@ -168,8 +168,9 @@ stron pomocy. Renderuje to później motyw; core tylko produkuje dane.
   `allegro_wlaczone`, bool), URL oferty Allegro, cena Allegro (+ ewentualne
   korzyści/perks, jeśli kontrakt to wykaże). Gdy flaga false → front nie renderuje
   elementów `[data-allegro-only]`.
-- **D-1.3.1 [OTWARTE]:** dokładny zestaw pól kanału (czy cena Allegro to osobne
-  pole, czy tylko URL + tekst) — ustali P-1.0 z prototypu.
+- **D-1.3.1 [ROZSTRZYGNIĘTE — kontrakt P-1.0]:** cena Allegro = osobne pole ACF
+  `cena_allegro` (number); nota „Cena wyższa o ~X%" liczona przez motyw, NIE
+  przechowywana. Patrz `docs/kontrakt-danych.md` §4/§6 + log decyzji.
 - **Zależności:** P-1.0.
 
 ### P-1.4 — Blog: czas czytania
