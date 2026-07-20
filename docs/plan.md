@@ -129,7 +129,7 @@ stron pomocy. Renderuje to później motyw; core tylko produkuje dane.
 **P-0.1** (bootstrap core) — poza jawnie wypisanym P-1.0. To samo dotyczy FAZY 5
 (→ P-0.1) i FAZY 6 (→ P-0.3): fazy implementacyjne dziedziczą bootstrap swojego repo.
 
-### 🟡 Warunek wstępny — P-1.0 (OSOBNA sesja, nie implementacja)
+### 🟢 Warunek wstępny — P-1.0 (OSOBNA sesja, nie implementacja)
 - **Zakres:** wypełnić `docs/kontrakt-danych.md` na podstawie przeglądu HTML w
   `design/vanilla` — dokładne literały (nazwy pól ACF, `meta_key`, slugi
   taksonomii), typy, miejsce składowania (Woo natywne / ACF / meta / taksonomia),
