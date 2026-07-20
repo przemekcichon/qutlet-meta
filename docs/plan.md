@@ -147,7 +147,7 @@ stron pomocy. Renderuje to później motyw; core tylko produkuje dane.
   pa_marka"). Decyzja wpływa na sposób odczytu w motywie.
 - **Zależności:** P-1.0.
 
-### P-1.2 — Pola ACF produktu: klasa stanu + cena rynkowa nowego + co w przesyłce
+### 🟡 P-1.2 — Pola ACF produktu: klasa stanu + cena rynkowa nowego + co w przesyłce
 - **Repo:** qutlet-core (slice `ProductCondition/`)
 - **Zakres:** pole klasy stanu (select A/B/C/D — orient. `klasa_stanu`), cena
   rynkowa nowego (number — orient. `cena_rynkowa_nowego`) oraz „Co w przesyłce"
