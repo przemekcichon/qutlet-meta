@@ -107,7 +107,7 @@ gitowy.
 - **D-0.2.1 [USTALONE]:** w bootstrapie NIE deklarujemy jeszcze `parts/`,
   patternów ani style variations — dopiero w fazie renderu. FAZA 0 = czysty szkielet.
 
-### P-0.3 — Bootstrap `qutlet-allegro`
+### 🟡 P-0.3 — Bootstrap `qutlet-allegro`
 - **Repo:** qutlet-allegro
 - **Zakres:** jak P-0.1 (plik główny `qutlet-allegro.php`, `composer.json` PSR-4
   `Qutlet\Allegro\` → `src/`, bootstrap, `phpstan.neon`, `.gitignore`, pusty
