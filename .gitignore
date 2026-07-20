@@ -1,0 +1,28 @@
+# Konfiguracja MCP generowana per maszyna/port przez LocalWP Agent Tools.
+# Zależna od środowiska (URL/port serwera MCP Local) — nie commitujemy.
+# Wpięcie runtime WordPressa (narzędzie wp_cli) jest lokalne, nie w repo.
+.mcp.json
+
+# Skille WP: kanoniczna kopia to .agents/skills/ (śledzona) + skills-lock.json.
+# .claude/skills/* to junction'y Windows o ABSOLUTNYCH targetach — nieprzenośne,
+# a git je ROZWIJA (commitowałby tę samą treść drugi raz). Odtwarzane lokalnie.
+.claude/skills/
+
+# Definicja multi-root workspace — plik lokalny IDE, per maszyna.
+qutlet-meta.code-workspace
+
+# Lustrzana kopia eksportu z Claude Design (duplikat design/vanilla + assets).
+# Wraz z jej README — opisuje wyłącznie tę kopię, bez niej jest martwym odnośnikiem.
+design/uploads/qutlet/
+
+# Artefakty systemowe i lokalne IDE
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+.vscode/
+.idea/
+
+# Zależności i artefakty build (gdyby doszły w design/ lub narzędziach)
+node_modules/
+vendor/
