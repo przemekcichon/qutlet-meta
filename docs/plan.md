@@ -161,7 +161,7 @@ stron pomocy. Renderuje to później motyw; core tylko produkuje dane.
   potwierdzone w realizacji P-1.2). Patrz `docs/kontrakt-danych.md` §2/§7 + log decyzji.
 - **Zależności:** P-1.0.
 
-### P-1.3 — Kanał Allegro (pola na produkcie)
+### 🟡 P-1.3 — Kanał Allegro (pola na produkcie)
 - **Repo:** qutlet-core (slice `AllegroChannel/` — ta sama nazwa slice'a w theme
   przy renderze tabów i w allegro przy sync)
 - **Zakres:** pola sterujące drugim kanałem zakupu: flaga włączenia (orient.
