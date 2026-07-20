@@ -432,7 +432,7 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
 
 ---
 
-## 🟦 FAZA 7 — Przeróbka opisów przez AI (nowy plugin `qutlet-ai`) — ROZPISANA
+## 🟨 FAZA 7 — Przeróbka opisów przez AI (nowy plugin `qutlet-ai`) — ROZPISANA
 
 Cel: automatycznie generować **przerobione** opisy (proza + specyfikacja) na
 podstawie **surowych** danych z Allegro (wypełnianych przez import z FAZY 6), przez
@@ -462,7 +462,7 @@ przerobioną (user-facing) — NIE nadpisuje warstwy surowej (źródło = Allegr
   (slice `AiRewrite/`), logika AI mieszka w **`qutlet-ai`** (slice `AiRewrite/`).
   Feature rozproszony — ta sama nazwa slice'a w obu repo.
 
-### P-7.0 — Bootstrap `qutlet-ai`
+### 🟡 P-7.0 — Bootstrap `qutlet-ai`
 - **Repo:** qutlet-ai (nowy).
 - **Zakres:** plik główny pluginu, `composer.json` (PSR-4 `Qutlet\Ai\` → `src/`),
   cienki bootstrap, `phpstan.neon`, `.gitignore` (jak FAZA 0); guard zależności
