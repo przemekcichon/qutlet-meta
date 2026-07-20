@@ -59,7 +59,7 @@ kontrakt musi być kompletny (co jest Woo-natywne, a co dokładamy w ACF).
 | Galeria           | galeria produktu Woo                        | Woo     | url[]   | tak         | `produkt.html:25`           | miniatury `pd-thumbs` → natywna galeria Woo |
 | Liczba sztuk      | `$product->get_stock_quantity()` (`_stock`) | Woo     | int     | tak         | `data.js` `.qty`            | natura sklepu = pojedyncze egzemplarze; brak/1 → „Pojedyncza sztuka". Etykieta liczona (patrz §6) |
 | Kategoria         | taksonomia `product_cat` (slug)             | Woo tax | term    | nie         | `data.js` `.cat`            | slugi z prototypu: `smartfony`, `laptopy`, `audio`, `gaming` (przykładowe). Kafle kategorii + archiwum |
-| Wyróżniony        | flaga „featured" Woo (`product_visibility` term `featured`) | Woo | bool | tak | `index.html:84` `data-featured-grid` | pętla „Świeżo na wyprzedaży" = `WP_Query` po wyróżnionych |
+| Wyróżniony        | flaga „featured" Woo (`product_visibility` term `featured`) | Woo | bool | tak | `index.html:84,93` (`data-featured-grid`) | pętla „Świeżo na wyprzedaży" = `WP_Query` po wyróżnionych |
 
 > **Uwaga o cenach:** cena sprzedaży (`.now`) to natywne pole Woo. Odniesienie
 > „Nowy w sklepach" (`.old`, patrz §2) to OSOBNE pole ACF `cena_rynkowa_nowego`,
@@ -115,7 +115,7 @@ zostanie usunięty. Slice `AllegroChannel/` (ta sama nazwa w core i theme).
 |---------------------|--------------------|---------|---------------|-------------|----------------------------|-------|
 | Kanał Allegro wł.   | `allegro_wlaczone` | ACF     | true/false    | nie (def. false) | `produkt.html:52-53`   | `false` → motyw NIE renderuje żadnego elementu `[data-allegro-only]` |
 | URL oferty Allegro  | `allegro_url`      | ACF     | url           | tak         | `produkt.html:219-220,129,264,295` | link do oferty (`data-allegro-url`). Puste → wariant 2-kolumnowy (`.info-2col`), bez karty „Zwrot — Allegro" |
-| Cena Allegro        | `cena_allegro`     | ACF     | number (PLN)  | tak         | `produkt.html:59,63,70,108,129` (wartość „199,00 zł") | cena kanału Allegro pokazywana na stronie produktu. Nota „~X% wyższa" liczona z `cena_allegro` vs cena sprzedaży (patrz §6) |
+| Cena Allegro        | `cena_allegro`     | ACF     | number (PLN)  | tak         | `produkt.html:63,108,129` (wartość „199,00 zł") | cena kanału Allegro pokazywana na stronie produktu. Nota „~X% wyższa" liczona z `cena_allegro` vs cena sprzedaży (patrz §6) |
 
 **D-1.3.1 [ROZSTRZYGNIĘTE — decyzja użytkownika]:** cena Allegro to **osobne pole
 ACF `cena_allegro`** (number). Prototyp pokazuje konkretną, nie-wyprowadzalną
