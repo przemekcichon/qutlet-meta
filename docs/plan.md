@@ -64,7 +64,7 @@ gitowy.
   późniejszym priorytecie niż core (lub na dedykowanym hooku „core gotowe"), żeby
   core zdążył zarejestrować pola/serwisy — sam `class_exists` tego nie gwarantuje.
 
-### 🟡 P-0.0 — Init repo `qutlet-meta` (+ remote)
+### 🟢 P-0.0 — Init repo `qutlet-meta` (+ remote)
 - **Repo:** qutlet-meta
 - **Zakres:** `git init` w `qutlet-meta`; `origin` =
   `git@github.com:przemekcichon/qutlet-meta.git`; pierwszy commit obejmuje
