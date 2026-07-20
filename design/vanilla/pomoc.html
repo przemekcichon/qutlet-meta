@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pomoc — Qutlet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<style>
+/* style tylko dla centrum pomocy */
+.help-head h1 { font-size: clamp(30px, 4vw, 46px); font-weight: 800; margin: 0; }
+.help-head p { color: var(--muted); font-size: 15px; line-height: 1.7; margin-top: 12px; max-width: 560px; }
+.help-sec-label {
+  font-size: 12px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--muted); margin-top: 40px; margin-bottom: 14px;
+}
+.help-quick { display: flex; flex-wrap: wrap; gap: 10px; }
+.help-quick a {
+  font-size: 13.5px; font-weight: 700; color: var(--ink-soft); text-decoration: none;
+  border: 1.5px solid var(--line); border-radius: 999px; background: #fff; white-space: nowrap;
+  padding-top: 9px; padding-bottom: 9px; padding-left: 16px; padding-right: 16px;
+}
+.help-quick a:hover { border-color: var(--ink); color: var(--ink); }
+.help-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+.help-card {
+  background: #fff; border: 1px solid var(--line); border-radius: var(--radius);
+  text-decoration: none; color: inherit; display: flex; flex-direction: column; gap: 6px;
+  padding-top: 22px; padding-bottom: 22px; padding-left: 22px; padding-right: 22px;
+}
+.help-card:hover { border-color: var(--ink); }
+.help-card b { font-size: 15.5px; font-weight: 800; color: var(--ink); }
+.help-card span { font-size: 13.5px; line-height: 1.6; color: var(--muted); }
+.help-card .go { margin-top: 6px; font-size: 13px; font-weight: 800; color: var(--accent); display: inline-flex; align-items: center; gap: 6px; }
+@media (max-width: 640px) { .help-cards { grid-template-columns: 1fr; } }
+</style>
+</head>
+<!-- → page.php / szablon "Pomoc" (strona nadrzędna sekcji) -->
+<body data-page="pomoc">
+<div data-include="partials/header.html"></div>
+
+<main class="wrap">
+  <nav class="breadcrumbs">
+    <a href="index.html">Home</a><span class="sep">/</span>
+    <span class="current">Pomoc</span>
+  </nav>
+
+  <div class="help-layout">
+    <div data-include="partials/help-nav.html"></div>
+
+    <div>
+      <header class="help-head">
+        <h1>Pomoc</h1>
+        <p>Zwroty, gwarancja, dostawa i dokumenty sklepu — wszystko w jednym miejscu. Nie znajdziesz odpowiedzi? Napisz do nas, odpowiadamy w dzień roboczy.</p>
+      </header>
+
+      <div class="help-sec-label">Najczęstsze tematy</div>
+      <div class="help-quick">
+        <a href="regulamin.html#s6">Zwrot w 14 dni</a>
+        <a href="regulamin.html#s7">Gwarancja i reklamacje</a>
+        <a href="regulamin.html#s5">Dostawa</a>
+        <a href="regulamin.html#s4">Ceny i płatności</a>
+        <a href="jak-to-dziala.html#klasy">Klasy produktów A–D</a>
+        <a href="jak-to-dziala.html">Skąd mamy sprzęt?</a>
+      </div>
+
+      <div class="help-sec-label">Dokumenty i kontakt</div>
+      <div class="help-cards">
+        <a href="regulamin.html" class="help-card">
+          <b>Regulamin</b>
+          <span>Zasady zakupów: zamówienia, płatności, dostawa, zwroty i reklamacje.</span>
+          <span class="go">Czytaj regulamin
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+          </span>
+        </a>
+        <a href="polityka-prywatnosci.html" class="help-card">
+          <b>Polityka prywatności</b>
+          <span>Jakie dane zbieramy, po co i jakie masz prawa (RODO).</span>
+          <span class="go">Czytaj politykę
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+          </span>
+        </a>
+        <a href="polityka-cookies.html" class="help-card">
+          <b>Polityka cookies</b>
+          <span>Pełny wykaz cookies i trackerów z celami oraz okresami przechowywania.</span>
+          <span class="go">Zobacz wykaz
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+          </span>
+        </a>
+        <a href="kontakt.html" class="help-card">
+          <b>Kontakt</b>
+          <span>Formularz, e-mail i godziny odpowiedzi. Pytania o konkretny egzemplarz mile widziane.</span>
+          <span class="go">Napisz do nas
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+          </span>
+        </a>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div data-include="partials/footer.html"></div>
+<script src="js/data.js"></script>
+<script src="js/templates.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

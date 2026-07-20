@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Logowanie — Qutlet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+</head>
+<!-- → woocommerce/myaccount/form-login.php -->
+<body data-page="logowanie">
+<div data-include="partials/header.html"></div>
+
+<main class="wrap page-main-tall">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-tabs">
+        <button type="button" class="auth-tab active" data-auth-tab="login">Logowanie</button>
+        <button type="button" class="auth-tab" data-auth-tab="register">Rejestracja</button>
+      </div>
+
+      <form class="auth-form" data-auth-pane="login" data-login-form>
+        <h1>Witaj z powrotem</h1>
+        <p class="sub">Zaloguj się, aby śledzić zamówienia i szybciej finalizować zakupy.</p>
+        <div class="field"><label for="li-email">Adres e-mail</label><input id="li-email" name="email" type="email" placeholder="ty@przyklad.pl"></div>
+        <div class="field"><label for="li-pass">Hasło</label><input id="li-pass" name="pass" type="password" placeholder="Minimum 6 znaków"></div>
+        <button type="submit" class="btn btn-primary btn-lg btn-block">Zaloguj się</button>
+        <p class="fine">To wersja demonstracyjna — logowanie działa z dowolnym poprawnym e-mailem i hasłem (min. 6 znaków).</p>
+      </form>
+
+      <form class="auth-form" data-auth-pane="register" data-register-form hidden>
+        <h1>Załóż konto</h1>
+        <p class="sub">Śledź zamówienia, zapisuj adresy i kupuj szybciej.</p>
+        <div class="form-grid">
+          <div class="field"><label for="rg-fname">Imię</label><input id="rg-fname" name="fname" type="text"></div>
+          <div class="field"><label for="rg-lname">Nazwisko</label><input id="rg-lname" name="lname" type="text"></div>
+        </div>
+        <div class="field"><label for="rg-email">Adres e-mail</label><input id="rg-email" name="email" type="email" placeholder="ty@przyklad.pl"></div>
+        <div class="field"><label for="rg-pass">Hasło</label><input id="rg-pass" name="pass" type="password" placeholder="Minimum 6 znaków"></div>
+        <button type="submit" class="btn btn-primary btn-lg btn-block">Utwórz konto</button>
+        <p class="fine">Zakładając konto akceptujesz <a href="regulamin.html">regulamin</a> i politykę prywatności.</p>
+      </form>
+    </div>
+  </div>
+</main>
+
+<div data-include="partials/footer.html"></div>
+<script src="js/data.js"></script>
+<script src="js/templates.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

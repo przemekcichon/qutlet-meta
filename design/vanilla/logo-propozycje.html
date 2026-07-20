@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Qutlet — propozycje logo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; background: #f6f6f7; color: #17141b; font-family: 'Manrope', system-ui, sans-serif; padding: 48px 24px 80px; }
+  .page { max-width: 980px; margin: 0 auto; }
+  h1 { font-family: 'Sora', sans-serif; font-size: 28px; font-weight: 800; margin: 0 0 6px; }
+  .intro { color: #767379; font-size: 15px; margin: 0 0 36px; max-width: 640px; line-height: 1.6; }
+  .opt { background: #fff; border: 1px solid #e8e7ea; border-radius: 16px; margin-bottom: 26px; overflow: hidden; }
+  .opt-head { display: flex; align-items: baseline; gap: 12px; padding: 18px 24px 14px; border-bottom: 1px solid #f0eff2; }
+  .opt-id { font-family: 'Sora', sans-serif; font-weight: 800; font-size: 14px; color: #6b40ab; }
+  .opt-name { font-weight: 700; font-size: 15px; }
+  .opt-desc { color: #767379; font-size: 13px; margin-left: auto; text-align: right; }
+  .swatches { display: grid; grid-template-columns: 1fr 1fr 1fr; }
+  .swatch { display: flex; align-items: center; justify-content: center; min-height: 130px; padding: 24px; }
+  .swatch-light { background: #fff; }
+  .swatch-dark { background: #1e0a36; }
+
+  /* wspólna baza znaków */
+  .lg { font-family: 'Sora', sans-serif; font-weight: 800; font-size: 34px; letter-spacing: -.04em; line-height: 1; text-decoration: none; display: inline-flex; align-items: baseline; }
+  .ink { color: #17141b; } .on-dark .ink { color: #fff; }
+  .purple { color: #7c2fe0; } .on-dark .purple { color: #b07ef2; }
+  .lime-dot { color: #a8e832; }
+
+  /* A: małe litery + limonkowa kropka */
+  /* B: Q fioletowe, reszta ink */
+  /* C: całość fioletowa, kropka limonkowa */
+  /* D: ink + limonkowy kwadracik zamiast kropki */
+  .sq { width: .2em; height: .2em; background: #a8e832; border-radius: .05em; display: inline-block; margin-left: .14em; transform: translateY(-.5em); }
+
+  /* favicony */
+  .swatch-fav { background: #f1f1f3; flex-direction: column; gap: 14px; }
+  .fav-row { display: flex; align-items: center; gap: 14px; }
+  .fav { border-radius: 22%; display: grid; place-items: center; font-family: 'Sora', sans-serif; font-weight: 800; line-height: 1; position: relative; }
+  .fav-32 { width: 32px; height: 32px; font-size: 21px; }
+  .fav-16 { width: 16px; height: 16px; font-size: 11px; border-radius: 4px; }
+  .fav-label { font-size: 11px; color: #767379; letter-spacing: .08em; text-transform: uppercase; }
+  .fav-ink { background: #17141b; color: #fff; }
+  .fav-purple { background: #7c2fe0; color: #fff; }
+  .fav-lime { background: #a8e832; color: #17141b; }
+  .fav-dot { position: absolute; right: 15%; bottom: 15%; width: 19%; height: 19%; border-radius: 50%; background: #a8e832; }
+  .fav-sq { position: absolute; right: 14%; top: 14%; width: 19%; height: 19%; border-radius: 15%; background: #a8e832; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Propozycje logo</h1>
+  <p class="intro">Cztery proste, „klasyczne" znaki tekstowe w duchu rebuy / Back Market — bez plakietki, bez kursywy, bez podpisu. Każdy pokazany na jasnym i ciemnym tle, obok favicona (32 px i 16 px). Limonka i fiolet zostają, ale w małej dawce.</p>
+
+  <div class="opt">
+    <div class="opt-head"><span class="opt-id">A</span><span class="opt-name">qutlet<span style="color:#a8e832">.</span></span><span class="opt-desc">małe litery, czarny znak, limonkowa kropka</span></div>
+    <div class="swatches">
+      <div class="swatch swatch-light"><span class="lg"><span class="ink">qutlet</span><span class="lime-dot">.</span></span></div>
+      <div class="swatch swatch-dark on-dark"><span class="lg"><span class="ink">qutlet</span><span class="lime-dot">.</span></span></div>
+      <div class="swatch swatch-fav">
+        <div class="fav-row">
+          <span class="fav fav-32 fav-ink">q<span class="fav-dot"></span></span>
+          <span class="fav fav-16 fav-ink">q</span>
+        </div>
+        <span class="fav-label">czarny kafel · q + kropka</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="opt">
+    <div class="opt-head"><span class="opt-id">B</span><span class="opt-name">Qutlet</span><span class="opt-desc">fioletowe Q, reszta czarna — akcent na pierwszej literze</span></div>
+    <div class="swatches">
+      <div class="swatch swatch-light"><span class="lg"><span class="purple">Q</span><span class="ink">utlet</span></span></div>
+      <div class="swatch swatch-dark on-dark"><span class="lg"><span class="purple">Q</span><span class="ink">utlet</span></span></div>
+      <div class="swatch swatch-fav">
+        <div class="fav-row">
+          <span class="fav fav-32 fav-purple">Q</span>
+          <span class="fav fav-16 fav-purple">Q</span>
+        </div>
+        <span class="fav-label">fioletowy kafel · białe Q</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="opt">
+    <div class="opt-head"><span class="opt-id">C</span><span class="opt-name">qutlet.</span><span class="opt-desc">całość fioletowa, limonkowa kropka — najmocniej brandowa</span></div>
+    <div class="swatches">
+      <div class="swatch swatch-light"><span class="lg"><span class="purple">qutlet</span><span class="lime-dot">.</span></span></div>
+      <div class="swatch swatch-dark on-dark"><span class="lg"><span class="purple">qutlet</span><span class="lime-dot">.</span></span></div>
+      <div class="swatch swatch-fav">
+        <div class="fav-row">
+          <span class="fav fav-32 fav-purple">q<span class="fav-dot"></span></span>
+          <span class="fav fav-16 fav-purple">q</span>
+        </div>
+        <span class="fav-label">fioletowy kafel · q + kropka</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="opt">
+    <div class="opt-head"><span class="opt-id">D</span><span class="opt-name">qutlet ▪</span><span class="opt-desc">czarny znak + limonkowy kwadracik u góry — jak indeks górny</span></div>
+    <div class="swatches">
+      <div class="swatch swatch-light"><span class="lg"><span class="ink">qutlet</span><span class="sq"></span></span></div>
+      <div class="swatch swatch-dark on-dark"><span class="lg"><span class="ink">qutlet</span><span class="sq"></span></span></div>
+      <div class="swatch swatch-fav">
+        <div class="fav-row">
+          <span class="fav fav-32 fav-lime">q</span>
+          <span class="fav fav-16 fav-lime">q</span>
+        </div>
+        <span class="fav-label">limonkowy kafel · czarne q</span>
+      </div>
+    </div>
+  </div>
+
+  <p class="intro" style="margin-top:34px">Do każdej wersji: w nagłówku znak stoi sam (bez podpisu „elektronika outletowa"), w stopce może wrócić podpis małym drukiem. Napisz, którą literą wybierasz — wdrożę ją w headerze i stopce.</p>
+</div>
+</body>
+</html>
