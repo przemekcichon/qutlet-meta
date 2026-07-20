@@ -142,7 +142,7 @@ Blog stoi na **natywnych wpisach WP** + **natywnych** taksonomiach
 
 | Pole (design) | Literał (`meta_key`)   | Miejsce | Typ           | Opcjonalne? | Prototyp                          | Uwagi |
 |---------------|------------------------|---------|---------------|-------------|-----------------------------------|-------|
-| Czas czytania | `_qutlet_reading_time` | meta    | int (minuty)  | nie (dla wpisu) | `blog.html:46,63`; `blog-artykul.html:34` („9 min czytania") | liczony w core na `save_post`, **zapisywany jako post meta**; motyw tylko czyta gotową wartość |
+| Czas czytania | `_qutlet_reading_time` | meta    | int (minuty)  | tak         | `blog.html:46,63`; `blog-artykul.html:34` („9 min czytania") | liczony w core na `save_post`, **zapisywany jako post meta**; motyw czyta gotową wartość, a przy jej braku (wpis sprzed aktywacji wtyczki / nigdy nie zapisany ponownie) liczy w locie albo ukrywa etykietę — patrz nota niżej |
 
 **P-1.4 / meta_key [ROZSTRZYGNIĘTE — decyzja użytkownika]:** literał
 `_qutlet_reading_time` (prefiks `_` = prywatna meta, ukryta w UI „Custom Fields";
@@ -153,6 +153,16 @@ nie edytowana ręcznie.
 zaokrąglone w górę, minimum 1 min. WPM jako stała w kodzie, nie ustawienie.
 **D-1.4.3 [USTALONE — plan]:** liczone i zapisywane w core na `save_post`;
 konsument (motyw) tylko czyta. Odczyt: `get_post_meta($id, '_qutlet_reading_time', true)`.
+
+**Opcjonalność [ROZSTRZYGNIĘTE — decyzja użytkownika, realizacja P-1.4]:** meta jest
+**opcjonalna** dla konsumenta. Skoro core liczy ją WYŁĄCZNIE na `save_post` (D-1.4.3,
+świadomie bez backfillu), wpisy istniejące/zaimportowane sprzed aktywacji wtyczki albo
+nigdy nie zapisane ponownie **nie mają** tej meta — `get_post_meta(...)` zwróci `''`.
+Nowe wpisy tworzone przy aktywnej wtyczce zawsze ją dostają. **Motyw MUSI obsłużyć
+brak wartości** (P-8.4): policzyć czas czytania w locie z treści lub ukryć etykietę
+„X min czytania". Wcześniejszy zapis kontraktu („nie — pole zawsze obecne") był
+niezgodny z zakresem P-1.4 (brak backfillu) i został skorygowany zamiast dokładać
+jednorazową migrację istniejących wpisów.
 
 Natywne struktury bloga (bez rejestracji, referencyjnie): tytuł/treść/data/autor
 (`get_the_title`, `the_content`, `get_the_date`, `get_the_author_meta`),
@@ -211,4 +221,5 @@ D-8.G3). Ten wiersz w kontrakcie istnieje, by jawnie odnotować „brak pól".
 | D-1.2.2  | `zawartosc_zestawu` → FAZA 1 (front-driven), ACF       | prototyp (`produkt.html:13,170`) |
 | D-1.3.1  | cena Allegro = osobne pole ACF `cena_allegro`; nota „~X%" liczona | decyzja użytkownika |
 | P-1.4    | `meta_key` czasu czytania = `_qutlet_reading_time`     | decyzja użytkownika |
+| P-1.4    | czas czytania = meta **opcjonalna**; motyw obsługuje brak (fallback / ukrycie) — bez backfillu | decyzja użytkownika (realizacja P-1.4) |
 | P-1.5    | strony pomocy = Pages + menu + wtyczki; brak pól w core| prototyp + D-1.5.1 |
