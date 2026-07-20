@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kasa — Qutlet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+</head>
+<!-- → woocommerce/checkout/form-checkout.php -->
+<body data-page="kasa">
+<div data-include="partials/header.html"></div>
+
+<main class="wrap page-main">
+  <nav class="breadcrumbs">
+    <a href="index.html">Home</a><span class="sep">/</span>
+    <a href="koszyk.html">Koszyk</a><span class="sep">/</span>
+    <span class="current">Kasa</span>
+  </nav>
+  <div class="page-head">
+    <h1 class="page-title">Zamówienie</h1>
+  </div>
+
+  <div data-co-full hidden>
+    <form class="co-layout" data-co-form onsubmit="return false;">
+      <div class="co-forms">
+        <!-- 1. dane kontaktowe (billing) -->
+        <div class="form-card">
+          <h3 class="step-title"><span class="step-num">1</span>Dane kontaktowe</h3>
+          <div class="form-grid">
+            <div class="field"><label for="co-email">Adres e-mail</label><input id="co-email" name="email" type="email" placeholder="ty@przyklad.pl"></div>
+            <div class="field"><label for="co-phone">Telefon</label><input id="co-phone" name="phone" type="tel" placeholder="600 000 000"></div>
+          </div>
+        </div>
+
+        <!-- 2. adres dostawy (shipping) -->
+        <div class="form-card">
+          <h3 class="step-title"><span class="step-num">2</span>Adres dostawy</h3>
+          <div class="form-grid">
+            <div class="field"><label for="co-fname">Imię</label><input id="co-fname" name="fname" type="text"></div>
+            <div class="field"><label for="co-lname">Nazwisko</label><input id="co-lname" name="lname" type="text"></div>
+            <div class="field field-full"><label for="co-street">Ulica i numer</label><input id="co-street" name="street" type="text"></div>
+            <div class="field"><label for="co-zip">Kod pocztowy</label><input id="co-zip" name="zip" type="text" placeholder="00-000"></div>
+            <div class="field"><label for="co-city">Miasto</label><input id="co-city" name="city" type="text"></div>
+          </div>
+        </div>
+
+        <!-- 3. dostawa (shipping methods Woo) -->
+        <div class="form-card">
+          <h3 class="step-title"><span class="step-num">3</span>Sposób dostawy</h3>
+          <div class="option-list">
+            <label class="option">
+              <input type="radio" name="delivery" value="courier" checked>
+              <span class="radio-ring"></span>
+              <span class="option-info"><span class="option-name">Kurier</span><span class="option-desc">Dostawa 1–2 dni robocze, pod drzwi</span></span>
+              <span class="option-price">15,99 zł</span>
+            </label>
+            <label class="option">
+              <input type="radio" name="delivery" value="locker">
+              <span class="radio-ring"></span>
+              <span class="option-info"><span class="option-name">Paczkomat</span><span class="option-desc">Dostawa 1–2 dni robocze, odbiór 24/7</span></span>
+              <span class="option-price">12,99 zł</span>
+            </label>
+            <label class="option">
+              <input type="radio" name="delivery" value="pickup">
+              <span class="radio-ring"></span>
+              <span class="option-info"><span class="option-name">Odbiór osobisty</span><span class="option-desc">Magazyn Qutlet, pn.–pt. 9:00–17:00</span></span>
+              <span class="option-price free">Gratis</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- 4. płatność (payment gateways Woo) -->
+        <div class="form-card">
+          <h3 class="step-title"><span class="step-num">4</span>Płatność</h3>
+          <div class="option-list">
+            <label class="option">
+              <input type="radio" name="payment" value="blik" checked>
+              <span class="radio-ring"></span>
+              <span class="option-info"><span class="option-name">BLIK</span><span class="option-desc">Kod z aplikacji bankowej</span></span>
+            </label>
+            <label class="option">
+              <input type="radio" name="payment" value="transfer">
+              <span class="radio-ring"></span>
+              <span class="option-info"><span class="option-name">Szybki przelew</span><span class="option-desc">Przekierowanie do banku</span></span>
+            </label>
+            <label class="option">
+              <input type="radio" name="payment" value="card">
+              <span class="radio-ring"></span>
+              <span class="option-info"><span class="option-name">Karta płatnicza</span><span class="option-desc">Visa, Mastercard</span></span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- podsumowanie (review-order) -->
+      <aside class="summary-card">
+        <h3>Twoje zamówienie</h3>
+        <div data-co-items></div>
+        <div class="summary-row summary-row-first"><span>Wartość produktów</span><span data-co-subtotal></span></div>
+        <div class="summary-row"><span data-co-ship-label>Dostawa (Kurier)</span><span data-co-ship></span></div>
+        <div class="savings-note" data-co-savings-row hidden><span>Oszczędzasz vs. nowe</span><span data-co-savings></span></div>
+        <div class="summary-total"><span>Razem</span><span data-co-total></span></div>
+        <label class="agree-row" data-co-agree-row>
+          <input type="checkbox" data-co-agree>
+          <span>Akceptuję <a href="regulamin.html">regulamin sklepu</a> i przyjmuję do wiadomości, że kupuję produkt używany z 14-dniowym prawem zwrotu (koszt przesyłki zwrotnej po mojej stronie).</span>
+        </label>
+        <button type="button" class="btn btn-primary btn-lg btn-block" data-place-order>Kupuję i płacę</button>
+      </aside>
+    </form>
+  </div>
+
+  <div class="empty-state" data-co-empty hidden>
+    <h3>Koszyk jest pusty</h3>
+    <p>Dodaj produkt do koszyka, aby złożyć zamówienie.</p>
+    <a href="strefa-okazji.html" class="btn btn-primary">Przejdź do strefy okazji</a>
+  </div>
+</main>
+
+<div data-include="partials/footer.html"></div>
+<script src="js/data.js"></script>
+<script src="js/templates.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

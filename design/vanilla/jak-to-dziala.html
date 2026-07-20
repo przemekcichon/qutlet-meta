@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jak to działa? — Qutlet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<style>
+/* style tylko dla strony "Jak to działa" */
+.how-hero { background: var(--plum); color: #fff; border-radius: 26px; margin-top: 24px; padding-top: clamp(44px, 6vw, 72px); padding-bottom: clamp(44px, 6vw, 72px); padding-left: clamp(24px, 5vw, 64px); padding-right: clamp(24px, 5vw, 64px); }
+.how-hero h1 { font-family: var(--font-display); font-size: clamp(32px, 4.2vw, 54px); font-weight: 800; letter-spacing: -.035em; line-height: 1.1; margin: 0; max-width: 720px; }
+.how-hero .lead { margin-top: 20px; font-size: 17px; line-height: 1.65; color: rgba(255,255,255,.78); max-width: 620px; }
+.how-hero .lead b { color: #fff; }
+.how-hero .lime { color: var(--lime); }
+
+.how-steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 40px; }
+.how-step { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding-top: 26px; padding-bottom: 26px; padding-left: 24px; padding-right: 24px; position: relative; }
+.how-step-num { font-family: var(--font-display); font-size: 15px; font-weight: 800; color: var(--lime-ink); background: var(--lime); width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; margin-bottom: 16px; }
+.how-step h3 { font-size: 17px; font-weight: 800; margin: 0 0 8px; }
+.how-step p { font-size: 14px; line-height: 1.6; color: var(--ink-soft); margin: 0; }
+
+.how-section { margin-top: 64px; }
+.how-section > h2 { font-family: var(--font-display); font-size: clamp(24px, 3vw, 34px); font-weight: 800; letter-spacing: -.02em; margin: 0 0 10px; }
+.how-section > .sub { font-size: 15.5px; color: var(--muted); line-height: 1.6; margin: 0 0 28px; max-width: 640px; }
+
+.how-why { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; margin-top: 64px; background: var(--panel); border-radius: 26px; padding-top: clamp(36px, 5vw, 56px); padding-bottom: clamp(36px, 5vw, 56px); padding-left: clamp(24px, 4vw, 56px); padding-right: clamp(24px, 4vw, 56px); }
+.how-why h2 { font-family: var(--font-display); font-size: clamp(24px, 3vw, 34px); font-weight: 800; letter-spacing: -.02em; margin: 0 0 16px; }
+.how-why p { font-size: 15.5px; line-height: 1.75; color: var(--ink-soft); margin: 0 0 14px; }
+.how-why p b { color: var(--ink); }
+.how-why-facts { display: flex; flex-direction: column; gap: 14px; }
+.how-fact { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); display: flex; gap: 16px; align-items: flex-start; padding-top: 18px; padding-bottom: 18px; padding-left: 20px; padding-right: 20px; }
+.how-fact-icon { flex: none; width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; background: var(--plum); color: var(--lime); }
+.how-fact h4 { font-size: 15px; font-weight: 800; margin: 0 0 4px; }
+.how-fact p { font-size: 13.5px; line-height: 1.55; color: var(--ink-soft); margin: 0; }
+
+.how-cta { text-align: center; margin-top: 64px; margin-bottom: 72px; }
+.how-cta p { font-size: 15.5px; color: var(--muted); margin: 0 0 20px; }
+
+@media (max-width: 1023px) { .how-steps { grid-template-columns: 1fr 1fr; } .how-why { grid-template-columns: 1fr; gap: 28px; } }
+@media (max-width: 560px) { .how-steps { grid-template-columns: 1fr; } }
+</style>
+</head>
+<!-- → page.php / szablon "Jak to działa" -->
+<body data-page="jak-to-dziala">
+<div data-include="partials/header.html"></div>
+
+<main class="wrap">
+  <section class="how-hero">
+    <span class="kicker kicker-lime">Idea Qutlet</span>
+    <h1>Elektronika zasługuje na <span class="lime">drugą rundę.</span></h1>
+    <p class="lead">Co roku tony sprawnego sprzętu lądują w magazynach zwrotów albo — gorzej — na wysypisku, bo ktoś otworzył pudełko i zmienił zdanie. My ten sprzęt <b>sprawdzamy, klasyfikujemy i sprzedajemy dalej</b> w outletowej cenie. Ty płacisz mniej za pełnowartościowy produkt, a jedno urządzenie mniej staje się elektrośmieciem.</p>
+  </section>
+
+  <section class="how-section">
+    <h2>Od zwrotu do Twojej paczki</h2>
+    <p class="sub">Każdy egzemplarz przechodzi tę samą drogę — dlatego dokładnie wiesz, co kupujesz.</p>
+    <div class="how-steps">
+      <div class="how-step">
+        <span class="how-step-num">1</span>
+        <h3>Pozyskujemy sprzęt</h3>
+        <p>Skupujemy zwroty konsumenckie ze sklepów oraz sprawdzony sprzęt z drugiej ręki. Żadnych anonimowych palet w ciemno.</p>
+      </div>
+      <div class="how-step">
+        <span class="how-step-num">2</span>
+        <h3>Serwis sprawdza każdą sztukę</h3>
+        <p>Testujemy działanie, kompletność i stan wizualny. Egzemplarz dostaje klasę stanu od A do D — bez upiększania.</p>
+      </div>
+      <div class="how-step">
+        <span class="how-step-num">3</span>
+        <h3>Opisujemy konkretny egzemplarz</h3>
+        <p>W ofercie widzisz dokładnie tę sztukę, którą dostaniesz: jej zdjęcia, jej rysy, jej zawartość pudełka. Jeden egzemplarz — jedna oferta.</p>
+      </div>
+      <div class="how-step">
+        <span class="how-step-num">4</span>
+        <h3>Wysyłamy z gwarancją</h3>
+        <p>12 miesięcy gwarancji sprzedawcy, 14 dni na zwrot i wysyłka w najbliższy dzień roboczy. Jak w zwykłym sklepie — tylko taniej.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="how-section" id="klasy">
+    <h2>Klasy stanu — nasz wspólny język</h2>
+    <p class="sub">Zamiast marketingowych określeń w stylu „idealny” każdy produkt ma jedną z czterech klas. Klasa opisuje stan wizualny — technicznie sprawne jest wszystko poza klasą D.</p>
+    <table class="class-table">
+      <thead><tr><th>Klasa</th><th>Stan wizualny</th><th>Charakterystyka</th></tr></thead>
+      <tbody>
+        <tr><td><span class="class-name"><span class="dot dot-a"></span>Klasa A</span></td><td>Jak nowy. Mikroryski.</td><td>Zwrot konsumencki. Oryginalne pudełko.</td></tr>
+        <tr><td><span class="class-name"><span class="dot dot-b"></span>Klasa B</span></td><td>Dobry. Widoczne ryski.</td><td>Używany dłużej. Pudełko zastępcze.</td></tr>
+        <tr><td><span class="class-name"><span class="dot dot-c"></span>Klasa C</span></td><td>Mocne ślady zużycia.</td><td>Sprawny technicznie, widoczna historia użytkowania.</td></tr>
+        <tr><td><span class="class-name"><span class="dot dot-d"></span>Klasa D</span></td><td>Na części.</td><td>Niesprawny technicznie.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="how-why">
+    <div>
+      <h2>Dlaczego to ma sens</h2>
+      <p>Zwrócony sprzęt traci na papierze status „nowego”, ale nie traci wartości użytkowej. Sklepy nie mogą go sprzedać w pełnej cenie, więc trafia do outletów — albo do utylizacji.</p>
+      <p>My robimy z tego prostą wymianę: <b>Ty nie dopłacasz za folię i nienaruszone pudełko</b>, a sprzęt pracuje dalej zamiast trafić na złom. Nie nazywamy tego misją — to po prostu rozsądniejszy sposób kupowania elektroniki, przy okazji lżejszy dla planety.</p>
+    </div>
+    <div class="how-why-facts">
+      <div class="how-fact">
+        <span class="how-fact-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6h15l-1.5 9h-12z"></path><path d="M6 6 5 3H2"></path><circle cx="9" cy="20" r="1.5"></circle><circle cx="18" cy="20" r="1.5"></circle></svg></span>
+        <div><h4>Nawet -50% od ceny nówki</h4><p>Cena zależy od klasy stanu — im więcej śladów użytkowania, tym niższa.</p></div>
+      </div>
+      <div class="how-fact">
+        <span class="how-fact-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.5 8 8 11 4.5-3 8-6 8-11V5Z"></path></svg></span>
+        <div><h4>Te same prawa co przy nowym</h4><p>Gwarancja, zwrot w 14 dni, reklamacje w naszym serwisie.</p></div>
+      </div>
+      <div class="how-fact">
+        <span class="how-fact-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.5 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"></path><path d="M2 21c0-3 1.85-5.36 5.08-6"></path></svg></span>
+        <div><h4>Jedno urządzenie mniej na złomie</h4><p>Każdy zakup przedłuża życie sprzętu, który już wyprodukowano.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="how-section" id="2eko">
+    <h2>2eko: ekonomia + ekologia</h2>
+    <p class="sub">Nie kupujesz w outlecie dlatego, że musisz. Kupujesz, bo umiesz liczyć — a przy okazji robisz coś dobrego. W tej kolejności. I to jest w porządku.</p>
+    <div class="eko-grid">
+      <div class="eko-card">
+        <span class="eko-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 5 5 19"></path><circle cx="6.5" cy="6.5" r="2.5"></circle><circle cx="17.5" cy="17.5" r="2.5"></circle></svg></span>
+        <span class="eko-kicker">Eko #1 — Ekonomia</span>
+        <h3>Sprytny zakup, nie kompromis</h3>
+        <p>Ten sam model, ta sama jakość — tylko bez dopłaty za folię i status „nówki”. Ekopragmatyk nie kupuje taniej, bo musi. Kupuje taniej, bo przepłacanie za karton to nieuwaga.</p>
+      </div>
+      <div class="eko-card">
+        <span class="eko-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.5 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"></path><path d="M2 21c0-3 1.85-5.36 5.08-6"></path></svg></span>
+        <span class="eko-kicker">Eko #2 — Ekologia</span>
+        <h3>Bonus, który dostajesz gratis</h3>
+        <p>Każdy taki zakup przedłuża życie sprzętu, który już wyprodukowano. Nie musisz się z tym obnosić — ekologia po prostu dzieje się przy okazji, za każdym razem.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="how-cta">
+    <p>Większość ofert to pojedyncze egzemplarze — kto pierwszy, ten taniej.</p>
+    <a href="strefa-okazji.html" class="hero-cta" style="margin-top: 0;">
+      Zobacz strefę okazji
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+    </a>
+  </section>
+</main>
+
+<div data-include="partials/footer.html"></div>
+<script src="js/data.js"></script>
+<script src="js/templates.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Polityka cookies — Qutlet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<style>
+/* style tylko dla polityki cookies — tabele trackerów */
+.ck-table { width: 100%; border-collapse: collapse; font-size: 13.5px; margin-top: 14px; margin-bottom: 6px; }
+.ck-table th {
+  text-align: left; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--muted); border-bottom: 2px solid var(--line);
+  padding-top: 8px; padding-bottom: 8px; padding-left: 10px; padding-right: 10px;
+}
+.ck-table td {
+  vertical-align: top; color: var(--ink-soft); line-height: 1.55; border-bottom: 1px solid var(--line);
+  padding-top: 10px; padding-bottom: 10px; padding-left: 10px; padding-right: 10px;
+}
+.ck-name {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 12.5px; color: var(--ink);
+  background: var(--panel); border-radius: 6px; white-space: nowrap;
+  padding-top: 2px; padding-bottom: 2px; padding-left: 7px; padding-right: 7px;
+}
+.ck-badge {
+  display: inline-block; font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+  border-radius: 999px; margin-left: 10px; vertical-align: middle; white-space: nowrap;
+  padding-top: 3px; padding-bottom: 3px; padding-left: 10px; padding-right: 10px;
+}
+.ck-badge-req { background: var(--ink); color: #fff; }
+.ck-badge-opt { background: var(--panel); color: var(--muted); border: 1px solid var(--line); }
+@media (max-width: 640px) {
+  .ck-table th:nth-child(2), .ck-table td:nth-child(2) { display: none; }
+}
+</style>
+</head>
+<!-- → page.php / szablon "Polityka cookies" -->
+<body data-page="polityka-cookies">
+<div data-include="partials/header.html"></div>
+
+<main class="wrap">
+  <nav class="breadcrumbs">
+    <a href="index.html">Home</a><span class="sep">/</span>
+    <a href="pomoc.html">Pomoc</a><span class="sep">/</span>
+    <span class="current">Polityka cookies</span>
+  </nav>
+
+  <div class="help-layout has-toc">
+    <div data-include="partials/help-nav.html"></div>
+
+    <article class="terms-article">
+      <div class="terms-head">
+        <h1>Polityka cookies</h1>
+        <p>Obowiązuje od 1 lipca 2026 r. • Wersja 1.0 • Sklep internetowy Qutlet</p>
+      </div>
+      <section id="s1">
+        <h2><span class="num">1</span>Czym są pliki cookies</h2>
+        <p>Cookies to niewielkie pliki tekstowe zapisywane przez przeglądarkę na Twoim urządzeniu. Oprócz cookies korzystamy również z pamięci <b>localStorage</b> przeglądarki — m.in. do przechowywania zawartości koszyka i listy ostatnio oglądanych produktów. Dane z localStorage nie są wysyłane na nasze serwery automatycznie i pozostają na Twoim urządzeniu.</p>
+      </section>
+      <section id="s2">
+        <h2><span class="num">2</span>Zgoda i jej zmiana</h2>
+        <p>Przy pierwszej wizycie wyświetlamy baner, w którym możesz zaakceptować lub odrzucić cookies inne niż niezbędne. Cookies niezbędne do działania sklepu nie wymagają zgody. Swoją decyzję zapisujemy na 12 miesięcy i możesz ją zmienić w każdej chwili — link „Ustawienia cookies” znajdziesz w stopce serwisu.</p>
+      </section>
+      <section id="s3">
+        <h2><span class="num">3</span>Cookies niezbędne<span class="ck-badge ck-badge-req">zawsze aktywne</span></h2>
+        <p>Bez nich nie da się zalogować, dodać produktu do koszyka ani bezpiecznie złożyć zamówienia.</p>
+        <table class="ck-table">
+          <thead>
+            <tr><th>Nazwa</th><th>Dostawca</th><th>Cel</th><th>Okres</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><span class="ck-name">qutlet_session</span></td><td>Qutlet</td><td>Utrzymanie sesji logowania i identyfikacja zalogowanego użytkownika.</td><td>do końca sesji</td></tr>
+            <tr><td><span class="ck-name">qutlet_cart</span></td><td>Qutlet</td><td>Powiązanie koszyka z Twoją przeglądarką (produkty w Qutlet to pojedyncze egzemplarze — koszyk rezerwuje sztukę na czas zakupu).</td><td>30 dni</td></tr>
+            <tr><td><span class="ck-name">qutlet_consent</span></td><td>Qutlet</td><td>Zapamiętanie Twojej decyzji z banera cookies.</td><td>12 miesięcy</td></tr>
+            <tr><td><span class="ck-name">csrf_token</span></td><td>Qutlet</td><td>Zabezpieczenie formularzy (logowanie, kasa, kontakt) przed atakami CSRF.</td><td>do końca sesji</td></tr>
+          </tbody>
+        </table>
+      </section>
+      <section id="s4">
+        <h2><span class="num">4</span>Cookies funkcjonalne<span class="ck-badge ck-badge-opt">za zgodą</span></h2>
+        <p>Poprawiają wygodę korzystania ze sklepu, ale nie są konieczne do jego działania.</p>
+        <table class="ck-table">
+          <thead>
+            <tr><th>Nazwa</th><th>Dostawca</th><th>Cel</th><th>Okres</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><span class="ck-name">qutlet_recent</span></td><td>Qutlet</td><td>Lista ostatnio oglądanych produktów wyświetlana na stronie głównej i kartach produktów.</td><td>30 dni</td></tr>
+            <tr><td><span class="ck-name">qutlet_nl_seen</span></td><td>Qutlet</td><td>Informacja, że baner Newslettera Ekołowców został już zamknięty — żeby nie pokazywać go ponownie.</td><td>90 dni</td></tr>
+          </tbody>
+        </table>
+      </section>
+      <section id="s5">
+        <h2><span class="num">5</span>Cookies analityczne<span class="ck-badge ck-badge-opt">za zgodą</span></h2>
+        <p>Do statystyk odwiedzin używamy <b>Matomo</b> w wersji instalowanej na własnym serwerze — dane analityczne nie opuszczają naszej infrastruktury i nie są przekazywane podmiotom trzecim. Adresy IP są anonimizowane (skracane) przed zapisem.</p>
+        <table class="ck-table">
+          <thead>
+            <tr><th>Nazwa</th><th>Dostawca</th><th>Cel</th><th>Okres</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><span class="ck-name">_pk_id.*</span></td><td>Matomo (self-hosted)</td><td>Pseudonimowy identyfikator przeglądarki — pozwala odróżnić nowe wizyty od powracających.</td><td>13 miesięcy</td></tr>
+            <tr><td><span class="ck-name">_pk_ses.*</span></td><td>Matomo (self-hosted)</td><td>Identyfikator bieżącej wizyty — grupuje odsłony w jedną sesję.</td><td>30 minut</td></tr>
+          </tbody>
+        </table>
+      </section>
+      <section id="s6">
+        <h2><span class="num">6</span>Cookies marketingowe</h2>
+        <p><b>Obecnie nie stosujemy żadnych cookies marketingowych ani remarketingowych</b> i nie udostępniamy danych o Twojej aktywności sieciom reklamowym. Jeśli to się zmieni, zaktualizujemy niniejszą politykę i poprosimy Cię o odrębną zgodę, zanim jakikolwiek tracker marketingowy zostanie uruchomiony.</p>
+      </section>
+      <section id="s7">
+        <h2><span class="num">7</span>Treści osadzone</h2>
+        <p>Artykuły na blogu „Drugi obieg” mogą zawierać osadzone materiały wideo. Korzystamy z trybu rozszerzonej prywatności (domena youtube-nocookie.com), w którym odtwarzacz nie zapisuje cookies, dopóki nie klikniesz „odtwórz". Po uruchomieniu wideo dostawca odtwarzacza może zapisać własne cookies zgodnie ze swoją polityką prywatności.</p>
+      </section>
+      <section id="s8">
+        <h2><span class="num">8</span>Zarządzanie cookies w przeglądarce</h2>
+        <p>Niezależnie od naszego banera, cookies możesz usuwać i blokować w ustawieniach swojej przeglądarki (sekcja „Prywatność” lub „Dane witryn”). Pamiętaj, że usunięcie cookies niezbędnych wyloguje Cię ze sklepu, a wyczyszczenie danych witryny opróżni koszyk.</p>
+      </section>
+      <section id="s9">
+        <h2><span class="num">9</span>Zmiany polityki</h2>
+        <p>O każdej zmianie listy stosowanych cookies poinformujemy, aktualizując datę i numer wersji na górze tej strony. Zasady przetwarzania danych osobowych opisuje <a href="polityka-prywatnosci.html">Polityka prywatności</a>. Pytania? Napisz przez stronę <a href="kontakt.html">Kontakt</a>.</p>
+      </section>
+    </article>
+
+    <aside class="toc">
+      <h4>Spis treści</h4>
+      <div class="toc-list">
+        <a href="#s1">1. Czym są pliki cookies</a>
+        <a href="#s2">2. Zgoda i jej zmiana</a>
+        <a href="#s3">3. Cookies niezbędne</a>
+        <a href="#s4">4. Cookies funkcjonalne</a>
+        <a href="#s5">5. Cookies analityczne</a>
+        <a href="#s6">6. Cookies marketingowe</a>
+        <a href="#s7">7. Treści osadzone</a>
+        <a href="#s8">8. Zarządzanie w przeglądarce</a>
+        <a href="#s9">9. Zmiany polityki</a>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<div data-include="partials/footer.html"></div>
+<script src="js/data.js"></script>
+<script src="js/templates.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

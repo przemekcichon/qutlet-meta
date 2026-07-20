@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Newsletter Ekołowców — Qutlet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+</head>
+<!-- → page.php / szablon "Newsletter" (integracja: MailPoet / Mailchimp) -->
+<body data-page="newsletter">
+<div data-include="partials/header.html"></div>
+
+<main class="wrap nl-page">
+  <nav class="breadcrumbs">
+    <a href="index.html">Home</a><span class="sep">/</span>
+    <span class="current">Newsletter Ekołowców</span>
+  </nav>
+
+  <div class="nl-grid">
+    <div>
+      <span class="kicker">Newsletter Ekołowców</span>
+      <h1>Klub <span class="accent">ekopragmatyków</span>.</h1>
+      <p class="nl-lead">Ludzi, którzy kupują z głową: <strong>płacą mniej i mniej marnują</strong> — niezależnie od tego, ile mają na koncie. Pełnowartościowy sprzęt bez przepłacania to nie oszczędzanie z konieczności. To po prostu spryt.</p>
+    </div>
+
+    <div>
+      <div data-nl-form-wrap>
+        <form class="nl-form-card" data-nl-form>
+          <h3>Wskakujesz na pokład</h3>
+          <p class="sub">Raz w tygodniu. Same dropy i okazje warte Twojej uwagi.</p>
+          <label class="nl-field">Adres e-mail
+            <input type="email" name="email" required placeholder="ty@przyklad.pl">
+          </label>
+          <label class="nl-field">Imię <span class="opt">(opcjonalnie)</span>
+            <input type="text" name="name" placeholder="Jak Cię witać?">
+          </label>
+          <div class="nl-chips-label">Co Cię interesuje?</div>
+          <div class="nl-chips">
+            <button type="button" class="nl-chip" data-nl-chip>Smartfony</button>
+            <button type="button" class="nl-chip" data-nl-chip>Laptopy</button>
+            <button type="button" class="nl-chip" data-nl-chip>Audio</button>
+            <button type="button" class="nl-chip" data-nl-chip>Gaming</button>
+            <button type="button" class="nl-chip" data-nl-chip>Foto</button>
+            <button type="button" class="nl-chip" data-nl-chip>Konsole</button>
+          </div>
+          <button type="submit" class="nl-submit">Potwierdź zapis</button>
+          <p class="nl-fine">Zapisując się, akceptujesz politykę prywatności. Wypiszesz się w każdej chwili — jednym kliknięciem.</p>
+        </form>
+      </div>
+
+      <div class="nl-success" data-nl-success hidden>
+        <span class="nl-success-icon"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg></span>
+        <h3>Jesteś w grze, Ekołowco!</h3>
+        <p>Potwierdzenie poleciało na <span class="accent" data-nl-success-email></span>. Sprawdź skrzynkę i złap pierwszy drop, zanim rozejdzie się z magazynu.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="eko-grid">
+    <div class="eko-card">
+      <span class="eko-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 5 5 19"></path><circle cx="7.5" cy="7.5" r="2.5"></circle><circle cx="16.5" cy="16.5" r="2.5"></circle></svg></span>
+      <span class="eko-kicker">Eko #1 — Ekonomia</span>
+      <h3>Pełna wartość, ułamek ceny</h3>
+      <p>Płacisz za sprzęt, nie za karton i metkę „nówki”. Ten sam model, ta sama jakość, nawet -50%. Dla ekopragmatyka to nie kompromis — to lepiej policzony zakup.</p>
+    </div>
+    <div class="eko-card">
+      <span class="eko-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.5 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"></path><path d="M2 21c0-3 1.85-5.36 5.08-6"></path></svg></span>
+      <span class="eko-kicker">Eko #2 — Ekologia</span>
+      <h3>Mniej e-waste, realny ślad</h3>
+      <p>Każdy kupiony egzemplarz to jeden mniej na wysypisku. Przedłużasz życie sprawnej elektroniki i realnie obniżasz swój ślad — bez wyrzeczeń i bez ściemy.</p>
+    </div>
+  </div>
+
+  <div class="perks3-section">
+    <h2>Co dostajesz jako Ekołowca</h2>
+    <div class="perks3">
+      <div class="perk3">
+        <span class="perk3-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></span>
+        <h4>Świeże dropy</h4>
+        <p>Nowe sztuki lądują na Twojej skrzynce, zanim rozejdą się z magazynu.</p>
+      </div>
+      <div class="perk3">
+        <span class="perk3-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></span>
+        <h4>Zamknięte okazje</h4>
+        <p>Ceny i kody dostępne tylko dla subskrybentów newslettera.</p>
+      </div>
+      <div class="perk3">
+        <span class="perk3-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"></path></svg></span>
+        <h4>Tech bez ściemy</h4>
+        <p>Krótkie newsy i porady, które naprawdę pomogą Ci kupić mądrze.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="quote-band">
+    <blockquote>Stać Cię na nówkę? Tym lepiej. <span class="lime">Ekopragmatyk</span> i tak wybierze Qutlet — bo przepłacanie za karton to nie luksus, to nieuwaga.</blockquote>
+    <div class="attribution">Manifest Ekołowców</div>
+  </div>
+</main>
+
+<div data-include="partials/footer.html"></div>
+<script src="js/data.js"></script>
+<script src="js/templates.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

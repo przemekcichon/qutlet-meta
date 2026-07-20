@@ -1,0 +1,112 @@
+<!-- ============================================================
+     Qutlet — header (→ header.php w motywie WordPress)
+     Dropdowny (koszyk/konto), mega menu i mobilna nawigacja
+     są sterowane przez js/app.js (data-atrybuty).
+     ============================================================ -->
+<header class="site-header">
+  <div class="wrap header-row">
+    <a href="index.html" class="logo">
+      <span class="logo-name">qutlet</span><span class="logo-mark"></span>
+    </a>
+
+    <div class="search">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a59cae" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
+      <input type="search" placeholder="Szukaj: smartfon, laptop, słuchawki…" aria-label="Szukaj">
+    </div>
+
+    <nav class="header-nav">
+      <a href="strefa-okazji.html" class="nav-link">Strefa okazji</a>
+      <a href="jak-to-dziala.html" class="nav-link">Jak to działa?</a>
+      <a href="blog.html" class="nav-link">Blog</a>
+      <a href="pomoc.html" class="nav-link">Pomoc</a>
+
+      <div class="header-menu-wrap">
+        <button type="button" class="icon-btn" data-toggle-menu="cart" aria-label="Koszyk">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path><path d="M3 6h18"></path><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+          <span class="cart-badge" data-cart-count hidden>0</span>
+        </button>
+        <div class="dropdown cart-menu" data-menu="cart" hidden></div>
+      </div>
+
+      <div class="header-menu-wrap">
+        <button type="button" class="icon-btn" data-toggle-menu="account" aria-label="Moje konto">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"></path></svg>
+        </button>
+        <div class="dropdown acct-menu" data-menu="account" hidden></div>
+      </div>
+
+      <button type="button" class="icon-btn mnav-toggle" data-open-mnav aria-label="Menu">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+      </button>
+    </nav>
+  </div>
+
+  <div class="subnav-band">
+    <div class="wrap subnav">
+      <a href="kategoria-smartfony.html" class="subnav-link">Smartfony</a>
+      <a href="strefa-okazji.html?cat=laptopy" class="subnav-link">Laptopy</a>
+      <a href="strefa-okazji.html?cat=audio" class="subnav-link">Audio</a>
+      <a href="strefa-okazji.html?cat=gaming" class="subnav-link">Gaming</a>
+      <a href="strefa-okazji.html" class="subnav-link">Foto</a>
+      <a href="strefa-okazji.html" class="subnav-link">Konsole</a>
+      <button type="button" class="more-btn" data-toggle-mega>
+        Więcej
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="mega" data-mega hidden>
+    <div class="wrap mega-grid">
+      <div class="mega-col">
+        <h6>Mobile i noszone</h6>
+        <a href="kategoria-smartfony.html">Smartfony</a>
+        <a href="strefa-okazji.html">Tablety</a>
+        <a href="strefa-okazji.html">Smartwatche</a>
+        <a href="strefa-okazji.html">Akcesoria</a>
+      </div>
+      <div class="mega-col">
+        <h6>Komputery</h6>
+        <a href="strefa-okazji.html?cat=laptopy">Laptopy</a>
+        <a href="strefa-okazji.html">Monitory</a>
+        <a href="strefa-okazji.html">Komponenty</a>
+        <a href="strefa-okazji.html">Peryferia</a>
+      </div>
+      <div class="mega-col">
+        <h6>Audio i Foto</h6>
+        <a href="strefa-okazji.html?cat=audio">Audio</a>
+        <a href="strefa-okazji.html">Słuchawki</a>
+        <a href="strefa-okazji.html">Foto</a>
+        <a href="strefa-okazji.html">Kamery</a>
+      </div>
+      <div class="mega-col">
+        <h6>Dom i gaming</h6>
+        <a href="strefa-okazji.html?cat=gaming">Gaming</a>
+        <a href="strefa-okazji.html">Konsole</a>
+        <a href="strefa-okazji.html">Telewizory</a>
+        <a href="strefa-okazji.html">Smart home</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Mobilna nawigacja (sheet) -->
+<div class="mnav-overlay" data-mnav hidden>
+  <div class="mnav-panel">
+    <button type="button" class="icon-btn mnav-close" data-close-mnav aria-label="Zamknij">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"></path></svg>
+    </button>
+    <div class="mnav-label">Kategorie</div>
+    <a href="kategoria-smartfony.html" class="mnav-link">Smartfony</a>
+    <a href="strefa-okazji.html?cat=laptopy" class="mnav-link">Laptopy</a>
+    <a href="strefa-okazji.html?cat=audio" class="mnav-link">Audio</a>
+    <a href="strefa-okazji.html?cat=gaming" class="mnav-link">Gaming</a>
+    <a href="strefa-okazji.html" class="mnav-link">Wszystkie kategorie</a>
+    <div class="mnav-sep"></div>
+    <a href="strefa-okazji.html" class="mnav-link">Strefa okazji</a>
+    <a href="jak-to-dziala.html" class="mnav-link">Jak to działa?</a>
+    <a href="blog.html" class="mnav-link">Blog „Drugi obieg”</a>
+    <a href="pomoc.html" class="mnav-link">Pomoc</a>
+    <a href="logowanie.html" class="mnav-link" data-mnav-account>Zaloguj się</a>
+  </div>
+</div>

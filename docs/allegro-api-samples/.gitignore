@@ -1,0 +1,5 @@
+# Zwrotki Allegro API trzymamy TYLKO lokalnie — mogą zawierać tokeny/PII.
+# Do repo trafia wyłącznie README (i ten .gitignore). Resztę dociągamy w razie potrzeby.
+*
+!README.md
+!.gitignore

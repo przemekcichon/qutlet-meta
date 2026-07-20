@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Smartfony — Qutlet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+</head>
+<!-- → taxonomy-product_cat.php (term: smartfony) -->
+<body data-page="kategoria-smartfony">
+<div data-include="partials/header.html"></div>
+
+<main class="wrap">
+  <nav class="breadcrumbs">
+    <a href="index.html">Home</a><span class="sep">/</span>
+    <a href="strefa-okazji.html">Strefa okazji</a><span class="sep">/</span>
+    <span class="current">Smartfony</span>
+  </nav>
+
+  <div class="cat-hero">
+    <div>
+      <span class="kicker kicker-lime">Kategoria</span>
+      <h1>Smartfony z drugiej ręki</h1>
+      <p>Sprawdzone technicznie egzemplarze ze zwrotów konsumenckich i z odzysku. Każdy telefon ma jasno określoną klasę stanu i gwarancję sprzedawcy.</p>
+    </div>
+    <div class="cat-hero-stat">
+      <b data-phone-count>—</b>
+      <span>egzemplarzy w ofercie</span>
+    </div>
+  </div>
+
+  <div class="row-section">
+    <div class="row-head"><h2 class="row-title">Wybierz markę</h2></div>
+    <div class="brand-row" data-brand-row></div>
+  </div>
+
+  <div class="row-section">
+    <div class="row-head"><h2 class="row-title">Najczęściej wybierane</h2><a href="strefa-okazji.html?cat=smartfony" class="link-accent">Zobacz wszystkie</a></div>
+    <div class="hrow" data-row-bestsellers></div>
+  </div>
+
+  <div class="row-section">
+    <div class="row-head"><h2 class="row-title">iPhone w outlecie</h2><a href="strefa-okazji.html?cat=smartfony&brand=Apple" class="link-accent">Zobacz wszystkie</a></div>
+    <div class="hrow" data-row-apple></div>
+  </div>
+
+  <div class="row-section">
+    <div class="row-head"><h2 class="row-title">Android w Klasie A</h2><a href="strefa-okazji.html?cat=smartfony" class="link-accent">Zobacz wszystkie</a></div>
+    <div class="hrow" data-row-android-a></div>
+  </div>
+
+  <div class="row-section">
+    <div class="row-head"><h2 class="row-title">Budżetowo — do 1300 zł</h2><a href="strefa-okazji.html?cat=smartfony" class="link-accent">Zobacz wszystkie</a></div>
+    <div class="hrow" data-row-budget></div>
+  </div>
+</main>
+
+<div data-include="partials/footer.html"></div>
+<script src="js/data.js"></script>
+<script src="js/templates.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

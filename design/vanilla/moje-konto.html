@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Moje konto — Qutlet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+</head>
+<!-- → woocommerce/myaccount/my-account.php (endpointy jako zakładki) -->
+<body data-page="moje-konto">
+<div data-include="partials/header.html"></div>
+
+<main class="wrap page-main-tall">
+  <div class="page-head">
+    <h1 class="page-title">Moje konto</h1>
+  </div>
+
+  <div class="account-layout">
+    <!-- nawigacja konta (→ woocommerce_account_menu_items) -->
+    <aside class="acct-side">
+      <div class="acct-side-user">
+        <div class="acct-avatar" data-acct-initials></div>
+        <div class="minw0">
+          <div class="acct-side-name" data-acct-name></div>
+          <div class="acct-side-email" data-acct-email></div>
+        </div>
+      </div>
+      <button type="button" class="acct-nav-btn" data-acct-nav="pulpit">Pulpit</button>
+      <button type="button" class="acct-nav-btn" data-acct-nav="zamowienia">Zamówienia</button>
+      <button type="button" class="acct-nav-btn" data-acct-nav="dane">Dane konta</button>
+      <button type="button" class="acct-nav-btn" data-acct-nav="adres">Adres dostawy</button>
+      <button type="button" class="acct-nav-btn" data-acct-nav="platnosci">Metody płatności</button>
+      <button type="button" class="acct-nav-btn danger" data-logout>Wyloguj się</button>
+    </aside>
+
+    <div>
+      <!-- PULPIT (→ dashboard.php) -->
+      <div class="acct-pane" data-acct-pane="pulpit">
+        <h2>Cześć, <span data-acct-firstname></span>! 👋</h2>
+        <p class="pane-lead">Tu znajdziesz swoje zamówienia, dane i ustawienia konta.</p>
+        <div class="tile-grid">
+          <button type="button" class="tile" data-acct-nav="zamowienia">
+            <span class="tile-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8v13H3V8"></path><path d="M1 3h22v5H1z"></path><path d="M10 12h4"></path></svg></span>
+            <h4>Zamówienia</h4>
+            <p data-orders-count></p>
+          </button>
+          <button type="button" class="tile" data-acct-nav="adres">
+            <span class="tile-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path><circle cx="12" cy="10" r="3"></circle></svg></span>
+            <h4>Adres dostawy</h4>
+            <p data-addr-label></p>
+          </button>
+          <button type="button" class="tile" data-acct-nav="platnosci">
+            <span class="tile-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"></rect><path d="M2 10h20"></path></svg></span>
+            <h4>Metody płatności</h4>
+            <p data-payments-count></p>
+          </button>
+        </div>
+      </div>
+
+      <!-- ZAMÓWIENIA (→ orders.php) -->
+      <div class="acct-pane" data-acct-pane="zamowienia" hidden>
+        <h2>Zamówienia</h2>
+        <p class="pane-lead">Historia Twoich zakupów w Qutlet.</p>
+        <div data-orders-list></div>
+      </div>
+
+      <!-- DANE KONTA (→ form-edit-account.php) -->
+      <div class="acct-pane" data-acct-pane="dane" hidden>
+        <h2>Dane konta</h2>
+        <p class="pane-lead">Adres e-mail i hasło do logowania.</p>
+        <form class="form-card" data-acct-email-form>
+          <h3 class="step-title">Adres e-mail <span class="flash-ok" data-flash-email hidden>✓ Zapisano</span></h3>
+          <div class="form-grid">
+            <div class="field field-full"><label for="ac-email">E-mail</label><input id="ac-email" name="email" type="email"></div>
+          </div>
+          <button type="submit" class="btn btn-dark">Zapisz zmiany</button>
+        </form>
+        <form class="form-card" data-acct-pass-form>
+          <h3 class="step-title">Zmiana hasła <span class="flash-ok" data-flash-pass hidden>✓ Zapisano</span></h3>
+          <div class="form-grid">
+            <div class="field"><label for="ac-pass1">Nowe hasło</label><input id="ac-pass1" name="pass1" type="password" placeholder="Min. 6 znaków"></div>
+            <div class="field"><label for="ac-pass2">Powtórz hasło</label><input id="ac-pass2" name="pass2" type="password"></div>
+          </div>
+          <button type="submit" class="btn btn-dark">Zmień hasło</button>
+        </form>
+      </div>
+
+      <!-- ADRES (→ form-edit-address.php) -->
+      <div class="acct-pane" data-acct-pane="adres" hidden>
+        <h2>Adres dostawy</h2>
+        <p class="pane-lead">Domyślny adres podpowiadany przy zamówieniu.</p>
+        <form class="form-card" data-acct-addr-form>
+          <h3 class="step-title">Adres <span class="flash-ok" data-flash-addr hidden>✓ Zapisano</span></h3>
+          <div class="form-grid">
+            <div class="field"><label for="ad-fname">Imię</label><input id="ad-fname" name="fname" type="text"></div>
+            <div class="field"><label for="ad-lname">Nazwisko</label><input id="ad-lname" name="lname" type="text"></div>
+            <div class="field field-full"><label for="ad-street">Ulica i numer</label><input id="ad-street" name="street" type="text"></div>
+            <div class="field"><label for="ad-zip">Kod pocztowy</label><input id="ad-zip" name="zip" type="text" placeholder="00-000"></div>
+            <div class="field"><label for="ad-city">Miasto</label><input id="ad-city" name="city" type="text"></div>
+          </div>
+          <button type="submit" class="btn btn-dark">Zapisz adres</button>
+        </form>
+      </div>
+
+      <!-- PŁATNOŚCI (→ payment-methods.php) -->
+      <div class="acct-pane" data-acct-pane="platnosci" hidden>
+        <h2>Metody płatności</h2>
+        <p class="pane-lead">Zapisane karty do szybszych zakupów.</p>
+        <div class="form-card">
+          <div data-cards-list></div>
+          <button type="button" class="text-btn-accent" data-show-add-card>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+            Dodaj nową kartę
+          </button>
+          <form class="add-card-form" data-add-card-box data-card-form hidden>
+            <div class="form-grid">
+              <div class="field field-full"><label for="cc-num">Numer karty</label><input id="cc-num" name="num" type="text" placeholder="0000 0000 0000 0000" inputmode="numeric"></div>
+              <div class="field"><label for="cc-exp">Ważność</label><input id="cc-exp" name="exp" type="text" placeholder="MM/RR"></div>
+              <div class="field"><label for="cc-name">Imię i nazwisko</label><input id="cc-name" name="name" type="text"></div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-dark">Zapisz kartę</button>
+              <button type="button" class="text-btn" data-hide-add-card>Anuluj</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div data-include="partials/footer.html"></div>
+<script src="js/data.js"></script>
+<script src="js/templates.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

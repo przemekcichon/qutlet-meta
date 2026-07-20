@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Naprawy i DIY — Drugi obieg, blog Qutlet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/blog.css">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+</head>
+<!-- → category.php -->
+<body data-page="blog-category">
+<div data-include="partials/header.html"></div>
+
+<main class="wrap page-main">
+  <nav class="breadcrumbs">
+    <a href="index.html">Qutlet</a><span class="sep">/</span>
+    <a href="blog.html">Drugi obieg</a><span class="sep">/</span>
+    <span class="current">Naprawy i DIY</span>
+  </nav>
+
+  <!-- → nagłówek kategorii: single_cat_title() + category_description() -->
+  <header class="term-hero">
+    <div>
+      <span class="kicker">Kategoria</span>
+      <h1>Naprawy i DIY</h1>
+      <p>Instrukcje naprawcze, które naprawdę da się wykonać w domu: z listą narzędzi, kosztorysem i uczciwą oceną trudności. Bo najbardziej ekologiczny sprzęt to ten, którego nie trzeba było kupić.</p>
+    </div>
+    <div class="term-hero-stat">
+      <b>14</b>
+      <span>poradników naprawczych</span>
+    </div>
+  </header>
+
+  <!-- → pozostałe kategorie bloga -->
+  <div class="blog-cats">
+    <a href="blog.html" class="blog-cat-chip">Wszystkie</a>
+    <a href="blog-kategoria.html" class="blog-cat-chip active">Naprawy i DIY</a>
+    <a href="blog-kategoria.html" class="blog-cat-chip">Testy i benchmarki</a>
+    <a href="blog-kategoria.html" class="blog-cat-chip">Ekologia</a>
+    <a href="blog-kategoria.html" class="blog-cat-chip">Jak to działa</a>
+    <a href="blog-kategoria.html" class="blog-cat-chip">Poradniki zakupowe</a>
+  </div>
+
+  <!-- → pętla wpisów kategorii -->
+  <div class="post-grid">
+    <a href="blog-artykul.html" class="post-card">
+      <div class="post-media"><div class="ph-stripes">foto: rozkręcony pad, widoczne analogi</div></div>
+      <div class="post-body">
+        <div class="post-topline"><span class="post-cat">Naprawy i DIY</span><span class="post-read">9 min</span></div>
+        <h3>Dryfujący analog w padzie? Naprawisz go za 30 zł</h3>
+        <p>Nowy pad kosztuje ponad 300 zł, a winowajcą dryfu jest zwykle moduł za kilkanaście złotych. Pokazujemy naprawę krok po kroku — z lutownicą i bez.</p>
+        <div class="post-meta">28 czerwca 2026</div>
+      </div>
+    </a>
+    <a href="blog-artykul.html" class="post-card">
+      <div class="post-media"><div class="ph-stripes">foto: słuchawki z wymienionymi padami</div></div>
+      <div class="post-body">
+        <div class="post-topline"><span class="post-cat">Naprawy i DIY</span><span class="post-read">5 min</span></div>
+        <h3>Łuszczące się pady w słuchawkach? Wymiana zajmuje kwadrans</h3>
+        <p>Zamienniki kosztują 20–40 zł i pasują do większości popularnych modeli. Pokazujemy, jak dobrać rozmiar i nie urwać mocowania.</p>
+        <div class="post-meta">10 maja 2026</div>
+      </div>
+    </a>
+    <a href="blog-artykul.html" class="post-card">
+      <div class="post-media"><div class="ph-stripes">foto: konsola z otwartą obudową</div></div>
+      <div class="post-body">
+        <div class="post-topline"><span class="post-cat">Naprawy i DIY</span><span class="post-read">7 min</span></div>
+        <h3>Głośna konsola? Czyszczenie i wymiana pasty krok po kroku</h3>
+        <p>Po 3–4 latach wentylator konsoli potrafi brzmieć jak suszarka. Godzina pracy, tubka pasty i wraca kultura pracy jak z pudełka.</p>
+        <div class="post-meta">3 maja 2026</div>
+      </div>
+    </a>
+    <a href="blog-artykul.html" class="post-card">
+      <div class="post-media"><div class="ph-stripes">foto: laptop z wyjętą baterią</div></div>
+      <div class="post-body">
+        <div class="post-topline"><span class="post-cat">Naprawy i DIY</span><span class="post-read">8 min</span></div>
+        <h3>Wymiana baterii w laptopie: kiedy warto, a kiedy to strata pieniędzy</h3>
+        <p>Ogniwo zamiennik za 150 zł czy oryginał za 400 zł? Tłumaczymy, jak czytać liczbę cykli i pojemność projektową, zanim cokolwiek zamówisz.</p>
+        <div class="post-meta">19 kwietnia 2026</div>
+      </div>
+    </a>
+    <a href="blog-artykul.html" class="post-card">
+      <div class="post-media"><div class="ph-stripes">foto: klawiatura mechaniczna bez keycapów</div></div>
+      <div class="post-body">
+        <div class="post-topline"><span class="post-cat">Naprawy i DIY</span><span class="post-read">6 min</span></div>
+        <h3>Klawiatura mechaniczna po zalaniu — procedura ratunkowa</h3>
+        <p>Pierwsze 10 minut decyduje o wszystkim. Co zrobić natychmiast, czego nie robić nigdy (ryż!) i jak wymienić pojedynczy przełącznik.</p>
+        <div class="post-meta">5 kwietnia 2026</div>
+      </div>
+    </a>
+    <a href="blog-artykul.html" class="post-card">
+      <div class="post-media"><div class="ph-stripes">foto: smartfon z podważonym ekranem</div></div>
+      <div class="post-body">
+        <div class="post-topline"><span class="post-cat">Naprawy i DIY</span><span class="post-read">10 min</span></div>
+        <h3>Wymiana ekranu w smartfonie: uczciwa ocena, czy dasz radę</h3>
+        <p>Zestaw z ekranem kosztuje od 120 zł, ale klejone obudowy wybaczają mniej niż pady. Sprawdź nasz test „czy podołam”, zanim podważysz szybkę.</p>
+        <div class="post-meta">22 marca 2026</div>
+      </div>
+    </a>
+  </div>
+
+  <!-- → the_posts_pagination() -->
+  <nav class="pager">
+    <button type="button" class="page-btn" disabled aria-label="Poprzednia strona">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>
+    </button>
+    <button type="button" class="page-btn active">1</button>
+    <button type="button" class="page-btn">2</button>
+    <button type="button" class="page-btn">3</button>
+    <button type="button" class="page-btn" aria-label="Następna strona">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"></path></svg>
+    </button>
+  </nav>
+
+  <!-- popularne tagi w kategorii -->
+  <div class="term-related" style="margin-top: 34px; margin-bottom: 50px;">
+    <span>Popularne tagi:</span>
+    <a href="blog-tag.html" class="art-tag">#naprawa-diy</a>
+    <a href="blog-tag.html" class="art-tag">#pady</a>
+    <a href="blog-tag.html" class="art-tag">#baterie</a>
+    <a href="blog-tag.html" class="art-tag">#hall-effect</a>
+    <a href="blog-tag.html" class="art-tag">#prawo-do-naprawy</a>
+  </div>
+</main>
+
+<div data-include="partials/footer.html"></div>
+<script src="js/data.js"></script>
+<script src="js/templates.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
