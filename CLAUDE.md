@@ -180,6 +180,12 @@ domknięto (brak merge) — handoff wznawia TEN SAM punkt, nie następny.
    ZANIM zrobisz pierwszy commit i zweryfikuj przez `git config user.email`.
 1. Nigdy nie commituj bezpośrednio do main. Każda faza/zadanie = osobny branch
    o nazwie typu: feature/faza-1-cpt-taksonomie, fix/import-duplikaty.
+   **Jedyny wyjątek:** flip ikony statusu realizacji w `docs/plan.md` PO merge'u
+   punktu (🟡→🟢, a przy domknięciu fazy 🟨→🟩) to czysta księgowość dokumentacji —
+   robimy go jednym atomowym commitem `docs:` wprost na `main`, bez brancha/PR
+   (konwencja „flip po merge'u" nie mieści się w PR punktu). Wyjątek dotyczy
+   WYŁĄCZNIE ikon statusu; każda inna zmiana w `plan.md` (i całej reszcie repo)
+   idzie normalną ścieżką branch + PR.
 2. Commity małe i atomowe — jedna logiczna zmiana = jeden commit. Nie łącz
    refaktoru z nową funkcjonalnością w jednym commicie.
 3. Format komunikatów: Conventional Commits po angielsku
