@@ -153,11 +153,12 @@ stron pomocy. Renderuje to później motyw; core tylko produkuje dane.
   rynkowa nowego (number — orient. `cena_rynkowa_nowego`) oraz „Co w przesyłce"
   (orient. `zawartosc_zestawu` — z komentarza `produkt.html:13`, pole ACF na równi
   z powyższymi) na produkcie.
-- **D-1.2.1 [OTWARTE]:** klasa stanu jako pole ACF select (jak sugeruje prototyp)
-  vs własna taksonomia. Prototyp: ACF select — do potwierdzenia w P-1.0.
-- **D-1.2.2 [OTWARTE]:** czy `zawartosc_zestawu` należy do FAZY 1 (pole front-driven
-  z prototypu) czy do FAZY 5 (warstwa przerobiona) — rozstrzygnie P-1.0. Nie może
-  „wisieć w próżni" (duch D-5.G1).
+- **D-1.2.1 [ROZSTRZYGNIĘTE — kontrakt P-1.0]:** klasa stanu = pole ACF select
+  `klasa_stanu` (A/B/C/D), NIE własna taksonomia. Patrz `docs/kontrakt-danych.md`
+  §2 + log decyzji.
+- **D-1.2.2 [ROZSTRZYGNIĘTE — kontrakt P-1.0]:** `zawartosc_zestawu` należy do
+  FAZY 1 (pole front-driven z prototypu), ACF. Podtyp WYSIWYG (kontrakt §7 —
+  potwierdzone w realizacji P-1.2). Patrz `docs/kontrakt-danych.md` §2/§7 + log decyzji.
 - **Zależności:** P-1.0.
 
 ### P-1.3 — Kanał Allegro (pola na produkcie)
