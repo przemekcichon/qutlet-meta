@@ -173,7 +173,7 @@ stron pomocy. Renderuje to później motyw; core tylko produkuje dane.
   przechowywana. Patrz `docs/kontrakt-danych.md` §4/§6 + log decyzji.
 - **Zależności:** P-1.0.
 
-### 🟡 P-1.4 — Blog: czas czytania
+### 🟢 P-1.4 — Blog: czas czytania
 - **Repo:** qutlet-core (slice `ReadingTime/`)
 - **Zakres:** na potrzeby `blog.html` / `blog-kategoria.html` / `blog-tag.html` /
   `blog-artykul.html`. Blog stoi na **natywnych wpisach WP** (kategorie/tagi
