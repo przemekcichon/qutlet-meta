@@ -139,7 +139,7 @@ stron pomocy. Renderuje to później motyw; core tylko produkuje dane.
   finalne przypieczętuje P-1.0. Rozbieżność kod ↔ kontrakt w realizacji → STOP +
   decyzja użytkownika (`docs/ground-truth.md`).
 
-### 🟡 P-1.1 — Taksonomia „marka"
+### 🟢 P-1.1 — Taksonomia „marka"
 - **Repo:** qutlet-core (slice `ProductTaxonomies/`)
 - **Zakres:** rejestracja taksonomii marki na produkcie Woo.
 - **D-1.1.1 [OTWARTE]:** własna taksonomia `marka` vs atrybut WooCommerce
