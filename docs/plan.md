@@ -438,22 +438,49 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
 
 Cel: automatycznie generować **przerobione** opisy (proza + specyfikacja) na
 podstawie **surowych** danych z Allegro (wypełnianych przez import z FAZY 6), przez
-provider-agnostyczne AI sterowane promptem. AI wypełnia/proponuje warstwę
-przerobioną (user-facing) — NIE nadpisuje warstwy surowej (źródło = Allegro).
+**wbudowany w WordPress 7.0 AI Client** (core, provider-agnostyczny) sterowany
+promptem. AI wypełnia/proponuje warstwę przerobioną (user-facing) — NIE nadpisuje
+warstwy surowej (źródło = Allegro).
+
+**Kontekst platformy (zweryfikowany w realnym środowisku — WP 7.0.2 — oraz w
+primary sources make.wordpress.org):** WordPress 7.0 wprowadził w **core**
+provider-agnostyczny **AI Client** (`wp_ai_client_prompt()` →
+`WP_AI_Client_Prompt_Builder`; fluent: `.with_text()`, `.using_system_instruction()`,
+`.using_model_preference()`, `.as_json_response($schema)`, `.generate_text()`,
+`.is_supported_for_text_generation()`; błędy jako `WP_Error`), bundlując SDK
+`php-ai-client`. Klucze i wybór dostawcy obsługuje **core Connectors API** (ekran
+**Settings → Connectors**), a dostawcy (Anthropic/OpenAI/Google) to osobne
+connectory. Wtyczka `ai` (wordpress.org) to **Block-Editor-only** warstwa
+user-facing (generacja w edytorze, Abilities Explorer, logi) — **nie jest nam
+potrzebna** (D-7.G7). Ta zmiana platformy przemodelowała FAZĘ 7: **adoptujemy core
+AI Client** zamiast budować własną abstrakcję dostawcy.
 
 ### Decyzje globalne fazy
-- **D-7.G1 (repo) [USTALONE]:** feature w **nowym pluginie `qutlet-ai`** (osobny
-  bounded context, jak `qutlet-allegro`). `CLAUDE.md` już zaktualizowany (granice
-  repo, remote `git@github.com:przemekcichon/qutlet-ai.git`, rola — zrobione na
-  sesji planowania). Pozostaje: utworzenie repo na GitHubie (**handoff —
-  użytkownik**, wg wzorca), dodanie jako root w workspace, bootstrap jak w FAZIE 0.
-- **D-7.G2 (klucze AI) [USTALONE]:** klucze API dostawców AI jako stałe w
-  `wp-config.php` (spójnie z sekretami Allegro). UI wybiera aktywnego dostawcę/
-  model tylko spośród tych, dla których klucz jest zdefiniowany. Zero sekretów w
-  DB/repo.
-- **D-7.G3 (provider-agnostyk) [USTALONE]:** warstwa dostawcy pluggable; KONKRETNY
-  dostawca/model wskaże raport użytkownika w realizacji — nie wybieramy teraz i
-  nie opieramy na pamięci.
+- **D-7.G1 (repo) [USTALONE]:** feature w pluginie `qutlet-ai` (osobny bounded
+  context, jak `qutlet-allegro`). Repo, remote (`git@github.com:przemekcichon/qutlet-ai.git`),
+  root w workspace i bootstrap są **gotowe** (P-7.0 🟢). Zakres bounded contextu =
+  **orkiestracja raw→rewritten + ustawienia** (prompt, wybór modelu), **nie**
+  infrastruktura dostawcy AI (tę daje core AI Client — D-7.G3). Pola ACF/CPT
+  rejestruje wyłącznie core (D-7.G6).
+- **D-7.G2 (klucze AI) [USTALONE — zmienione po researchu WP 7.0]:** klucze API
+  dostawców AI jako **stałe PHP w `wp-config.php`** — `define( '{PROVIDER}_API_KEY',
+  … )` (np. `ANTHROPIC_API_KEY`). Core Connectors API rozwiązuje klucz w kolejności
+  **zmienna środowiskowa → stała PHP → opcja w DB**, więc stała z `wp-config` jest
+  natywnie wspierana (UI Settings → Connectors pokazuje wtedy źródło „PHP Constant",
+  bez edycji z panelu). Zero sekretów w DB i repo — spójnie z sekretami Allegro
+  (FAZA 2, `wp-config`) i z pierwotnym zamiarem tej decyzji. **Odrzucona
+  alternatywa:** klucz w DB przez UI Connectors + eksperyment „Key Encryption"
+  wtyczki `ai` + dedykowana `WP_SECRETS_KEY` — niepotrzebnie złożone (wymaga wtyczki
+  `ai` i szyfrowania opt-in), skoro core natywnie czyta stałą z `wp-config`. Sekrety
+  Allegro (FAZA 2) zostają w `wp-config` bez zmian — osobna sprawa.
+- **D-7.G3 (adopcja core AI Client) [USTALONE — zmienione po researchu WP 7.0]:**
+  korzystamy z **wbudowanego AI Client** (`wp_ai_client_prompt()`), NIE budujemy
+  własnej warstwy/interfejsu dostawcy. Provider-agnostyczność zapewnia core
+  (`php-ai-client`); wybór dostawcy/modelu = konfiguracja w Connectors +
+  `using_model_preference()`. KONKRETNY dostawca/model wskaże raport użytkownika w
+  realizacji — nie wybieramy teraz i nie opieramy na pamięci. **Odrzucona
+  alternatywa (pierwotne D-7.G3):** własny pluggable interfejs dostawcy —
+  dublowałby platformę.
 - **D-7.G4 (prompt) [USTALONE]:** prompt globalny (ustawienie w `qutlet-ai`) +
   opcjonalny override per-produkt.
 - **D-7.G5 (kierunek danych) [USTALONE]:** wejście = warstwa surowa (FAZA 5),
@@ -463,6 +490,13 @@ przerobioną (user-facing) — NIE nadpisuje warstwy surowej (źródło = Allegr
   `qutlet-core` (konstytucja) → pole „prompt per-produkt" rejestruje **core**
   (slice `AiRewrite/`), logika AI mieszka w **`qutlet-ai`** (slice `AiRewrite/`).
   Feature rozproszony — ta sama nazwa slice'a w obu repo.
+- **D-7.G7 (bez wtyczki `ai`) [USTALONE]:** rozwiązanie opiera się wyłącznie na
+  **core AI Client + core Connectors API + oficjalny connector dostawcy**. Wtyczka
+  `ai` (Block-Editor-only, community) NIE jest zależnością — nasz use-case jest
+  programatyczny (orkiestracja w adminie), a core w pełni go pokrywa. Do
+  zweryfikowania w realizacji (krok config/handoff): czy connector wybranego
+  dostawcy jest wbudowany w core 7.0, czy trzeba doinstalować oficjalny
+  plugin-connector.
 
 ### 🟢 P-7.0 — Bootstrap `qutlet-ai`
 - **Repo:** qutlet-ai (nowy).
@@ -473,12 +507,18 @@ przerobioną (user-facing) — NIE nadpisuje warstwy surowej (źródło = Allegr
   jako root workspace.
 - **Zależności:** decyzja D-7.G1 (ta sesja). Niezależne od reszty — można zrobić wcześniej.
 
-### P-7.1 — Provider-agnostyczny klient AI + konfiguracja dostawcy
-- **Repo:** qutlet-ai (slice `AiRewrite/`)
-- **Zakres:** interfejs dostawcy (pluggable), odczyt kluczy z `wp-config.php`,
-  wybór aktywnego dostawcy/modelu w UI (tylko dostawcy z kluczem), obsługa
-  błędów/limitów wywołań.
-- **Zależności:** P-7.0.
+### P-7.1 — Konfiguracja core AI Client + connector dostawcy
+- **Repo:** qutlet-ai (slice `AiRewrite/`) — w większości **config/handoff**, kod cienki.
+- **Zakres:**
+  - **config/handoff:** zdefiniować stałą `{PROVIDER}_API_KEY` w `wp-config.php`
+    (D-7.G2); upewnić się, że connector wybranego dostawcy jest dostępny (wbudowany
+    w core 7.0 lub doinstalowany oficjalny plugin-connector — weryfikacja w
+    realizacji, D-7.G7); wybrać aktywnego dostawcę/model w **Settings → Connectors**.
+  - **kod (cienki):** serwis w `qutlet-ai` wołający `wp_ai_client_prompt()`,
+    feature-detection przed użyciem (`is_supported_for_text_generation()`), obsługa
+    `WP_Error` (błędy/limity), ewentualnie `using_model_preference()` wg ustawienia.
+    NIE budujemy interfejsu dostawcy (D-7.G3) — provider-agnostyczność daje core.
+- **Zależności:** P-7.0 (🟢) + WP 7.0 core (jest: 7.0.2).
 
 ### P-7.2a — Pole „prompt per-produkt" (core)
 - **Repo:** qutlet-core (slice `AiRewrite/`)
@@ -489,7 +529,8 @@ przerobioną (user-facing) — NIE nadpisuje warstwy surowej (źródło = Allegr
 ### P-7.2b — Ustawienie globalne promptu (ai)
 - **Repo:** qutlet-ai (slice `AiRewrite/`)
 - **Zakres:** globalny prompt jako ustawienie w `qutlet-ai`; odczyt override
-  per-produkt (z pola P-7.2a) przy generacji.
+  per-produkt (z pola P-7.2a) przy generacji. Prompt trafia do core AI Client jako
+  `using_system_instruction()` / treść wywołania.
 - **Zależności:** P-7.0.
 
 *(P-7.2 rozbite na dwa punkty per repo — patrz nota o punktach wielorepowych w
@@ -497,9 +538,16 @@ nagłówku planu.)*
 
 ### P-7.3 — Generacja przeróbki (orkiestracja)
 - **Repo:** qutlet-ai (czyta/pisze pola z `qutlet-core` z FAZY 5)
-- **Zakres:** orkiestracja surowe→AI→przerobione, akcja w adminie
-  (generuj/podgląd/zaakceptuj), obsługa błędów i limitów. Warstwa przerobiona
-  pozostaje ręcznie edytowalna po wygenerowaniu (nie nadpisujemy jej sync-iem).
+- **Zakres:** orkiestracja surowe→AI→przerobione wołająca **core AI Client**
+  (`wp_ai_client_prompt()` z promptem z P-7.2), akcja w adminie
+  (generuj/podgląd/zaakceptuj), obsługa błędów i limitów (`WP_Error`). Warstwa
+  przerobiona pozostaje ręcznie edytowalna po wygenerowaniu (nie nadpisujemy jej
+  sync-iem). Rozważyć `as_json_response($schema)` dla specyfikacji
+  (etykieta→wartość) jako ustrukturyzowanego wyjścia.
+- **D-7.3.1 (model orkiestracji) [USTALONE]:** na teraz orkiestracja = **zwykła
+  akcja admina** (przycisk na produkcie), NIE Ability. Modelowanie jako zdolność w
+  core **Abilities API** można dołożyć później osobnym punktem, jeśli zajdzie
+  potrzeba wystawienia jej innym narzędziom/automatyzacjom.
 - **Zależności:** P-7.1, P-7.2a, P-7.2b, FAZA 5. Realne generowanie potrzebuje wypełnionej
   warstwy surowej, czyli importu (**P-6.1**, FAZA 6) — który teraz poprzedza AI w
   numeracji (kolejność naturalna). Testowalne wcześniej na próbkach z FAZY 3.
@@ -595,7 +643,7 @@ punkt, nie w PR-ze motywu (granica artefaktów).
   **P-6.2** (NIE samplowany w FAZIE 3).
 
 ### Kandydaci do dalszych faz (NIE zatwierdzone)
-Większość dawnych kandydatów jest już rozpisana (import/sync → FAZA 7, render →
-FAZA 8). Poza planem pozostają świadomie: dalsze utwardzanie (podniesienie poziomu
+Większość dawnych kandydatów jest już rozpisana (import/sync → FAZA 6, przeróbka
+AI → FAZA 7, render → FAZA 8). Poza planem pozostają świadomie: dalsze utwardzanie (podniesienie poziomu
 PHPStan, testy e2e), ewentualny deploy na produkcję (`www.qutlet.pl`) i rozłożenie
 sekretów/crona na prod. Rozpiszemy, gdy dojdziemy do tego etapu.
