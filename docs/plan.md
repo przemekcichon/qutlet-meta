@@ -32,7 +32,7 @@ Reguły granularności:
 
 ---
 
-## 🟨 FAZA 0 — Szkielety artefaktów (bootstrap 3 repo) — ZATWIERDZONA
+## 🟩 FAZA 0 — Szkielety artefaktów (bootstrap 3 repo) — ZATWIERDZONA
 
 Cel: postawić pusty, ale aktywowalny szkielet każdego z trzech artefaktów, z
 gitem podłączonym do `origin`. Zero logiki domenowej. Punkt **P-0.0** inicjalizuje
@@ -107,7 +107,7 @@ gitowy.
 - **D-0.2.1 [USTALONE]:** w bootstrapie NIE deklarujemy jeszcze `parts/`,
   patternów ani style variations — dopiero w fazie renderu. FAZA 0 = czysty szkielet.
 
-### 🟡 P-0.3 — Bootstrap `qutlet-allegro`
+### 🟢 P-0.3 — Bootstrap `qutlet-allegro`
 - **Repo:** qutlet-allegro
 - **Zakres:** jak P-0.1 (plik główny `qutlet-allegro.php`, `composer.json` PSR-4
   `Qutlet\Allegro\` → `src/`, bootstrap, `phpstan.neon`, `.gitignore`, pusty
