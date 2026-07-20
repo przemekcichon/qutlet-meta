@@ -119,7 +119,7 @@ gitowy.
 
 ---
 
-## 🟨 FAZA 1 — Model danych (qutlet-core) — ROZPISANA (literały → P-1.0)
+## 🟩 FAZA 1 — Model danych (qutlet-core) — ROZPISANA (literały → P-1.0)
 
 Cel: zarejestrować w `qutlet-core` cały model danych, którego potrzebuje front
 z `design/vanilla` — pola produktu, taksonomie, kanał Allegro oraz model bloga i
@@ -187,7 +187,7 @@ stron pomocy. Renderuje to później motyw; core tylko produkuje dane.
 - **Zależności:** P-1.0.
 - **Uwaga:** dokładny `meta_key` czasu czytania ustali P-1.0 (kontrakt).
 
-### P-1.5 — Strony pomocy: struktura i nawigacja
+### 🟢 P-1.5 — Strony pomocy: struktura i nawigacja
 - **Repo:** qutlet-core (minimalnie — patrz uwaga) + treść jako natywne Pages
 - **Zakres:** `pomoc.html`, `jak-to-dziala.html`, `kontakt.html`,
   `newsletter.html`, `regulamin.html`, `polityka-prywatnosci.html`,
