@@ -95,7 +95,7 @@ gitowy.
 - **Zależności:** brak (fundament).
 - **D-0.1.1 [USTALONE]:** text-domain / slug = `qutlet-core`.
 
-### 🟡 P-0.2 — Bootstrap `qutlet-theme`
+### 🟢 P-0.2 — Bootstrap `qutlet-theme`
 - **Repo:** qutlet-theme
 - **Zakres:** `style.css` (nagłówek motywu blokowego); `theme.json` (minimalny,
   `version: 3`, bazowe settings); `templates/index.html` (minimalny — motyw
