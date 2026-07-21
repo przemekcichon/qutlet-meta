@@ -226,31 +226,85 @@ autoryzacja — bez pobierania danych merytorycznych.
   zarejestrowany i pasować DOKŁADNIE; HTTPS wymagany na produkcji.
 
 ### Decyzje globalne fazy
-- **D-2.G1 (READ/WRITE oddzielnie) [USTALONE]:** utrzymujemy **dwie osobne pary
-  tokenów** — jedną z zakresami tylko-odczyt (częsty sync odczytu), drugą z
-  zakresem zapisu (PATCH stanu magazynowego). Dwie autoryzacje, dwie rotacje;
-  pętla odczytu nie ma prawa zapisu. Parametr `state` rozróżnia, której pary
-  dotyczy dany callback. **Odrzucona alternatywa:** jeden token z sumą scope'ów
-  (read+write) — prostszy (jedna rotacja/UI), ale bez izolacji uprawnień.
-  Świadomie wybrano least-privilege, akceptując koszt podwójnej rotacji
-  (refresh jednorazowy, okno 60 s) w P-2.1/P-2.3.
-- **D-2.G2 (flow) [USTALONE]:** Authorization Code, klient **poufny**, Basic auth
-  na token endpoint. Sandbox lokalnie / produkcja na produkcji — osobne
-  rejestracje i sekrety per środowisko.
-- **D-2.G3 (sekrety) [USTALONE]:** `client_id` / `client_secret` (per środowisko)
-  w `wp-config.php`, nigdy do repo (git workflow).
-- **D-2.G4 (callback + redirect URI) [USTALONE]:** callback jako **trasa REST**
-  `/wp-json/qutlet-allegro/v1/oauth/callback`. Redirect URI do rejestracji:
-  - sandbox/lokalny: `https://loc.qutlet.pl/wp-json/qutlet-allegro/v1/oauth/callback`
-  - produkcja: `https://www.qutlet.pl/wp-json/qutlet-allegro/v1/oauth/callback`
-  CSRF przez `state` (jednorazowy, w transiencie/meta) + `current_user_can` w callbacku.
-- **D-2.G5 (HTTPS lokalnie) [OTWARTE — weryfikacja w realizacji]:** redirect URI
-  jest HTTPS; Local by Flywheel musi wystawić zaufany cert dla `loc.qutlet.pl`.
-  Sprawdzić przy realizacji; jeśli Local nie da zaufanego HTTPS → handoff.
-- **D-2.G6 (scope'y) [OTWARTE — potwierdzić w panelu rejestracji]:** orient.
-  token-read: `allegro:api:sale:offers:read` + `allegro:api:orders:read`;
-  token-write: `allegro:api:sale:offers:write`. Dokładna lista = z panelu
-  rejestracji aplikacji przy realizacji.
+
+**Rewizja po sesji P-2.2 (2026-07-21).** Pierwotne D-2.G1–G3 zakładały, że
+instalacja rozmawia z JEDNYM środowiskiem Allegro naraz (sandbox lokalnie /
+produkcja na produkcji) przez JEDNĄ aplikację poufną. Realny sposób pracy wymaga
+jednak czegoś innego: sandbox Allegro **nie zawiera ofert z produkcji** i nie ma
+oficjalnego mechanizmu przeniesienia ich tam (patrz FAZA 3A), więc **z maszyny
+lokalnej musimy równolegle** czytać produkcję (snapshot realnych ofert) i
+pisać do sandboxa (poligon testowy). Decyzje poniżej odzwierciedlają ten model;
+wersje pierwotne są jawnie oznaczone jako odrzucone.
+
+- **D-2.G1 (pary tokenów: środowisko × rola) [ZREWIDOWANE]:** para tokenów jest
+  kluczowana **dwuwymiarowo — (środowisko, rola)** — czyli do czterech
+  niezależnych slotów: `production/read`, `production/write`, `sandbox/read`,
+  `sandbox/write`. Każdy slot autoryzowany, przechowywany i rotowany osobno;
+  pętla odczytu nigdy nie ma prawa zapisu, a operacja na sandboxie nie może
+  sięgnąć poświadczeń produkcji. Parametr `state` niesie **parę (środowisko,
+  rola)**, nie samą rolę. **Odrzucona alternatywa (pierwotne D-2.G1):** dwa
+  sloty (tylko read/write) przy globalnie wykrytym środowisku — uniemożliwia
+  jednoczesny odczyt produkcji i zapis do sandboxa na jednej instalacji.
+- **D-2.G2 (flow + równoległe środowiska) [ZREWIDOWANE]:** Authorization Code,
+  klient **poufny**, Basic auth na token endpoint (bez zmian). Zmiana: środowisko
+  **NIE jest globalnie wykrywane** z typu instalacji — jest **parametrem
+  połączenia**. Jedna instalacja utrzymuje połączenia do obu środowisk naraz.
+  Docelowy rozkład:
+  - lokalnie: `production/read` (snapshot ofert) + `sandbox/read` + `sandbox/write`;
+  - na produkcji: `production/read` + `production/write` (patrz bezpiecznik D-2.G7).
+  **Odrzucona alternatywa (pierwotne D-2.G2 i kod P-2.1):** `wp_get_environment_type()`
+  wybiera jedno środowisko, a maszyna nie-produkcyjna NIGDY nie dosięga produkcji.
+  Zachowawcze i bezpieczne, ale odcina jedyne źródło realnych danych produktowych.
+  Bezpieczeństwo przenosimy z automatu na **jawny bezpiecznik operacyjny** (D-2.G7).
+- **D-2.G3 (sekrety per środowisko × rola) [ZREWIDOWANE]:** użytkownik rejestruje
+  **osobną aplikację Allegro dla każdej pary (środowisko, rola)** — cztery
+  komplety `client_id`/`client_secret`, każdy z minimalnym zestawem scope'ów swojej
+  roli (D-2.G6). Wszystkie w `wp-config.php`, nigdy do repo. Schemat nazw stałych
+  (symetryczny, wyprowadzalny programowo — `QUTLET_ALLEGRO_{ŚRODOWISKO}_{ROLA}_CLIENT_{ID|SECRET}`):
+  - `QUTLET_ALLEGRO_PRODUCTION_READ_CLIENT_ID`  / `…_PRODUCTION_READ_CLIENT_SECRET`
+  - `QUTLET_ALLEGRO_PRODUCTION_WRITE_CLIENT_ID` / `…_PRODUCTION_WRITE_CLIENT_SECRET`
+  - `QUTLET_ALLEGRO_SANDBOX_READ_CLIENT_ID`     / `…_SANDBOX_READ_CLIENT_SECRET`
+  - `QUTLET_ALLEGRO_SANDBOX_WRITE_CLIENT_ID`    / `…_SANDBOX_WRITE_CLIENT_SECRET`
+  Klucz szyfrujący tokeny `QUTLET_ALLEGRO_TOKEN_KEY` pozostaje **jeden** dla
+  wszystkich slotów (D-2.1.1 bez zmian). Nazwy z P-2.1 (`QUTLET_ALLEGRO_CLIENT_ID`,
+  `QUTLET_ALLEGRO_SANDBOX_CLIENT_ID` i ich `_SECRET`) są **wycofane** — zastępuje
+  je schemat powyżej. Migracja niepotrzebna: żadna z nich nie została jeszcze
+  zdefiniowana w `wp-config.php` (autoryzacji dotąd nie wykonano).
+- **D-2.G4 (callback + redirect URI) [USTALONE — doprecyzowane]:** callback jako
+  **trasa REST** `/wp-json/qutlet-allegro/v1/oauth/callback` (jedna trasa obsługuje
+  wszystkie sloty — który to slot, niesie `state`). Redirect URI do rejestracji:
+  - z maszyny lokalnej: `https://loc.qutlet.pl/wp-json/qutlet-allegro/v1/oauth/callback`
+  - z produkcji: `https://www.qutlet.pl/wp-json/qutlet-allegro/v1/oauth/callback`
+  **Doprecyzowanie:** redirect URI dotyczy przeglądarki operatora, nie serwera
+  Allegro, więc adres `loc.qutlet.pl` musi być zarejestrowany w **każdej
+  aplikacji łączonej z lokala** — także w aplikacjach PRODUKCYJNYCH (tam obok
+  adresu produkcyjnego). CSRF przez `state` (jednorazowy, w transiencie/meta) +
+  `current_user_can` w callbacku.
+- **D-2.G5 (HTTPS lokalnie) [ROZSTRZYGNIĘTE — weryfikacja 2026-07-21]:** Local by
+  Flywheel serwuje `https://loc.qutlet.pl` (potwierdzone przez MCP `get_site_info`:
+  `siteUrl` = `https://loc.qutlet.pl`, WP 7.0.2, PHP 8.2.29). Warunek HTTPS dla
+  redirect URI spełniony. Pozostaje czynność jednorazowa **poza kodem**: zaufanie
+  certyfikatowi Local w przeglądarce (Local → SSL → Trust), inaczej przeglądarka
+  odrzuci powrót z Allegro. Handoff niepotrzebny.
+- **D-2.G6 (scope'y) [ROZSTRZYGNIĘTE — z panelu rejestracji, 2026-07-21]:** zakresy
+  potwierdzone przez użytkownika na realnych aplikacjach (literały VERBATIM):
+  - **rola `read`:** `allegro:api:sale:offers:read`, `allegro:api:orders:read`
+  - **rola `write`:** `allegro:api:sale:offers:read`, `allegro:api:sale:offers:write`,
+    `allegro:api:sale:settings:read`, `allegro:api:sale:settings:write`
+  Rola `write` zawiera też `offers:read`, bo zapis oferty wymaga odczytania jej
+  stanu przed modyfikacją. Zestaw `sale:settings:*` jest potrzebny **wyłącznie**
+  do zasiewu sandboxa (FAZA 3A); przy rejestracji aplikacji `production/write`
+  należy go pominąć — na produkcji jedyną operacją zapisu jest stan magazynowy
+  (D-2.G7), która go nie wymaga.
+- **D-2.G7 (bezpiecznik zapisu na produkcji) [USTALONE]:** na środowisku
+  **produkcyjnym** wtyczka ma prawo wyłącznie **aktualizować stan magazynowy**
+  istniejącej oferty (`PATCH`, po sprzedaży w WooCommerce). **NIGDY** nie tworzy,
+  nie publikuje ani nie nadpisuje treści ofert na produkcji. Tworzenie/wysyłka
+  ofert jest dozwolona **wyłącznie** wobec sandboxa (FAZA 3A). Reguła jest
+  bezpiecznikiem zastępującym automatyczną izolację środowisk zniesioną w D-2.G2 —
+  ma być egzekwowana **w kodzie** (operacja zapisu treści oferty odmawia
+  wykonania, gdy celem jest `production`), nie tylko w dokumencie. Pomyłka
+  środowiska bez tego bezpiecznika oznacza publikację na żywym koncie sprzedawcy.
 
 ### 🟢 P-2.1 — Fundament OAuth: konfiguracja, klient tokenu, magazyn tokenów
 - **Repo:** qutlet-allegro (slice `Auth/`)
@@ -267,27 +321,65 @@ autoryzacja — bez pobierania danych merytorycznych.
   zwraca `false` (graceful, nie fatal). Spójne z etosem „zero sekretów w DB"
   (D-2.G3 / D-7.G2). **Odrzucona alternatywa:** zwykła opcja WP w cleartext —
   prostsza, ale wyciek bazy = pełny dostęp do konta Allegro do wygaśnięcia/rotacji.
-- **Nazwy stałych sekretów aplikacji** (per środowisko, D-2.G3 — decyzja
-  realizacyjna P-2.1): produkcja `QUTLET_ALLEGRO_CLIENT_ID` /
-  `QUTLET_ALLEGRO_CLIENT_SECRET`; sandbox `QUTLET_ALLEGRO_SANDBOX_CLIENT_ID` /
-  `QUTLET_ALLEGRO_SANDBOX_CLIENT_SECRET`. Klucz szyfrujący tokeny:
-  `QUTLET_ALLEGRO_TOKEN_KEY` (dowolnie długi, wysokoentropijny string).
+- **Nazwy stałych sekretów aplikacji [WYCOFANE — zastąpione przez P-2.1b]:**
+  zrealizowano jako `QUTLET_ALLEGRO_CLIENT_ID` / `QUTLET_ALLEGRO_CLIENT_SECRET`
+  (produkcja) i `QUTLET_ALLEGRO_SANDBOX_CLIENT_ID` / `…_SANDBOX_CLIENT_SECRET`
+  (sandbox) — jeden komplet per środowisko. Zrewidowane D-2.G3 wymaga kompletu
+  per (środowisko, rola); nowy schemat nazw wprowadza **P-2.1b**. Klucz
+  `QUTLET_ALLEGRO_TOKEN_KEY` (dowolnie długi, wysokoentropijny string) zostaje
+  bez zmian.
+
+### P-2.1b — Rozszerzenie fundamentu na (środowisko × rola)
+- **Repo:** qutlet-allegro (slice `Auth/`)
+- **Zakres:** przebudowa fundamentu z P-2.1 pod zrewidowane D-2.G1/G2/G3 —
+  środowisko przestaje być wykrywane globalnie i staje się **parametrem**:
+  - `Environment` — konstruowalne dla **wskazanego** środowiska (obie instancje
+    mogą żyć równolegle w jednym żądaniu); sekrety czytane per (środowisko, rola)
+    wg schematu nazw z D-2.G3. Automatyczne `detect()` z P-2.1 znika albo
+    degraduje się do „środowiska domyślnego UI" — nie może już decydować, do
+    którego Allegro idzie żądanie.
+  - `TokenStore` — cztery sloty zamiast dwóch, klucz opcji
+    `qutlet_allegro_token_{środowisko}_{rola}` (np. `qutlet_allegro_token_production_read`).
+    Poprzednie klucze `qutlet_allegro_token_read` / `…_write` są wycofane;
+    migracja niepotrzebna — nigdy nie zapisano do nich tokenów.
+  - `TokenClient` — bez zmian koncepcyjnych (dostaje `Environment`), ale musi
+    działać na instancji wskazanej przez wołającego, nie na wykrytej globalnie.
+  - **Bezpiecznik D-2.G7** jako egzekwowalny punkt w kodzie: operacja zapisu
+    treści oferty odmawia wykonania, gdy celem jest `production`.
+- **Zależności:** P-2.1 (🟢 — przebudowuje jego model danych).
+- **Uwaga:** punkt celowo oddzielony od P-2.2 — to zmiana modelu danych fundamentu
+  (stałe, klucze opcji, sygnatury), a nie budowa UI. Osobny PR = czytelny diff.
+- **Handoff (użytkownik):** rejestracja aplikacji Allegro per (środowisko, rola)
+  ze scope'ami z D-2.G6 i redirect URI wg D-2.G4; zdefiniowanie stałych w
+  `wp-config.php` (nazwy w D-2.G3) + `QUTLET_ALLEGRO_TOKEN_KEY`.
 
 ### P-2.2 — Flow „Połącz z Allegro" (admin) + callback
 - **Repo:** qutlet-allegro (slice `Auth/`)
-- **Zakres:** akcja admina budująca URL `authorize` (osobno dla zakresów read i
-  write, ze `state` niosącym który to token) i przekierowująca; trasa REST
-  callback (`current_user_can`, walidacja `state`); wymiana `code`→token; zapis
-  przez magazyn z P-2.1; „Rozłącz" (usunięcie tokenów). Minimalne UI stanu
-  połączenia (połączono read? write? kiedy wygasa).
-- **Zależności:** P-2.1.
+- **Zakres:** akcja admina budująca URL `authorize` **osobno dla każdego slotu
+  (środowisko, rola)**, ze `state` niosącym parę i chroniącym przed CSRF, i
+  przekierowująca; trasa REST callback (`current_user_can`, walidacja
+  jednorazowego `state`); wymiana `code`→token; zapis przez magazyn z P-2.1b;
+  „Rozłącz" (usunięcie tokenów danego slotu). Minimalne UI stanu połączenia —
+  wiersz na slot: czy połączony, jakie scope'y przyznano, kiedy wygasa access
+  i (orientacyjnie) refresh.
+- **UI:** podstrona pod menu **WooCommerce**, capability **`manage_woocommerce`**
+  (decyzja użytkownika, sesja 2026-07-21).
+- **Zależności:** P-2.1b.
+- **Uwaga implementacyjna (zweryfikowana 2026-07-21):** trasa REST + uwierzytelnienie
+  ciasteczkiem BEZ nonce `wp_rest` → `rest_cookie_check_errors()` zeruje bieżącego
+  użytkownika, więc samo `current_user_can()` w callbacku zawsze zwróci false.
+  Powrót z Allegro to zwykła nawigacja przeglądarki i nonce'a nie doniesie
+  (`redirect_uri` musi pasować DOKŁADNIE). Uprawnienie trzeba więc ustalić
+  niezależnie od warstwy REST (np. walidacja ciasteczka logowania) — w parze z
+  jednorazowym `state` związanym z użytkownikiem, który rozpoczął autoryzację.
 
 ### P-2.3 — Odświeżanie tokenów (rotacja)
 - **Repo:** qutlet-allegro (slice `Auth/`)
 - **Zakres:** odświeżanie `refresh_token` przed wygaśnięciem access (12 h) —
   on-demand przy użyciu + cron zabezpieczający; **poprawna rotacja** (nadpisanie
-  jednorazowego refresh, obsługa okna 60 s), osobno dla pary read i write.
-- **Zależności:** P-2.1 (i P-2.2 dla realnych tokenów do odświeżania).
+  jednorazowego refresh, obsługa okna 60 s), **osobno dla każdego slotu
+  (środowisko, rola)** — rotacja jednego slotu nie może dotknąć pozostałych.
+- **Zależności:** P-2.1b (i P-2.2 dla realnych tokenów do odświeżania).
 
 ---
 
