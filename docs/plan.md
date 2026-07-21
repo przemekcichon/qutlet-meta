@@ -252,7 +252,7 @@ autoryzacja — bez pobierania danych merytorycznych.
   token-write: `allegro:api:sale:offers:write`. Dokładna lista = z panelu
   rejestracji aplikacji przy realizacji.
 
-### 🟡 P-2.1 — Fundament OAuth: konfiguracja, klient tokenu, magazyn tokenów
+### 🟢 P-2.1 — Fundament OAuth: konfiguracja, klient tokenu, magazyn tokenów
 - **Repo:** qutlet-allegro (slice `Auth/`)
 - **Zakres:** wykrycie środowiska (sandbox/prod) i baz URL; odczyt sekretów z
   `wp-config.php`; klient HTTP do token endpoint (Basic auth, `authorization_code`
