@@ -202,7 +202,7 @@ stron pomocy. Renderuje to później motyw; core tylko produkuje dane.
 
 ---
 
-## 🟨 FAZA 2 — Autoryzacja Allegro (OAuth) — ROZPISANA
+## 🟩 FAZA 2 — Autoryzacja Allegro (OAuth) — ROZPISANA
 
 Cel: `qutlet-allegro` uzyskuje i utrzymuje tokeny OAuth do Allegro REST API, tak
 żeby dalsze fazy (import/sync) mogły odpytywać i aktualizować dane. Sama
@@ -386,7 +386,7 @@ wersje pierwotne są jawnie oznaczone jako odrzucone.
   niezależnie od warstwy REST (np. walidacja ciasteczka logowania) — w parze z
   jednorazowym `state` związanym z użytkownikiem, który rozpoczął autoryzację.
 
-### 🟡 P-2.3 — Odświeżanie tokenów (rotacja)
+### 🟢 P-2.3 — Odświeżanie tokenów (rotacja)
 - **Repo:** qutlet-allegro (slice `Auth/`)
 - **Zakres:** odświeżanie `refresh_token` przed wygaśnięciem access (12 h) —
   on-demand przy użyciu + cron zabezpieczający; **poprawna rotacja** (nadpisanie
