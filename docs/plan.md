@@ -353,7 +353,7 @@ wersje pierwotne są jawnie oznaczone jako odrzucone.
   ze scope'ami z D-2.G6 i redirect URI wg D-2.G4; zdefiniowanie stałych w
   `wp-config.php` (nazwy w D-2.G3) + `QUTLET_ALLEGRO_TOKEN_KEY`.
 
-### P-2.2 — Flow „Połącz z Allegro" (admin) + callback
+### 🟡 P-2.2 — Flow „Połącz z Allegro" (admin) + callback
 - **Repo:** qutlet-allegro (slice `Auth/`)
 - **Zakres:** akcja admina budująca URL `authorize` **osobno dla każdego slotu
   (środowisko, rola)**, ze `state` niosącym parę i chroniącym przed CSRF, i
