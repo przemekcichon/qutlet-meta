@@ -392,6 +392,19 @@ wersje pierwotne są jawnie oznaczone jako odrzucone.
   on-demand przy użyciu + cron zabezpieczający; **poprawna rotacja** (nadpisanie
   jednorazowego refresh, obsługa okna 60 s), **osobno dla każdego slotu
   (środowisko, rola)** — rotacja jednego slotu nie może dotknąć pozostałych.
+- **D-2.3.1 (harmonogram: WP-Cron, nie systemowy) [USTALONE]:** cron zabezpieczający
+  odświeżanie tokenów to **zdarzenie WP-Cron** (kadencja godzinna), a NIE wpis w
+  systemowym crontabie. Uzasadnienie i rozgraniczenie względem D-6.G1: access token
+  żyje 12 h, więc odświeżanie ma kadencję **godzinną i nietrwałą-krytyczną** — WP-Cron
+  wystarcza na Localu i na produkcji, a podstawą i tak jest odświeżanie **on-demand**
+  (cron to tylko bezpiecznik). To INNE zadanie niż wysokoczęstotliwościowy **sync
+  stanów magazynowych** z FAZY 6 („co 1–2 min sprawdź, czy nie sprzedano na Allegro,
+  i zdejmij towar u nas"), który — zgodnie z **D-6.G1** — wymaga **systemowego crona
+  + `DISABLE_WP_CRON` + własnej komendy WP-CLI** (WP-Cron nie daje beatu co 2 min).
+  Gdy FAZA 6 postawi ten systemowy spooler (`wp cron event run --due-now` co minutę
+  przy `DISABLE_WP_CRON`), zdarzenie odświeżania tokenów odpali się przez niego
+  automatycznie — **nie potrzebuje własnej linii w crontabie**. Handoff systemowego
+  crona (D-6.G1) NIE dotyczy więc P-2.3.
 - **Zależności:** P-2.1b (i P-2.2 dla realnych tokenów do odświeżania).
 
 ---
