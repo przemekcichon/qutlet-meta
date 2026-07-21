@@ -391,20 +391,39 @@ projektować na realnym kształcie danych, nie z pamięci. Konwencja plików i
 reguły bezpieczeństwa: `docs/allegro-api-samples/README.md`.
 
 - **Repo:** artefakty lądują w **qutlet-meta** (`docs/allegro-api-samples/`);
-  pobranie używa klienta OAuth i tokenu **read** z FAZY 2 (`qutlet-allegro`) +
-  WP-CLI (skill `wp-wpcli-and-ops`, runtime przez narzędzia MCP `wp_cli`). Mechanizm pobrania
-  trzymamy minimalny — produktem fazy są **pliki-próbki**, nie kod.
-- **Zależności:** FAZA 2 (token read).
+  pobranie używa klienta OAuth i slotu **`production/read`** z FAZY 2
+  (`qutlet-allegro`) — realne oferty są wyłącznie na produkcji (sandbox jest
+  pusty, patrz FAZA 3A) — plus WP-CLI (skill `wp-wpcli-and-ops`, runtime przez
+  narzędzia MCP `wp_cli`). Mechanizm pobrania trzymamy minimalny — produktem fazy
+  są **pliki-próbki**, nie kod.
+- **Zależności:** FAZA 2 (slot `production/read`).
 - **D-3.G1 [USTALONE]:** redakcja PII/sekretów PRZED zapisem to warunek wejścia
   pliku do repo (README). Zwrotki z tokenem nie trafiają do repo w ogóle.
 - **D-3.G2 [USTALONE]:** PATCH (write) **NIE** jest samplowany w tej fazie
   (mutuje dane) — kształt jego odpowiedzi dopiszemy przy realizacji sync.
+- **D-3.G3 (różnorodność zamiast ilości) [USTALONE]:** o wartości próbki decyduje
+  **rozpiętość kategorii, nie liczba ofert**. Produkty mają rozłączne zestawy
+  parametrów (gra komputerowa nie ma długości kabla), więc dziesięć ofert z jednej
+  kategorii mówi mniej niż trzy z różnych. Próbki MUSZĄ celowo obejmować kilka
+  **wyraźnie różnych** kategorii asortymentu, a plik ma odnotować, którą kategorię
+  ilustruje. **Odrzucona alternatywa:** pełny dump katalogu — maksymalnie kompletny,
+  ale zaszumiony, ciężki w repo i bezużyteczny jako kontekst dla LLM (do przeróbki
+  jednego opisu model dostaje JEDEN produkt, nie katalog).
+- **D-3.G4 (format: JSON, CSV tylko jako indeks) [USTALONE]:** próbki zapisujemy
+  jako **JSON**, bo badanym przedmiotem są właśnie zagnieżdżenia (tablice
+  `parameters`, warianty, dostawa), które CSV spłaszcza i niszczy. Dopuszczamy
+  JEDEN pomocniczy plik **CSV będący płaskim indeksem katalogu** (np. `offerId`,
+  kategoria, tytuł) — służy WYŁĄCZNIE do wybrania, które oferty próbkować, i do
+  zobaczenia rozkładu kategorii. Indeks nie jest kontekstem dla AI ani źródłem
+  mappingu (FAZA 4) — te czytają JSON.
 
 ### P-3.1 — Zwrotki ofert
 - **Zakres:** `GET /sale/offers` (paginacja `limit=100`), `GET /sale/product-offers/{offerId}`
   (pełne + partial). Zapis jako `GET_sale-offers.json`, `GET_sale-product-offers.json`
   (+ nagłówek: endpoint, data, parametry). Redakcja danych sprzedawcy.
-- **Zależności:** FAZA 2.
+  Dobór ofert wg **D-3.G3** — kilka rozłącznych kategorii, żeby ujawnić zmienność
+  zestawu parametrów; opcjonalny płaski indeks CSV wg **D-3.G4** jako pomoc w doborze.
+- **Zależności:** FAZA 2 (slot `production/read`).
 
 ### P-3.2 — Zwrotki kategorii
 - **Zakres:** `GET /sale/categories` (lista/traversal) + pojedyncza kategoria.
@@ -417,6 +436,89 @@ reguły bezpieczeństwa: `docs/allegro-api-samples/README.md`.
   zachowaniem struktury i typów. Jeśli pełna redakcja niemożliwa → plik NIE do
   repo (`.gitignore`, lokalnie).
 - **Zależności:** FAZA 2.
+
+---
+
+## 🟦 FAZA 3A — Środowisko testowe: snapshot produkcji → sandbox — ROZPISANA
+
+Cel: dać sobie **realistyczne środowisko testowe**. Sandbox Allegro startuje pusty
+i nie ma żadnego oficjalnego sposobu przeniesienia do niego ofert z produkcji,
+więc budujemy własny, **powtarzalny** pipeline: pobierz snapshot ofert z produkcji
+(slot `production/read`) → odtwórz je jako oferty w sandboxie (slot
+`sandbox/write`). Dzięki temu dalsze fazy (mapping, import, sync, przeróbka AI)
+testujemy na sandboxie z realistycznym asortymentem, zamiast eksperymentować na
+żywym koncie sprzedawcy.
+
+**Numeracja:** faza wchodzi jako **3A**, a nie „4", żeby nie przenumerowywać FAZ
+4–8 — ich numery są już cytowane w commitach, PR-ach i w tym dokumencie. Kolejność
+wykonania i tak wynika z zależności, nie z numeru.
+
+Źródło (czytane, nie z pamięci):
+`https://developer.allegro.pl/tutorials/informacje-podstawowe-b21569boAI1`
+
+### Fakty ze źródła (podstawa decyzji)
+- Sandbox jest **odrębny względem produkcji**: API
+  `https://api.allegro.pl.allegrosandbox.pl/`, OAuth
+  `https://allegro.pl.allegrosandbox.pl/auth/oauth/`, interfejs web
+  `https://allegro.pl.allegrosandbox.pl`, rejestracja aplikacji
+  `https://apps.developer.allegro.pl.allegrosandbox.pl/`. Konto sandboxowe zakłada
+  się osobno („Załóż konto"), podając **rzeczywiste dane adresowe**.
+- **Nie istnieje mechanizm kopiowania danych produkcja → sandbox** — to jest
+  właśnie powód istnienia tej fazy.
+- **Raz na kwartał Allegro usuwa WSZYSTKIE oferty w sandboxie** (przy aktualizacji
+  listy kategorii i parametrów).
+- **Zdjęcia wgrane do sandboxa znikają po 7 dniach.**
+- Limity jak na produkcji (9000 żądań/min) — dla nas nie są wąskim gardłem.
+- 2FA w sandboxie: SMS nie przychodzi, kod testowy `123456`.
+
+### Decyzje globalne fazy
+- **D-3A.G1 (powtarzalność, nie jednorazowość) [USTALONE]:** kwartalne czyszczenie
+  sandboxa czyni zasiew czynnością **cykliczną**, nie akcją „raz a dobrze".
+  Snapshot produkcji musi być trwałym artefaktem po NASZEJ stronie, a odtworzenie
+  sandboxa — powtarzalną komendą, **idempotentną** (ponowne uruchomienie odtwarza
+  stan, nie duplikuje ofert).
+- **D-3A.G2 (kierunek jednostronny) [USTALONE]:** przepływ zawsze
+  produkcja → snapshot → sandbox. **Nigdy** sandbox → produkcja. To bezpośrednie
+  zastosowanie bezpiecznika D-2.G7: tworzenie i nadpisywanie treści ofert jest
+  dozwolone wyłącznie wobec sandboxa.
+- **D-3A.G3 (snapshot poza repo) [USTALONE]:** snapshot to **pełne,
+  niezredagowane** dane produkcyjne — NIE trafia do gita (`.gitignore`), żyje
+  lokalnie. Tym różni się od FAZY 3, której produktem są **zredagowane, ręcznie
+  dobrane** próbki w repo. Dwie różne rzeczy, dwa różne reżimy bezpieczeństwa.
+- **D-3A.G4 (zdjęcia) [OTWARTE — rozstrzygnąć przy realizacji]:** skoro sandbox
+  kasuje obrazy po 7 dniach, trzeba zdecydować, czy zasiew w ogóle je przenosi
+  (akceptując znikanie), czy świadomie je pomija. Do decyzji na realnych danych.
+- **D-3A.G5 (kategorie i parametry) [OTWARTE — rozstrzygnąć przy realizacji]:**
+  identyfikatory kategorii i parametrów w sandboxie **nie muszą** odpowiadać
+  produkcyjnym (sandbox odświeża ich listę kwartalnie). Zasiew może więc wymagać
+  mapowania kategorii prod→sandbox. Skala problemu ujawni się dopiero na realnych
+  zwrotkach z FAZY 3.
+
+**Nie mylić z warstwą surową (FAZA 5/6):** snapshot z tej fazy to **pliki** obejmujące
+całe konto, służące do odtworzenia sandboxa. Warstwa surowa to **meta na konkretnym
+produkcie Woo**, służąca AI i podglądowi w adminie. Wspólne źródło, różny cykl życia
+i różni konsumenci.
+
+### P-3A.1 — Snapshot ofert z produkcji
+- **Repo:** qutlet-allegro (slice `SandboxSeed/`)
+- **Zakres:** komenda WP-CLI pobierająca oferty z **produkcji** slotem
+  `production/read` i zapisująca je jako trwały snapshot — surowy JSON
+  **verbatim**, bez transformacji (transformacja to FAZA 4/6; tu chodzi o wierną
+  kopię źródła). Paginacja, wznawialność przerwanego pobrania, log co pobrano.
+  Snapshot poza repo (D-3A.G3).
+- **Zależności:** FAZA 2 (P-2.1b + P-2.2 — slot `production/read`), FAZA 3
+  (znajomość realnego kształtu danych).
+
+### P-3A.2 — Zasiew sandboxa ze snapshotu
+- **Repo:** qutlet-allegro (slice `SandboxSeed/`)
+- **Zakres:** komenda WP-CLI tworząca w **sandboxie** oferty na podstawie snapshotu
+  (slot `sandbox/write`), **idempotentnie** (D-3A.G1) — ponowne uruchomienie po
+  kwartalnym czyszczeniu odtwarza stan, a nie dubluje. Obsługa mapowania
+  kategorii/parametrów (D-3A.G5) i rozstrzygnięcie sprawy zdjęć (D-3A.G4). Twarda
+  odmowa wykonania, gdy celem NIE jest sandbox (D-2.G7 / D-3A.G2).
+- **Zależności:** P-3A.1, FAZA 2 (slot `sandbox/write`).
+- **Handoff (użytkownik):** założenie konta w sandboxie Allegro oraz rejestracja
+  aplikacji sandboxowych (`sandbox/read`, `sandbox/write`) wg D-2.G3 i D-2.G6.
 
 ---
 
