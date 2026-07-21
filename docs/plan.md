@@ -610,6 +610,9 @@ to warstwa surowa/przerobiona opisów i specyfikacji.
   ich tutaj (D-5.G2).
 
 ### P-5.3 — Podgląd warstwy surowej w adminie (read-only)
+- **Numeracja:** dopisany po P-5.2, ale w dokumencie stoi tuż po P-5.1 celowo —
+  dzieli z nim slice i temat (warstwa surowa). P-5.2 (pola dyskretne) to osobny
+  wątek. Numery czytamy jako identyfikatory, nie jako kolejność wykonania.
 - **Repo:** qutlet-core (slice wspólny z P-5.1)
 - **Zakres:** powierzchnia w panelu przy produkcie pokazująca warstwę surową
   **wyłącznie do odczytu** (opis prozą; wgląd w pełny JSON w razie potrzeby) —
@@ -667,14 +670,16 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
   utworzenie/aktualizacja produktów Woo wg mappingu (FAZA 4), wypełnienie warstwy
   surowej (FAZA 5), zastosowanie mapowania kategorii (P-4.2). Idempotencja (ponowny
   import nie duplikuje). Komenda WP-CLI (np. `wp qutlet-allegro import-offers`).
-- **Zależności:** FAZA 2 (token read), FAZA 4, FAZA 5 (oraz bootstrap P-0.3).
+- **Zależności:** FAZA 2 (slot `read`; środowisko wg D-6.G5), FAZA 4, FAZA 5
+  (oraz bootstrap P-0.3).
 
 ### P-6.2 — Synchronizacja stanów magazynowych (cron co ~2 min)
 - **Repo:** qutlet-allegro
 - **Zakres:** komenda WP-CLI `wp qutlet-allegro sync-stock` odpalana systemowym
-  cronem; pull stanów Allegro→Woo i/lub push Woo→Allegro (`PATCH`, token write);
+  cronem; pull stanów Allegro→Woo i/lub push Woo→Allegro (`PATCH`, slot `write`);
   lock przeciw nakładaniu, obsługa rate-limitów (przyrost/backoff). Realizuje D-6.G3.
-- **Zależności:** FAZA 2 (token read + write), P-6.1.
+  Na produkcji push ogranicza się do stanu magazynowego (bezpiecznik D-2.G7).
+- **Zależności:** FAZA 2 (sloty `read` + `write`; środowisko wg D-6.G5), P-6.1.
 - **Handoff:** konfiguracja systemowego crona na Local.
 
 ### P-6.3 — Obsługa zamówień Allegro → Woo
@@ -682,7 +687,7 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
 - **Zakres:** polling `GET /order/events` (kursor), pobranie
   `GET /order/checkout-forms/{checkoutFormId}`, odwzorowanie na zamówienia Woo wg
   mappingu (P-4.3). Traktowanie PII zgodnie z zasadami bezpieczeństwa.
-- **Zależności:** FAZA 2 (token read), P-4.3, P-6.1.
+- **Zależności:** FAZA 2 (slot `read`; środowisko wg D-6.G5), P-4.3, P-6.1.
 
 ---
 
@@ -900,8 +905,8 @@ punkt, nie w PR-ze motywu (granica artefaktów).
 - `GET /sale/categories` — próbka **P-3.2**, mapowanie **P-4.2**, import **P-6.1**.
 - `GET /order/events` (polling kursorowy), `GET /order/checkout-forms/{checkoutFormId}`
   — próbka **P-3.3**, obsługa zamówień **P-6.3**.
-- `PATCH /sale/product-offers/{offerId}` — push stanu magazynowego (token write),
-  **P-6.2** (NIE samplowany w FAZIE 3).
+- `PATCH /sale/product-offers/{offerId}` — push stanu magazynowego (slot `write`),
+  **P-6.2** (NIE samplowany w FAZIE 3; na produkcji tylko stan — bezpiecznik D-2.G7).
 
 ### Kandydaci do dalszych faz (NIE zatwierdzone)
 Większość dawnych kandydatów jest już rozpisana (import/sync → FAZA 6, przeróbka
