@@ -573,14 +573,50 @@ to warstwa surowa/przerobiona opisów i specyfikacji.
   mappingu — nic z FAZY 4 nie ma prawa „wisieć w próżni".
 - **D-5.G2 [OTWARTE]:** dokładny zestaw pól — z FAZY 4; literały do
   `docs/kontrakt-danych.md`.
-- **D-5.G3 [OTWARTE]:** mechanizm ukrycia warstwy surowej przed użytkownikiem
-  (widoczność tylko w adminie) — do doprecyzowania.
+- **D-5.G3 (ukrycie warstwy surowej) [ROZSTRZYGNIĘTE — sesja 2026-07-21]:** warstwa
+  surowa nie jest renderowana na froncie w ogóle (motyw czyta wyłącznie warstwę
+  przerobioną, D-8.G1). W adminie jest widoczna, ale **tylko do odczytu** — nie ma
+  ścieżki edycji, bo źródłem prawdy jest Allegro i sync ją nadpisuje. Powierzchnię
+  podglądu dostarcza **core** (P-5.3), a `qutlet-ai` osobno zestawienie
+  porównawcze surowe↔wygenerowane na swoim ekranie (P-7.3).
+- **D-5.G4 (kształt warstwy surowej: JSON + pola parsowane) [USTALONE — sesja
+  2026-07-21]:** warstwę surową trzymamy **dwuwarstwowo**:
+  1. **pełna oferta Allegro jako JSON, verbatim** — w zwykłym `post meta`
+     (`register_post_meta` w core), **nie w ACF**. ACF jest narzędziem do
+     *edycji*, a tego pola nikt nie edytuje — dokładanie tu UI ACF byłoby kosztem
+     bez korzyści. Zapis verbatim jest **warunkiem koniecznym** dla zasiewu
+     sandboxa (FAZA 3A), który musi wysłać dokładnie ten sam kształt, oraz
+     najlepszym kontekstem dla AI (FAZA 7).
+  2. **pola parsowane** wyciągnięte z tego JSON-a — opis prozą i specyfikacja
+     (etykieta→wartość) — wygodne do wyświetlania i zapytań bez parsowania
+     blobu przy każdym odczycie.
+  **Koszt świadomie przyjęty:** to duplikacja danych, więc oba poziomy MUSZĄ być
+  odświeżane w tej samej operacji sync z jednego źródła (D-6.G4) — pole parsowane
+  nigdy nie może przeżyć JSON-a, z którego powstało. **Odrzucona alternatywa:**
+  same pola parsowane (pierwotne P-5.1) — traci dane potrzebne do zasiewu sandboxa
+  i zubaża kontekst AI; **odrzucona alternatywa:** sam JSON bez pól parsowanych —
+  wymusza parsowanie przy każdym renderze i zapytaniu.
+- **Konsumenci warstwy surowej (trzej, wszyscy tylko do odczytu):** `qutlet-ai`
+  (przeróbka opisów, FAZA 7), podgląd w adminie (P-5.3), zasiew sandboxa (FAZA 3A).
 
 ### P-5.1 — Warstwa surowa/przerobiona (opis + specyfikacja)
-- **Zakres:** pola **surowe** (opis prozą + specyfikacja etykieta→wartość; źródło
-  = Allegro, nadpisywane przy sync, widoczne tylko dla admina) oraz **przerobione**
-  (user-facing, edytowane ręcznie, NIE nadpisywane).
+- **Zakres:** rejestracja (wg D-5.G4) pola **surowego JSON** z pełną ofertą Allegro
+  (`post meta`, verbatim, nieedytowalne) oraz wyprowadzonych z niego **pól surowych**
+  (opis prozą + specyfikacja etykieta→wartość; źródło = Allegro, nadpisywane przy
+  sync, niewidoczne na froncie), a także pól **przerobionych** (user-facing,
+  edytowane ręcznie, NIE nadpisywane przez sync).
 - **Zależności:** FAZA 4 (P-4.1).
+- **Uwaga:** literały (nazwy meta) ustala `docs/kontrakt-danych.md` — nie zgadujemy
+  ich tutaj (D-5.G2).
+
+### P-5.3 — Podgląd warstwy surowej w adminie (read-only)
+- **Repo:** qutlet-core (slice wspólny z P-5.1)
+- **Zakres:** powierzchnia w panelu przy produkcie pokazująca warstwę surową
+  **wyłącznie do odczytu** (opis prozą; wgląd w pełny JSON w razie potrzeby) —
+  żeby dało się porównać, co przyszło z Allegro, z tym, co pokazujemy klientowi.
+  Zero ścieżki edycji (D-5.G3). Nie zależy od obecności `qutlet-ai` — podgląd
+  danych to sprawa właściciela pola, czyli core.
+- **Zależności:** P-5.1.
 
 ### P-5.2 — Pozostałe pola nie-Woo z mappingu
 - **Zakres:** rejestracja dyskretnych pól z Allegro, które mapping (FAZA 4)
@@ -611,8 +647,19 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
   `PATCH` vs pull Allegro→Woo) dla towaru jednosztukowego — kto jest źródłem prawdy,
   żeby nie było ping-ponga/nadsprzedaży. Prawdopodobnie zdarzeniowo (sprzedaż na
   kanale zdejmuje z drugiego) + okresowa rekoncyliacja. Do rozstrzygnięcia.
-- **D-6.G4 (spójność z modelem) [USTALONE]:** import używa mappingu (FAZA 4) i pól
-  z FAZY 5; wypełnia warstwę surową, NIE nadpisując warstwy przerobionej.
+- **D-6.G4 (spójność z modelem) [USTALONE — doprecyzowane]:** import używa mappingu
+  (FAZA 4) i pól z FAZY 5; wypełnia warstwę surową, NIE nadpisując warstwy
+  przerobionej. **Doprecyzowanie (D-5.G4):** warstwa surowa ma dwa poziomy —
+  verbatim JSON i pola parsowane — i oba muszą być zapisywane w **tej samej
+  operacji, z tej samej odpowiedzi API**. Pole parsowane nigdy nie może przeżyć
+  JSON-a, z którego powstało, bo wtedy podgląd i AI patrzą na inne dane niż zasiew
+  sandboxa.
+- **D-6.G5 (środowisko importu) [USTALONE]:** import i sync są parametryzowane
+  środowiskiem (D-2.G2), nie zaszyte na sztywno: w pracy deweloperskiej ciągniemy
+  z **sandboxa** zasianego w FAZIE 3A, na produkcji z **produkcji**. Zapis wstecz
+  podlega bezwzględnie bezpiecznikowi **D-2.G7** — na produkcji jedyną dozwoloną
+  operacją zapisu jest aktualizacja stanu magazynowego; treści ofert tam nie
+  tworzymy ani nie nadpisujemy.
 
 ### P-6.1 — Import ofert → produkty Woo
 - **Repo:** qutlet-allegro (czyta/pisze pola core z FAZY 5)
@@ -688,9 +735,14 @@ AI Client** zamiast budować własną abstrakcję dostawcy.
   dublowałby platformę.
 - **D-7.G4 (prompt) [USTALONE]:** prompt globalny (ustawienie w `qutlet-ai`) +
   opcjonalny override per-produkt.
-- **D-7.G5 (kierunek danych) [USTALONE]:** wejście = warstwa surowa (FAZA 5),
-  wyjście = warstwa przerobiona (FAZA 5); dotyczy prozy i specyfikacji
-  (etykieta→wartość). AI nie dotyka warstwy surowej.
+- **D-7.G5 (kierunek danych) [USTALONE — doprecyzowane]:** wejście = warstwa surowa
+  (FAZA 5), wyjście = warstwa przerobiona (FAZA 5); dotyczy prozy i specyfikacji
+  (etykieta→wartość). AI nie dotyka warstwy surowej. **Doprecyzowanie (D-5.G4):**
+  wejściem jest surowy JSON **jednego produktu** — pełna oferta daje modelowi
+  komplet parametrów tej kategorii (a te są między kategoriami rozłączne, D-3.G3).
+  **Nigdy nie podajemy modelowi całego katalogu** — to kontekst o rzędy wielkości
+  za szeroki, kosztowny i rozcieńczający sygnał, a przeróbka i tak jest operacją
+  per produkt.
 - **D-7.G6 (granica pól) [USTALONE]:** rejestracja pól ACF/CPT to wyłącznie
   `qutlet-core` (konstytucja) → pole „prompt per-produkt" rejestruje **core**
   (slice `AiRewrite/`), logika AI mieszka w **`qutlet-ai`** (slice `AiRewrite/`).
@@ -745,10 +797,14 @@ nagłówku planu.)*
 - **Repo:** qutlet-ai (czyta/pisze pola z `qutlet-core` z FAZY 5)
 - **Zakres:** orkiestracja surowe→AI→przerobione wołająca **core AI Client**
   (`wp_ai_client_prompt()` z promptem z P-7.2), akcja w adminie
-  (generuj/podgląd/zaakceptuj), obsługa błędów i limitów (`WP_Error`). Warstwa
-  przerobiona pozostaje ręcznie edytowalna po wygenerowaniu (nie nadpisujemy jej
-  sync-iem). Rozważyć `as_json_response($schema)` dla specyfikacji
-  (etykieta→wartość) jako ustrukturyzowanego wyjścia.
+  (generuj/podgląd/zaakceptuj), obsługa błędów i limitów (`WP_Error`). Wejściem
+  jest surowy JSON pojedynczego produktu (D-7.G5/D-5.G4). Warstwa przerobiona
+  pozostaje ręcznie edytowalna po wygenerowaniu (nie nadpisujemy jej sync-iem).
+  Rozważyć `as_json_response($schema)` dla specyfikacji (etykieta→wartość) jako
+  ustrukturyzowanego wyjścia. Ekran generacji pokazuje **zestawienie porównawcze
+  surowe ↔ wygenerowane** obok siebie, żeby dało się ocenić, co model faktycznie
+  zrobił ze źródłem (podział z D-5.G3: gołe pole surowe pokazuje core w P-5.3, a
+  to zestawienie — `qutlet-ai` na swoim ekranie).
 - **D-7.3.1 (model orkiestracji) [USTALONE]:** na teraz orkiestracja = **zwykła
   akcja admina** (przycisk na produkcie), NIE Ability. Modelowanie jako zdolność w
   core **Abilities API** można dołożyć później osobnym punktem, jeśli zajdzie
