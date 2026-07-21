@@ -259,8 +259,19 @@ autoryzacja — bez pobierania danych merytorycznych.
   i `refresh_token`); **magazyn tokenów** przechowujący OSOBNO parę read i write
   (access + refresh + wygaśnięcia), z bezpiecznym zapisem i obsługą rotacji.
 - **Zależności:** FAZA 0 → P-0.3 (bootstrap allegro).
-- **D-2.1.1 [OTWARTE]:** sposób przechowywania tokenów (opcja WP vs szyfrowanie) —
-  doprecyzować w realizacji.
+- **D-2.1.1 [ROZSTRZYGNIĘTE — realizacja P-2.1]:** tokeny przechowywane
+  **szyfrowane** (libsodium `secretbox`, XSalsa20-Poly1305), klucz wyprowadzany
+  (BLAKE2b) z dedykowanej stałej `QUTLET_ALLEGRO_TOKEN_KEY` w `wp-config.php`;
+  zaszyfrowany blob w opcji WP (`autoload=no`), OSOBNO para read i write. Bez
+  fallbacku do zapisu jawnego — przy braku sodium/klucza `TokenStore::save()`
+  zwraca `false` (graceful, nie fatal). Spójne z etosem „zero sekretów w DB"
+  (D-2.G3 / D-7.G2). **Odrzucona alternatywa:** zwykła opcja WP w cleartext —
+  prostsza, ale wyciek bazy = pełny dostęp do konta Allegro do wygaśnięcia/rotacji.
+- **Nazwy stałych sekretów aplikacji** (per środowisko, D-2.G3 — decyzja
+  realizacyjna P-2.1): produkcja `QUTLET_ALLEGRO_CLIENT_ID` /
+  `QUTLET_ALLEGRO_CLIENT_SECRET`; sandbox `QUTLET_ALLEGRO_SANDBOX_CLIENT_ID` /
+  `QUTLET_ALLEGRO_SANDBOX_CLIENT_SECRET`. Klucz szyfrujący tokeny:
+  `QUTLET_ALLEGRO_TOKEN_KEY` (dowolnie długi, wysokoentropijny string).
 
 ### P-2.2 — Flow „Połącz z Allegro" (admin) + callback
 - **Repo:** qutlet-allegro (slice `Auth/`)
