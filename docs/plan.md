@@ -286,6 +286,19 @@ wersje pierwotne są jawnie oznaczone jako odrzucone.
   redirect URI spełniony. Pozostaje czynność jednorazowa **poza kodem**: zaufanie
   certyfikatowi Local w przeglądarce (Local → SSL → Trust), inaczej przeglądarka
   odrzuci powrót z Allegro. Handoff niepotrzebny.
+  **Uzupełnienie (sesja P-2.2, 2026-07-21):** „Local serwuje https" NIE wystarcza —
+  opcje WordPressa `home`/`siteurl` siedziały na `http://loc.qutlet.pl`, a to z nich
+  `rest_url()` wyprowadza redirect URI callbacku. Efekt: budowany adres wychodził
+  `http://…`, więc NIE pasował do zarejestrowanego w Allegro `https://…` (Allegro
+  wymaga dokładnego dopasowania + HTTPS) → round-trip odbiłby się na
+  `invalid redirect_uri`; dodatkowo mieszanka http/https grozi niedostarczeniem
+  ciasteczka `logged_in` do callbacku (od którego zależy sprawdzenie uprawnień).
+  Naprawa: `wp option update home/siteurl → https://loc.qutlet.pl` (zmiana
+  środowiska/bazy przez MCP `wp_cli`, NIE kodu — `rest_url()` jako jedno źródło
+  zadziałało poprawnie, gdy tylko WP dostał właściwy schemat; trasa REST
+  potwierdzona runtime pod `https://loc.qutlet.pl/wp-json/qutlet-allegro/v1/oauth/callback`).
+  Na produkcji `www.qutlet.pl` jest z natury https, więc problem dotyczy wyłącznie
+  lokalnego Locala.
 - **D-2.G6 (scope'y) [ROZSTRZYGNIĘTE — z panelu rejestracji, 2026-07-21]:** zakresy
   potwierdzone przez użytkownika na realnych aplikacjach (literały VERBATIM):
   - **rola `read`:** `allegro:api:sale:offers:read`, `allegro:api:orders:read`
