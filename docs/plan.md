@@ -329,7 +329,7 @@ wersje pierwotne są jawnie oznaczone jako odrzucone.
   `QUTLET_ALLEGRO_TOKEN_KEY` (dowolnie długi, wysokoentropijny string) zostaje
   bez zmian.
 
-### 🟡 P-2.1b — Rozszerzenie fundamentu na (środowisko × rola)
+### 🟢 P-2.1b — Rozszerzenie fundamentu na (środowisko × rola)
 - **Repo:** qutlet-allegro (slice `Auth/`)
 - **Zakres:** przebudowa fundamentu z P-2.1 pod zrewidowane D-2.G1/G2/G3 —
   środowisko przestaje być wykrywane globalnie i staje się **parametrem**:
