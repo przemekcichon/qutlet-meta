@@ -1,0 +1,198 @@
+[
+    {
+        "id": "18780385602",
+        "stock": {
+            "available": 1
+        },
+        "sellingMode": {
+            "price": {
+                "amount": "179.00",
+                "currency": "PLN"
+            }
+        },
+        "additionalMarketplaces": {
+            "allegro-business-pl": {
+                "sellingMode": {
+                    "price": {
+                        "amount": "179.00",
+                        "currency": "PLN"
+                    }
+                }
+            },
+            "allegro-sk": {
+                "sellingMode": null
+            },
+            "allegro-cz": {
+                "sellingMode": null
+            },
+            "allegro-hu": {
+                "sellingMode": null
+            },
+            "allegro-business-cz": {
+                "sellingMode": null
+            }
+        }
+    },
+    {
+        "id": "18773225304",
+        "stock": {
+            "available": 1
+        },
+        "sellingMode": {
+            "price": {
+                "amount": "60.00",
+                "currency": "PLN"
+            }
+        },
+        "additionalMarketplaces": {
+            "allegro-business-pl": {
+                "sellingMode": {
+                    "price": {
+                        "amount": "60.00",
+                        "currency": "PLN"
+                    }
+                }
+            },
+            "allegro-sk": {
+                "sellingMode": null
+            },
+            "allegro-cz": {
+                "sellingMode": null
+            },
+            "allegro-hu": {
+                "sellingMode": null
+            },
+            "allegro-business-cz": {
+                "sellingMode": null
+            }
+        }
+    },
+    {
+        "id": "18772854905",
+        "stock": {
+            "available": 1
+        },
+        "sellingMode": {
+            "price": {
+                "amount": "99.00",
+                "currency": "PLN"
+            }
+        },
+        "additionalMarketplaces": {
+            "allegro-business-pl": {
+                "sellingMode": {
+                    "price": {
+                        "amount": "99.00",
+                        "currency": "PLN"
+                    }
+                }
+            },
+            "allegro-sk": {
+                "sellingMode": null
+            },
+            "allegro-cz": {
+                "sellingMode": null
+            },
+            "allegro-hu": {
+                "sellingMode": null
+            },
+            "allegro-business-cz": {
+                "sellingMode": null
+            }
+        }
+    },
+    {
+        "id": "18771453310",
+        "stock": {
+            "available": 0
+        },
+        "sellingMode": {
+            "price": null
+        },
+        "additionalMarketplaces": {
+            "allegro-business-pl": {
+                "sellingMode": null
+            },
+            "allegro-sk": {
+                "sellingMode": null
+            },
+            "allegro-cz": {
+                "sellingMode": null
+            },
+            "allegro-hu": {
+                "sellingMode": null
+            },
+            "allegro-business-cz": {
+                "sellingMode": null
+            }
+        }
+    },
+    {
+        "id": "18771444609",
+        "stock": {
+            "available": 1
+        },
+        "sellingMode": {
+            "price": {
+                "amount": "50.00",
+                "currency": "PLN"
+            }
+        },
+        "additionalMarketplaces": {
+            "allegro-business-pl": {
+                "sellingMode": {
+                    "price": {
+                        "amount": "50.00",
+                        "currency": "PLN"
+                    }
+                }
+            },
+            "allegro-sk": {
+                "sellingMode": null
+            },
+            "allegro-cz": {
+                "sellingMode": null
+            },
+            "allegro-hu": {
+                "sellingMode": null
+            },
+            "allegro-business-cz": {
+                "sellingMode": null
+            }
+        }
+    },
+    {
+        "id": "18771424113",
+        "stock": {
+            "available": 1
+        },
+        "sellingMode": {
+            "price": {
+                "amount": "35.00",
+                "currency": "PLN"
+            }
+        },
+        "additionalMarketplaces": {
+            "allegro-business-pl": {
+                "sellingMode": {
+                    "price": {
+                        "amount": "35.00",
+                        "currency": "PLN"
+                    }
+                }
+            },
+            "allegro-sk": {
+                "sellingMode": null
+            },
+            "allegro-cz": {
+                "sellingMode": null
+            },
+            "allegro-hu": {
+                "sellingMode": null
+            },
+            "allegro-business-cz": {
+                "sellingMode": null
+            }
+        }
+    }
+]

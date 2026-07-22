@@ -1,0 +1,651 @@
+{
+    "offers": [
+        {
+            "id": "18780385602",
+            "name": "Słuchawki bezprzewodowe dokanałowe Soundcore Life Dot 3i z ANC czarne 36 h",
+            "category": {
+                "id": "85166"
+            },
+            "primaryImage": {
+                "url": "https://a.allegroimg.com/original/29783a/86ad524342c4a7cb9367a2298704"
+            },
+            "sellingMode": {
+                "format": "BUY_NOW",
+                "price": {
+                    "amount": "179.0",
+                    "currency": "PLN"
+                },
+                "minimalPrice": null,
+                "startingPrice": null,
+                "priceAutomation": null
+            },
+            "saleInfo": {
+                "currentPrice": null,
+                "biddersCount": 0
+            },
+            "stats": {
+                "watchersCount": 0,
+                "visitsCount": 0
+            },
+            "stock": {
+                "available": 1,
+                "sold": 0
+            },
+            "publication": {
+                "status": "ACTIVE",
+                "startingAt": null,
+                "startedAt": "2026-07-21T11:14:09.000Z",
+                "endingAt": null,
+                "endedAt": null,
+                "marketplaces": {
+                    "base": {
+                        "id": "allegro-pl"
+                    },
+                    "additional": [
+                        {
+                            "id": "allegro-business-pl"
+                        }
+                    ]
+                }
+            },
+            "afterSalesServices": {
+                "warranty": {
+                    "id": "48e03833-a89b-475a-9fa7-ce8118b7e637"
+                },
+                "returnPolicy": {
+                    "id": "2fae3e22-1ad2-41bd-b878-60070e5e2ee6"
+                },
+                "impliedWarranty": {
+                    "id": "4e8f1e2c-3f97-42c9-ad0d-4b9204320ee1"
+                }
+            },
+            "additionalServices": null,
+            "external": null,
+            "delivery": {
+                "shippingRates": {
+                    "id": "6dbd5dba-d908-4559-a770-55eb5b4cabfb"
+                }
+            },
+            "b2b": {
+                "buyableOnlyByBusiness": false
+            },
+            "fundraisingCampaign": null,
+            "isFulfillment": false,
+            "additionalMarketplaces": {
+                "allegro-business-pl": {
+                    "publication": {
+                        "state": "REFUSED"
+                    },
+                    "sellingMode": {
+                        "price": {
+                            "amount": "179.0",
+                            "currency": "PLN"
+                        },
+                        "priceAutomation": null
+                    },
+                    "stats": {
+                        "watchersCount": 0,
+                        "visitsCount": 0
+                    },
+                    "stock": {
+                        "sold": 0
+                    }
+                },
+                "allegro-cz": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                },
+                "allegro-business-cz": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                },
+                "allegro-sk": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                },
+                "allegro-hu": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                }
+            }
+        },
+        {
+            "id": "18773225304",
+            "name": "Słuchawki dokanałowe MoonDrop CHU II DSP same słuchawki bez przewodu",
+            "category": {
+                "id": "257109"
+            },
+            "primaryImage": {
+                "url": "https://a.allegroimg.com/original/11cb27/0d2959d54526bbc330b886e1d87a"
+            },
+            "sellingMode": {
+                "format": "BUY_NOW",
+                "price": {
+                    "amount": "60.0",
+                    "currency": "PLN"
+                },
+                "minimalPrice": null,
+                "startingPrice": null,
+                "priceAutomation": null
+            },
+            "saleInfo": {
+                "currentPrice": null,
+                "biddersCount": 0
+            },
+            "stats": {
+                "watchersCount": 0,
+                "visitsCount": 2
+            },
+            "stock": {
+                "available": 1,
+                "sold": 0
+            },
+            "publication": {
+                "status": "ACTIVE",
+                "startingAt": null,
+                "startedAt": "2026-07-18T14:01:57.000Z",
+                "endingAt": null,
+                "endedAt": null,
+                "marketplaces": {
+                    "base": {
+                        "id": "allegro-pl"
+                    },
+                    "additional": [
+                        {
+                            "id": "allegro-business-pl"
+                        }
+                    ]
+                }
+            },
+            "afterSalesServices": {
+                "warranty": {
+                    "id": "87fe5998-4f67-454c-bd06-2b38167803ec"
+                },
+                "returnPolicy": {
+                    "id": "2fae3e22-1ad2-41bd-b878-60070e5e2ee6"
+                },
+                "impliedWarranty": {
+                    "id": "4e8f1e2c-3f97-42c9-ad0d-4b9204320ee1"
+                }
+            },
+            "additionalServices": null,
+            "external": null,
+            "delivery": {
+                "shippingRates": {
+                    "id": "6dbd5dba-d908-4559-a770-55eb5b4cabfb"
+                }
+            },
+            "b2b": {
+                "buyableOnlyByBusiness": false
+            },
+            "fundraisingCampaign": null,
+            "isFulfillment": false,
+            "additionalMarketplaces": {
+                "allegro-business-pl": {
+                    "publication": {
+                        "state": "REFUSED"
+                    },
+                    "sellingMode": {
+                        "price": {
+                            "amount": "60.0",
+                            "currency": "PLN"
+                        },
+                        "priceAutomation": null
+                    },
+                    "stats": {
+                        "watchersCount": 0,
+                        "visitsCount": 0
+                    },
+                    "stock": {
+                        "sold": 0
+                    }
+                },
+                "allegro-cz": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                },
+                "allegro-business-cz": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                },
+                "allegro-sk": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                },
+                "allegro-hu": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                }
+            }
+        },
+        {
+            "id": "18772854905",
+            "name": "Obudowa do komputera Fury Shobo SH4F RGB Tempered - brak bocznej szyby",
+            "category": {
+                "id": "259436"
+            },
+            "primaryImage": {
+                "url": "https://a.allegroimg.com/original/2918c5/87c7987a48b1961aeb422f900add"
+            },
+            "sellingMode": {
+                "format": "BUY_NOW",
+                "price": {
+                    "amount": "99.0",
+                    "currency": "PLN"
+                },
+                "minimalPrice": null,
+                "startingPrice": null,
+                "priceAutomation": null
+            },
+            "saleInfo": {
+                "currentPrice": null,
+                "biddersCount": 0
+            },
+            "stats": {
+                "watchersCount": 0,
+                "visitsCount": 13
+            },
+            "stock": {
+                "available": 1,
+                "sold": 0
+            },
+            "publication": {
+                "status": "ACTIVE",
+                "startingAt": null,
+                "startedAt": "2026-07-18T10:57:11.000Z",
+                "endingAt": null,
+                "endedAt": null,
+                "marketplaces": {
+                    "base": {
+                        "id": "allegro-pl"
+                    },
+                    "additional": [
+                        {
+                            "id": "allegro-business-pl"
+                        }
+                    ]
+                }
+            },
+            "afterSalesServices": {
+                "warranty": {
+                    "id": "87fe5998-4f67-454c-bd06-2b38167803ec"
+                },
+                "returnPolicy": {
+                    "id": "2fae3e22-1ad2-41bd-b878-60070e5e2ee6"
+                },
+                "impliedWarranty": {
+                    "id": "4e8f1e2c-3f97-42c9-ad0d-4b9204320ee1"
+                }
+            },
+            "additionalServices": null,
+            "external": null,
+            "delivery": {
+                "shippingRates": {
+                    "id": "30692b5f-a623-4326-99ec-7fd535610781"
+                }
+            },
+            "b2b": {
+                "buyableOnlyByBusiness": false
+            },
+            "fundraisingCampaign": null,
+            "isFulfillment": false,
+            "additionalMarketplaces": {
+                "allegro-business-pl": {
+                    "publication": {
+                        "state": "REFUSED"
+                    },
+                    "sellingMode": {
+                        "price": {
+                            "amount": "99.0",
+                            "currency": "PLN"
+                        },
+                        "priceAutomation": null
+                    },
+                    "stats": {
+                        "watchersCount": 0,
+                        "visitsCount": 0
+                    },
+                    "stock": {
+                        "sold": 0
+                    }
+                },
+                "allegro-cz": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                },
+                "allegro-business-cz": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                },
+                "allegro-sk": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                },
+                "allegro-hu": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                }
+            }
+        },
+        {
+            "id": "18771453310",
+            "name": "Toner Imagine BR-B023-E1 do Brother czarny (black)",
+            "category": {
+                "id": "260342"
+            },
+            "primaryImage": {
+                "url": "https://a.allegroimg.com/original/297d11/444a14c74c3185a1b5013e5a4902"
+            },
+            "sellingMode": null,
+            "saleInfo": {
+                "currentPrice": null,
+                "biddersCount": 0
+            },
+            "stats": {
+                "watchersCount": 0,
+                "visitsCount": 0
+            },
+            "stock": {
+                "available": 0,
+                "sold": 0
+            },
+            "publication": {
+                "status": "INACTIVE",
+                "startingAt": null,
+                "startedAt": null,
+                "endingAt": null,
+                "endedAt": null,
+                "marketplaces": {
+                    "base": {
+                        "id": "allegro-pl"
+                    },
+                    "additional": []
+                }
+            },
+            "afterSalesServices": {
+                "warranty": null,
+                "returnPolicy": {
+                    "id": "2fae3e22-1ad2-41bd-b878-60070e5e2ee6"
+                },
+                "impliedWarranty": null
+            },
+            "additionalServices": null,
+            "external": null,
+            "delivery": {
+                "shippingRates": null
+            },
+            "b2b": {
+                "buyableOnlyByBusiness": false
+            },
+            "fundraisingCampaign": null,
+            "isFulfillment": false,
+            "additionalMarketplaces": {
+                "allegro-business-pl": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                },
+                "allegro-cz": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                },
+                "allegro-business-cz": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                },
+                "allegro-sk": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                },
+                "allegro-hu": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                }
+            }
+        },
+        {
+            "id": "18771444609",
+            "name": "Toner Brother TN-2411 czarny",
+            "category": {
+                "id": "260341"
+            },
+            "primaryImage": {
+                "url": "https://a.allegroimg.com/original/29ecfe/761ea7dc412f9eb21dee840f9416"
+            },
+            "sellingMode": {
+                "format": "BUY_NOW",
+                "price": {
+                    "amount": "50.0",
+                    "currency": "PLN"
+                },
+                "minimalPrice": null,
+                "startingPrice": null,
+                "priceAutomation": null
+            },
+            "saleInfo": {
+                "currentPrice": null,
+                "biddersCount": 0
+            },
+            "stats": {
+                "watchersCount": 0,
+                "visitsCount": 1
+            },
+            "stock": {
+                "available": 1,
+                "sold": 0
+            },
+            "publication": {
+                "status": "ACTIVE",
+                "startingAt": null,
+                "startedAt": "2026-07-17T20:07:02.000Z",
+                "endingAt": null,
+                "endedAt": null,
+                "marketplaces": {
+                    "base": {
+                        "id": "allegro-pl"
+                    },
+                    "additional": [
+                        {
+                            "id": "allegro-business-pl"
+                        }
+                    ]
+                }
+            },
+            "afterSalesServices": {
+                "warranty": {
+                    "id": "3c24f369-901a-431c-8961-c03924343d6d"
+                },
+                "returnPolicy": {
+                    "id": "2fae3e22-1ad2-41bd-b878-60070e5e2ee6"
+                },
+                "impliedWarranty": {
+                    "id": "4e8f1e2c-3f97-42c9-ad0d-4b9204320ee1"
+                }
+            },
+            "additionalServices": null,
+            "external": null,
+            "delivery": {
+                "shippingRates": {
+                    "id": "6dbd5dba-d908-4559-a770-55eb5b4cabfb"
+                }
+            },
+            "b2b": {
+                "buyableOnlyByBusiness": false
+            },
+            "fundraisingCampaign": null,
+            "isFulfillment": false,
+            "additionalMarketplaces": {
+                "allegro-business-pl": {
+                    "publication": {
+                        "state": "REFUSED"
+                    },
+                    "sellingMode": {
+                        "price": {
+                            "amount": "50.0",
+                            "currency": "PLN"
+                        },
+                        "priceAutomation": null
+                    },
+                    "stats": {
+                        "watchersCount": 0,
+                        "visitsCount": 0
+                    },
+                    "stock": {
+                        "sold": 0
+                    }
+                },
+                "allegro-cz": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                },
+                "allegro-business-cz": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                },
+                "allegro-sk": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                },
+                "allegro-hu": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                }
+            }
+        },
+        {
+            "id": "18771424113",
+            "name": "Bęben Brother DR-B023 DCP-B7520DW HL-B2080DW MFC-B7715DW",
+            "category": {
+                "id": "260338"
+            },
+            "primaryImage": {
+                "url": "https://a.allegroimg.com/original/296b8e/3e7ce2644982abfe5194a7d58880"
+            },
+            "sellingMode": {
+                "format": "BUY_NOW",
+                "price": {
+                    "amount": "35.0",
+                    "currency": "PLN"
+                },
+                "minimalPrice": null,
+                "startingPrice": null,
+                "priceAutomation": null
+            },
+            "saleInfo": {
+                "currentPrice": null,
+                "biddersCount": 0
+            },
+            "stats": {
+                "watchersCount": 0,
+                "visitsCount": 0
+            },
+            "stock": {
+                "available": 1,
+                "sold": 0
+            },
+            "publication": {
+                "status": "ACTIVE",
+                "startingAt": null,
+                "startedAt": "2026-07-17T20:00:24.000Z",
+                "endingAt": null,
+                "endedAt": null,
+                "marketplaces": {
+                    "base": {
+                        "id": "allegro-pl"
+                    },
+                    "additional": [
+                        {
+                            "id": "allegro-business-pl"
+                        }
+                    ]
+                }
+            },
+            "afterSalesServices": {
+                "warranty": {
+                    "id": "3c24f369-901a-431c-8961-c03924343d6d"
+                },
+                "returnPolicy": {
+                    "id": "2fae3e22-1ad2-41bd-b878-60070e5e2ee6"
+                },
+                "impliedWarranty": {
+                    "id": "4e8f1e2c-3f97-42c9-ad0d-4b9204320ee1"
+                }
+            },
+            "additionalServices": null,
+            "external": null,
+            "delivery": {
+                "shippingRates": {
+                    "id": "6dbd5dba-d908-4559-a770-55eb5b4cabfb"
+                }
+            },
+            "b2b": {
+                "buyableOnlyByBusiness": false
+            },
+            "fundraisingCampaign": null,
+            "isFulfillment": false,
+            "additionalMarketplaces": {
+                "allegro-business-pl": {
+                    "publication": {
+                        "state": "REFUSED"
+                    },
+                    "sellingMode": {
+                        "price": {
+                            "amount": "35.0",
+                            "currency": "PLN"
+                        },
+                        "priceAutomation": null
+                    },
+                    "stats": {
+                        "watchersCount": 0,
+                        "visitsCount": 0
+                    },
+                    "stock": {
+                        "sold": 0
+                    }
+                },
+                "allegro-cz": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                },
+                "allegro-business-cz": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                },
+                "allegro-sk": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                },
+                "allegro-hu": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                }
+            }
+        }
+    ],
+    "count": 100,
+    "totalCount": 768
+}

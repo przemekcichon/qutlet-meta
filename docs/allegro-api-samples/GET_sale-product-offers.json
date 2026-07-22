@@ -1,0 +1,2493 @@
+[
+    {
+        "name": "Słuchawki bezprzewodowe dokanałowe Soundcore Life Dot 3i z ANC czarne 36 h",
+        "productSet": [
+            {
+                "product": {
+                    "id": "53cc0bd3-9fc0-4b31-98f3-87ebb39a4178",
+                    "publication": {
+                        "status": "LISTED"
+                    },
+                    "parameters": [
+                        {
+                            "id": "224017",
+                            "name": "Kod producenta",
+                            "values": [
+                                "A3982G12"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "248811",
+                            "name": "Marka",
+                            "values": [
+                                "Soundcore"
+                            ],
+                            "valuesIds": [
+                                "248811_1954352"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "250439",
+                            "name": "Model",
+                            "values": [
+                                "Dot 3i"
+                            ],
+                            "valuesIds": [
+                                "250439_1920365"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "203681",
+                            "name": "Rodzaj słuchawek",
+                            "values": [
+                                "dokanałowe"
+                            ],
+                            "valuesIds": [
+                                "203681_217753"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "129357",
+                            "name": "Kolor dominujący",
+                            "values": [
+                                "czarny"
+                            ],
+                            "valuesIds": [
+                                "129357_3"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "203713",
+                            "name": "Transmisja sygnału",
+                            "values": [
+                                "Bluetooth"
+                            ],
+                            "valuesIds": [
+                                "203713_217785"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "203689",
+                            "name": "Mikrofon",
+                            "values": [
+                                "tak"
+                            ],
+                            "valuesIds": [
+                                "203689_217777"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "203677",
+                            "name": "Regulacja głośności",
+                            "values": [
+                                "nie"
+                            ],
+                            "valuesIds": [
+                                "203677_217741"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "223333",
+                            "name": "Szerokość produktu",
+                            "values": [
+                                "18"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "223329",
+                            "name": "Wysokość produktu",
+                            "values": [
+                                "10.5"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "201321",
+                            "name": "Głębokość produktu",
+                            "values": [
+                                "24"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "203709",
+                            "name": "Waga produktu",
+                            "values": [
+                                "126"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "17448",
+                            "name": "Waga produktu z opakowaniem jednostkowym",
+                            "values": [
+                                "0.01"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "203673",
+                            "name": "Materiał",
+                            "values": [
+                                "tworzywo sztuczne"
+                            ],
+                            "valuesIds": [
+                                "203673_217721"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "203685",
+                            "name": "Konstrukcja",
+                            "values": [
+                                "zamknięta"
+                            ],
+                            "valuesIds": [
+                                "203685_217769"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "203717",
+                            "name": "Czas czuwania",
+                            "values": [
+                                "6"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "203721",
+                            "name": "Zasięg",
+                            "values": [
+                                "10"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "203725",
+                            "name": "Czas pracy",
+                            "values": [
+                                "36"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "247679",
+                            "name": "Złącze ładowania",
+                            "values": [
+                                "USB typ C"
+                            ],
+                            "valuesIds": [
+                                "247679_733808"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "248248",
+                            "name": "Aktywne tłumienie hałasu",
+                            "values": [
+                                "tak"
+                            ],
+                            "valuesIds": [
+                                "248248_883396"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "203693",
+                            "name": "Impedancja",
+                            "values": [
+                                "16"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "218669",
+                            "name": "Certyfikaty zgodności",
+                            "values": [
+                                "CE"
+                            ],
+                            "valuesIds": [
+                                "218669_1"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "250792",
+                            "name": "Kod taryfy celnej",
+                            "values": [
+                                "85183000"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "250685",
+                            "name": "Zawiera baterie",
+                            "values": [
+                                "tak"
+                            ],
+                            "valuesIds": [
+                                "250685_2006716"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "225693",
+                            "name": "EAN (GTIN)",
+                            "values": [
+                                "194644131784"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        }
+                    ],
+                    "isAiCoCreated": true
+                },
+                "quantity": {
+                    "value": 1
+                },
+                "responsiblePerson": null,
+                "responsibleProducer": {
+                    "id": "20a055ba-2bdd-4422-be22-1bf0ca279dfb"
+                },
+                "safetyInformation": {
+                    "description": "List of safety warnings for wireless headphones based on the requirements of Regulation (EU) 2023/988 on General Product Safety (GPSR)\n\n1. Risk of hearing damage:\n * I use headphones in moderation to avoid permanent hearing damage. Listening to loud music for a long time can cause hearing loss. * I recommend avoiding setting the volume to the maximum level for extended periods of time. 2. Battery Hazards:\n * I do not expose my headphones to high temperatures as this may cause battery damage or explosion. * I only use original chargers provided by the manufacturer. * I do not try to replace the batteries in the headphones myself as this can be dangerous and cause damage to the device. * I return used batteries to the appropriate collection point for recycling. 3. Choking risk (small parts):\n * The headphones contain small elements that may pose a choking hazard, especially for young children. I keep my headphones and accessories out of reach of children. 4. Risks associated with use during physical activity:\n * I use headphones with caution when exercising or cycling so as not to lose orientation in the environment. * I avoid using headphones in places where full concentration and listening to the environment is required (e.g. at pedestrian crossings). 5. Skin problems (allergies/irritation):\n * If I notice skin irritation caused by headphones, I stop using them and consult a doctor. * I regularly clean my headphones to avoid sweat and bacteria buildup. 6. Risk of accidents (cables):\n * I watch out for headphone cables to avoid getting tangled or tripped. 7. Electromagnetic compatibility:\n * I avoid using headphones near medical devices that may be sensitive to electromagnetic interference. 8. Effects on attention while driving:\n * I do not use headphones while driving if the regulations prohibit it or if it limits my ability to respond to situations on the road. 9. Safety during a storm:\n * I do not use headphones during a storm because there is a risk of lightning strikes. 10. Keeping clean:\n * I regularly clean my headphones according to the manufacturer’s instructions to prevent dirt and bacteria from accumulating.",
+                    "type": "TEXT"
+                },
+                "marketedBeforeGPSRObligation": false,
+                "deposits": []
+            }
+        ],
+        "parameters": [
+            {
+                "id": "11323",
+                "name": "Stan",
+                "values": [
+                    "Używany"
+                ],
+                "valuesIds": [
+                    "11323_2"
+                ],
+                "rangeValue": null
+            },
+            {
+                "id": "229205",
+                "name": "Stan opakowania",
+                "values": [
+                    "oryginalne"
+                ],
+                "valuesIds": [
+                    "229205_340245"
+                ],
+                "rangeValue": null
+            }
+        ],
+        "images": [
+            "https://a.allegroimg.com/original/29783a/86ad524342c4a7cb9367a2298704",
+            "https://a.allegroimg.com/original/111a30/ee5c85414a42a2e683dba58a4f14",
+            "https://a.allegroimg.com/original/11cb4c/08777ce0497ca8a617758c6b5a44",
+            "https://a.allegroimg.com/original/111d48/518068d14ce682f62406edaa0e1f",
+            "https://a.allegroimg.com/original/11f14a/1f6297c34a2aa5f8936fd9786271",
+            "https://a.allegroimg.com/original/055f7e/0ba399d64939858b1e8bd7b31082",
+            "https://a.allegroimg.com/original/05c7eb/7e847c0f4694afa83c73ec6ca347"
+        ],
+        "afterSalesServices": {
+            "impliedWarranty": {
+                "id": "4e8f1e2c-3f97-42c9-ad0d-4b9204320ee1"
+            },
+            "returnPolicy": {
+                "id": "2fae3e22-1ad2-41bd-b878-60070e5e2ee6"
+            },
+            "warranty": {
+                "id": "48e03833-a89b-475a-9fa7-ce8118b7e637"
+            }
+        },
+        "payments": {
+            "invoice": "VAT"
+        },
+        "sellingMode": {
+            "format": "BUY_NOW",
+            "price": {
+                "amount": "179.00",
+                "currency": "PLN"
+            },
+            "startingPrice": null,
+            "minimalPrice": null
+        },
+        "stock": {
+            "available": 1,
+            "unit": "UNIT"
+        },
+        "location": {
+            "countryCode": "PL",
+            "province": "MALOPOLSKIE",
+            "city": "<redacted>",
+            "postCode": "<redacted>"
+        },
+        "delivery": {
+            "shippingRates": {
+                "id": "6dbd5dba-d908-4559-a770-55eb5b4cabfb"
+            },
+            "handlingTime": "PT0S",
+            "additionalInfo": null,
+            "shipmentDate": null
+        },
+        "description": {
+            "sections": [
+                {
+                    "items": [
+                        {
+                            "type": "TEXT",
+                            "content": "<p>Produkt używany, widoczne ślady użytkowania na etui.</p><p>Słuchawki douszne z redukcją szumów, przetwornikami 10 mm, hybrydową funkcją ANC, 4 mikrofonami zapewniającymi wyraźne rozmowy, czasem odtwarzania 36 godzin, złączem USB-C do szybkiego ładowania, łatwym parowaniem, aplikacją Soundcore, wodoodpornością IPX5.</p><p>Niesamowity dźwięk, który uwielbia ponad 20 milionów ludzi</p><ul><li><b>Big On Bass:</b>&nbsp;ciesz się czystym dźwiękiem i mocnym basem dzięki 10-milimetrowym przetwornikom z technologią BassUp.</li><li><b>Blokuj rozpraszające dźwięki:</b>&nbsp;po włączeniu funkcji Hybrid ANC słuchawki douszne Life Dot 3i z redukcją szumów filtrują hałas otoczenia i niepożądane dźwięki, dzięki czemu możesz całkowicie zanurzyć się w ulubionej muzyce.</li><li><b>Rozmawiaj łatwo, daj się wyraźnie usłyszeć:&nbsp;</b>odbieraj połączenia z dowolnego miejsca i rozmawiaj z krystalicznie czystą wyrazistością dzięki 4 dedykowanym mikrofonom słuchawek Life Dot 3i z redukcją szumów.</li><li><b>Wydłużony czas odtwarzania:</b>&nbsp;słuchawki douszne Life Dot 3i z redukcją szumów zapewniają 9 godzin pracy na baterii z wyłączoną hybrydową aktywną redukcją szumów (ANC), a etui ładujące zapewnia kolejne 4 dodatkowe ładowania.</li><li><b>Dostosuj ustawienia korektora:</b>&nbsp;dostosuj muzykę do swoich upodobań za pomocą aplikacji Soundcore i wybierz spośród 22 ustawień korektora lub przełącz się na tryb przezroczystości, aby uzyskać wciągające wrażenia słuchowe.</li><li><b>Ulepszony bas:</b>&nbsp;Ciesz się dokładnym dźwiękiem i mocnym basem dzięki 10-milimetrowym przetwornikom oraz technologii BassUp.</li><li><b>Izoluj hałas zewnętrzny:&nbsp;</b>Zredukuj niechciany hałas dzięki hybrydowej aktywnej redukcji szumów i zanurz się w czystej muzyce.</li><li><b>36-godzinny czas odtwarzania:</b>&nbsp;Słuchawki douszne Life Dot 3i z redukcją szumów zapewniają łącznie 36 godzin odtwarzania z etui ładującym i 9 godzin użytkowania na jednym ładowaniu.</li><li><b>Aplikacja Soundcore:&nbsp;</b>Spersonalizuj swoje wrażenia muzyczne, dopasowując je do swoich upodobań i otoczenia, korzystając z 22 ustawień korektora lub przełącz się na własny, niestandardowy profil wszystko w jednym miejscu.</li><li><b>Tryb przezroczystości:</b>&nbsp;słuchaj otoczenia, jednocześnie słuchając muzyki, gdy jesteś poza domem, bez zdejmowania słuchawek.</li><li><b>Szybkie ładowanie:</b>&nbsp;Uzyskaj do dwóch godzin pracy na baterii w ciągu zaledwie 10 minut ładowania przez ładowanie USB-C.</li><li><b>Małe i lekkie:</b>&nbsp;Zaprojektowane z myślą o długotrwałym użytkowaniu, słuchawki douszne Life Dot 3i z redukcją szumów są lekkie i idealnie pasują do uszu.</li><li><b>Bluetooth 5.2:</b>&nbsp;Wyposażony w najnowszą technologię Bluetooth zapewniającą stabilne i szybsze połączenie ze wszystkimi urządzeniami.</li><li><b>Solo Bud:</b>&nbsp;używaj niezależnie lewej lub prawej słuchawki do słuchania muzyki i rozmów. Aktywuj tryb Mono, umieszczając jedną ze słuchawek z powrotem w etui.</li><li><b>Wodoodporność IPX5:&nbsp;</b>Stopień ochrony IPX5 pozwala uniknąć zmartwień, chroniąc słuchawki przed rozpryskami wody i deszczem.</li></ul>"
+                        }
+                    ]
+                },
+                {
+                    "items": [
+                        {
+                            "type": "TEXT",
+                            "content": "<p><b>Specyfikacja:</b></p> <ul> <li><b>Konstrukcja:</b> Douszne</li> <li><b>Technologie:</b> Redukcja szumów</li> <li><b>Komunikacja bezprzewodowa:</b> Bluetooth</li> <li><b>Złącza:</b> 1 x USB (Type C)</li> <li><b>Kontrola dźwięku:</b> Regulacja głośności, Odbieranie/Wyciszanie połączenia</li> <li><b>Impedancja:</b> 16 Ω</li> <li><b>Pasmo przenoszenia (min.):</b> 20 Hz</li> <li><b>Pasmo przenoszenia (maks.):</b> 20 kHz</li> <li><b>Mikrofon:</b> Tak</li> <li><b>Zasięg:</b> 10 m</li> <li><b>Kolor:</b> Czarny</li> <li><b>Akcesoria w zestawie:</b> Słuchawki douszne Soundcore Life Dot 3i z redukcją szumów, Końcówki douszne S/M/L, Kabel USB typu</li> </ul>"
+                        }
+                    ]
+                },
+                {
+                    "items": [
+                        {
+                            "type": "IMAGE",
+                            "url": "https://a.allegroimg.com/original/29783a/86ad524342c4a7cb9367a2298704"
+                        }
+                    ]
+                }
+            ]
+        },
+        "external": null,
+        "category": {
+            "id": "85166"
+        },
+        "taxSettings": null,
+        "sizeTable": null,
+        "discounts": {
+            "wholesalePriceList": null
+        },
+        "contact": null,
+        "fundraisingCampaign": null,
+        "messageToSellerSettings": {
+            "mode": "OPTIONAL"
+        },
+        "attachments": [],
+        "b2b": null,
+        "additionalServices": null,
+        "compatibilityList": null,
+        "additionalMarketplaces": {
+            "allegro-business-pl": {
+                "sellingMode": {
+                    "price": {
+                        "amount": "179.00",
+                        "currency": "PLN"
+                    }
+                },
+                "publication": {
+                    "state": "REFUSED",
+                    "refusalReasons": [
+                        {
+                            "code": "VQR012_OFFER_HAS_NO_TAX_RATE_FOR_MARKETPLACE",
+                            "userMessage": "no VAT rate",
+                            "parameters": []
+                        }
+                    ]
+                }
+            },
+            "allegro-sk": {
+                "sellingMode": null,
+                "publication": {
+                    "state": "NOT_REQUESTED",
+                    "refusalReasons": []
+                }
+            },
+            "allegro-cz": {
+                "sellingMode": null,
+                "publication": {
+                    "state": "NOT_REQUESTED",
+                    "refusalReasons": []
+                }
+            },
+            "allegro-hu": {
+                "sellingMode": null,
+                "publication": {
+                    "state": "NOT_REQUESTED",
+                    "refusalReasons": []
+                }
+            },
+            "allegro-business-cz": {
+                "sellingMode": null,
+                "publication": {
+                    "state": "NOT_REQUESTED",
+                    "refusalReasons": []
+                }
+            }
+        },
+        "warnings": [],
+        "aiCoCreatedContent": {
+            "images": []
+        },
+        "id": "18780385602",
+        "language": "pl-PL",
+        "publication": {
+            "status": "ACTIVE",
+            "duration": null,
+            "endedBy": null,
+            "endingAt": null,
+            "startingAt": null,
+            "republish": false,
+            "marketplaces": {
+                "base": {
+                    "id": "allegro-pl"
+                },
+                "additional": [
+                    {
+                        "id": "allegro-business-pl"
+                    }
+                ]
+            }
+        },
+        "validation": {
+            "errors": [],
+            "warnings": [],
+            "validatedAt": "2026-07-21T20:36:25.692Z"
+        },
+        "createdAt": "2026-07-21T11:08:23.000Z",
+        "updatedAt": "2026-07-21T20:36:25.694Z"
+    },
+    {
+        "name": "Słuchawki dokanałowe MoonDrop CHU II DSP same słuchawki bez przewodu",
+        "productSet": [
+            {
+                "product": {
+                    "id": "f943030d-1c8e-4d37-bee0-f40c130512fa",
+                    "publication": {
+                        "status": "LISTED"
+                    },
+                    "parameters": [
+                        {
+                            "id": "224017",
+                            "name": "Kod producenta",
+                            "values": [
+                                "CHU2dsp"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "248811",
+                            "name": "Marka",
+                            "values": [
+                                "MoonDrop"
+                            ],
+                            "valuesIds": [
+                                "248811_1998389"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "250441",
+                            "name": "Model",
+                            "values": [
+                                "CHU II DSP"
+                            ],
+                            "valuesIds": [
+                                "250441_1920803"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "129357",
+                            "name": "Kolor dominujący",
+                            "values": [
+                                "czarny"
+                            ],
+                            "valuesIds": [
+                                "129357_3"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "203681",
+                            "name": "Rodzaj słuchawek",
+                            "values": [
+                                "dokanałowe"
+                            ],
+                            "valuesIds": [
+                                "203681_217753"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "203677",
+                            "name": "Regulacja głośności",
+                            "values": [
+                                "tak"
+                            ],
+                            "valuesIds": [
+                                "203677_217737"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "203689",
+                            "name": "Mikrofon",
+                            "values": [
+                                "tak"
+                            ],
+                            "valuesIds": [
+                                "203689_217777"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "223333",
+                            "name": "Szerokość produktu",
+                            "values": [
+                                "12"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "223329",
+                            "name": "Wysokość produktu",
+                            "values": [
+                                "3"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "201321",
+                            "name": "Głębokość produktu",
+                            "values": [
+                                "15"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "203709",
+                            "name": "Waga produktu",
+                            "values": [
+                                "0.2"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "17448",
+                            "name": "Waga produktu z opakowaniem jednostkowym",
+                            "values": [
+                                "0.5"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "203673",
+                            "name": "Materiał",
+                            "values": [
+                                "metal"
+                            ],
+                            "valuesIds": [
+                                "203673_217725"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "203693",
+                            "name": "Impedancja",
+                            "values": [
+                                "18"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "207838",
+                            "name": "Długość przewodu",
+                            "values": [
+                                "1.2"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "217641",
+                            "name": "Cechy dodatkowe",
+                            "values": [
+                                "Wymienny kabel; Membrana alu-mg; 10 mm dynamiczny sterownik; Sterowanie dotykowe"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "217645",
+                            "name": "Załączone wyposażenie",
+                            "values": [
+                                "1 x CHU II, 1kabel do słuchawek torba do przechowywania, Poduszki nauszne"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "248248",
+                            "name": "Aktywne tłumienie hałasu",
+                            "values": [
+                                "nie"
+                            ],
+                            "valuesIds": [
+                                "248248_883397"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "250792",
+                            "name": "Kod taryfy celnej",
+                            "values": [
+                                "85183000"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "225693",
+                            "name": "EAN (GTIN)",
+                            "values": [
+                                "6972585501781"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        }
+                    ],
+                    "isAiCoCreated": true
+                },
+                "quantity": {
+                    "value": 1
+                },
+                "responsiblePerson": null,
+                "responsibleProducer": {
+                    "id": "90467ae2-5169-4eb6-b0df-48be94ac6ff4"
+                },
+                "safetyInformation": {
+                    "description": "List of safety warnings for wired headphones based on the requirements of Regulation (EU) 2023/988 on General Product Safety (GPSR)\n\n1. Risk of hearing damage:\n * Use headphones in moderation to avoid permanent hearing damage. Listening to loud music for a long time can lead to hearing loss. * Set the low volume level before putting the headphones in your ears and gradually increase the volume to a comfortable level. * Avoid using headphones in very noisy environments where you need to significantly increase the volume to hear the sound. 2. Threat of entanglement and suffocation:\n * Keep headphones out of reach of young children to avoid the risk of getting tangled and suffocated. * Be careful that the headphone cable does not get tangled around your neck during physical activities. 3. Safety during activity:\n * Do not use headphones while driving, cycling or operating machinery as this limits your ability to hear your surroundings and can lead to accidents. * Be careful when walking in headphones to avoid tripping over the cable. 4. Compatibility and Damage:\n * Make sure your headphones are compatible with your device. Improper connection can damage your headphones or device. * Do not use damaged headphones. Check the cable and plug regularly for damage. 5. Hygiene:\n * Clean your headphones regularly to prevent bacteria buildup and ear infections. Use gentle cleaning products for this. 6. Use in extreme conditions:\n * Avoid using headphones in very damp or dusty areas to prevent damage. 7. Repairs:\n * Do not try to repair the headphones yourself. Please contact an authorized service provider for repairs. 8. Effects on medical devices:\n * People with hearing implants or other medical devices should consult a doctor before using headphones.",
+                    "type": "TEXT"
+                },
+                "marketedBeforeGPSRObligation": false,
+                "deposits": []
+            }
+        ],
+        "parameters": [
+            {
+                "id": "11323",
+                "name": "Stan",
+                "values": [
+                    "Na części"
+                ],
+                "valuesIds": [
+                    "11323_1223453"
+                ],
+                "rangeValue": null
+            },
+            {
+                "id": "229205",
+                "name": "Stan opakowania",
+                "values": [
+                    "oryginalne"
+                ],
+                "valuesIds": [
+                    "229205_340245"
+                ],
+                "rangeValue": null
+            }
+        ],
+        "images": [
+            "https://a.allegroimg.com/original/11cb27/0d2959d54526bbc330b886e1d87a",
+            "https://a.allegroimg.com/original/11a8b3/5f23ed06450b9ff05e5bcbf4c129",
+            "https://a.allegroimg.com/original/114870/5d043e9f4bfaa9a89937a4547724",
+            "https://a.allegroimg.com/original/11ab7b/7cdf80514fce8d259fcdf918355a",
+            "https://a.allegroimg.com/original/116875/d9b804ad4106a6b93bc4ed5db0be",
+            "https://a.allegroimg.com/original/117235/fcfdeecb4f078196b5e43a50c3d7",
+            "https://a.allegroimg.com/original/115d22/9c8c195f47458901447c49ed16ad",
+            "https://a.allegroimg.com/original/11777d/fd5e75394d6a88b578def73ba876",
+            "https://a.allegroimg.com/original/11d7b1/37a7c09a472eb525a3122887c185"
+        ],
+        "afterSalesServices": {
+            "impliedWarranty": {
+                "id": "4e8f1e2c-3f97-42c9-ad0d-4b9204320ee1"
+            },
+            "returnPolicy": {
+                "id": "2fae3e22-1ad2-41bd-b878-60070e5e2ee6"
+            },
+            "warranty": {
+                "id": "87fe5998-4f67-454c-bd06-2b38167803ec"
+            }
+        },
+        "payments": {
+            "invoice": "VAT"
+        },
+        "sellingMode": {
+            "format": "BUY_NOW",
+            "price": {
+                "amount": "60.00",
+                "currency": "PLN"
+            },
+            "startingPrice": null,
+            "minimalPrice": null
+        },
+        "stock": {
+            "available": 1,
+            "unit": "UNIT"
+        },
+        "location": {
+            "countryCode": "PL",
+            "province": "MALOPOLSKIE",
+            "city": "<redacted>",
+            "postCode": "<redacted>"
+        },
+        "delivery": {
+            "shippingRates": {
+                "id": "6dbd5dba-d908-4559-a770-55eb5b4cabfb"
+            },
+            "handlingTime": "PT0S",
+            "additionalInfo": null,
+            "shipmentDate": null
+        },
+        "description": {
+            "sections": [
+                {
+                    "items": [
+                        {
+                            "type": "IMAGE",
+                            "url": "https://a.allegroimg.com/original/11a8b3/5f23ed06450b9ff05e5bcbf4c129"
+                        }
+                    ]
+                },
+                {
+                    "items": [
+                        {
+                            "type": "TEXT",
+                            "content": "<p><b>Oferta dotyczy samych słuchawek z gumkami do komplety brakuje przewodu. Były używane, stan bardzo dobry.</b></p><p><b>Do uruchomiania słuchawek niezbędny jest przewód, który nie jest w sprzedaży.</b></p><p><b>Moondrop CHU II DSP</b></p><p>Słuchawki douszne</p><p><b>Bezkonkurencyjna wydajność</b></p><p>Wkrótce po premierze „CHU” stały się najpopularniejszymi słuchawkami dousznymi w swoim przedziale cenowym i przyciągnęły wielu naśladowców.</p><p>Teraz pojawia się „CHU II” z materiałami i technologiami najwyższej klasy.</p>"
+                        }
+                    ]
+                },
+                {
+                    "items": [
+                        {
+                            "type": "TEXT",
+                            "content": "<p><b>Kompozytowa membrana kopułkowa ze stopu aluminium i magnezu</b></p> <p><b>High-endowe materiały</b></p> <p>Jako materiał na membranę kopułkową CHU II został wybrany stop aluminiowo – magnezowy, który charakteryzuje się dużą sztywnością i lekkością, poszerzając w ten sposób pasmo wysokich tonów i ujawniając bardziej subtelne szczegóły. Zawieszenie membrany składa się z dwóch materiałów polimerowych o różnych właściwościach, co zapewnia mocniejszy bas i znacznie zmniejszone zniekształcenia nieliniowe.</p> <p>Dotychczas zastosowanie materiału ze stopu Al-Mg ograniczało się do kilku modeli high-endowych słuchawek dousznych i słuchawek pełnowymiarowych. Uznano go za stosunkowo kosztowny materiał na membranę, a „CHU II” jest pierwszym budżetowym IEM, który go wykorzystuje.</p>"
+                        }
+                    ]
+                },
+                {
+                    "items": [
+                        {
+                            "type": "TEXT",
+                            "content": "<p><b>Wnęka odlewana ze stopu</b></p> <p><b>Zapewnienie trwałości i wysokiej jakości tekstury</b></p> <p>Wnęka akustyczna „CHU II” jest produkowana przy użyciu technologii odlewania firmy MOONDROP dojrzałego stopu, zapewniającej zarówno sztywność, jak i delikatną teksturę. Trwała warstwa farby chroni metalową obudowę przed korozją.</p>"
+                        },
+                        {
+                            "type": "IMAGE",
+                            "url": "https://a.allegroimg.com/original/114870/5d043e9f4bfaa9a89937a4547724"
+                        }
+                    ]
+                },
+                {
+                    "items": [
+                        {
+                            "type": "IMAGE",
+                            "url": "https://a.allegroimg.com/original/11ab7b/7cdf80514fce8d259fcdf918355a"
+                        },
+                        {
+                            "type": "TEXT",
+                            "content": "<p><b>Mosiężna dysza akustyczna CNC</b></p> <p>Dysza „CHU II” składa się z oddzielnego mosiężnego elementu CNC, oferującego większą precyzję i gęstość, a co za tym idzie, piękną barwę.</p>"
+                        }
+                    ]
+                },
+                {
+                    "items": [
+                        {
+                            "type": "TEXT",
+                            "content": "<p><b>Wymienne filtry akustyczne</b></p> <p>„CHU II” zawiera nową generację wymiennych filtrów akustycznych. Przedni koniec mosiężnej dyszy można zdjąć, co pozwala użytkownikom na szybką i wygodną wymianę filtra akustycznego.</p> <p>Wymiana jest znacznie łatwiejsza w porównaniu z istniejącymi filtrami wielowarstwowymi, a konstrukcja zapewnia większą niezawodność. W przypadku zatkania lub uszkodzenia koszt naprawy jest znacznie niższy niż w przypadku standardowych dysz.</p>"
+                        },
+                        {
+                            "type": "IMAGE",
+                            "url": "https://a.allegroimg.com/original/116875/d9b804ad4106a6b93bc4ed5db0be"
+                        }
+                    ]
+                },
+                {
+                    "items": [
+                        {
+                            "type": "IMAGE",
+                            "url": "https://a.allegroimg.com/original/117235/fcfdeecb4f078196b5e43a50c3d7"
+                        },
+                        {
+                            "type": "TEXT",
+                            "content": "<p><b>Szerokopasmowa odpowiedź częstotliwościowa</b></p> <p><b>Benchmarkowe strojenie</b></p> <p>„CHU II” został dostrojony przez inżynierów akustyków i audiofilów posiadających bogatą wiedzę i szerokie doświadczenie. Dzięki temu wykazuje doskonałą krzywą odpowiedzi częstotliwościowej zgodną z odpowiedzią docelową VDSF. Membrana kopułkowa ze stopu aluminiowo-magnezowego zapewnia naturalny, wyrafinowany dźwięk, bogatą barwę i obrazowanie oraz ultraszerokie pasmo częstotliwości.</p> <p>* Odpowiedź docelowa MOONDROP VDSF to docelowa krzywa odpowiedzi częstotliwościowej oparta na HRTF (Head Related Transfer Function) B&amp;K HATS w warunkach dyfuzji i krzywej preferencji idealnego pomieszczenia. Im bardziej krzywa odpowiedzi częstotliwościowej zmierzona w ramach B&amp;K HATS jest bliżej docelowej krzywej odpowiedzi częstotliwościowej, tym lepiej słuchawki mogą odtworzyć obraz sceny dźwiękowej pod względem charakterystyki częstotliwościowej.</p>"
+                        }
+                    ]
+                },
+                {
+                    "items": [
+                        {
+                            "type": "TEXT",
+                            "content": "<p><b>Reprodukcja subtelnych szczegółów z bardzo niskimi zniekształceniami nieliniowymi</b></p> <p>Dzięki solidnej technologii i skrupulatnemu projektowi membrany, „CHU II” oferuje nieliniowe zniekształcenie pełnej częstotliwości poniżej 0,05%, co skutkuje naturalną barwą i reprodukcją nawet najdrobniejszych szczegółów.</p>"
+                        },
+                        {
+                            "type": "IMAGE",
+                            "url": "https://a.allegroimg.com/original/115d22/9c8c195f47458901447c49ed16ad"
+                        }
+                    ]
+                },
+                {
+                    "items": [
+                        {
+                            "type": "IMAGE",
+                            "url": "https://a.allegroimg.com/original/11777d/fd5e75394d6a88b578def73ba876"
+                        },
+                        {
+                            "type": "TEXT",
+                            "content": "<p><b>Wymienna konstrukcja kabla</b></p> <p><b>Szerokie możliwości zastosowań</b></p> <p>„CHU II” wykorzystuje uniwersalny wymienny kabel 0,78 mm, dzięki czemu użytkownicy mogą łatwo go wymieniać lub korzystać z pałąka na szyję Bluetooth/zaczepów na uszy TWS w różnych scenariuszach użytkowania.</p>"
+                        }
+                    ]
+                },
+                {
+                    "items": [
+                        {
+                            "type": "TEXT",
+                            "content": "<p><b>W zestawie:</b></p> <p>1. [CHU II] Słuchawki douszne * 1</p> <p>2. Kabel DSP USB C&nbsp; z pilotem i mikrofonem * 1</p> <p>3. Torba do przechowywania * 1</p> <p>4. Końcówki douszne * 3 sztuki (S, M, L)</p> <p>5. Instrukcja * 1</p> <p>6. Certyfikat QC * 1</p> <p>7. Karta sposobu noszenia * 1</p>"
+                        },
+                        {
+                            "type": "IMAGE",
+                            "url": "https://a.allegroimg.com/original/11d7b1/37a7c09a472eb525a3122887c185"
+                        }
+                    ]
+                },
+                {
+                    "items": [
+                        {
+                            "type": "TEXT",
+                            "content": "<p>• Materiał wnęki: stop ZN</p> <p>• Przetwornik: 10 mm wysokowydajny przetwornik dynamiczny</p> <p>• Membrana: membrana kompozytowa ze stopu aluminium i magnezu</p> <p>• Gniazdo słuchawkowe: 0,78 mm-2pin</p> <p>• Wtyczka: USB- C</p> <p>• Pasmo przenoszenia: 15 Hz - 38 kHz</p> <p>• Efektywne pasmo przenoszenia: 20 Hz - 20 kHz (IEC60318-4, -3 dB)</p> <p>• THD: THD ≤0,5% (@1KHz, 94dB)</p>"
+                        }
+                    ]
+                }
+            ]
+        },
+        "external": null,
+        "category": {
+            "id": "257109"
+        },
+        "taxSettings": null,
+        "sizeTable": null,
+        "discounts": {
+            "wholesalePriceList": null
+        },
+        "contact": null,
+        "fundraisingCampaign": null,
+        "messageToSellerSettings": {
+            "mode": "OPTIONAL"
+        },
+        "attachments": [],
+        "b2b": null,
+        "additionalServices": null,
+        "compatibilityList": null,
+        "additionalMarketplaces": {
+            "allegro-business-pl": {
+                "sellingMode": {
+                    "price": {
+                        "amount": "60.00",
+                        "currency": "PLN"
+                    }
+                },
+                "publication": {
+                    "state": "REFUSED",
+                    "refusalReasons": [
+                        {
+                            "code": "VQR012_OFFER_HAS_NO_TAX_RATE_FOR_MARKETPLACE",
+                            "userMessage": "no VAT rate",
+                            "parameters": []
+                        }
+                    ]
+                }
+            },
+            "allegro-sk": {
+                "sellingMode": null,
+                "publication": {
+                    "state": "NOT_REQUESTED",
+                    "refusalReasons": []
+                }
+            },
+            "allegro-cz": {
+                "sellingMode": null,
+                "publication": {
+                    "state": "NOT_REQUESTED",
+                    "refusalReasons": []
+                }
+            },
+            "allegro-hu": {
+                "sellingMode": null,
+                "publication": {
+                    "state": "NOT_REQUESTED",
+                    "refusalReasons": []
+                }
+            },
+            "allegro-business-cz": {
+                "sellingMode": null,
+                "publication": {
+                    "state": "NOT_REQUESTED",
+                    "refusalReasons": []
+                }
+            }
+        },
+        "warnings": [],
+        "aiCoCreatedContent": {
+            "images": []
+        },
+        "id": "18773225304",
+        "language": "pl-PL",
+        "publication": {
+            "status": "ACTIVE",
+            "duration": null,
+            "endedBy": null,
+            "endingAt": null,
+            "startingAt": null,
+            "republish": false,
+            "marketplaces": {
+                "base": {
+                    "id": "allegro-pl"
+                },
+                "additional": [
+                    {
+                        "id": "allegro-business-pl"
+                    }
+                ]
+            }
+        },
+        "validation": {
+            "errors": [],
+            "warnings": [],
+            "validatedAt": "2026-07-18T14:10:51.762Z"
+        },
+        "createdAt": "2026-07-18T13:57:58.000Z",
+        "updatedAt": "2026-07-18T14:13:00.021Z"
+    },
+    {
+        "name": "Obudowa do komputera Fury Shobo SH4F RGB Tempered - brak bocznej szyby",
+        "productSet": [
+            {
+                "product": {
+                    "id": "93e9af2c-aef5-4909-884a-5189c89f9139",
+                    "publication": {
+                        "status": "LISTED"
+                    },
+                    "parameters": [
+                        {
+                            "id": "224017",
+                            "name": "Kod producenta",
+                            "values": [
+                                "NFO-2154"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "248914",
+                            "name": "Producent",
+                            "values": [
+                                "Fury"
+                            ],
+                            "valuesIds": [
+                                "248914_1987262"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "237206",
+                            "name": "Model",
+                            "values": [
+                                "NFO-2154"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "4477",
+                            "name": "Typ obudowy",
+                            "values": [
+                                "Midi Tower"
+                            ],
+                            "valuesIds": [
+                                "4477_40"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "249512",
+                            "name": "Kolor",
+                            "values": [
+                                "czarny"
+                            ],
+                            "valuesIds": [
+                                "249512_1647413"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "219645",
+                            "name": "Zasilacz w zestawie",
+                            "values": [
+                                "nie"
+                            ],
+                            "valuesIds": [
+                                "219645_286905"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "219653",
+                            "name": "Standard płyty głównej",
+                            "values": [
+                                "ATX",
+                                "microATX",
+                                "Mini-ITX"
+                            ],
+                            "valuesIds": [
+                                "219653_1",
+                                "219653_2",
+                                "219653_16"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "522",
+                            "name": "Konstrukcja",
+                            "values": [
+                                "filtr przeciwkurzowy",
+                                "szkło hartowane",
+                                "tunel na zasilacz"
+                            ],
+                            "valuesIds": [
+                                "522_16",
+                                "522_1742455",
+                                "522_8"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "224541",
+                            "name": "Liczba slotów rozszerzeń",
+                            "values": [
+                                "7"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "224557",
+                            "name": "Liczba złączy USB",
+                            "values": [
+                                "3"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "224569",
+                            "name": "Pozostałe złącza",
+                            "values": [
+                                "1 x USB 2.0",
+                                "2 x USB 3.0",
+                                "2 x jack/audio"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "224581",
+                            "name": "Maksymalna wysokość chłodzenia procesora",
+                            "values": [
+                                "161"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "224589",
+                            "name": "Maksymalna długość karty graficznej",
+                            "values": [
+                                "330"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "224597",
+                            "name": "Zainstalowane wentylatory",
+                            "values": [
+                                "4x120mm RGB efekt"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "224601",
+                            "name": "Maksymalna liczba wentylatorów",
+                            "values": [
+                                "8"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "224605",
+                            "name": "Miejsca na wewnętrzne dyski i napędy",
+                            "values": [
+                                "2x 3,5\", 2x 2,5''"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "223333",
+                            "name": "Szerokość produktu",
+                            "values": [
+                                "20.7"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "223329",
+                            "name": "Wysokość produktu",
+                            "values": [
+                                "44.8"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "201321",
+                            "name": "Głębokość produktu",
+                            "values": [
+                                "38.6"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "206686",
+                            "name": "Waga produktu",
+                            "values": [
+                                "4.61"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "17448",
+                            "name": "Waga produktu z opakowaniem jednostkowym",
+                            "values": [
+                                "7.2"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "218669",
+                            "name": "Certyfikaty zgodności",
+                            "values": [
+                                "CE"
+                            ],
+                            "valuesIds": [
+                                "218669_1"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "250792",
+                            "name": "Kod taryfy celnej",
+                            "values": [
+                                "84733080"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "225693",
+                            "name": "EAN (GTIN)",
+                            "values": [
+                                "5901969444353"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        }
+                    ],
+                    "isAiCoCreated": true
+                },
+                "quantity": {
+                    "value": 1
+                },
+                "responsiblePerson": null,
+                "responsibleProducer": {
+                    "id": "ff041274-e3e0-4358-b0aa-df0a2e644c0b"
+                },
+                "safetyInformation": {
+                    "description": "List of safety warnings for computer enclosures based on the requirements of General Product Safety Regulation (EU) 2023/988 (GPSR):\n\n1. Risk of electric shock:\n* Make sure your computer's power supply is properly grounded. * Do not touch the power supply components with wet hands. * Disconnect the computer from power before opening the case. 2. Risk of cuts:\n* Beware of sharp metal edges when assembling components. * Secure the edges that can cause cuts. * Use protective gloves when working with the case. 3. Risk of fire:\n* Do not block ventilation openings in the housing. * Make sure that your computer components do not overheat. * Use a power supply with adequate power to avoid overloading. 4. Risk of damage to components:\n* Ensure proper air circulation in the housing. * Do not place heavy objects on the housing to avoid damage. * Make sure all components are properly fixed in the housing. 5. Hazards for children:\n* Keep small items (screws, jumpers) out of reach of children. * Do not allow children to open the computer case themselves. 6. Weight Hazards:\n * When moving your computer case, make sure you are able to support its weight. * Ask the other person for help if the case is too heavy. 7. Cleaning warnings:\n * Disconnect the computer from power before cleaning the case. * Use a soft, dry cloth to clean the case. * Do not use cleaning products containing corrosive substances. 8. Modification warnings:\n * Housing modifications may affect the safety and performance of your computer. * Perform modifications only if you have relevant experience and knowledge. 9. Warnings on Dust inhalation:\n * When cleaning components in the housing with compressed air, use a mask. * Take special care and ensure proper ventilation.",
+                    "type": "TEXT"
+                },
+                "marketedBeforeGPSRObligation": false,
+                "deposits": []
+            }
+        ],
+        "parameters": [
+            {
+                "id": "11323",
+                "name": "Stan",
+                "values": [
+                    "Powystawowy"
+                ],
+                "valuesIds": [
+                    "11323_238058"
+                ],
+                "rangeValue": null
+            },
+            {
+                "id": "229205",
+                "name": "Stan opakowania",
+                "values": [
+                    "oryginalne"
+                ],
+                "valuesIds": [
+                    "229205_340245"
+                ],
+                "rangeValue": null
+            }
+        ],
+        "images": [
+            "https://a.allegroimg.com/original/2918c5/87c7987a48b1961aeb422f900add",
+            "https://a.allegroimg.com/original/1115c1/77b8c7f94f8d84a416526df2a546",
+            "https://a.allegroimg.com/original/11150f/33c4b5264f898acd19f9e1771bc6",
+            "https://a.allegroimg.com/original/11dc92/69538d3d4861aa2ed1b6c81ae6de",
+            "https://a.allegroimg.com/original/11c449/601bbe82485c8e60523c7fa182aa",
+            "https://a.allegroimg.com/original/11f4d1/87d9abf94a758e9098f865be3065",
+            "https://a.allegroimg.com/original/1106d1/e2de1211458b842248f8e69910bd",
+            "https://a.allegroimg.com/original/118e57/6b32f5a34c3193d44777142bab31",
+            "https://a.allegroimg.com/original/113898/143d06ea42bf8d15b9c5a3806baf",
+            "https://a.allegroimg.com/original/11c539/766382674b8da9a9c5b6dde921af",
+            "https://a.allegroimg.com/original/119520/7ea46e9942b79a3b1b114d80d43c",
+            "https://a.allegroimg.com/original/1179df/1163d54242ffb6856fc194ef5c95",
+            "https://a.allegroimg.com/original/1156ca/7ea7b99c40d79882696ed2502995",
+            "https://a.allegroimg.com/original/1152a6/6d3257f84fd5baed8dda5ddf50de",
+            "https://a.allegroimg.com/original/11279a/683ecc294a0782442c8a7e8ed0d4",
+            "https://a.allegroimg.com/original/11fc5c/1958c48c4418a8502c0788b2caf4"
+        ],
+        "afterSalesServices": {
+            "impliedWarranty": {
+                "id": "4e8f1e2c-3f97-42c9-ad0d-4b9204320ee1"
+            },
+            "returnPolicy": {
+                "id": "2fae3e22-1ad2-41bd-b878-60070e5e2ee6"
+            },
+            "warranty": {
+                "id": "87fe5998-4f67-454c-bd06-2b38167803ec"
+            }
+        },
+        "payments": {
+            "invoice": "VAT"
+        },
+        "sellingMode": {
+            "format": "BUY_NOW",
+            "price": {
+                "amount": "99.00",
+                "currency": "PLN"
+            },
+            "startingPrice": null,
+            "minimalPrice": null
+        },
+        "stock": {
+            "available": 1,
+            "unit": "UNIT"
+        },
+        "location": {
+            "countryCode": "PL",
+            "province": "MALOPOLSKIE",
+            "city": "<redacted>",
+            "postCode": "<redacted>"
+        },
+        "delivery": {
+            "shippingRates": {
+                "id": "30692b5f-a623-4326-99ec-7fd535610781"
+            },
+            "handlingTime": "PT0S",
+            "additionalInfo": null,
+            "shipmentDate": null
+        },
+        "description": {
+            "sections": [
+                {
+                    "items": [
+                        {
+                            "type": "TEXT",
+                            "content": "<h2>Obudowa bez śladów użytkowania, brak bocznej szyby</h2><h2>Dane techniczne:</h2><ul><li>Typ obudowy Midi Tower</li><li>Standard płyty głównej Mini-ITX, Micro-ATX, ATX</li><li>Kompatybilny standard zasilacza ATX</li><li>Położenie zasilacza Dół</li><li>Maksymalna długość zasilacza 170mm</li><li>Maksymalna wysokość chłodzenia CPU 161mm</li><li>Maksymalna długość karty graficznej GPU 330mm</li><li>Panel I/O USB 3.0 Typ-A x2, USB 2.0 Typ-A x1, Mini Jack x2</li><li>Rodzaj panelu bocznego Szkło hartowane</li><li>Rodzaj panelu przedniego Mesh (gęsta siatka)</li><li>Liczba zainstalowanych wentylatorów 4</li><li>Zainstalowane wentylatory 4x 120 RGB mm</li><li>Maksymalna liczba wentylatorów 8</li><li>Możliwość montażu wentylatorów - dół 2x 120 mm</li><li>Możliwość montażu wentylatorów - góra 2x 120 mm, 1x 140 mm</li><li>Możliwość montażu wentylatorów - przód 3x 140 mm, 3x 120 mm</li><li>Możliwość montażu wentylatorów - tył 1x 120 mm</li><li>Prędkość obrotowa wentylatora +/-10% 1000 RPM</li><li>Żywotność wentylatora 40000</li><li>Przepływ powietrza wentylatora 33,5 CFM</li><li>Poziom hałasu wentylatora 21,9 dB</li><li>Możliwość instalacji chłodzenia wodnego (AIO) Tak</li><li>Możliwość montażu chłodzenia cieczą - góra 240 mm, 120 mm</li><li>Możliwość montażu chłodzenia cieczą - przód 360 mm, 280 mm, 240 mm, 140 mm, 120 mm</li><li>Możliwość montażu chłodzenia cieczą - tył 120 mm</li><li>Liczba gniazd rozszerzeń 7</li><li>Liczba miejsc na dyski 2.5\" (SSD/HDD) 2</li><li>Liczba miejsc na dyski 3.5\" (SSD/HDD) 2</li><li>Komora zasilacza Tak</li><li>Zasilacz w zestawie Nie</li><li>Zabezpieczenia Filtry przeciwkurzowe</li><li>Materiał Szkło hartowane, Stal, ABS</li><li>Kolor Czarny</li><li>Długość 386mm</li><li>Szerokość 204mm</li><li>Wysokość 448mm</li><li>Waga 4,61kg</li><li>Akcesoria w zestawie Zestaw elementów montażowych, Instrukcja montażu</li></ul>"
+                        }
+                    ]
+                },
+                {
+                    "items": [
+                        {
+                            "type": "IMAGE",
+                            "url": "https://a.allegroimg.com/original/1115c1/77b8c7f94f8d84a416526df2a546"
+                        },
+                        {
+                            "type": "TEXT",
+                            "content": "<h2>OBUDOWA DLA GRACZY SHOBO SH4F RGB</h2> <p>Sprawdź Fury Shobo SH4F RGB – sprytną obudowę komputerową z wydajnym chłodzeniem i podświetleniem RGB. Kompatybilna z płytami głównymi ATX oraz systemami chłodzenia wodnego (AIO 360/280/240/140/120), Shobo SH4F RGB ma w zestawie aż 4 wentylatory RGB, front typu „mesh” i ochronę przeciwkurzową. Niech się stanie światłość!</p> <h2>NISKIE TEMPERATURY, WYSOKA WYDAJNOŚĆ</h2> <p>Zbuduj bestię, nie komputer! Dzięki 4 wydajnym wentylatorom RGB 120 mm (jeden z tyłu, trzy z przodu) oraz otwartej górze i frontowi typu „mesh”, Shobo SH4F RGB zapewnia swobodny przepływ powietrza przez obudowę.</p> <p>W połączeniu z możliwością zainstalowania powietrznego chłodzenia CPU do 161 mm oraz w sumie aż 8 wentylatorów (3× przód, 2 góra, 1× tył, 2× dół) otrzymujemy wydajne chłodzenie, które poradzi sobie z naprawdę potężnymi podzespołami. Fani ekstremalnej wydajności mogą także liczyć na kompatybilność ze zintegrowanymi systemami chłodzenia cieczą AIO LC.</p> <h2>PODNIEŚ CHŁODZENIE NA WYŻSZY POZIOM</h2> <p>Chcesz rozbudować Twoją maszynę do fragowania o wydajne chłodzenie wodne? Z Fury Shobo SH4F RGB to dziecinnie proste!</p> <p>Obudowa pozwala na zainstalowanie chłodnic AIO LC o rozmiarach: z przodu (360/280/240/140/120 mm), z góry (240/120 mm) oraz z tyłu (120 mm). Tak szeroka kompatybilność oznacza swobodę w kwestii doboru komponentów – nawet tych najmocniejszych, wymagających chłodzenia z naprawdę wysokiej półki.</p> <h2>SKUTECZNA BARIERA DLA KURZU</h2> <p>Przenikający do wnętrza obudowy kurz to zmora każdego systemu komputerowego. Z Fury Shobo SH4F RGB nie musisz się już o to martwić.</p> <p>Obudowa ma kompletne ofiltrowanie przed kurzem: z góry i dołu, a front typu „mesh” ma bardzo gęste oczka o średnicy wyraźnie poniżej 1 mm, zapewniając ochronę przed zanieczyszczeniami i ułatwiając swobodny przepływ powietrza. Kurz zbierający się na powierzchni filtrów siateczkowych można szybko i łatwo usunąć za pomocą zwykłej ściereczki lub szczotki.</p> <h2>WIELKIE MOŻLIWOŚCI MAŁEJ OBUDOWY</h2> <p>Zachowując niewielkie zewnętrzne wymiary obudowa Shobo SH4F RGB oferuje pełną zgodność z płytami ATX, micro-ATX oraz mini-ITX.</p> <p>Można w niej zmieścić potężną kartę graficzną o długości do 330 mm, do 3 dysków/nośników (HDD/SSD) oraz powietrzne chłodzenie CPU do 161 mm. Dwukomorowa konstrukcja z „piwnicą” na zasilacz oraz liczne przepusty na kable oznaczają brak bałaganu i łatwość w organizacji komponentów.</p> <h2>TWOJE CENTRUM DOWODZENIA</h2> <p>Nie daj się ograniczyć! Wyposażony „na bogato” panel górny pozwoli na podłączenie niezbędnych akcesoriów, jak, kamerę, pendrive lub dysk zewnętrzny.</p> <p>Znajdziesz tam 3 gniazda USB-A (z czego aż 2 to szybkie USB 3.0, 5 Gbit/s), złącza HD Audio 3.5 mm dla słuchawek i mikrofonu, diody zasilania i dysku twardego oraz przyciski power i reset.</p> <h2>NIEZWYCIĘŻONA MOC, NOWOCZESNY DESIGN</h2> <p>Naciesz oczy i pochwal się sprzętem przed innymi graczami!</p> <p>Futurystyczna, geometryczna bryła spodoba się zarówno hardkorowym graczom, jak też zwolennikom bardziej stonowanego designu. Lewy panel boczny z hartowanego szkła to możliwość wyeksponowania wnętrza obudowy i drzemiących w niej, potężnych komponentów – także z RGB, szczególnie że zainstalowane wentylatory są fabrycznie podświetlone.</p>"
+                        }
+                    ]
+                }
+            ]
+        },
+        "external": null,
+        "category": {
+            "id": "259436"
+        },
+        "taxSettings": null,
+        "sizeTable": null,
+        "discounts": {
+            "wholesalePriceList": null
+        },
+        "contact": null,
+        "fundraisingCampaign": null,
+        "messageToSellerSettings": {
+            "mode": "OPTIONAL"
+        },
+        "attachments": [],
+        "b2b": null,
+        "additionalServices": null,
+        "compatibilityList": null,
+        "additionalMarketplaces": {
+            "allegro-business-pl": {
+                "sellingMode": {
+                    "price": {
+                        "amount": "99.00",
+                        "currency": "PLN"
+                    }
+                },
+                "publication": {
+                    "state": "REFUSED",
+                    "refusalReasons": [
+                        {
+                            "code": "VQR012_OFFER_HAS_NO_TAX_RATE_FOR_MARKETPLACE",
+                            "userMessage": "no VAT rate",
+                            "parameters": []
+                        }
+                    ]
+                }
+            },
+            "allegro-sk": {
+                "sellingMode": null,
+                "publication": {
+                    "state": "NOT_REQUESTED",
+                    "refusalReasons": []
+                }
+            },
+            "allegro-cz": {
+                "sellingMode": null,
+                "publication": {
+                    "state": "NOT_REQUESTED",
+                    "refusalReasons": []
+                }
+            },
+            "allegro-hu": {
+                "sellingMode": null,
+                "publication": {
+                    "state": "NOT_REQUESTED",
+                    "refusalReasons": []
+                }
+            },
+            "allegro-business-cz": {
+                "sellingMode": null,
+                "publication": {
+                    "state": "NOT_REQUESTED",
+                    "refusalReasons": []
+                }
+            }
+        },
+        "warnings": [],
+        "aiCoCreatedContent": {
+            "images": []
+        },
+        "id": "18772854905",
+        "language": "pl-PL",
+        "publication": {
+            "status": "ACTIVE",
+            "duration": null,
+            "endedBy": null,
+            "endingAt": null,
+            "startingAt": null,
+            "republish": false,
+            "marketplaces": {
+                "base": {
+                    "id": "allegro-pl"
+                },
+                "additional": [
+                    {
+                        "id": "allegro-business-pl"
+                    }
+                ]
+            }
+        },
+        "validation": {
+            "errors": [],
+            "warnings": [],
+            "validatedAt": "2026-07-18T10:55:07.130Z"
+        },
+        "createdAt": "2026-07-18T10:52:36.000Z",
+        "updatedAt": "2026-07-18T11:07:38.159Z"
+    },
+    {
+        "name": "Toner Imagine BR-B023-E1 do Brother czarny (black)",
+        "productSet": [
+            {
+                "product": {
+                    "id": "aa7c9766-5583-4223-b02b-5433c10fd454",
+                    "publication": {
+                        "status": "LISTED"
+                    },
+                    "parameters": [
+                        {
+                            "id": "224017",
+                            "name": "Kod producenta",
+                            "values": [
+                                "BR-B023-E1"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "248914",
+                            "name": "Producent",
+                            "values": [
+                                "Imagine"
+                            ],
+                            "valuesIds": [
+                                "248914_2012348"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "237206",
+                            "name": "Model",
+                            "values": [
+                                "TNB023"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "17589",
+                            "name": "Kolor",
+                            "values": [
+                                "czarny (black)"
+                            ],
+                            "valuesIds": [
+                                "17589_1"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "222905",
+                            "name": "Pasuje do",
+                            "values": [
+                                "Brother"
+                            ],
+                            "valuesIds": [
+                                "222905_301293"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "17448",
+                            "name": "Waga produktu z opakowaniem jednostkowym",
+                            "values": [
+                                "0.15"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "203429",
+                            "name": "Wydajność",
+                            "values": [
+                                "2000"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "218669",
+                            "name": "Certyfikaty zgodności",
+                            "values": [
+                                "CE"
+                            ],
+                            "valuesIds": [
+                                "218669_1"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "250792",
+                            "name": "Kod taryfy celnej",
+                            "values": [
+                                "32159070"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "225693",
+                            "name": "EAN (GTIN)",
+                            "values": [
+                                "5903271075751"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        }
+                    ],
+                    "isAiCoCreated": true
+                },
+                "quantity": {
+                    "value": 1
+                },
+                "responsiblePerson": null,
+                "responsibleProducer": null,
+                "safetyInformation": {
+                    "description": "Lista ostrzeżeń dotyczących bezpieczeństwa tonerów oparta o wymagania Rozporządzenia (UE) 2023/988 w sprawie ogólnego bezpieczeństwa produktów (GPSR):\n\n1. Ryzyko wdychania pyłu:\n   * Podczas wymiany lub czyszczenia tonera, unikaj wdychania pyłu, który może podrażniać drogi oddechowe.\n   * Używaj maski ochronnej lub respiratora, szczególnie jeśli jesteś osobą wrażliwą na pyły.\n\n2. Ryzyko podrażnienia skóry i oczu:\n   * Toner może powodować podrażnienia w kontakcie ze skórą i oczami.\n   * Unikaj bezpośredniego kontaktu. W razie kontaktu, przemyj skórę lub oczy dużą ilością wody i skontaktuj się z lekarzem.\n\n3. Ryzyko pożaru i wybuchu:\n   * Toner jest substancją łatwopalną.\n   * Nie narażaj tonera na wysokie temperatury, iskry lub otwarty ogień.\n   * Przechowuj toner w chłodnym, suchym i dobrze wentylowanym miejscu, z dala od źródeł ciepła i ognia.\n\n4. Ryzyko zanieczyszczenia:\n   * Toner może plamić powierzchnie i ubrania.\n   * Używaj rękawic ochronnych podczas wymiany lub czyszczenia tonera.\n   * Natychmiast usuwaj wszelkie rozsypane substancje za pomocą odkurzacza z filtrem HEPA lub wilgotnej ściereczki.\n\n5. Zagrożenie dla dzieci:\n   * Toner i jego opakowanie mogą zawierać małe elementy, które stanowią ryzyko zadławienia dla dzieci.\n   * Przechowuj toner w miejscu niedostępnym dla dzieci.\n\n6. Oddziaływanie na środowisko:\n   * Zużyty toner i opakowania należy utylizować zgodnie z lokalnymi przepisami dotyczącymi ochrony środowiska.\n   * Nie wyrzucaj zużytego tonera do śmieci komunalnych.\n\n7. Kompatybilność:\n   * Używaj tylko tonerów przeznaczonych do konkretnego modelu drukarki.\n   * Użycie nieodpowiedniego tonera może uszkodzić drukarkę i wpłynąć na jakość wydruku.\n\n8. Przechowywanie:\n   * Przechowuj tonery w oryginalnym opakowaniu, w suchym i chłodnym miejscu, z dala od bezpośredniego światła słonecznego.\n   * Nie przechowuj tonerów w miejscach narażonych na duże zmiany temperatury i wilgotności.",
+                    "type": "TEXT"
+                },
+                "marketedBeforeGPSRObligation": false,
+                "deposits": []
+            }
+        ],
+        "parameters": [
+            {
+                "id": "11323",
+                "name": "Stan",
+                "values": [
+                    "Uszkodzony"
+                ],
+                "valuesIds": [
+                    "11323_238062"
+                ],
+                "rangeValue": null
+            },
+            {
+                "id": "229205",
+                "name": "Stan opakowania",
+                "values": [
+                    "oryginalne"
+                ],
+                "valuesIds": [
+                    "229205_340245"
+                ],
+                "rangeValue": null
+            }
+        ],
+        "images": [
+            "https://a.allegroimg.com/original/297d11/444a14c74c3185a1b5013e5a4902",
+            "https://a.allegroimg.com/original/118e75/d33744a44ca6894e23e457b3df79",
+            "https://a.allegroimg.com/original/113367/eed4b8d5442aa24afbc4d2520761"
+        ],
+        "afterSalesServices": {
+            "impliedWarranty": null,
+            "returnPolicy": {
+                "id": "2fae3e22-1ad2-41bd-b878-60070e5e2ee6"
+            },
+            "warranty": null
+        },
+        "payments": {
+            "invoice": "VAT"
+        },
+        "sellingMode": {
+            "format": null,
+            "price": null,
+            "startingPrice": null,
+            "minimalPrice": null
+        },
+        "stock": {
+            "available": 0,
+            "unit": "UNIT"
+        },
+        "location": {
+            "countryCode": "PL",
+            "province": "MALOPOLSKIE",
+            "city": "<redacted>",
+            "postCode": "<redacted>"
+        },
+        "delivery": {
+            "shippingRates": null,
+            "handlingTime": "PT24H",
+            "additionalInfo": null,
+            "shipmentDate": null
+        },
+        "description": {
+            "sections": [
+                {
+                    "items": [
+                        {
+                            "type": "TEXT",
+                            "content": "<h1>WB Toner do Brother TN-B023 DCP-B7520DW/ HL-B2080DW /MFC-B7715DW | Black | 2000str</h1> <p>WB&nbsp;Toner TNB023 do drukarek:</p> <p>Brother DCP-B7520DW / DCPB7520DW</p> <p>Brother HL-B2080DW / HLB2080DW</p> <p>Brother MFC-B7715DW /</p> <p>MFCB7715DW</p>"
+                        }
+                    ]
+                },
+                {
+                    "items": [
+                        {
+                            "type": "IMAGE",
+                            "url": "https://a.allegroimg.com/original/118e75/d33744a44ca6894e23e457b3df79"
+                        },
+                        {
+                            "type": "TEXT",
+                            "content": "<h2>⚙️ PARAMETRY PRODUKTU:</h2> <ul> <li><b>Kolor:</b> Black</li> <li><b>Producent drukarki:</b> Brother</li> <li><b>Technologia druku:</b> Laserowa</li> <li><b>Wydajność / pojemność:</b> 2000 szt.</li> </ul>"
+                        }
+                    ]
+                },
+                {
+                    "items": [
+                        {
+                            "type": "TEXT",
+                            "content": "<h2>⚙️&nbsp;SZCZEGÓŁY PRODUKTU:</h2>"
+                        }
+                    ]
+                },
+                {
+                    "items": [
+                        {
+                            "type": "TEXT",
+                            "content": "<p>✅ Wysokiej jakości chip zliczający, <b>poprawnie rozpoznaje toner w drukarce i precyzyjnie zlicza wydrukowane strony</b>. ⭐⭐⭐⭐⭐</p>"
+                        }
+                    ]
+                },
+                {
+                    "items": [
+                        {
+                            "type": "TEXT",
+                            "content": "<p>✅ Prawidłowo dobrany wałek OPC do proszku, powoduje, że wydruki są:</p> <ul> <li><b>ostre,</b></li> <li><b>wyraźne.</b></li> <li><b>wysokiej rozdzielczości,</b></li> </ul>"
+                        }
+                    ]
+                },
+                {
+                    "items": [
+                        {
+                            "type": "TEXT",
+                            "content": "<p>✅&nbsp;&nbsp;Tonery napełnione proszkiem o <b>najwyższej jakości połysku</b>, dzięki czemu wydruki zachowują <b>prawidłową kolorystykę</b>.</p>"
+                        }
+                    ]
+                },
+                {
+                    "items": [
+                        {
+                            "type": "TEXT",
+                            "content": "<p><b>Wydajność</b>&nbsp;sprzedawanych przez nas tonerów, jest testowana i zgodna z normami:</p> <p>⭐ ISO/IEC 19798 ↔ Tonery kolorowe</p> <p>⭐ ISO/IEC 19752 ↔ Tonery \"czarno białe\"</p> <p>Proces produkcji jest kontrolowany i zgodny z normami:</p> <p>⭐ ISO 9001</p> <p>⭐ ISO 14001</p>"
+                        },
+                        {
+                            "type": "IMAGE",
+                            "url": "https://a.allegroimg.com/original/113367/eed4b8d5442aa24afbc4d2520761"
+                        }
+                    ]
+                },
+                {
+                    "items": [
+                        {
+                            "type": "TEXT",
+                            "content": "<p>✅ Testy wydajnościowe dają&nbsp;<b>gwarancję i pewność</b>&nbsp;poprawnej i bezawaryjnej pracy w urządzeniu.&nbsp;</p>"
+                        }
+                    ]
+                },
+                {
+                    "items": [
+                        {
+                            "type": "TEXT",
+                            "content": "<h2>⚙️ WSZYSTKIE TONERY, BĘBNY SĄ:</h2> <p>⭐⭐⭐⭐⭐</p> <p>✅ Gotowe do użycia bezpośrednio po zdjęciu zabezpieczenia, a ich instalacja jest bezproblemowa. ⭐⭐⭐⭐⭐</p> <p>⭐⭐⭐⭐⭐</p>"
+                        }
+                    ]
+                },
+                {
+                    "items": [
+                        {
+                            "type": "TEXT",
+                            "content": "<h2>⚙️&nbsp;CO ZYSKUJESZ?</h2> <p>✅ Sprzedawany produkt jest gotowy do&nbsp;<b>natychmiastowej</b>&nbsp;oraz&nbsp;<b>długiej i bezawaryjnej pracy</b>.&nbsp;⌛ Drukujesz bez obaw o:</p> <ul> <li>zacięcia w drukarce,</li> <li>smugi czy zabrudzenia na wydrukach.</li> </ul> <p>✅ Zawsze wyposażone w chip z najnowszym oprogramowaniem ⭐ Jeśli wyszła aktualizacja - zawsze wycofujemy ze sprzedaży całą partię.</p> <p>✅ <b>Najlepsza jakość</b>&nbsp;w super cenie!&nbsp;⚡</p>"
+                        }
+                    ]
+                },
+                {
+                    "items": [
+                        {
+                            "type": "TEXT",
+                            "content": "<h2>⚙️&nbsp;GALERIA:</h2>"
+                        }
+                    ]
+                },
+                {
+                    "items": [
+                        {
+                            "type": "IMAGE",
+                            "url": "https://a.allegroimg.com/original/118e75/d33744a44ca6894e23e457b3df79"
+                        }
+                    ]
+                },
+                {
+                    "items": [
+                        {
+                            "type": "TEXT",
+                            "content": "<h2>⚙️&nbsp;FAQ:</h2> <p><b>1.</b></p> <p>Każdy toner pakowany jest w czarny worek PE który chroni wałek OPC przed dotarciem promieni słonecznych. W zależności od rodzaju produktu może znaleźć się również przekładka z papieru z domieszką bawełny która zabezpiecza wałek OPC, plomba zabezpieczająca toner przed wysypaniem, osłonka chipa oraz osłona wałka OPC. Całość zapakowana jest w karton oraz ownięta folią typu stretch.</p> <p><b>2.&nbsp;CZY TUSZE MOGĄ WYSCHNĄĆ W DRUKARCE? CZY DA SIĘ COŚ Z TYM ZROBIĆ?</b></p> <p>Niestety tusze mogą zaschnąć w drukarce. Szczególnie niebezpieczne jest to w sytuacji kiedy głowica jest wbudowana w drukarce. Aby temu przeciwdziałać, wystarczy np. raz w tygodniu coś wydrukować.</p> <p><b>3.&nbsp;CZY ZAMIENNIKI MAJĄ TAKĄ SAMĄ JAKOŚĆ CO ORYGINALNE TUSZE /TONERY?</b></p> <p>Między oryginalnymi, a zamienikami nie ma większych różnic. Producenci stosują atramenty / proszki o takim samym lub zbliżonym składzie. Jeśli nie mamy zakładu poligraficznego różnica jakości nie będzie zauważalna.&nbsp;</p> <p><b>4.&nbsp;</b><b>NA ILE STRON WYSTARCZĄ MI ATRAMENTY / TONERY?</b></p> <p>W przypadku atramentów, niestety nie da się dokładnie podać ilości stron. Producenci podają je jako orientacyjne. Ustawienia drukarki, rodzaj papieru znacznie różnicuje sumę możliwych wydruków. Dlatego najlepiej patrzeć na pojemność, podaną w mililitrach. Co do tonerów laserowych, wydajnośc podawana jest przy 5% pokryciu strony.</p>"
+                        }
+                    ]
+                }
+            ]
+        },
+        "external": null,
+        "category": {
+            "id": "260342"
+        },
+        "taxSettings": null,
+        "sizeTable": null,
+        "discounts": {
+            "wholesalePriceList": null
+        },
+        "contact": null,
+        "fundraisingCampaign": null,
+        "messageToSellerSettings": {
+            "mode": "OPTIONAL"
+        },
+        "attachments": [],
+        "b2b": null,
+        "additionalServices": null,
+        "compatibilityList": null,
+        "additionalMarketplaces": {
+            "allegro-business-pl": {
+                "sellingMode": null,
+                "publication": {
+                    "state": "NOT_REQUESTED",
+                    "refusalReasons": []
+                }
+            },
+            "allegro-sk": {
+                "sellingMode": null,
+                "publication": {
+                    "state": "NOT_REQUESTED",
+                    "refusalReasons": []
+                }
+            },
+            "allegro-cz": {
+                "sellingMode": null,
+                "publication": {
+                    "state": "NOT_REQUESTED",
+                    "refusalReasons": []
+                }
+            },
+            "allegro-hu": {
+                "sellingMode": null,
+                "publication": {
+                    "state": "NOT_REQUESTED",
+                    "refusalReasons": []
+                }
+            },
+            "allegro-business-cz": {
+                "sellingMode": null,
+                "publication": {
+                    "state": "NOT_REQUESTED",
+                    "refusalReasons": []
+                }
+            }
+        },
+        "warnings": [],
+        "aiCoCreatedContent": {
+            "images": []
+        },
+        "id": "18771453310",
+        "language": "pl-PL",
+        "publication": {
+            "status": "INACTIVE",
+            "duration": null,
+            "endedBy": null,
+            "endingAt": null,
+            "startingAt": null,
+            "republish": false,
+            "marketplaces": {
+                "base": {
+                    "id": "allegro-pl"
+                },
+                "additional": []
+            }
+        },
+        "validation": {
+            "errors": [
+                {
+                    "code": "EMPTY_SHIPPING_RATES",
+                    "message": "No shipping rates set.",
+                    "details": "NON_BLOCKING",
+                    "path": "delivery.shippingRates.id",
+                    "userMessage": "Brak ustawionego cennika dostawy.",
+                    "metadata": []
+                },
+                {
+                    "code": "ConstraintViolationException.AfterSalesServiceConditionsRequiredByCompany",
+                    "message": "Offer Terms (for returns and complaints) are required for Business Accounts.",
+                    "details": "ConstraintViolationException.AfterSalesServiceConditionsRequiredByCompany",
+                    "path": "null",
+                    "userMessage": "Warunki oferty (zwroty, reklamacje) są wymagane dla kont firma.",
+                    "metadata": []
+                },
+                {
+                    "code": "ConstraintViolationException.AtLeastOneMode",
+                    "message": "You must select at least one sale method and enter the required prices.",
+                    "details": "ConstraintViolationException.AtLeastOneMode",
+                    "path": "sellingMode.null",
+                    "userMessage": "Musisz wybrać przynajmniej jeden sposób sprzedaży oraz podać wymagane ceny.",
+                    "metadata": []
+                }
+            ],
+            "warnings": [],
+            "validatedAt": "2026-07-17T20:08:56.852Z"
+        },
+        "createdAt": "2026-07-17T20:08:48.000Z",
+        "updatedAt": "2026-07-17T20:08:56.853Z"
+    },
+    {
+        "name": "Toner Brother TN-2411 czarny",
+        "productSet": [
+            {
+                "product": {
+                    "id": "a4e358de-0b5b-4331-9fae-57c337e070e6",
+                    "publication": {
+                        "status": "LISTED"
+                    },
+                    "parameters": [
+                        {
+                            "id": "224017",
+                            "name": "Kod producenta",
+                            "values": [
+                                "TN-2411, TN2411"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "248914",
+                            "name": "Producent",
+                            "values": [
+                                "Brother"
+                            ],
+                            "valuesIds": [
+                                "248914_1986571"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "237206",
+                            "name": "Model",
+                            "values": [
+                                "TN-2411"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "17589",
+                            "name": "Kolor",
+                            "values": [
+                                "czarny (black)"
+                            ],
+                            "valuesIds": [
+                                "17589_1"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "17448",
+                            "name": "Waga produktu z opakowaniem jednostkowym",
+                            "values": [
+                                "0.633"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "203429",
+                            "name": "Wydajność",
+                            "values": [
+                                "1200"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "218669",
+                            "name": "Certyfikaty zgodności",
+                            "values": [
+                                "CE"
+                            ],
+                            "valuesIds": [
+                                "218669_1"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "250792",
+                            "name": "Kod taryfy celnej",
+                            "values": [
+                                "32159070"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "225693",
+                            "name": "EAN (GTIN)",
+                            "values": [
+                                "4977766789608"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        }
+                    ],
+                    "isAiCoCreated": true
+                },
+                "quantity": {
+                    "value": 1
+                },
+                "responsiblePerson": null,
+                "responsibleProducer": {
+                    "id": "5e8fafe5-8c3c-46f2-8c7b-5c3788014b9c"
+                },
+                "safetyInformation": {
+                    "description": "Lista ostrzeżeń dotyczących bezpieczeństwa tonerów oparta o wymagania Rozporządzenia (UE) 2023/988 w sprawie ogólnego bezpieczeństwa produktów (GPSR):\n\n1. Ryzyko wdychania pyłu:\n   * Podczas wymiany lub czyszczenia tonera, unikaj wdychania pyłu, który może podrażniać drogi oddechowe.\n   * Używaj maski ochronnej lub respiratora, szczególnie jeśli jesteś osobą wrażliwą na pyły.\n\n2. Ryzyko podrażnienia skóry i oczu:\n   * Toner może powodować podrażnienia w kontakcie ze skórą i oczami.\n   * Unikaj bezpośredniego kontaktu. W razie kontaktu, przemyj skórę lub oczy dużą ilością wody i skontaktuj się z lekarzem.\n\n3. Ryzyko pożaru i wybuchu:\n   * Toner jest substancją łatwopalną.\n   * Nie narażaj tonera na wysokie temperatury, iskry lub otwarty ogień.\n   * Przechowuj toner w chłodnym, suchym i dobrze wentylowanym miejscu, z dala od źródeł ciepła i ognia.\n\n4. Ryzyko zanieczyszczenia:\n   * Toner może plamić powierzchnie i ubrania.\n   * Używaj rękawic ochronnych podczas wymiany lub czyszczenia tonera.\n   * Natychmiast usuwaj wszelkie rozsypane substancje za pomocą odkurzacza z filtrem HEPA lub wilgotnej ściereczki.\n\n5. Zagrożenie dla dzieci:\n   * Toner i jego opakowanie mogą zawierać małe elementy, które stanowią ryzyko zadławienia dla dzieci.\n   * Przechowuj toner w miejscu niedostępnym dla dzieci.\n\n6. Oddziaływanie na środowisko:\n   * Zużyty toner i opakowania należy utylizować zgodnie z lokalnymi przepisami dotyczącymi ochrony środowiska.\n   * Nie wyrzucaj zużytego tonera do śmieci komunalnych.\n\n7. Kompatybilność:\n   * Używaj tylko tonerów przeznaczonych do konkretnego modelu drukarki.\n   * Użycie nieodpowiedniego tonera może uszkodzić drukarkę i wpłynąć na jakość wydruku.\n\n8. Przechowywanie:\n   * Przechowuj tonery w oryginalnym opakowaniu, w suchym i chłodnym miejscu, z dala od bezpośredniego światła słonecznego.\n   * Nie przechowuj tonerów w miejscach narażonych na duże zmiany temperatury i wilgotności.",
+                    "type": "TEXT"
+                },
+                "marketedBeforeGPSRObligation": false,
+                "deposits": []
+            }
+        ],
+        "parameters": [
+            {
+                "id": "11323",
+                "name": "Stan",
+                "values": [
+                    "Uszkodzony"
+                ],
+                "valuesIds": [
+                    "11323_238062"
+                ],
+                "rangeValue": null
+            }
+        ],
+        "images": [
+            "https://a.allegroimg.com/original/29ecfe/761ea7dc412f9eb21dee840f9416",
+            "https://a.allegroimg.com/original/1192c6/ea0ed98a424281846106e060d89a",
+            "https://a.allegroimg.com/original/110cb3/ea801f014b6fabf0cd44853052c3",
+            "https://a.allegroimg.com/original/112cba/30d7ddf14146b821d226e19850a4"
+        ],
+        "afterSalesServices": {
+            "impliedWarranty": {
+                "id": "4e8f1e2c-3f97-42c9-ad0d-4b9204320ee1"
+            },
+            "returnPolicy": {
+                "id": "2fae3e22-1ad2-41bd-b878-60070e5e2ee6"
+            },
+            "warranty": {
+                "id": "3c24f369-901a-431c-8961-c03924343d6d"
+            }
+        },
+        "payments": {
+            "invoice": "VAT"
+        },
+        "sellingMode": {
+            "format": "BUY_NOW",
+            "price": {
+                "amount": "50.00",
+                "currency": "PLN"
+            },
+            "startingPrice": null,
+            "minimalPrice": null
+        },
+        "stock": {
+            "available": 1,
+            "unit": "UNIT"
+        },
+        "location": {
+            "countryCode": "PL",
+            "province": "MALOPOLSKIE",
+            "city": "<redacted>",
+            "postCode": "<redacted>"
+        },
+        "delivery": {
+            "shippingRates": {
+                "id": "6dbd5dba-d908-4559-a770-55eb5b4cabfb"
+            },
+            "handlingTime": "PT0S",
+            "additionalInfo": null,
+            "shipmentDate": null
+        },
+        "description": {
+            "sections": [
+                {
+                    "items": [
+                        {
+                            "type": "TEXT",
+                            "content": "<h2>Toner sprzedajemy jako uszkodzony, nie mamy możliwości zweryfikowania jego zapełnienia lub stanu,&nbsp; towar był używany, może pochodzić z demontażu.</h2><h1>Oryginalny toner Brother TN-2411</h1>"
+                        }
+                    ]
+                },
+                {
+                    "items": [
+                        {
+                            "type": "TEXT",
+                            "content": "<h2>Kompatybilność</h2> <ul> <li>Brother DCP-L2512D</li> <li>Brother DCP-L2532DW</li> <li>Brother DCP-L2552DN</li> <li>Brother HL-L2312D</li> <li>Brother HL-L2352DW</li> <li>Brother HL-L2372DN</li> <li>Brother MFC-L2712DW</li> <li>Brother MFC-L2712DN</li> <li>Brother MFC-L2732DW</li> <li>Brother MFC-L2752DW</li> </ul>"
+                        },
+                        {
+                            "type": "IMAGE",
+                            "url": "https://a.allegroimg.com/original/110cb3/ea801f014b6fabf0cd44853052c3"
+                        }
+                    ]
+                },
+                {
+                    "items": [
+                        {
+                            "type": "TEXT",
+                            "content": "<h2>Najważniejsze cechy:</h2> <ul> <li>Wydajność tonera do 1,200 strony zgodnie z normą ISO/IEC19752</li> <li>Wysokiej jakości oryginalna kaseta Brother</li> <li>Oszczędzaj czas i pieniądze</li> </ul>"
+                        }
+                    ]
+                }
+            ]
+        },
+        "external": null,
+        "category": {
+            "id": "260341"
+        },
+        "taxSettings": null,
+        "sizeTable": null,
+        "discounts": {
+            "wholesalePriceList": null
+        },
+        "contact": null,
+        "fundraisingCampaign": null,
+        "messageToSellerSettings": {
+            "mode": "OPTIONAL"
+        },
+        "attachments": [],
+        "b2b": null,
+        "additionalServices": null,
+        "compatibilityList": null,
+        "additionalMarketplaces": {
+            "allegro-business-pl": {
+                "sellingMode": {
+                    "price": {
+                        "amount": "50.00",
+                        "currency": "PLN"
+                    }
+                },
+                "publication": {
+                    "state": "REFUSED",
+                    "refusalReasons": [
+                        {
+                            "code": "VQR012_OFFER_HAS_NO_TAX_RATE_FOR_MARKETPLACE",
+                            "userMessage": "no VAT rate",
+                            "parameters": []
+                        }
+                    ]
+                }
+            },
+            "allegro-sk": {
+                "sellingMode": null,
+                "publication": {
+                    "state": "NOT_REQUESTED",
+                    "refusalReasons": []
+                }
+            },
+            "allegro-cz": {
+                "sellingMode": null,
+                "publication": {
+                    "state": "NOT_REQUESTED",
+                    "refusalReasons": []
+                }
+            },
+            "allegro-hu": {
+                "sellingMode": null,
+                "publication": {
+                    "state": "NOT_REQUESTED",
+                    "refusalReasons": []
+                }
+            },
+            "allegro-business-cz": {
+                "sellingMode": null,
+                "publication": {
+                    "state": "NOT_REQUESTED",
+                    "refusalReasons": []
+                }
+            }
+        },
+        "warnings": [],
+        "aiCoCreatedContent": {
+            "images": []
+        },
+        "id": "18771444609",
+        "language": "pl-PL",
+        "publication": {
+            "status": "ACTIVE",
+            "duration": null,
+            "endedBy": null,
+            "endingAt": null,
+            "startingAt": null,
+            "republish": false,
+            "marketplaces": {
+                "base": {
+                    "id": "allegro-pl"
+                },
+                "additional": [
+                    {
+                        "id": "allegro-business-pl"
+                    }
+                ]
+            }
+        },
+        "validation": {
+            "errors": [],
+            "warnings": [],
+            "validatedAt": "2026-07-17T20:06:13.635Z"
+        },
+        "createdAt": "2026-07-17T20:04:44.000Z",
+        "updatedAt": "2026-07-17T20:19:45.538Z"
+    },
+    {
+        "name": "Bęben Brother DR-B023 DCP-B7520DW HL-B2080DW MFC-B7715DW",
+        "productSet": [
+            {
+                "product": {
+                    "id": "86edb6d0-0857-4705-bfd6-0c5b7619478a",
+                    "publication": {
+                        "status": "LISTED"
+                    },
+                    "parameters": [
+                        {
+                            "id": "224017",
+                            "name": "Kod producenta",
+                            "values": [
+                                "DRB023"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "248914",
+                            "name": "Producent",
+                            "values": [
+                                "Brother"
+                            ],
+                            "valuesIds": [
+                                "248914_1986571"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "17589",
+                            "name": "Kolor",
+                            "values": [
+                                "czarny (black)"
+                            ],
+                            "valuesIds": [
+                                "17589_1"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "222881",
+                            "name": "Przeznaczenie",
+                            "values": [
+                                "Brother"
+                            ],
+                            "valuesIds": [
+                                "222881_300989"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "17448",
+                            "name": "Waga produktu z opakowaniem jednostkowym",
+                            "values": [
+                                "1.123"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "218669",
+                            "name": "Certyfikaty zgodności",
+                            "values": [
+                                "CE"
+                            ],
+                            "valuesIds": [
+                                "218669_1"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "250792",
+                            "name": "Kod taryfy celnej",
+                            "values": [
+                                "32159070"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "225693",
+                            "name": "EAN (GTIN)",
+                            "values": [
+                                "3415413306071"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        }
+                    ],
+                    "isAiCoCreated": true
+                },
+                "quantity": {
+                    "value": 1
+                },
+                "responsiblePerson": null,
+                "responsibleProducer": {
+                    "id": "5e8fafe5-8c3c-46f2-8c7b-5c3788014b9c"
+                },
+                "safetyInformation": {
+                    "description": "List of printer and scanner drum safety warnings based on the requirements of General Product Safety Regulation (GPSR) 2023/988\n\n* Make sure the drum is compatible with your printer or scanner model. The wrong drum can damage the device. * Do not touch the surface of the drum. This can affect the print quality and life of the drum. * Replace the drum according to the manufacturer's instructions. Incorrect installation may cause damage to the printer. * Protect the drum from direct sunlight and high humidity. This can shorten its lifespan. * Do not use damaged drum. This can affect the quality of the print and damage the printer. * Keep the drum out of reach of children. The danger of swallowing small parts. * Use the drum as intended. Do not attempt to modify it or use it for other purposes. * Do not open or disassemble the drum. It contains substances that can be harmful to health. * If the substance from the drum comes into contact with the skin or eyes, immediately wash it with plenty of water and consult a doctor. * Recycle the used drum in accordance with local regulations. Do not throw it into ordinary waste. * Do not expose the drum to extreme temperatures. This can affect its performance and shorten its lifespan. * Use only recommended cleaning products to clean printer components that may come into contact with the drum. Strong detergents can damage it. * Regularly check the condition of the drum. If you notice any damage, replace it immediately. * If the printer displays an error message related to the drum, immediately check its status and correctness of installation. * When replacing the drum, make sure the printer is off power. This will minimize the risk of electric shock. * After replacing the drum, make sure all printer covers and protections are properly mounted. * If you have any doubts about the use of the drum, please contact the technical service of the printer manufacturer. * When cleaning the printer, avoid direct contact of cleaning agents with the drum surface.",
+                    "type": "TEXT"
+                },
+                "marketedBeforeGPSRObligation": false,
+                "deposits": []
+            }
+        ],
+        "parameters": [
+            {
+                "id": "11323",
+                "name": "Stan",
+                "values": [
+                    "Uszkodzony"
+                ],
+                "valuesIds": [
+                    "11323_238062"
+                ],
+                "rangeValue": null
+            },
+            {
+                "id": "229205",
+                "name": "Stan opakowania",
+                "values": [
+                    "oryginalne"
+                ],
+                "valuesIds": [
+                    "229205_340245"
+                ],
+                "rangeValue": null
+            }
+        ],
+        "images": [
+            "https://a.allegroimg.com/original/296b8e/3e7ce2644982abfe5194a7d58880",
+            "https://a.allegroimg.com/original/11b0ce/6fddb78543139633eb3ecdc41a13",
+            "https://a.allegroimg.com/original/11193c/7d0effe140678172ff38915bdb87",
+            "https://a.allegroimg.com/original/11c9c0/dddcfa5546b387689b7556013846",
+            "https://a.allegroimg.com/original/11ae94/62ab9f6d48eba660caaf37e35621",
+            "https://a.allegroimg.com/original/114e02/972dfe7841338b13786e5c06855a"
+        ],
+        "afterSalesServices": {
+            "impliedWarranty": {
+                "id": "4e8f1e2c-3f97-42c9-ad0d-4b9204320ee1"
+            },
+            "returnPolicy": {
+                "id": "2fae3e22-1ad2-41bd-b878-60070e5e2ee6"
+            },
+            "warranty": {
+                "id": "3c24f369-901a-431c-8961-c03924343d6d"
+            }
+        },
+        "payments": {
+            "invoice": "VAT"
+        },
+        "sellingMode": {
+            "format": "BUY_NOW",
+            "price": {
+                "amount": "35.00",
+                "currency": "PLN"
+            },
+            "startingPrice": null,
+            "minimalPrice": null
+        },
+        "stock": {
+            "available": 1,
+            "unit": "UNIT"
+        },
+        "location": {
+            "countryCode": "PL",
+            "province": "MALOPOLSKIE",
+            "city": "<redacted>",
+            "postCode": "<redacted>"
+        },
+        "delivery": {
+            "shippingRates": {
+                "id": "6dbd5dba-d908-4559-a770-55eb5b4cabfb"
+            },
+            "handlingTime": "PT0S",
+            "additionalInfo": null,
+            "shipmentDate": null
+        },
+        "description": {
+            "sections": [
+                {
+                    "items": [
+                        {
+                            "type": "TEXT",
+                            "content": "<h2>Toner sprzedajemy jako uszkodzony, nie mamy możliwości zweryfikowania jego zapełnienia lub stanu, jest w oryginalnym opakowaniu, towar był używany, może pochodzić z demontażu.</h2><h2>Bęben Brother DRB023 czarny (black) do Brother</h2><h1>Bęben DR-B023 12.000 stron do HL-B2080/DCP-B7520/MFC-B7715</h1>"
+                        }
+                    ]
+                },
+                {
+                    "items": [
+                        {
+                            "type": "TEXT",
+                            "content": "<h2>Oryginalny zespół bębna Brother DR-B023</h2>"
+                        }
+                    ]
+                },
+                {
+                    "items": [
+                        {
+                            "type": "IMAGE",
+                            "url": "https://a.allegroimg.com/original/296b8e/3e7ce2644982abfe5194a7d58880"
+                        }
+                    ]
+                }
+            ]
+        },
+        "external": null,
+        "category": {
+            "id": "260338"
+        },
+        "taxSettings": null,
+        "sizeTable": null,
+        "discounts": {
+            "wholesalePriceList": null
+        },
+        "contact": null,
+        "fundraisingCampaign": null,
+        "messageToSellerSettings": {
+            "mode": "OPTIONAL"
+        },
+        "attachments": [],
+        "b2b": null,
+        "additionalServices": null,
+        "compatibilityList": null,
+        "additionalMarketplaces": {
+            "allegro-business-pl": {
+                "sellingMode": {
+                    "price": {
+                        "amount": "35.00",
+                        "currency": "PLN"
+                    }
+                },
+                "publication": {
+                    "state": "REFUSED",
+                    "refusalReasons": [
+                        {
+                            "code": "VQR012_OFFER_HAS_NO_TAX_RATE_FOR_MARKETPLACE",
+                            "userMessage": "no VAT rate",
+                            "parameters": []
+                        }
+                    ]
+                }
+            },
+            "allegro-sk": {
+                "sellingMode": null,
+                "publication": {
+                    "state": "NOT_REQUESTED",
+                    "refusalReasons": []
+                }
+            },
+            "allegro-cz": {
+                "sellingMode": null,
+                "publication": {
+                    "state": "NOT_REQUESTED",
+                    "refusalReasons": []
+                }
+            },
+            "allegro-hu": {
+                "sellingMode": null,
+                "publication": {
+                    "state": "NOT_REQUESTED",
+                    "refusalReasons": []
+                }
+            },
+            "allegro-business-cz": {
+                "sellingMode": null,
+                "publication": {
+                    "state": "NOT_REQUESTED",
+                    "refusalReasons": []
+                }
+            }
+        },
+        "warnings": [],
+        "aiCoCreatedContent": {
+            "images": []
+        },
+        "id": "18771424113",
+        "language": "pl-PL",
+        "publication": {
+            "status": "ACTIVE",
+            "duration": null,
+            "endedBy": null,
+            "endingAt": null,
+            "startingAt": null,
+            "republish": false,
+            "marketplaces": {
+                "base": {
+                    "id": "allegro-pl"
+                },
+                "additional": [
+                    {
+                        "id": "allegro-business-pl"
+                    }
+                ]
+            }
+        },
+        "validation": {
+            "errors": [],
+            "warnings": [],
+            "validatedAt": "2026-07-17T20:00:16.389Z"
+        },
+        "createdAt": "2026-07-17T19:55:48.000Z",
+        "updatedAt": "2026-07-17T20:10:48.942Z"
+    }
+]
