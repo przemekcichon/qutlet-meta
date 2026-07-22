@@ -154,6 +154,19 @@ punkt ustaw fazę na 🟨 i realizowany podpunkt na 🟡; po merge'u punktu zmie
 (🟦) oznaczamy TYLKO na fazach (nie na podpunktach). Legenda i pełne reguły
 granularności są w `docs/plan.md`.
 
+**Którędy jedzie który flip (dwie różne ścieżki — nie myl ich):**
+- **🟨/🟡 „w trakcie"** → PIERWSZYM commitem brancha realizowanego punktu, czyli
+  wjeżdża na `main` razem z jego PR-em. NIE osobnym commitem wprost na `main` (wyjątek
+  z „Git workflow" pkt 1 tego przypadku NIE obejmuje) i NIE osobnym PR-em tylko po to,
+  żeby zapalić ikonę. Gdy punkt okazuje się wielorepowy i w trakcie sesji dochodzi
+  rozbicie na pod-punkty, flip 🟡 wchodzi po prostu do commita rozbijającego punkt.
+- **🟢/🟩 „zrealizowane"** → osobnym, atomowym commitem `docs:` wprost na `main` PO
+  merge'u (szczegóły w „Git workflow" pkt 1).
+
+Powód rozdziału: flip „w trakcie" opisuje pracę, która JEST w danym branchu, więc należy
+do jego PR-a; flip „zrealizowane" opisuje fakt POWSTAŁY dopiero przy merge'u, więc do
+żadnego PR-a już się nie mieści.
+
 Jeden punkt/poprawka = jedna sesja + osobny branch + PR (patrz „Git workflow").
 Obowiązuje nawet przy lakonicznym poleceniu typu „zrealizuj P-x z planu".
 **Punkt wielorepowy:** repozytoria mają OSOBNE `origin` (osobne PR-y), więc punkt
@@ -184,8 +197,10 @@ domknięto (brak merge) — handoff wznawia TEN SAM punkt, nie następny.
    punktu (🟡→🟢, a przy domknięciu fazy 🟨→🟩) to czysta księgowość dokumentacji —
    robimy go jednym atomowym commitem `docs:` wprost na `main`, bez brancha/PR
    (konwencja „flip po merge'u" nie mieści się w PR punktu). Wyjątek dotyczy
-   WYŁĄCZNIE ikon statusu; każda inna zmiana w `plan.md` (i całej reszcie repo)
-   idzie normalną ścieżką branch + PR.
+   WYŁĄCZNIE ikon statusu **domknięcia** (🟢/🟩); każda inna zmiana w `plan.md`
+   (i całej reszcie repo) idzie normalną ścieżką branch + PR. Flip „w trakcie"
+   (🟨/🟡) pod wyjątek NIE podpada — jedzie pierwszym commitem brancha punktu
+   (patrz „Realizacja punktu planu" → „Którędy jedzie który flip").
 2. Commity małe i atomowe — jedna logiczna zmiana = jeden commit. Nie łącz
    refaktoru z nową funkcjonalnością w jednym commicie.
 3. Format komunikatów: Conventional Commits po angielsku
