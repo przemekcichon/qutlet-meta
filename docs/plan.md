@@ -685,7 +685,7 @@ całe konto, służące do odtworzenia sandboxa. Warstwa surowa to **meta na kon
 produkcie Woo**, służąca AI i podglądowi w adminie. Wspólne źródło, różny cykl życia
 i różni konsumenci.
 
-### 🟡 P-3A.1 — Snapshot ofert z produkcji (punkt wielorepowy → P-3A.1a + P-3A.1b)
+### 🟢 P-3A.1 — Snapshot ofert z produkcji (punkt wielorepowy → P-3A.1a + P-3A.1b)
 
 Pierwotnie jeden punkt w `qutlet-allegro`. W realizacji (sesja 2026-07-22) decyzja o
 lokalizacji snapshotu (rewizja **D-3A.G3**) dołożyła artefakt w `qutlet-meta`
@@ -732,7 +732,7 @@ wznawialność przerwanego pobrania, log co pobrano.
   realnych danych przy zasiewie, a nie tutaj. **Odrzucona alternatywa:** ściąganie
   binariów (≈768 × 7 plików, setki MB) — de facto przesądziłoby D-3A.G4.
 
-#### 🟡 P-3A.1a — Komenda snapshotu ofert (qutlet-allegro)
+#### 🟢 P-3A.1a — Komenda snapshotu ofert (qutlet-allegro)
 - **Repo:** qutlet-allegro (slice `SandboxSeed/` — NOWY, nie `ApiSamples/`)
 - **Zakres:** komenda WP-CLI `snapshot-offers`: slotem `production/read`
   (`Auth\TokenRefresher::get_valid()`, baza z
@@ -749,7 +749,7 @@ wznawialność przerwanego pobrania, log co pobrano.
   token), FAZA 3 (realny kształt danych), P-3A.1b (katalog docelowy musi być
   gitignorowany, ZANIM wleją się do niego surowe dane).
 
-#### 🟡 P-3A.1b — Katalog snapshotu + rewizja D-3A.G3 (qutlet-meta)
+#### 🟢 P-3A.1b — Katalog snapshotu + rewizja D-3A.G3 (qutlet-meta)
 - **Repo:** qutlet-meta (`docs/allegro-snapshot-offers/`)
 - **Zakres:** założenie katalogu docelowego snapshotu z **deny-all `.gitignore`**
   (allow-lista: wyłącznie `.gitignore` + `README.md`) oraz `README.md` opisującym
