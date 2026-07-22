@@ -409,7 +409,7 @@ wersje pierwotne są jawnie oznaczone jako odrzucone.
 
 ---
 
-## 🟨 FAZA 3 — Przykładowe zwrotki Allegro API — ROZPISANA
+## 🟩 FAZA 3 — Przykładowe zwrotki Allegro API — ROZPISANA
 
 Cel: zebrać realne, **zredagowane** zwrotki z endpointów Allegro do
 `docs/allegro-api-samples/` — żeby FAZA 4 (mapping) i późniejszy import
@@ -542,7 +542,7 @@ zależnością (`P-3.2b` → `P-3.2a`).
   (**D-3.G1** spełnione trywialnie). Poprawka `.gitignore` (allow-lista dwóch plików).
 - **Zależności:** P-3.2a (dostarcza surowe dane).
 
-### 🟡 P-3.3 — Zwrotki zamówień (PII — ostra redakcja; punkt wielorepowy → P-3.3a + P-3.3b)
+### 🟢 P-3.3 — Zwrotki zamówień (PII — ostra redakcja; punkt wielorepowy → P-3.3a + P-3.3b)
 
 Pierwotnie jeden punkt (produkt: pliki-próbki w meta). W realizacji (sesja 2026-07-22)
 — jak w P-3.1 i P-3.2 — mechanizm pobrania okazał się kodem w `qutlet-allegro`, więc
@@ -587,7 +587,7 @@ struktury i typów. Jeśli pełna redakcja niemożliwa → plik NIE do repo (`.g
   (`delivery.pickupPoint` null vs obiekt, `payment.features` puste vs niepuste). Wybór
   publikowanych plików robimy dopiero PO obejrzeniu kształtów, nie z góry.
 
-#### 🟡 P-3.3a — Komenda pobierająca zwrotki zamówień (qutlet-allegro)
+#### 🟢 P-3.3a — Komenda pobierająca zwrotki zamówień (qutlet-allegro)
 - **Repo:** qutlet-allegro (slice `ApiSamples/`)
 - **Zakres:** read-only komenda WP-CLI `sample-orders`: slotem `production/read`
   (`Auth\TokenRefresher::get_valid()`; scope `allegro:api:orders:read` należy do roli
@@ -598,7 +598,7 @@ struktury i typów. Jeśli pełna redakcja niemożliwa → plik NIE do repo (`.g
   spełniony). Rejestracja pod guardem `WP_CLI` obok pozostałych komend slice'a.
 - **Zależności:** FAZA 2 (P-2.1b + P-2.2 — slot `production/read`; P-2.3 — ważny token).
 
-#### 🟡 P-3.3b — Zredagowane pliki-próbki zamówień (qutlet-meta)
+#### 🟢 P-3.3b — Zredagowane pliki-próbki zamówień (qutlet-meta)
 - **Repo:** qutlet-meta (`docs/allegro-api-samples/`)
 - **Zakres:** z surowego wyjścia P-3.3a złóż zredagowane próbki (**D-3.3.4**:
   `GET_order-events.json`, `GET_order-checkout-forms-id.json`) + provenance w `SOURCES.md`
