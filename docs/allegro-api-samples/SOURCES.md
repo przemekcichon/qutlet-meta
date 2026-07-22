@@ -161,7 +161,7 @@ Kształty istotne dla FAZY 4/6, ujawnione przez ten dobór:
 ### Pliki (P-3.3)
 | plik | endpoint | uwagi |
 |---|---|---|
-| `GET_order-events.json` | `GET /order/events?limit=100` | Strumień **przycięty** ze 100 do **8** zdarzeń: po 2 na każdy z 4 typów, w kolejności chronologicznej. Przycięte zdarzenia dotyczą wyłącznie zamówień publikowanych w drugim pliku, więc identyfikatory zgadzają się między plikami. |
+| `GET_order-events.json` | `GET /order/events?limit=100` | Strumień **przycięty** ze 100 do **8** zdarzeń: po 2 na każdy z 4 typów, w kolejności chronologicznej. Zachowane zdarzenia dotyczą wyłącznie zamówień publikowanych w drugim pliku, więc identyfikatory są spójne między plikami. Uwaga: to NIE jest odwzorowanie 1:1 — zdarzenia trafiły na 2 z 3 opublikowanych zamówień (trzecie nie ma tu żadnego wpisu). |
 | `GET_order-checkout-forms-id.json` | `GET /order/checkout-forms/{checkoutFormId}` | Tablica **3** pełnych zwrotek (osobny endpoint → osobny plik, konwencja README). |
 
 ### Redakcja (D-3.G1 + D-3.3.3) — reguły dokładnie takie, jak zastosowane
@@ -170,7 +170,7 @@ pełny zestaw reguł. **`null` nigdy nie jest redagowany** — nullowalność to
 
 | pole | po redakcji |
 |---|---|
-| `buyer.firstName`, `buyer.lastName`, `buyer.login`, `buyer.companyName`, `*.address.street`, `*.address.city`, `messageToSeller`, `note` | `"<redacted>"` |
+| `*.firstName`, `*.lastName` (kupujący ORAZ odbiorca w `delivery.address`), `*.companyName`, `buyer.login`, `*.address.street`, `*.address.city`, `messageToSeller`, `note` | `"<redacted>"` |
 | `delivery.pickupPoint.id`, `.name`, `.description` | `"<redacted>"` (punkt odbioru lokalizuje kupującego) |
 | `buyer.email`, `events[].order.buyer.email` | `kupujacy<N>@example.com` (stabilne per kupujący) |
 | `buyer.phoneNumber` / `delivery.address.phoneNumber` | `+48 500 100 200` / `+48500100200` — zachowana obecność spacji, bo API zwraca oba warianty |
@@ -183,8 +183,20 @@ pełny zestaw reguł. **`null` nigdy nie jest redagowany** — nullowalność to
 `offer.name` (nasze własne, publiczne oferty), wszystkie kwoty i waluty, wszystkie daty,
 `status`, `fulfillment.*`, `payment.type`/`provider`, `delivery.method.id`/`name`
 (publiczny słownik metod dostawy Allegro — potrzebny do mappingu), `marketplace.id`,
-`revision`, `tax.rate`, `countryCode`, `events[].id` (kursor strumienia) oraz
-`events[].order.seller.id` (nasze własne, publiczne konto sprzedawcy).
+`revision`, `tax.rate`, `countryCode`, `buyer.preferences.language`, flagi logiczne
+(`buyer.guest`, `delivery.smart`, `serialNumbers.expected`), `events[].id` (kursor
+strumienia) oraz `events[].order.seller.id` (nasze własne, publiczne konto sprzedawcy).
+
+**Reguły PRZEWIDYWANE, nie POTWIERDZONE:** wiersze dla `taxId` (NIP), `companyName`,
+`messageToSeller` i `note` nie miały na czym zadziałać — w całej piątce te pola są `null`
+albo nieobecne. Przy pierwszym zamówieniu z fakturą lub kupującym-firmą redakcję tych pól
+trzeba napisać i zweryfikować od nowa (skrypt był jednorazowy i nie leży w repo).
+
+**„Zredagowane" nie znaczy „niepowiązywalne".** Verbatim zostają `offer.id`/`offer.name`,
+dokładne znaczniki czasu, `revision`, `events[].id` i `seller.id` — mając dostęp do konta
+sprzedawcy Qutlet da się po nich odtworzyć, o które realne zamówienia chodzi. To świadomy
+wybór (te dane są potrzebne w FAZIE 4/6, a sprzedawcą jesteśmy my), ale plik jest
+pozbawiony DANYCH OSOBOWYCH, nie zanonimizowany w sensie „nie do połączenia".
 
 **Weryfikacja redakcji:** po redakcji zrzucono **każdą** unikalną wartość tekstową w obu
 plikach (per ścieżka) i przejrzano ją w całości, a dodatkowo przepuszczono pliki przez skan
