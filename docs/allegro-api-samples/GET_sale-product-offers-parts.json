@@ -34,7 +34,7 @@
         }
     },
     {
-        "id": "18773225304",
+        "id": "18749618849",
         "stock": {
             "available": 1
         },
@@ -68,13 +68,13 @@
         }
     },
     {
-        "id": "18772854905",
+        "id": "18768380392",
         "stock": {
             "available": 1
         },
         "sellingMode": {
             "price": {
-                "amount": "99.00",
+                "amount": "50.00",
                 "currency": "PLN"
             }
         },
@@ -82,7 +82,7 @@
             "allegro-business-pl": {
                 "sellingMode": {
                     "price": {
-                        "amount": "99.00",
+                        "amount": "50.00",
                         "currency": "PLN"
                     }
                 }
@@ -102,7 +102,7 @@
         }
     },
     {
-        "id": "18771453310",
+        "id": "18757279235",
         "stock": {
             "available": 0
         },
@@ -128,24 +128,16 @@
         }
     },
     {
-        "id": "18771444609",
+        "id": "18761171520",
         "stock": {
-            "available": 1
+            "available": 0
         },
         "sellingMode": {
-            "price": {
-                "amount": "50.00",
-                "currency": "PLN"
-            }
+            "price": null
         },
         "additionalMarketplaces": {
             "allegro-business-pl": {
-                "sellingMode": {
-                    "price": {
-                        "amount": "50.00",
-                        "currency": "PLN"
-                    }
-                }
+                "sellingMode": null
             },
             "allegro-sk": {
                 "sellingMode": null

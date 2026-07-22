@@ -13,17 +13,23 @@ przed wejściem do repo.
 
 ## Dobór ofert (D-3.G3 — różnorodność > ilość)
 Ze strony `GET /sale/offers?limit=100&offset=0` (100 z `totalCount=768` ofert)
-wybrano **po jednej ofercie na kategorię**, dla 6 rozłącznych kategorii — żeby
-ujawnić zmienność zestawu parametrów między kategoriami asortymentu:
+wybrano **6 ofert z wyraźnie różnych domen asortymentu** — audio, peryferia
+wskazujące, akcesoria do monitora, AGD kuchenne, zasilanie, materiały
+eksploatacyjne — żeby ujawnić jak bardzo różnią się zestawy parametrów
+(`parameters[]`, `productSet`) i stany oferty między domenami:
 
-| offerId | categoryId | przykład |
-|---|---|---|
-| 18780385602 | 85166  | słuchawki bezprzewodowe |
-| 18773225304 | 257109 | (patrz `GET_sale-product-offers.json`) |
-| 18772854905 | 259436 | (jw.) |
-| 18771453310 | 260342 | oferta zakończona (stock 0 / price null) |
-| 18771444609 | 260341 | (jw.) |
-| 18771424113 | 260338 | bęben do drukarki, stan „Uszkodzony", GPSR |
+| offerId | categoryId | domena | uwagi |
+|---|---|---|---|
+| 18780385602 | 85166  | audio | słuchawki bezprzewodowe, aktywna |
+| 18749618849 | 4575   | mysz | mysz bezprzewodowa Dell, opis „nie działa BT" (stan uszkodzony) |
+| 18768380392 | 260041 | akcesoria monitora | podstawka do monitora Dell |
+| 18757279235 | 260556 | AGD kuchenne | grill elektryczny De'Longhi — **zakończona** (stock 0 / price null) |
+| 18761171520 | 19357  | zasilanie | ładowarka GaN 200W — **zakończona** (stock 0 / price null) |
+| 18771424113 | 260338 | materiały eksploatacyjne | bęben do drukarki Brother — `productSet` z produktem katalogowym, GPSR (`safetyInformation`), stan „Uszkodzony" |
+
+Zróżnicowanie pokrywa: różne zestawy `parameters[]` per domena; ofertę z
+`productSet`/GPSR vs oferty bez; dwie oferty **zakończone** (gałąź `price: null`,
+`stock.available: 0`) w danych pełnych i w `/parts`.
 
 ## Pliki
 | plik | endpoint | uwagi |

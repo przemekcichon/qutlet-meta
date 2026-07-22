@@ -2,12 +2,12 @@ offerId,categoryId,name,price,currency,available,sampled
 18780385602,85166,"Słuchawki bezprzewodowe dokanałowe Soundcore Life Dot 3i z ANC czarne 36 h",179.0,PLN,1,yes
 18780307559,85166,"Słuchawki bezprzewodowe Soundcore P40i ANC HearID IPX5 Czarne",149.0,PLN,1,no
 18780303760,85166,"Słuchawki bezprzewodowe Soundcore P40i ANC HearID IPX5 Czarne",,,0,no
-18773225304,257109,"Słuchawki dokanałowe MoonDrop CHU II DSP same słuchawki bez przewodu",60.0,PLN,1,yes
-18772854905,259436,"Obudowa do komputera Fury Shobo SH4F RGB Tempered - brak bocznej szyby",99.0,PLN,1,yes
+18773225304,257109,"Słuchawki dokanałowe MoonDrop CHU II DSP same słuchawki bez przewodu",60.0,PLN,1,no
+18772854905,259436,"Obudowa do komputera Fury Shobo SH4F RGB Tempered - brak bocznej szyby",99.0,PLN,1,no
 18772815831,259436,"Obudowa Silver Monkey Chest TGM Midi, defekt na panelu, bez wentylatorów",99.0,PLN,1,no
 18772773707,85166,"Prawa Słuchawka bezprzewodowe dokanałowa Sennheiser z etui CX200YW1 C",50.0,PLN,1,no
-18771453310,260342,"Toner Imagine BR-B023-E1 do Brother czarny (black)",,,0,yes
-18771444609,260341,"Toner Brother TN-2411 czarny",50.0,PLN,1,yes
+18771453310,260342,"Toner Imagine BR-B023-E1 do Brother czarny (black)",,,0,no
+18771444609,260341,"Toner Brother TN-2411 czarny",50.0,PLN,1,no
 18771439901,260341,"Toner Brother TN2411 HL-L2372DN 1 200 stron",40.0,PLN,1,no
 18771424113,260338,"Bęben Brother DR-B023 DCP-B7520DW HL-B2080DW MFC-B7715DW",35.0,PLN,1,yes
 18771409316,260341,"Toner Brother czarny TN-B023 2000 str.",24.0,PLN,1,no
@@ -18,7 +18,7 @@ offerId,categoryId,name,price,currency,available,sampled
 18771062299,260339,"Bęben ActiveJet DRB-2401N czarny do Brother",18.0,PLN,1,no
 18771025179,260341,"Toner Brother TN-2590 do L2402D L2442DW L2600 L2622DW L2802 L2862DW L2922DW",36.0,PLN,1,no
 18770944671,260347,"Drukarka Canon MP560 atramentowa uszkodzona nie podaje papieru",,,1,no
-18768380392,260041,"Podstawka do monitora Dell G2724D 27""",50.0,PLN,1,no
+18768380392,260041,"Podstawka do monitora Dell G2724D 27""",50.0,PLN,1,yes
 18767514285,260054,"Oryginalna podstawka do monitora AOC 24B3HA2",20.0,PLN,1,no
 18766764815,17098,"System do mycia wodą demineralizowaną",17000.0,PLN,1,no
 18764106424,49143,"Zasilacz ADS-150KL-19N-3 190145E 19V 149.91W 7.89A 150 do MSI",129.0,PLN,1,no
@@ -35,7 +35,7 @@ offerId,categoryId,name,price,currency,available,sampled
 18761446629,260040,"Wentylator x-kom 120 x 120 mm FAN 12CM",6.0,PLN,0,no
 18761407939,260041,"Monitor LCD Samsung SyncMaster 2333SW 23 """,80.0,PLN,0,no
 18761175770,260040,"Wentylatory ENDORFY Fluctus 120 PWM/ wentylatory, SMX, Gamer 30 sztuk",,,0,no
-18761171520,19357,"Ładowarka GaN 200W Silver Monkay oraz 30 sztuk uszkodzonych ładowarek",,,0,no
+18761171520,19357,"Ładowarka GaN 200W Silver Monkay oraz 30 sztuk uszkodzonych ładowarek",,,0,yes
 18758292025,85166,"Słuchawki bezprzewodowe Soundcore P40i ANC HearID IPX5 Czarne",129.0,PLN,0,no
 18758195969,85166,"Słuchawki dokanałowe Soundcore P40i ANC HearID IPX5 Bluetooth Niebieskie",179.0,PLN,1,no
 18758144774,85166,"Słuchawki bezprzewodowe dokanałowe Soundcore Life Dot 3i z ANC czarne 36 h",,,0,no
@@ -46,7 +46,7 @@ offerId,categoryId,name,price,currency,available,sampled
 18757713287,85166,"Słuchawki bezprzewodowe dokanałowe Soundcore P40i ANC IPX5 Fioletowe",119.0,PLN,0,no
 18757591384,85166,"Słuchawki bezprzewodowe dokanałowe Soundcore Liberty 5 ANC IP55 czarne",219.0,PLN,1,no
 18757281321,67442,"Kontaktowy grill elektryczny De'Longhi CGH1012D srebrny/szary 2000 W",699.0,PLN,0,no
-18757279235,260556,"Grill elektryczny De'Longhi MultiGrill CGH1020D 2000 W",,,0,no
+18757279235,260556,"Grill elektryczny De'Longhi MultiGrill CGH1020D 2000 W",,,0,yes
 18755885837,4576,"Myszka przewodowa SteelSeries RIVAL 5 sensor optyczny",50.0,PLN,0,no
 18755635664,257731,"Bridge, Router Zyxel WSM20-EU0201F 802.11g",229.0,PLN,1,no
 18755568428,257731,"Router ASUS ZenWiFi XD5 (W-1-PK) 802.11ax (Wi-Fi 6)",,,0,no
@@ -59,7 +59,7 @@ offerId,categoryId,name,price,currency,available,sampled
 18753332656,259436,"Obudowa MSI MPG Velox 100R Midi Tower czarny",,,0,no
 18752253236,259436,"Obudowa Krux Leda RGB Midi Tower czarny",199.0,PLN,1,no
 18751081443,259436,"Obudowa Chieftec HC-10B-OP Midi Tower czarny",129.0,PLN,0,no
-18749618849,4575,"Mysz bezprzewodowa Dell MS5120W optyczna nie działa BT",60.0,PLN,1,no
+18749618849,4575,"Mysz bezprzewodowa Dell MS5120W optyczna nie działa BT",60.0,PLN,1,yes
 18749600114,4575,"Mysz bezprzewodowa Dell MS5120W optyczna 1600 dpi czarna",79.0,PLN,1,no
 18748642780,4575,"Myszka bezprzewodowa Dell MS5120W czarna",69.0,PLN,2,no
 18748601274,4576,"Myszka przewodowa Corsair Harpoon RGB sensor optyczny",30.0,PLN,1,no

@@ -479,11 +479,11 @@
         "updatedAt": "2026-07-21T20:36:25.694Z"
     },
     {
-        "name": "Słuchawki dokanałowe MoonDrop CHU II DSP same słuchawki bez przewodu",
+        "name": "Mysz bezprzewodowa Dell MS5120W optyczna nie działa BT",
         "productSet": [
             {
                 "product": {
-                    "id": "f943030d-1c8e-4d37-bee0-f40c130512fa",
+                    "id": "36992a1d-568c-4e8d-8f13-963ba761fbe6",
                     "publication": {
                         "status": "LISTED"
                     },
@@ -492,109 +492,109 @@
                             "id": "224017",
                             "name": "Kod producenta",
                             "values": [
-                                "CHU2dsp"
+                                "570-ABHL"
                             ],
                             "valuesIds": null,
                             "rangeValue": null
                         },
                         {
-                            "id": "248811",
-                            "name": "Marka",
+                            "id": "248914",
+                            "name": "Producent",
                             "values": [
-                                "MoonDrop"
+                                "Dell"
                             ],
                             "valuesIds": [
-                                "248811_1998389"
+                                "248914_1971942"
                             ],
                             "rangeValue": null
                         },
                         {
-                            "id": "250441",
+                            "id": "237206",
                             "name": "Model",
                             "values": [
-                                "CHU II DSP"
+                                "MS5120W"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "517",
+                            "name": "Interfejs",
+                            "values": [
+                                "USB (Radio 2.4 GHz)"
                             ],
                             "valuesIds": [
-                                "250441_1920803"
+                                "517_512"
                             ],
                             "rangeValue": null
                         },
                         {
-                            "id": "129357",
-                            "name": "Kolor dominujący",
+                            "id": "515",
+                            "name": "Sensor",
+                            "values": [
+                                "optyczny"
+                            ],
+                            "valuesIds": [
+                                "515_1"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "249512",
+                            "name": "Kolor",
                             "values": [
                                 "czarny"
                             ],
                             "valuesIds": [
-                                "129357_3"
+                                "249512_1647413"
                             ],
                             "rangeValue": null
                         },
                         {
-                            "id": "203681",
-                            "name": "Rodzaj słuchawek",
+                            "id": "516",
+                            "name": "Rozdzielczość myszy",
                             "values": [
-                                "dokanałowe"
-                            ],
-                            "valuesIds": [
-                                "203681_217753"
-                            ],
-                            "rangeValue": null
-                        },
-                        {
-                            "id": "203677",
-                            "name": "Regulacja głośności",
-                            "values": [
-                                "tak"
-                            ],
-                            "valuesIds": [
-                                "203677_217737"
-                            ],
-                            "rangeValue": null
-                        },
-                        {
-                            "id": "203689",
-                            "name": "Mikrofon",
-                            "values": [
-                                "tak"
-                            ],
-                            "valuesIds": [
-                                "203689_217777"
-                            ],
-                            "rangeValue": null
-                        },
-                        {
-                            "id": "223333",
-                            "name": "Szerokość produktu",
-                            "values": [
-                                "12"
+                                "1600"
                             ],
                             "valuesIds": null,
                             "rangeValue": null
                         },
                         {
-                            "id": "223329",
-                            "name": "Wysokość produktu",
+                            "id": "224697",
+                            "name": "Profil myszy",
                             "values": [
-                                "3"
+                                "praworęczna"
+                            ],
+                            "valuesIds": [
+                                "224697_309217"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "210674",
+                            "name": "Liczba przycisków",
+                            "values": [
+                                "7"
                             ],
                             "valuesIds": null,
                             "rangeValue": null
                         },
                         {
-                            "id": "201321",
-                            "name": "Głębokość produktu",
+                            "id": "249913",
+                            "name": "Zasilanie myszy",
                             "values": [
-                                "15"
+                                "bateryjne"
                             ],
-                            "valuesIds": null,
+                            "valuesIds": [
+                                "249913_1780623"
+                            ],
                             "rangeValue": null
                         },
                         {
-                            "id": "203709",
+                            "id": "224701",
                             "name": "Waga produktu",
                             "values": [
-                                "0.2"
+                                "150"
                             ],
                             "valuesIds": null,
                             "rangeValue": null
@@ -603,66 +603,19 @@
                             "id": "17448",
                             "name": "Waga produktu z opakowaniem jednostkowym",
                             "values": [
-                                "0.5"
+                                "0.184"
                             ],
                             "valuesIds": null,
                             "rangeValue": null
                         },
                         {
-                            "id": "203673",
-                            "name": "Materiał",
+                            "id": "218669",
+                            "name": "Certyfikaty zgodności",
                             "values": [
-                                "metal"
+                                "CE"
                             ],
                             "valuesIds": [
-                                "203673_217725"
-                            ],
-                            "rangeValue": null
-                        },
-                        {
-                            "id": "203693",
-                            "name": "Impedancja",
-                            "values": [
-                                "18"
-                            ],
-                            "valuesIds": null,
-                            "rangeValue": null
-                        },
-                        {
-                            "id": "207838",
-                            "name": "Długość przewodu",
-                            "values": [
-                                "1.2"
-                            ],
-                            "valuesIds": null,
-                            "rangeValue": null
-                        },
-                        {
-                            "id": "217641",
-                            "name": "Cechy dodatkowe",
-                            "values": [
-                                "Wymienny kabel; Membrana alu-mg; 10 mm dynamiczny sterownik; Sterowanie dotykowe"
-                            ],
-                            "valuesIds": null,
-                            "rangeValue": null
-                        },
-                        {
-                            "id": "217645",
-                            "name": "Załączone wyposażenie",
-                            "values": [
-                                "1 x CHU II, 1kabel do słuchawek torba do przechowywania, Poduszki nauszne"
-                            ],
-                            "valuesIds": null,
-                            "rangeValue": null
-                        },
-                        {
-                            "id": "248248",
-                            "name": "Aktywne tłumienie hałasu",
-                            "values": [
-                                "nie"
-                            ],
-                            "valuesIds": [
-                                "248248_883397"
+                                "218669_1"
                             ],
                             "rangeValue": null
                         },
@@ -670,16 +623,27 @@
                             "id": "250792",
                             "name": "Kod taryfy celnej",
                             "values": [
-                                "85183000"
+                                "84716070"
                             ],
                             "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "250685",
+                            "name": "Zawiera baterie",
+                            "values": [
+                                "tak"
+                            ],
+                            "valuesIds": [
+                                "250685_2006716"
+                            ],
                             "rangeValue": null
                         },
                         {
                             "id": "225693",
                             "name": "EAN (GTIN)",
                             "values": [
-                                "6972585501781"
+                                "5397184289174"
                             ],
                             "valuesIds": null,
                             "rangeValue": null
@@ -692,10 +656,10 @@
                 },
                 "responsiblePerson": null,
                 "responsibleProducer": {
-                    "id": "90467ae2-5169-4eb6-b0df-48be94ac6ff4"
+                    "id": "5a19885c-b071-408d-9c12-19f29b22e854"
                 },
                 "safetyInformation": {
-                    "description": "List of safety warnings for wired headphones based on the requirements of Regulation (EU) 2023/988 on General Product Safety (GPSR)\n\n1. Risk of hearing damage:\n * Use headphones in moderation to avoid permanent hearing damage. Listening to loud music for a long time can lead to hearing loss. * Set the low volume level before putting the headphones in your ears and gradually increase the volume to a comfortable level. * Avoid using headphones in very noisy environments where you need to significantly increase the volume to hear the sound. 2. Threat of entanglement and suffocation:\n * Keep headphones out of reach of young children to avoid the risk of getting tangled and suffocated. * Be careful that the headphone cable does not get tangled around your neck during physical activities. 3. Safety during activity:\n * Do not use headphones while driving, cycling or operating machinery as this limits your ability to hear your surroundings and can lead to accidents. * Be careful when walking in headphones to avoid tripping over the cable. 4. Compatibility and Damage:\n * Make sure your headphones are compatible with your device. Improper connection can damage your headphones or device. * Do not use damaged headphones. Check the cable and plug regularly for damage. 5. Hygiene:\n * Clean your headphones regularly to prevent bacteria buildup and ear infections. Use gentle cleaning products for this. 6. Use in extreme conditions:\n * Avoid using headphones in very damp or dusty areas to prevent damage. 7. Repairs:\n * Do not try to repair the headphones yourself. Please contact an authorized service provider for repairs. 8. Effects on medical devices:\n * People with hearing implants or other medical devices should consult a doctor before using headphones.",
+                    "description": "Lista ostrzeżeń dotyczących bezpieczeństwa myszek oparta o wymagania Rozporządzenia (UE) 2023/988 w sprawie ogólnego bezpieczeństwa produktów (GPSR):\n\n1.  Ergonomia i powtarzalne ruchy: Używam myszki w sposób ergonomiczny, aby uniknąć nadwyrężeń i urazów. Regularnie robię przerwy, aby zmniejszyć ryzyko zespołu cieśni nadgarstka lub innych problemów związanych z powtarzalnymi ruchami.\n2.  Czyszczenie i konserwacja: Odłączam myszkę od komputera przed czyszczeniem. Używam miękkiej, suchej szmatki do czyszczenia myszki. Unikam stosowania płynów, które mogą dostać się do wnętrza urządzenia i uszkodzić je.\n3.  Kabel i połączenia: Upewniam się, że kabel myszki jest prawidłowo podłączony do komputera i nie jest uszkodzony. Uszkodzony kabel może stanowić zagrożenie porażeniem prądem lub powodować nieprawidłowe działanie myszki.\n4.  Baterie (jeśli dotyczy): Jeśli używam myszki bezprzewodowej na baterie, używam baterii odpowiedniego typu i prawidłowo je wkładam. Wyjmuję baterie, gdy myszka nie jest używana przez dłuższy czas, aby zapobiec wyciekom i uszkodzeniom.\n5.  Oświetlenie LED (jeśli dotyczy): Unikam długotrwałego wpatrywania się w intensywne światło LED, które może powodować zmęczenie wzroku.\n6.  Dzieci: Przechowuję myszkę i małe elementy (np. baterie) poza zasięgiem dzieci, aby uniknąć ryzyka połknięcia lub zadławienia.\n7.  Recykling: Oddaję zużytą myszkę do odpowiedniego punktu recyklingu, aby zminimalizować wpływ na środowisko.\n8.  Użytkowanie: Nie używam uszkodzonej myszki, ponieważ grozi to porażeniem prądem lub skaleczeniem.\n9.  Naprawy: Nie naprawiam samodzielnie myszki, oddaję ją do serwisu.\n10. Przechowywanie: Przechowuję myszkę w suchym miejscu, z dala od wilgoci i ekstremalnych temperatur.",
                     "type": "TEXT"
                 },
                 "marketedBeforeGPSRObligation": false,
@@ -707,35 +671,21 @@
                 "id": "11323",
                 "name": "Stan",
                 "values": [
-                    "Na części"
+                    "Używany"
                 ],
                 "valuesIds": [
-                    "11323_1223453"
-                ],
-                "rangeValue": null
-            },
-            {
-                "id": "229205",
-                "name": "Stan opakowania",
-                "values": [
-                    "oryginalne"
-                ],
-                "valuesIds": [
-                    "229205_340245"
+                    "11323_2"
                 ],
                 "rangeValue": null
             }
         ],
         "images": [
-            "https://a.allegroimg.com/original/11cb27/0d2959d54526bbc330b886e1d87a",
-            "https://a.allegroimg.com/original/11a8b3/5f23ed06450b9ff05e5bcbf4c129",
-            "https://a.allegroimg.com/original/114870/5d043e9f4bfaa9a89937a4547724",
-            "https://a.allegroimg.com/original/11ab7b/7cdf80514fce8d259fcdf918355a",
-            "https://a.allegroimg.com/original/116875/d9b804ad4106a6b93bc4ed5db0be",
-            "https://a.allegroimg.com/original/117235/fcfdeecb4f078196b5e43a50c3d7",
-            "https://a.allegroimg.com/original/115d22/9c8c195f47458901447c49ed16ad",
-            "https://a.allegroimg.com/original/11777d/fd5e75394d6a88b578def73ba876",
-            "https://a.allegroimg.com/original/11d7b1/37a7c09a472eb525a3122887c185"
+            "https://a.allegroimg.com/original/298bd2/a2cc47e64fc3afbde99122ed416c",
+            "https://a.allegroimg.com/original/118a8f/9bcc5c2e44de9ecd8d943aea6c89",
+            "https://a.allegroimg.com/original/11d52d/5ade2d4f49c49f7a27d8a459639e",
+            "https://a.allegroimg.com/original/113425/b42c19d844aca175eb76bda616f2",
+            "https://a.allegroimg.com/original/116a3d/1efebc04486faafb0a31b25384d4",
+            "https://a.allegroimg.com/original/11c0f2/16233a6c4792adc0e1fbc8d0e0cf"
         ],
         "afterSalesServices": {
             "impliedWarranty": {
@@ -745,7 +695,7 @@
                 "id": "2fae3e22-1ad2-41bd-b878-60070e5e2ee6"
             },
             "warranty": {
-                "id": "87fe5998-4f67-454c-bd06-2b38167803ec"
+                "id": "48e03833-a89b-475a-9fa7-ce8118b7e637"
             }
         },
         "payments": {
@@ -783,8 +733,8 @@
                 {
                     "items": [
                         {
-                            "type": "IMAGE",
-                            "url": "https://a.allegroimg.com/original/11a8b3/5f23ed06450b9ff05e5bcbf4c129"
+                            "type": "TEXT",
+                            "content": "<h2>Mysz DELL Pro MS5120W, używana, łączność bezprzewodowa 2,4 GHz</h2>"
                         }
                     ]
                 },
@@ -792,7 +742,7 @@
                     "items": [
                         {
                             "type": "TEXT",
-                            "content": "<p><b>Oferta dotyczy samych słuchawek z gumkami do komplety brakuje przewodu. Były używane, stan bardzo dobry.</b></p><p><b>Do uruchomiania słuchawek niezbędny jest przewód, który nie jest w sprzedaży.</b></p><p><b>Moondrop CHU II DSP</b></p><p>Słuchawki douszne</p><p><b>Bezkonkurencyjna wydajność</b></p><p>Wkrótce po premierze „CHU” stały się najpopularniejszymi słuchawkami dousznymi w swoim przedziale cenowym i przyciągnęły wielu naśladowców.</p><p>Teraz pojawia się „CHU II” z materiałami i technologiami najwyższej klasy.</p>"
+                            "content": "<ul><li><b>Komunikacja z komputerem:</b>&nbsp;Bezprzewodowa</li><li><b>Typ myszy:</b>&nbsp;Optyczna</li><li><b>Dla graczy:</b>&nbsp;Nie</li><li><b>Interfejs:</b> łączność bezprzewodowa 2,4 GHz</li><li><b>Rozdzielczość:</b>&nbsp;1600 dpi</li><li><b>Kolor:</b>&nbsp;Szary</li></ul><ul><li><b>Indeks:&nbsp;</b>284238</li></ul>"
                         }
                     ]
                 },
@@ -800,19 +750,7 @@
                     "items": [
                         {
                             "type": "TEXT",
-                            "content": "<p><b>Kompozytowa membrana kopułkowa ze stopu aluminium i magnezu</b></p> <p><b>High-endowe materiały</b></p> <p>Jako materiał na membranę kopułkową CHU II został wybrany stop aluminiowo – magnezowy, który charakteryzuje się dużą sztywnością i lekkością, poszerzając w ten sposób pasmo wysokich tonów i ujawniając bardziej subtelne szczegóły. Zawieszenie membrany składa się z dwóch materiałów polimerowych o różnych właściwościach, co zapewnia mocniejszy bas i znacznie zmniejszone zniekształcenia nieliniowe.</p> <p>Dotychczas zastosowanie materiału ze stopu Al-Mg ograniczało się do kilku modeli high-endowych słuchawek dousznych i słuchawek pełnowymiarowych. Uznano go za stosunkowo kosztowny materiał na membranę, a „CHU II” jest pierwszym budżetowym IEM, który go wykorzystuje.</p>"
-                        }
-                    ]
-                },
-                {
-                    "items": [
-                        {
-                            "type": "TEXT",
-                            "content": "<p><b>Wnęka odlewana ze stopu</b></p> <p><b>Zapewnienie trwałości i wysokiej jakości tekstury</b></p> <p>Wnęka akustyczna „CHU II” jest produkowana przy użyciu technologii odlewania firmy MOONDROP dojrzałego stopu, zapewniającej zarówno sztywność, jak i delikatną teksturę. Trwała warstwa farby chroni metalową obudowę przed korozją.</p>"
-                        },
-                        {
-                            "type": "IMAGE",
-                            "url": "https://a.allegroimg.com/original/114870/5d043e9f4bfaa9a89937a4547724"
+                            "content": "<p>łączność bezprzewodowa 2,4 GHz pozwala sparować i połączyć się z niemal każdym komputerem przy użyciu preferowanego trybu pracy. Czujnik o rozdzielczości 1600 DPI sprawia, że mysz bezprzewodowa Dell Mobile Pro Wireless MS5120W skutecznie i sprawnie działa z ekranami o wysokiej rozdzielczości. Czujnik optyczny zapewnia dokładne śledzenie i idealnie nadaje się do większości powierzchni biurkowych.</p>"
                         }
                     ]
                 },
@@ -820,23 +758,7 @@
                     "items": [
                         {
                             "type": "IMAGE",
-                            "url": "https://a.allegroimg.com/original/11ab7b/7cdf80514fce8d259fcdf918355a"
-                        },
-                        {
-                            "type": "TEXT",
-                            "content": "<p><b>Mosiężna dysza akustyczna CNC</b></p> <p>Dysza „CHU II” składa się z oddzielnego mosiężnego elementu CNC, oferującego większą precyzję i gęstość, a co za tym idzie, piękną barwę.</p>"
-                        }
-                    ]
-                },
-                {
-                    "items": [
-                        {
-                            "type": "TEXT",
-                            "content": "<p><b>Wymienne filtry akustyczne</b></p> <p>„CHU II” zawiera nową generację wymiennych filtrów akustycznych. Przedni koniec mosiężnej dyszy można zdjąć, co pozwala użytkownikom na szybką i wygodną wymianę filtra akustycznego.</p> <p>Wymiana jest znacznie łatwiejsza w porównaniu z istniejącymi filtrami wielowarstwowymi, a konstrukcja zapewnia większą niezawodność. W przypadku zatkania lub uszkodzenia koszt naprawy jest znacznie niższy niż w przypadku standardowych dysz.</p>"
-                        },
-                        {
-                            "type": "IMAGE",
-                            "url": "https://a.allegroimg.com/original/116875/d9b804ad4106a6b93bc4ed5db0be"
+                            "url": "https://a.allegroimg.com/original/118a8f/9bcc5c2e44de9ecd8d943aea6c89"
                         }
                     ]
                 },
@@ -844,11 +766,7 @@
                     "items": [
                         {
                             "type": "IMAGE",
-                            "url": "https://a.allegroimg.com/original/117235/fcfdeecb4f078196b5e43a50c3d7"
-                        },
-                        {
-                            "type": "TEXT",
-                            "content": "<p><b>Szerokopasmowa odpowiedź częstotliwościowa</b></p> <p><b>Benchmarkowe strojenie</b></p> <p>„CHU II” został dostrojony przez inżynierów akustyków i audiofilów posiadających bogatą wiedzę i szerokie doświadczenie. Dzięki temu wykazuje doskonałą krzywą odpowiedzi częstotliwościowej zgodną z odpowiedzią docelową VDSF. Membrana kopułkowa ze stopu aluminiowo-magnezowego zapewnia naturalny, wyrafinowany dźwięk, bogatą barwę i obrazowanie oraz ultraszerokie pasmo częstotliwości.</p> <p>* Odpowiedź docelowa MOONDROP VDSF to docelowa krzywa odpowiedzi częstotliwościowej oparta na HRTF (Head Related Transfer Function) B&amp;K HATS w warunkach dyfuzji i krzywej preferencji idealnego pomieszczenia. Im bardziej krzywa odpowiedzi częstotliwościowej zmierzona w ramach B&amp;K HATS jest bliżej docelowej krzywej odpowiedzi częstotliwościowej, tym lepiej słuchawki mogą odtworzyć obraz sceny dźwiękowej pod względem charakterystyki częstotliwościowej.</p>"
+                            "url": "https://a.allegroimg.com/original/11d52d/5ade2d4f49c49f7a27d8a459639e"
                         }
                     ]
                 },
@@ -856,43 +774,7 @@
                     "items": [
                         {
                             "type": "TEXT",
-                            "content": "<p><b>Reprodukcja subtelnych szczegółów z bardzo niskimi zniekształceniami nieliniowymi</b></p> <p>Dzięki solidnej technologii i skrupulatnemu projektowi membrany, „CHU II” oferuje nieliniowe zniekształcenie pełnej częstotliwości poniżej 0,05%, co skutkuje naturalną barwą i reprodukcją nawet najdrobniejszych szczegółów.</p>"
-                        },
-                        {
-                            "type": "IMAGE",
-                            "url": "https://a.allegroimg.com/original/115d22/9c8c195f47458901447c49ed16ad"
-                        }
-                    ]
-                },
-                {
-                    "items": [
-                        {
-                            "type": "IMAGE",
-                            "url": "https://a.allegroimg.com/original/11777d/fd5e75394d6a88b578def73ba876"
-                        },
-                        {
-                            "type": "TEXT",
-                            "content": "<p><b>Wymienna konstrukcja kabla</b></p> <p><b>Szerokie możliwości zastosowań</b></p> <p>„CHU II” wykorzystuje uniwersalny wymienny kabel 0,78 mm, dzięki czemu użytkownicy mogą łatwo go wymieniać lub korzystać z pałąka na szyję Bluetooth/zaczepów na uszy TWS w różnych scenariuszach użytkowania.</p>"
-                        }
-                    ]
-                },
-                {
-                    "items": [
-                        {
-                            "type": "TEXT",
-                            "content": "<p><b>W zestawie:</b></p> <p>1. [CHU II] Słuchawki douszne * 1</p> <p>2. Kabel DSP USB C&nbsp; z pilotem i mikrofonem * 1</p> <p>3. Torba do przechowywania * 1</p> <p>4. Końcówki douszne * 3 sztuki (S, M, L)</p> <p>5. Instrukcja * 1</p> <p>6. Certyfikat QC * 1</p> <p>7. Karta sposobu noszenia * 1</p>"
-                        },
-                        {
-                            "type": "IMAGE",
-                            "url": "https://a.allegroimg.com/original/11d7b1/37a7c09a472eb525a3122887c185"
-                        }
-                    ]
-                },
-                {
-                    "items": [
-                        {
-                            "type": "TEXT",
-                            "content": "<p>• Materiał wnęki: stop ZN</p> <p>• Przetwornik: 10 mm wysokowydajny przetwornik dynamiczny</p> <p>• Membrana: membrana kompozytowa ze stopu aluminium i magnezu</p> <p>• Gniazdo słuchawkowe: 0,78 mm-2pin</p> <p>• Wtyczka: USB- C</p> <p>• Pasmo przenoszenia: 15 Hz - 38 kHz</p> <p>• Efektywne pasmo przenoszenia: 20 Hz - 20 kHz (IEC60318-4, -3 dB)</p> <p>• THD: THD ≤0,5% (@1KHz, 94dB)</p>"
+                            "content": "<ul> <li><b>Komunikacja z komputerem:</b>&nbsp;Bezprzewodowa</li> <li><b>Profil myszy:</b>&nbsp;Praworęczny</li> <li><b>Typ myszy:</b>&nbsp;Optyczna</li> <li><b>Wbudowany akumulator:</b>&nbsp;Nie</li> <li><b>Dla graczy:</b>&nbsp;Nie</li> <li><b>Mysz pionowa:</b>&nbsp;Nie</li> <li><b>Interfejs:</b>&nbsp;2.4 GHz, Bluetooth</li> <li><b>Rodzaj zasilania:</b>&nbsp;Bateryjne</li> <li><b>Typ baterii:</b>&nbsp;1 x AA</li> <li><b>Bateria w zestawie:</b>&nbsp;Tak</li> <li><b>Zasięg&nbsp;[m]:</b>&nbsp;10</li> <li><b>Rozdzielczość:</b>&nbsp;1600 dpi</li> <li><b>Liczba przycisków:</b>&nbsp;7</li> <li><b>Liczba rolek:</b>&nbsp;1</li> <li><b>Programowalne przyciski:</b>&nbsp;Tak</li> <li><b>Dotykowa:</b>&nbsp;Nie</li> <li><b>Kolor:</b>&nbsp;Szary</li> </ul>"
                         }
                     ]
                 }
@@ -900,7 +782,7 @@
         },
         "external": null,
         "category": {
-            "id": "257109"
+            "id": "4575"
         },
         "taxSettings": null,
         "sizeTable": null,
@@ -968,7 +850,7 @@
         "aiCoCreatedContent": {
             "images": []
         },
-        "id": "18773225304",
+        "id": "18749618849",
         "language": "pl-PL",
         "publication": {
             "status": "ACTIVE",
@@ -991,17 +873,17 @@
         "validation": {
             "errors": [],
             "warnings": [],
-            "validatedAt": "2026-07-18T14:10:51.762Z"
+            "validatedAt": "2026-07-10T07:16:20.641Z"
         },
-        "createdAt": "2026-07-18T13:57:58.000Z",
-        "updatedAt": "2026-07-18T14:13:00.021Z"
+        "createdAt": "2026-07-10T07:02:15.000Z",
+        "updatedAt": "2026-07-10T07:17:17.217Z"
     },
     {
-        "name": "Obudowa do komputera Fury Shobo SH4F RGB Tempered - brak bocznej szyby",
+        "name": "Podstawka do monitora Dell G2724D 27\"",
         "productSet": [
             {
                 "product": {
-                    "id": "93e9af2c-aef5-4909-884a-5189c89f9139",
+                    "id": "534d2589-002f-4a6e-945b-961ee8b37f4e",
                     "publication": {
                         "status": "LISTED"
                     },
@@ -1010,19 +892,19 @@
                             "id": "224017",
                             "name": "Kod producenta",
                             "values": [
-                                "NFO-2154"
+                                "210-BHTK"
                             ],
                             "valuesIds": null,
                             "rangeValue": null
                         },
                         {
-                            "id": "248914",
-                            "name": "Producent",
+                            "id": "248811",
+                            "name": "Marka",
                             "values": [
-                                "Fury"
+                                "Dell"
                             ],
                             "valuesIds": [
-                                "248914_1987262"
+                                "248811_1131529"
                             ],
                             "rangeValue": null
                         },
@@ -1030,19 +912,74 @@
                             "id": "237206",
                             "name": "Model",
                             "values": [
-                                "NFO-2154"
+                                "Dell G2724D"
                             ],
                             "valuesIds": null,
                             "rangeValue": null
                         },
                         {
-                            "id": "4477",
-                            "name": "Typ obudowy",
+                            "id": "194",
+                            "name": "Przekątna ekranu (cale)",
                             "values": [
-                                "Midi Tower"
+                                "27"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "206418",
+                            "name": "Rodzaj podświetlania",
+                            "values": [
+                                "LED"
                             ],
                             "valuesIds": [
-                                "4477_40"
+                                "206418_227546"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "206590",
+                            "name": "Typ matrycy",
+                            "values": [
+                                "IPS / PLS"
+                            ],
+                            "valuesIds": [
+                                "206590_228086"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "244609",
+                            "name": "Rozdzielczość natywna",
+                            "values": [
+                                "2560 x 1440"
+                            ],
+                            "valuesIds": [
+                                "244609_504293"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "206734",
+                            "name": "Złącza",
+                            "values": [
+                                "HDMI",
+                                "DisplayPort"
+                            ],
+                            "valuesIds": [
+                                "206734_1",
+                                "206734_64"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "247945",
+                            "name": "Klasa efektywności energetycznej",
+                            "values": [
+                                "F"
+                            ],
+                            "valuesIds": [
+                                "247945_838302"
                             ],
                             "rangeValue": null
                         },
@@ -1058,116 +995,245 @@
                             "rangeValue": null
                         },
                         {
-                            "id": "219645",
-                            "name": "Zasilacz w zestawie",
+                            "id": "206586",
+                            "name": "Przekątna ekranu",
                             "values": [
-                                "nie"
+                                "68.6"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "1239",
+                            "name": "Czas reakcji",
+                            "values": [
+                                "1"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "1241",
+                            "name": "Jasność",
+                            "values": [
+                                "400"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "206594",
+                            "name": "Powłoka matrycy",
+                            "values": [
+                                "matowa"
                             ],
                             "valuesIds": [
-                                "219645_286905"
+                                "206594_228098"
                             ],
                             "rangeValue": null
                         },
                         {
-                            "id": "219653",
-                            "name": "Standard płyty głównej",
+                            "id": "206598",
+                            "name": "Proporcje obrazu",
                             "values": [
-                                "ATX",
-                                "microATX",
-                                "Mini-ITX"
+                                "16:9"
                             ],
                             "valuesIds": [
-                                "219653_1",
-                                "219653_2",
-                                "219653_16"
+                                "206598_228106"
                             ],
                             "rangeValue": null
                         },
                         {
-                            "id": "522",
-                            "name": "Konstrukcja",
+                            "id": "206602",
+                            "name": "Kontrast statyczny (x:1)",
                             "values": [
-                                "filtr przeciwkurzowy",
-                                "szkło hartowane",
-                                "tunel na zasilacz"
+                                "1000"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "206606",
+                            "name": "Kontrast dynamiczny (x:1)",
+                            "values": [
+                                "5000"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "206622",
+                            "name": "Częstotliwość odświeżania",
+                            "values": [
+                                "165"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "206626",
+                            "name": "Kąt widzenia w pionie",
+                            "values": [
+                                "178"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "206630",
+                            "name": "Kąt widzenia w poziomie",
+                            "values": [
+                                "178"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "206634",
+                            "name": "Regulacja",
+                            "values": [
+                                "obrotowa podstawa",
+                                "pivot",
+                                "regulacja pochylenia (góra/dół)",
+                                "regulacja wysokości"
                             ],
                             "valuesIds": [
-                                "522_16",
-                                "522_1742455",
-                                "522_8"
+                                "206634_4",
+                                "206634_1",
+                                "206634_8",
+                                "206634_2"
                             ],
                             "rangeValue": null
                         },
                         {
-                            "id": "224541",
-                            "name": "Liczba slotów rozszerzeń",
+                            "id": "201661",
+                            "name": "Standard VESA",
                             "values": [
-                                "7"
+                                "100 x 100"
                             ],
-                            "valuesIds": null,
+                            "valuesIds": [
+                                "201661_2"
+                            ],
                             "rangeValue": null
                         },
                         {
-                            "id": "224557",
-                            "name": "Liczba złączy USB",
+                            "id": "206706",
+                            "name": "Konstrukcja i elementy dodatkowe",
                             "values": [
-                                "3"
+                                "Kensington lock"
                             ],
-                            "valuesIds": null,
+                            "valuesIds": [
+                                "206706_4"
+                            ],
                             "rangeValue": null
                         },
                         {
-                            "id": "224569",
-                            "name": "Pozostałe złącza",
+                            "id": "206722",
+                            "name": "Technologie",
                             "values": [
-                                "1 x USB 2.0",
-                                "2 x USB 3.0",
-                                "2 x jack/audio"
+                                "G-Sync",
+                                "FreeSync",
+                                "HDR"
                             ],
-                            "valuesIds": null,
+                            "valuesIds": [
+                                "206722_1",
+                                "206722_2",
+                                "206722_4"
+                            ],
                             "rangeValue": null
                         },
                         {
-                            "id": "224581",
-                            "name": "Maksymalna wysokość chłodzenia procesora",
+                            "id": "206726",
+                            "name": "Rozmiar plamki",
                             "values": [
-                                "161"
-                            ],
-                            "valuesIds": null,
-                            "rangeValue": null
-                        },
-                        {
-                            "id": "224589",
-                            "name": "Maksymalna długość karty graficznej",
-                            "values": [
-                                "330"
-                            ],
-                            "valuesIds": null,
-                            "rangeValue": null
-                        },
-                        {
-                            "id": "224597",
-                            "name": "Zainstalowane wentylatory",
-                            "values": [
-                                "4x120mm RGB efekt"
+                                "0.22"
                             ],
                             "valuesIds": null,
                             "rangeValue": null
                         },
                         {
-                            "id": "224601",
-                            "name": "Maksymalna liczba wentylatorów",
+                            "id": "206730",
+                            "name": "Funkcje ochrony oczu",
                             "values": [
-                                "8"
+                                "filtr światła niebieskiego",
+                                "redukcja migotania"
+                            ],
+                            "valuesIds": [
+                                "206730_1",
+                                "206730_2"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "219833",
+                            "name": "Certyfikaty",
+                            "values": [
+                                "CE",
+                                "EAC",
+                                "Energy star",
+                                "ErP",
+                                "ISO 9241-307",
+                                "PSB",
+                                "RoHS",
+                                "TCO",
+                                "TUV",
+                                "UL/C-UL or CSA",
+                                "WEEE"
                             ],
                             "valuesIds": null,
                             "rangeValue": null
                         },
                         {
-                            "id": "224605",
-                            "name": "Miejsca na wewnętrzne dyski i napędy",
+                            "id": "219801",
+                            "name": "Cechy dodatkowe",
                             "values": [
-                                "2x 3,5\", 2x 2,5''"
+                                "DisplayPort",
+                                "Prąd przemienny"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "218829",
+                            "name": "Załączone wyposażenie",
+                            "values": [
+                                "skrócona instrukcja obsługi"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "206642",
+                            "name": "Szerokość produktu z podstawą",
+                            "values": [
+                                "61.19"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "206650",
+                            "name": "Wysokość produktu z podstawą",
+                            "values": [
+                                "52.35"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "206654",
+                            "name": "Głębokość produktu z podstawą",
+                            "values": [
+                                "20.02"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "206662",
+                            "name": "Waga z podstawą",
+                            "values": [
+                                "5.59"
                             ],
                             "valuesIds": null,
                             "rangeValue": null
@@ -1176,7 +1242,7 @@
                             "id": "223333",
                             "name": "Szerokość produktu",
                             "values": [
-                                "20.7"
+                                "61.2"
                             ],
                             "valuesIds": null,
                             "rangeValue": null
@@ -1185,7 +1251,7 @@
                             "id": "223329",
                             "name": "Wysokość produktu",
                             "values": [
-                                "44.8"
+                                "52.3"
                             ],
                             "valuesIds": null,
                             "rangeValue": null
@@ -1194,7 +1260,7 @@
                             "id": "201321",
                             "name": "Głębokość produktu",
                             "values": [
-                                "38.6"
+                                "20"
                             ],
                             "valuesIds": null,
                             "rangeValue": null
@@ -1203,7 +1269,7 @@
                             "id": "206686",
                             "name": "Waga produktu",
                             "values": [
-                                "4.61"
+                                "0.15"
                             ],
                             "valuesIds": null,
                             "rangeValue": null
@@ -1212,9 +1278,69 @@
                             "id": "17448",
                             "name": "Waga produktu z opakowaniem jednostkowym",
                             "values": [
-                                "7.2"
+                                "8.61"
                             ],
                             "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "247951",
+                            "name": "Klasa efektywności energetycznej podczas odtwarzania w trybie HDR",
+                            "values": [
+                                "D"
+                            ],
+                            "valuesIds": [
+                                "247951_838334"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "247975",
+                            "name": "Zużycie energii na 1000 godzin podczas odtwarzania w trybie HDR",
+                            "values": [
+                                "16"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "248159",
+                            "name": "Klasa efektywności energetycznej podczas odtwarzania w trybie SDR",
+                            "values": [
+                                "F"
+                            ],
+                            "valuesIds": [
+                                "248159_862863"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "247973",
+                            "name": "Zużycie energii na 1000 godzin podczas odtwarzania w trybie SDR",
+                            "values": [
+                                "11"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "250792",
+                            "name": "Kod taryfy celnej",
+                            "values": [
+                                "85285291"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "250685",
+                            "name": "Zawiera baterie",
+                            "values": [
+                                "nie"
+                            ],
+                            "valuesIds": [
+                                "250685_2006717"
+                            ],
                             "rangeValue": null
                         },
                         {
@@ -1229,19 +1355,10 @@
                             "rangeValue": null
                         },
                         {
-                            "id": "250792",
-                            "name": "Kod taryfy celnej",
-                            "values": [
-                                "84733080"
-                            ],
-                            "valuesIds": null,
-                            "rangeValue": null
-                        },
-                        {
                             "id": "225693",
                             "name": "EAN (GTIN)",
                             "values": [
-                                "5901969444353"
+                                "5397184821350"
                             ],
                             "valuesIds": null,
                             "rangeValue": null
@@ -1254,10 +1371,10 @@
                 },
                 "responsiblePerson": null,
                 "responsibleProducer": {
-                    "id": "ff041274-e3e0-4358-b0aa-df0a2e644c0b"
+                    "id": "5a19885c-b071-408d-9c12-19f29b22e854"
                 },
                 "safetyInformation": {
-                    "description": "List of safety warnings for computer enclosures based on the requirements of General Product Safety Regulation (EU) 2023/988 (GPSR):\n\n1. Risk of electric shock:\n* Make sure your computer's power supply is properly grounded. * Do not touch the power supply components with wet hands. * Disconnect the computer from power before opening the case. 2. Risk of cuts:\n* Beware of sharp metal edges when assembling components. * Secure the edges that can cause cuts. * Use protective gloves when working with the case. 3. Risk of fire:\n* Do not block ventilation openings in the housing. * Make sure that your computer components do not overheat. * Use a power supply with adequate power to avoid overloading. 4. Risk of damage to components:\n* Ensure proper air circulation in the housing. * Do not place heavy objects on the housing to avoid damage. * Make sure all components are properly fixed in the housing. 5. Hazards for children:\n* Keep small items (screws, jumpers) out of reach of children. * Do not allow children to open the computer case themselves. 6. Weight Hazards:\n * When moving your computer case, make sure you are able to support its weight. * Ask the other person for help if the case is too heavy. 7. Cleaning warnings:\n * Disconnect the computer from power before cleaning the case. * Use a soft, dry cloth to clean the case. * Do not use cleaning products containing corrosive substances. 8. Modification warnings:\n * Housing modifications may affect the safety and performance of your computer. * Perform modifications only if you have relevant experience and knowledge. 9. Warnings on Dust inhalation:\n * When cleaning components in the housing with compressed air, use a mask. * Take special care and ensure proper ventilation.",
+                    "description": "List of computer monitor safety warnings based on the requirements of General Product Safety Regulation (EU) 2023/988 (GPSR):\n\n* Risk to vision: Long-term gazing at the monitor screen may cause eye strain, dry eyes or headaches. * Limit the working time with the monitor. * Take regular breaks. * Maintain proper distance from the screen. * Ensure proper lighting in the room. * Set the brightness and contrast of the monitor to a comfortable level. * Ergonomics: Incorrect position when working with the monitor can lead to back, neck, and shoulder pain. * Set the monitor to the correct height so that the top edge of the screen is at eye level or slightly below. * Use an adjustable chair and desk to ensure an ergonomic position. * Maintain proper posture while sitting. * Risk of electric shock: Improper use or damage to the monitor can lead to electric shock. * Do not use the monitor in humid environments. * Do not touch the monitor with wet hands. * Do not put any items inside the monitor. * If the power cable is damaged, replace it with a new one. * Disconnect the monitor from power before cleaning. * Fire risk: Overheating or short circuiting in the monitor can cause a fire. * Do not cover the ventilation holes of the monitor. * Do not place the monitor near heat sources. * Use only the original power supply that came with your monitor. * If the monitor overheats, disconnect it from power immediately. * Mechanical damage: The fall of the monitor can cause damage and pose a threat to the user. * Set the monitor on a stable surface. * Secure cables to avoid accidental tripping. * For monitor transport, use appropriate protective packaging. * Cleaning: Improper cleaning of the monitor can damage the screen or cause other problems. * Use only a soft, dry cloth to clean the screen. * Do not use cleaning products containing alcohol, ammonia or other corrosive substances. * Disconnect the monitor from power before cleaning. * Disposal: Incorrect disposal of the monitor can pose a threat to the environment. * Return the used monitor to the e-waste collection point. * Do not throw the monitor in a regular trash can. * Children: The monitor is not a toy and should not be used by children without supervision. * Make sure children do not touch the power cables. * Make sure kids don't play around with the monitor packaging. * Repairs: Do not try to repair the monitor yourself. * Any repairs should be done by qualified personnel. * Monitor portability: Be careful when moving your monitor. * Disconnect all cables before moving. * Use appropriate packaging. * Weather conditions: Do not expose the monitor to extreme temperatures or moisture. * Protect your monitor from direct sunlight. * Adjustable settings: Do not use extreme brightness or contrast settings. * These can cause faster eye strain. * Noise: If the monitor makes disturbing noises, turn it off immediately. * Contact the technical service. * Environmental protection: Be sure to turn off the monitor when not in use. * You save energy this way. * Software: Use only the software provided by the manufacturer. * You will avoid compatibility issues.",
                     "type": "TEXT"
                 },
                 "marketedBeforeGPSRObligation": false,
@@ -1275,36 +1392,10 @@
                     "11323_238058"
                 ],
                 "rangeValue": null
-            },
-            {
-                "id": "229205",
-                "name": "Stan opakowania",
-                "values": [
-                    "oryginalne"
-                ],
-                "valuesIds": [
-                    "229205_340245"
-                ],
-                "rangeValue": null
             }
         ],
         "images": [
-            "https://a.allegroimg.com/original/2918c5/87c7987a48b1961aeb422f900add",
-            "https://a.allegroimg.com/original/1115c1/77b8c7f94f8d84a416526df2a546",
-            "https://a.allegroimg.com/original/11150f/33c4b5264f898acd19f9e1771bc6",
-            "https://a.allegroimg.com/original/11dc92/69538d3d4861aa2ed1b6c81ae6de",
-            "https://a.allegroimg.com/original/11c449/601bbe82485c8e60523c7fa182aa",
-            "https://a.allegroimg.com/original/11f4d1/87d9abf94a758e9098f865be3065",
-            "https://a.allegroimg.com/original/1106d1/e2de1211458b842248f8e69910bd",
-            "https://a.allegroimg.com/original/118e57/6b32f5a34c3193d44777142bab31",
-            "https://a.allegroimg.com/original/113898/143d06ea42bf8d15b9c5a3806baf",
-            "https://a.allegroimg.com/original/11c539/766382674b8da9a9c5b6dde921af",
-            "https://a.allegroimg.com/original/119520/7ea46e9942b79a3b1b114d80d43c",
-            "https://a.allegroimg.com/original/1179df/1163d54242ffb6856fc194ef5c95",
-            "https://a.allegroimg.com/original/1156ca/7ea7b99c40d79882696ed2502995",
-            "https://a.allegroimg.com/original/1152a6/6d3257f84fd5baed8dda5ddf50de",
-            "https://a.allegroimg.com/original/11279a/683ecc294a0782442c8a7e8ed0d4",
-            "https://a.allegroimg.com/original/11fc5c/1958c48c4418a8502c0788b2caf4"
+            "https://a.allegroimg.com/original/059724/f43dccf64117b57ab025b3fc7fbf"
         ],
         "afterSalesServices": {
             "impliedWarranty": {
@@ -1315,712 +1406,6 @@
             },
             "warranty": {
                 "id": "87fe5998-4f67-454c-bd06-2b38167803ec"
-            }
-        },
-        "payments": {
-            "invoice": "VAT"
-        },
-        "sellingMode": {
-            "format": "BUY_NOW",
-            "price": {
-                "amount": "99.00",
-                "currency": "PLN"
-            },
-            "startingPrice": null,
-            "minimalPrice": null
-        },
-        "stock": {
-            "available": 1,
-            "unit": "UNIT"
-        },
-        "location": {
-            "countryCode": "PL",
-            "province": "MALOPOLSKIE",
-            "city": "<redacted>",
-            "postCode": "<redacted>"
-        },
-        "delivery": {
-            "shippingRates": {
-                "id": "30692b5f-a623-4326-99ec-7fd535610781"
-            },
-            "handlingTime": "PT0S",
-            "additionalInfo": null,
-            "shipmentDate": null
-        },
-        "description": {
-            "sections": [
-                {
-                    "items": [
-                        {
-                            "type": "TEXT",
-                            "content": "<h2>Obudowa bez śladów użytkowania, brak bocznej szyby</h2><h2>Dane techniczne:</h2><ul><li>Typ obudowy Midi Tower</li><li>Standard płyty głównej Mini-ITX, Micro-ATX, ATX</li><li>Kompatybilny standard zasilacza ATX</li><li>Położenie zasilacza Dół</li><li>Maksymalna długość zasilacza 170mm</li><li>Maksymalna wysokość chłodzenia CPU 161mm</li><li>Maksymalna długość karty graficznej GPU 330mm</li><li>Panel I/O USB 3.0 Typ-A x2, USB 2.0 Typ-A x1, Mini Jack x2</li><li>Rodzaj panelu bocznego Szkło hartowane</li><li>Rodzaj panelu przedniego Mesh (gęsta siatka)</li><li>Liczba zainstalowanych wentylatorów 4</li><li>Zainstalowane wentylatory 4x 120 RGB mm</li><li>Maksymalna liczba wentylatorów 8</li><li>Możliwość montażu wentylatorów - dół 2x 120 mm</li><li>Możliwość montażu wentylatorów - góra 2x 120 mm, 1x 140 mm</li><li>Możliwość montażu wentylatorów - przód 3x 140 mm, 3x 120 mm</li><li>Możliwość montażu wentylatorów - tył 1x 120 mm</li><li>Prędkość obrotowa wentylatora +/-10% 1000 RPM</li><li>Żywotność wentylatora 40000</li><li>Przepływ powietrza wentylatora 33,5 CFM</li><li>Poziom hałasu wentylatora 21,9 dB</li><li>Możliwość instalacji chłodzenia wodnego (AIO) Tak</li><li>Możliwość montażu chłodzenia cieczą - góra 240 mm, 120 mm</li><li>Możliwość montażu chłodzenia cieczą - przód 360 mm, 280 mm, 240 mm, 140 mm, 120 mm</li><li>Możliwość montażu chłodzenia cieczą - tył 120 mm</li><li>Liczba gniazd rozszerzeń 7</li><li>Liczba miejsc na dyski 2.5\" (SSD/HDD) 2</li><li>Liczba miejsc na dyski 3.5\" (SSD/HDD) 2</li><li>Komora zasilacza Tak</li><li>Zasilacz w zestawie Nie</li><li>Zabezpieczenia Filtry przeciwkurzowe</li><li>Materiał Szkło hartowane, Stal, ABS</li><li>Kolor Czarny</li><li>Długość 386mm</li><li>Szerokość 204mm</li><li>Wysokość 448mm</li><li>Waga 4,61kg</li><li>Akcesoria w zestawie Zestaw elementów montażowych, Instrukcja montażu</li></ul>"
-                        }
-                    ]
-                },
-                {
-                    "items": [
-                        {
-                            "type": "IMAGE",
-                            "url": "https://a.allegroimg.com/original/1115c1/77b8c7f94f8d84a416526df2a546"
-                        },
-                        {
-                            "type": "TEXT",
-                            "content": "<h2>OBUDOWA DLA GRACZY SHOBO SH4F RGB</h2> <p>Sprawdź Fury Shobo SH4F RGB – sprytną obudowę komputerową z wydajnym chłodzeniem i podświetleniem RGB. Kompatybilna z płytami głównymi ATX oraz systemami chłodzenia wodnego (AIO 360/280/240/140/120), Shobo SH4F RGB ma w zestawie aż 4 wentylatory RGB, front typu „mesh” i ochronę przeciwkurzową. Niech się stanie światłość!</p> <h2>NISKIE TEMPERATURY, WYSOKA WYDAJNOŚĆ</h2> <p>Zbuduj bestię, nie komputer! Dzięki 4 wydajnym wentylatorom RGB 120 mm (jeden z tyłu, trzy z przodu) oraz otwartej górze i frontowi typu „mesh”, Shobo SH4F RGB zapewnia swobodny przepływ powietrza przez obudowę.</p> <p>W połączeniu z możliwością zainstalowania powietrznego chłodzenia CPU do 161 mm oraz w sumie aż 8 wentylatorów (3× przód, 2 góra, 1× tył, 2× dół) otrzymujemy wydajne chłodzenie, które poradzi sobie z naprawdę potężnymi podzespołami. Fani ekstremalnej wydajności mogą także liczyć na kompatybilność ze zintegrowanymi systemami chłodzenia cieczą AIO LC.</p> <h2>PODNIEŚ CHŁODZENIE NA WYŻSZY POZIOM</h2> <p>Chcesz rozbudować Twoją maszynę do fragowania o wydajne chłodzenie wodne? Z Fury Shobo SH4F RGB to dziecinnie proste!</p> <p>Obudowa pozwala na zainstalowanie chłodnic AIO LC o rozmiarach: z przodu (360/280/240/140/120 mm), z góry (240/120 mm) oraz z tyłu (120 mm). Tak szeroka kompatybilność oznacza swobodę w kwestii doboru komponentów – nawet tych najmocniejszych, wymagających chłodzenia z naprawdę wysokiej półki.</p> <h2>SKUTECZNA BARIERA DLA KURZU</h2> <p>Przenikający do wnętrza obudowy kurz to zmora każdego systemu komputerowego. Z Fury Shobo SH4F RGB nie musisz się już o to martwić.</p> <p>Obudowa ma kompletne ofiltrowanie przed kurzem: z góry i dołu, a front typu „mesh” ma bardzo gęste oczka o średnicy wyraźnie poniżej 1 mm, zapewniając ochronę przed zanieczyszczeniami i ułatwiając swobodny przepływ powietrza. Kurz zbierający się na powierzchni filtrów siateczkowych można szybko i łatwo usunąć za pomocą zwykłej ściereczki lub szczotki.</p> <h2>WIELKIE MOŻLIWOŚCI MAŁEJ OBUDOWY</h2> <p>Zachowując niewielkie zewnętrzne wymiary obudowa Shobo SH4F RGB oferuje pełną zgodność z płytami ATX, micro-ATX oraz mini-ITX.</p> <p>Można w niej zmieścić potężną kartę graficzną o długości do 330 mm, do 3 dysków/nośników (HDD/SSD) oraz powietrzne chłodzenie CPU do 161 mm. Dwukomorowa konstrukcja z „piwnicą” na zasilacz oraz liczne przepusty na kable oznaczają brak bałaganu i łatwość w organizacji komponentów.</p> <h2>TWOJE CENTRUM DOWODZENIA</h2> <p>Nie daj się ograniczyć! Wyposażony „na bogato” panel górny pozwoli na podłączenie niezbędnych akcesoriów, jak, kamerę, pendrive lub dysk zewnętrzny.</p> <p>Znajdziesz tam 3 gniazda USB-A (z czego aż 2 to szybkie USB 3.0, 5 Gbit/s), złącza HD Audio 3.5 mm dla słuchawek i mikrofonu, diody zasilania i dysku twardego oraz przyciski power i reset.</p> <h2>NIEZWYCIĘŻONA MOC, NOWOCZESNY DESIGN</h2> <p>Naciesz oczy i pochwal się sprzętem przed innymi graczami!</p> <p>Futurystyczna, geometryczna bryła spodoba się zarówno hardkorowym graczom, jak też zwolennikom bardziej stonowanego designu. Lewy panel boczny z hartowanego szkła to możliwość wyeksponowania wnętrza obudowy i drzemiących w niej, potężnych komponentów – także z RGB, szczególnie że zainstalowane wentylatory są fabrycznie podświetlone.</p>"
-                        }
-                    ]
-                }
-            ]
-        },
-        "external": null,
-        "category": {
-            "id": "259436"
-        },
-        "taxSettings": null,
-        "sizeTable": null,
-        "discounts": {
-            "wholesalePriceList": null
-        },
-        "contact": null,
-        "fundraisingCampaign": null,
-        "messageToSellerSettings": {
-            "mode": "OPTIONAL"
-        },
-        "attachments": [],
-        "b2b": null,
-        "additionalServices": null,
-        "compatibilityList": null,
-        "additionalMarketplaces": {
-            "allegro-business-pl": {
-                "sellingMode": {
-                    "price": {
-                        "amount": "99.00",
-                        "currency": "PLN"
-                    }
-                },
-                "publication": {
-                    "state": "REFUSED",
-                    "refusalReasons": [
-                        {
-                            "code": "VQR012_OFFER_HAS_NO_TAX_RATE_FOR_MARKETPLACE",
-                            "userMessage": "no VAT rate",
-                            "parameters": []
-                        }
-                    ]
-                }
-            },
-            "allegro-sk": {
-                "sellingMode": null,
-                "publication": {
-                    "state": "NOT_REQUESTED",
-                    "refusalReasons": []
-                }
-            },
-            "allegro-cz": {
-                "sellingMode": null,
-                "publication": {
-                    "state": "NOT_REQUESTED",
-                    "refusalReasons": []
-                }
-            },
-            "allegro-hu": {
-                "sellingMode": null,
-                "publication": {
-                    "state": "NOT_REQUESTED",
-                    "refusalReasons": []
-                }
-            },
-            "allegro-business-cz": {
-                "sellingMode": null,
-                "publication": {
-                    "state": "NOT_REQUESTED",
-                    "refusalReasons": []
-                }
-            }
-        },
-        "warnings": [],
-        "aiCoCreatedContent": {
-            "images": []
-        },
-        "id": "18772854905",
-        "language": "pl-PL",
-        "publication": {
-            "status": "ACTIVE",
-            "duration": null,
-            "endedBy": null,
-            "endingAt": null,
-            "startingAt": null,
-            "republish": false,
-            "marketplaces": {
-                "base": {
-                    "id": "allegro-pl"
-                },
-                "additional": [
-                    {
-                        "id": "allegro-business-pl"
-                    }
-                ]
-            }
-        },
-        "validation": {
-            "errors": [],
-            "warnings": [],
-            "validatedAt": "2026-07-18T10:55:07.130Z"
-        },
-        "createdAt": "2026-07-18T10:52:36.000Z",
-        "updatedAt": "2026-07-18T11:07:38.159Z"
-    },
-    {
-        "name": "Toner Imagine BR-B023-E1 do Brother czarny (black)",
-        "productSet": [
-            {
-                "product": {
-                    "id": "aa7c9766-5583-4223-b02b-5433c10fd454",
-                    "publication": {
-                        "status": "LISTED"
-                    },
-                    "parameters": [
-                        {
-                            "id": "224017",
-                            "name": "Kod producenta",
-                            "values": [
-                                "BR-B023-E1"
-                            ],
-                            "valuesIds": null,
-                            "rangeValue": null
-                        },
-                        {
-                            "id": "248914",
-                            "name": "Producent",
-                            "values": [
-                                "Imagine"
-                            ],
-                            "valuesIds": [
-                                "248914_2012348"
-                            ],
-                            "rangeValue": null
-                        },
-                        {
-                            "id": "237206",
-                            "name": "Model",
-                            "values": [
-                                "TNB023"
-                            ],
-                            "valuesIds": null,
-                            "rangeValue": null
-                        },
-                        {
-                            "id": "17589",
-                            "name": "Kolor",
-                            "values": [
-                                "czarny (black)"
-                            ],
-                            "valuesIds": [
-                                "17589_1"
-                            ],
-                            "rangeValue": null
-                        },
-                        {
-                            "id": "222905",
-                            "name": "Pasuje do",
-                            "values": [
-                                "Brother"
-                            ],
-                            "valuesIds": [
-                                "222905_301293"
-                            ],
-                            "rangeValue": null
-                        },
-                        {
-                            "id": "17448",
-                            "name": "Waga produktu z opakowaniem jednostkowym",
-                            "values": [
-                                "0.15"
-                            ],
-                            "valuesIds": null,
-                            "rangeValue": null
-                        },
-                        {
-                            "id": "203429",
-                            "name": "Wydajność",
-                            "values": [
-                                "2000"
-                            ],
-                            "valuesIds": null,
-                            "rangeValue": null
-                        },
-                        {
-                            "id": "218669",
-                            "name": "Certyfikaty zgodności",
-                            "values": [
-                                "CE"
-                            ],
-                            "valuesIds": [
-                                "218669_1"
-                            ],
-                            "rangeValue": null
-                        },
-                        {
-                            "id": "250792",
-                            "name": "Kod taryfy celnej",
-                            "values": [
-                                "32159070"
-                            ],
-                            "valuesIds": null,
-                            "rangeValue": null
-                        },
-                        {
-                            "id": "225693",
-                            "name": "EAN (GTIN)",
-                            "values": [
-                                "5903271075751"
-                            ],
-                            "valuesIds": null,
-                            "rangeValue": null
-                        }
-                    ],
-                    "isAiCoCreated": true
-                },
-                "quantity": {
-                    "value": 1
-                },
-                "responsiblePerson": null,
-                "responsibleProducer": null,
-                "safetyInformation": {
-                    "description": "Lista ostrzeżeń dotyczących bezpieczeństwa tonerów oparta o wymagania Rozporządzenia (UE) 2023/988 w sprawie ogólnego bezpieczeństwa produktów (GPSR):\n\n1. Ryzyko wdychania pyłu:\n   * Podczas wymiany lub czyszczenia tonera, unikaj wdychania pyłu, który może podrażniać drogi oddechowe.\n   * Używaj maski ochronnej lub respiratora, szczególnie jeśli jesteś osobą wrażliwą na pyły.\n\n2. Ryzyko podrażnienia skóry i oczu:\n   * Toner może powodować podrażnienia w kontakcie ze skórą i oczami.\n   * Unikaj bezpośredniego kontaktu. W razie kontaktu, przemyj skórę lub oczy dużą ilością wody i skontaktuj się z lekarzem.\n\n3. Ryzyko pożaru i wybuchu:\n   * Toner jest substancją łatwopalną.\n   * Nie narażaj tonera na wysokie temperatury, iskry lub otwarty ogień.\n   * Przechowuj toner w chłodnym, suchym i dobrze wentylowanym miejscu, z dala od źródeł ciepła i ognia.\n\n4. Ryzyko zanieczyszczenia:\n   * Toner może plamić powierzchnie i ubrania.\n   * Używaj rękawic ochronnych podczas wymiany lub czyszczenia tonera.\n   * Natychmiast usuwaj wszelkie rozsypane substancje za pomocą odkurzacza z filtrem HEPA lub wilgotnej ściereczki.\n\n5. Zagrożenie dla dzieci:\n   * Toner i jego opakowanie mogą zawierać małe elementy, które stanowią ryzyko zadławienia dla dzieci.\n   * Przechowuj toner w miejscu niedostępnym dla dzieci.\n\n6. Oddziaływanie na środowisko:\n   * Zużyty toner i opakowania należy utylizować zgodnie z lokalnymi przepisami dotyczącymi ochrony środowiska.\n   * Nie wyrzucaj zużytego tonera do śmieci komunalnych.\n\n7. Kompatybilność:\n   * Używaj tylko tonerów przeznaczonych do konkretnego modelu drukarki.\n   * Użycie nieodpowiedniego tonera może uszkodzić drukarkę i wpłynąć na jakość wydruku.\n\n8. Przechowywanie:\n   * Przechowuj tonery w oryginalnym opakowaniu, w suchym i chłodnym miejscu, z dala od bezpośredniego światła słonecznego.\n   * Nie przechowuj tonerów w miejscach narażonych na duże zmiany temperatury i wilgotności.",
-                    "type": "TEXT"
-                },
-                "marketedBeforeGPSRObligation": false,
-                "deposits": []
-            }
-        ],
-        "parameters": [
-            {
-                "id": "11323",
-                "name": "Stan",
-                "values": [
-                    "Uszkodzony"
-                ],
-                "valuesIds": [
-                    "11323_238062"
-                ],
-                "rangeValue": null
-            },
-            {
-                "id": "229205",
-                "name": "Stan opakowania",
-                "values": [
-                    "oryginalne"
-                ],
-                "valuesIds": [
-                    "229205_340245"
-                ],
-                "rangeValue": null
-            }
-        ],
-        "images": [
-            "https://a.allegroimg.com/original/297d11/444a14c74c3185a1b5013e5a4902",
-            "https://a.allegroimg.com/original/118e75/d33744a44ca6894e23e457b3df79",
-            "https://a.allegroimg.com/original/113367/eed4b8d5442aa24afbc4d2520761"
-        ],
-        "afterSalesServices": {
-            "impliedWarranty": null,
-            "returnPolicy": {
-                "id": "2fae3e22-1ad2-41bd-b878-60070e5e2ee6"
-            },
-            "warranty": null
-        },
-        "payments": {
-            "invoice": "VAT"
-        },
-        "sellingMode": {
-            "format": null,
-            "price": null,
-            "startingPrice": null,
-            "minimalPrice": null
-        },
-        "stock": {
-            "available": 0,
-            "unit": "UNIT"
-        },
-        "location": {
-            "countryCode": "PL",
-            "province": "MALOPOLSKIE",
-            "city": "<redacted>",
-            "postCode": "<redacted>"
-        },
-        "delivery": {
-            "shippingRates": null,
-            "handlingTime": "PT24H",
-            "additionalInfo": null,
-            "shipmentDate": null
-        },
-        "description": {
-            "sections": [
-                {
-                    "items": [
-                        {
-                            "type": "TEXT",
-                            "content": "<h1>WB Toner do Brother TN-B023 DCP-B7520DW/ HL-B2080DW /MFC-B7715DW | Black | 2000str</h1> <p>WB&nbsp;Toner TNB023 do drukarek:</p> <p>Brother DCP-B7520DW / DCPB7520DW</p> <p>Brother HL-B2080DW / HLB2080DW</p> <p>Brother MFC-B7715DW /</p> <p>MFCB7715DW</p>"
-                        }
-                    ]
-                },
-                {
-                    "items": [
-                        {
-                            "type": "IMAGE",
-                            "url": "https://a.allegroimg.com/original/118e75/d33744a44ca6894e23e457b3df79"
-                        },
-                        {
-                            "type": "TEXT",
-                            "content": "<h2>⚙️ PARAMETRY PRODUKTU:</h2> <ul> <li><b>Kolor:</b> Black</li> <li><b>Producent drukarki:</b> Brother</li> <li><b>Technologia druku:</b> Laserowa</li> <li><b>Wydajność / pojemność:</b> 2000 szt.</li> </ul>"
-                        }
-                    ]
-                },
-                {
-                    "items": [
-                        {
-                            "type": "TEXT",
-                            "content": "<h2>⚙️&nbsp;SZCZEGÓŁY PRODUKTU:</h2>"
-                        }
-                    ]
-                },
-                {
-                    "items": [
-                        {
-                            "type": "TEXT",
-                            "content": "<p>✅ Wysokiej jakości chip zliczający, <b>poprawnie rozpoznaje toner w drukarce i precyzyjnie zlicza wydrukowane strony</b>. ⭐⭐⭐⭐⭐</p>"
-                        }
-                    ]
-                },
-                {
-                    "items": [
-                        {
-                            "type": "TEXT",
-                            "content": "<p>✅ Prawidłowo dobrany wałek OPC do proszku, powoduje, że wydruki są:</p> <ul> <li><b>ostre,</b></li> <li><b>wyraźne.</b></li> <li><b>wysokiej rozdzielczości,</b></li> </ul>"
-                        }
-                    ]
-                },
-                {
-                    "items": [
-                        {
-                            "type": "TEXT",
-                            "content": "<p>✅&nbsp;&nbsp;Tonery napełnione proszkiem o <b>najwyższej jakości połysku</b>, dzięki czemu wydruki zachowują <b>prawidłową kolorystykę</b>.</p>"
-                        }
-                    ]
-                },
-                {
-                    "items": [
-                        {
-                            "type": "TEXT",
-                            "content": "<p><b>Wydajność</b>&nbsp;sprzedawanych przez nas tonerów, jest testowana i zgodna z normami:</p> <p>⭐ ISO/IEC 19798 ↔ Tonery kolorowe</p> <p>⭐ ISO/IEC 19752 ↔ Tonery \"czarno białe\"</p> <p>Proces produkcji jest kontrolowany i zgodny z normami:</p> <p>⭐ ISO 9001</p> <p>⭐ ISO 14001</p>"
-                        },
-                        {
-                            "type": "IMAGE",
-                            "url": "https://a.allegroimg.com/original/113367/eed4b8d5442aa24afbc4d2520761"
-                        }
-                    ]
-                },
-                {
-                    "items": [
-                        {
-                            "type": "TEXT",
-                            "content": "<p>✅ Testy wydajnościowe dają&nbsp;<b>gwarancję i pewność</b>&nbsp;poprawnej i bezawaryjnej pracy w urządzeniu.&nbsp;</p>"
-                        }
-                    ]
-                },
-                {
-                    "items": [
-                        {
-                            "type": "TEXT",
-                            "content": "<h2>⚙️ WSZYSTKIE TONERY, BĘBNY SĄ:</h2> <p>⭐⭐⭐⭐⭐</p> <p>✅ Gotowe do użycia bezpośrednio po zdjęciu zabezpieczenia, a ich instalacja jest bezproblemowa. ⭐⭐⭐⭐⭐</p> <p>⭐⭐⭐⭐⭐</p>"
-                        }
-                    ]
-                },
-                {
-                    "items": [
-                        {
-                            "type": "TEXT",
-                            "content": "<h2>⚙️&nbsp;CO ZYSKUJESZ?</h2> <p>✅ Sprzedawany produkt jest gotowy do&nbsp;<b>natychmiastowej</b>&nbsp;oraz&nbsp;<b>długiej i bezawaryjnej pracy</b>.&nbsp;⌛ Drukujesz bez obaw o:</p> <ul> <li>zacięcia w drukarce,</li> <li>smugi czy zabrudzenia na wydrukach.</li> </ul> <p>✅ Zawsze wyposażone w chip z najnowszym oprogramowaniem ⭐ Jeśli wyszła aktualizacja - zawsze wycofujemy ze sprzedaży całą partię.</p> <p>✅ <b>Najlepsza jakość</b>&nbsp;w super cenie!&nbsp;⚡</p>"
-                        }
-                    ]
-                },
-                {
-                    "items": [
-                        {
-                            "type": "TEXT",
-                            "content": "<h2>⚙️&nbsp;GALERIA:</h2>"
-                        }
-                    ]
-                },
-                {
-                    "items": [
-                        {
-                            "type": "IMAGE",
-                            "url": "https://a.allegroimg.com/original/118e75/d33744a44ca6894e23e457b3df79"
-                        }
-                    ]
-                },
-                {
-                    "items": [
-                        {
-                            "type": "TEXT",
-                            "content": "<h2>⚙️&nbsp;FAQ:</h2> <p><b>1.</b></p> <p>Każdy toner pakowany jest w czarny worek PE który chroni wałek OPC przed dotarciem promieni słonecznych. W zależności od rodzaju produktu może znaleźć się również przekładka z papieru z domieszką bawełny która zabezpiecza wałek OPC, plomba zabezpieczająca toner przed wysypaniem, osłonka chipa oraz osłona wałka OPC. Całość zapakowana jest w karton oraz ownięta folią typu stretch.</p> <p><b>2.&nbsp;CZY TUSZE MOGĄ WYSCHNĄĆ W DRUKARCE? CZY DA SIĘ COŚ Z TYM ZROBIĆ?</b></p> <p>Niestety tusze mogą zaschnąć w drukarce. Szczególnie niebezpieczne jest to w sytuacji kiedy głowica jest wbudowana w drukarce. Aby temu przeciwdziałać, wystarczy np. raz w tygodniu coś wydrukować.</p> <p><b>3.&nbsp;CZY ZAMIENNIKI MAJĄ TAKĄ SAMĄ JAKOŚĆ CO ORYGINALNE TUSZE /TONERY?</b></p> <p>Między oryginalnymi, a zamienikami nie ma większych różnic. Producenci stosują atramenty / proszki o takim samym lub zbliżonym składzie. Jeśli nie mamy zakładu poligraficznego różnica jakości nie będzie zauważalna.&nbsp;</p> <p><b>4.&nbsp;</b><b>NA ILE STRON WYSTARCZĄ MI ATRAMENTY / TONERY?</b></p> <p>W przypadku atramentów, niestety nie da się dokładnie podać ilości stron. Producenci podają je jako orientacyjne. Ustawienia drukarki, rodzaj papieru znacznie różnicuje sumę możliwych wydruków. Dlatego najlepiej patrzeć na pojemność, podaną w mililitrach. Co do tonerów laserowych, wydajnośc podawana jest przy 5% pokryciu strony.</p>"
-                        }
-                    ]
-                }
-            ]
-        },
-        "external": null,
-        "category": {
-            "id": "260342"
-        },
-        "taxSettings": null,
-        "sizeTable": null,
-        "discounts": {
-            "wholesalePriceList": null
-        },
-        "contact": null,
-        "fundraisingCampaign": null,
-        "messageToSellerSettings": {
-            "mode": "OPTIONAL"
-        },
-        "attachments": [],
-        "b2b": null,
-        "additionalServices": null,
-        "compatibilityList": null,
-        "additionalMarketplaces": {
-            "allegro-business-pl": {
-                "sellingMode": null,
-                "publication": {
-                    "state": "NOT_REQUESTED",
-                    "refusalReasons": []
-                }
-            },
-            "allegro-sk": {
-                "sellingMode": null,
-                "publication": {
-                    "state": "NOT_REQUESTED",
-                    "refusalReasons": []
-                }
-            },
-            "allegro-cz": {
-                "sellingMode": null,
-                "publication": {
-                    "state": "NOT_REQUESTED",
-                    "refusalReasons": []
-                }
-            },
-            "allegro-hu": {
-                "sellingMode": null,
-                "publication": {
-                    "state": "NOT_REQUESTED",
-                    "refusalReasons": []
-                }
-            },
-            "allegro-business-cz": {
-                "sellingMode": null,
-                "publication": {
-                    "state": "NOT_REQUESTED",
-                    "refusalReasons": []
-                }
-            }
-        },
-        "warnings": [],
-        "aiCoCreatedContent": {
-            "images": []
-        },
-        "id": "18771453310",
-        "language": "pl-PL",
-        "publication": {
-            "status": "INACTIVE",
-            "duration": null,
-            "endedBy": null,
-            "endingAt": null,
-            "startingAt": null,
-            "republish": false,
-            "marketplaces": {
-                "base": {
-                    "id": "allegro-pl"
-                },
-                "additional": []
-            }
-        },
-        "validation": {
-            "errors": [
-                {
-                    "code": "EMPTY_SHIPPING_RATES",
-                    "message": "No shipping rates set.",
-                    "details": "NON_BLOCKING",
-                    "path": "delivery.shippingRates.id",
-                    "userMessage": "Brak ustawionego cennika dostawy.",
-                    "metadata": []
-                },
-                {
-                    "code": "ConstraintViolationException.AfterSalesServiceConditionsRequiredByCompany",
-                    "message": "Offer Terms (for returns and complaints) are required for Business Accounts.",
-                    "details": "ConstraintViolationException.AfterSalesServiceConditionsRequiredByCompany",
-                    "path": "null",
-                    "userMessage": "Warunki oferty (zwroty, reklamacje) są wymagane dla kont firma.",
-                    "metadata": []
-                },
-                {
-                    "code": "ConstraintViolationException.AtLeastOneMode",
-                    "message": "You must select at least one sale method and enter the required prices.",
-                    "details": "ConstraintViolationException.AtLeastOneMode",
-                    "path": "sellingMode.null",
-                    "userMessage": "Musisz wybrać przynajmniej jeden sposób sprzedaży oraz podać wymagane ceny.",
-                    "metadata": []
-                }
-            ],
-            "warnings": [],
-            "validatedAt": "2026-07-17T20:08:56.852Z"
-        },
-        "createdAt": "2026-07-17T20:08:48.000Z",
-        "updatedAt": "2026-07-17T20:08:56.853Z"
-    },
-    {
-        "name": "Toner Brother TN-2411 czarny",
-        "productSet": [
-            {
-                "product": {
-                    "id": "a4e358de-0b5b-4331-9fae-57c337e070e6",
-                    "publication": {
-                        "status": "LISTED"
-                    },
-                    "parameters": [
-                        {
-                            "id": "224017",
-                            "name": "Kod producenta",
-                            "values": [
-                                "TN-2411, TN2411"
-                            ],
-                            "valuesIds": null,
-                            "rangeValue": null
-                        },
-                        {
-                            "id": "248914",
-                            "name": "Producent",
-                            "values": [
-                                "Brother"
-                            ],
-                            "valuesIds": [
-                                "248914_1986571"
-                            ],
-                            "rangeValue": null
-                        },
-                        {
-                            "id": "237206",
-                            "name": "Model",
-                            "values": [
-                                "TN-2411"
-                            ],
-                            "valuesIds": null,
-                            "rangeValue": null
-                        },
-                        {
-                            "id": "17589",
-                            "name": "Kolor",
-                            "values": [
-                                "czarny (black)"
-                            ],
-                            "valuesIds": [
-                                "17589_1"
-                            ],
-                            "rangeValue": null
-                        },
-                        {
-                            "id": "17448",
-                            "name": "Waga produktu z opakowaniem jednostkowym",
-                            "values": [
-                                "0.633"
-                            ],
-                            "valuesIds": null,
-                            "rangeValue": null
-                        },
-                        {
-                            "id": "203429",
-                            "name": "Wydajność",
-                            "values": [
-                                "1200"
-                            ],
-                            "valuesIds": null,
-                            "rangeValue": null
-                        },
-                        {
-                            "id": "218669",
-                            "name": "Certyfikaty zgodności",
-                            "values": [
-                                "CE"
-                            ],
-                            "valuesIds": [
-                                "218669_1"
-                            ],
-                            "rangeValue": null
-                        },
-                        {
-                            "id": "250792",
-                            "name": "Kod taryfy celnej",
-                            "values": [
-                                "32159070"
-                            ],
-                            "valuesIds": null,
-                            "rangeValue": null
-                        },
-                        {
-                            "id": "225693",
-                            "name": "EAN (GTIN)",
-                            "values": [
-                                "4977766789608"
-                            ],
-                            "valuesIds": null,
-                            "rangeValue": null
-                        }
-                    ],
-                    "isAiCoCreated": true
-                },
-                "quantity": {
-                    "value": 1
-                },
-                "responsiblePerson": null,
-                "responsibleProducer": {
-                    "id": "5e8fafe5-8c3c-46f2-8c7b-5c3788014b9c"
-                },
-                "safetyInformation": {
-                    "description": "Lista ostrzeżeń dotyczących bezpieczeństwa tonerów oparta o wymagania Rozporządzenia (UE) 2023/988 w sprawie ogólnego bezpieczeństwa produktów (GPSR):\n\n1. Ryzyko wdychania pyłu:\n   * Podczas wymiany lub czyszczenia tonera, unikaj wdychania pyłu, który może podrażniać drogi oddechowe.\n   * Używaj maski ochronnej lub respiratora, szczególnie jeśli jesteś osobą wrażliwą na pyły.\n\n2. Ryzyko podrażnienia skóry i oczu:\n   * Toner może powodować podrażnienia w kontakcie ze skórą i oczami.\n   * Unikaj bezpośredniego kontaktu. W razie kontaktu, przemyj skórę lub oczy dużą ilością wody i skontaktuj się z lekarzem.\n\n3. Ryzyko pożaru i wybuchu:\n   * Toner jest substancją łatwopalną.\n   * Nie narażaj tonera na wysokie temperatury, iskry lub otwarty ogień.\n   * Przechowuj toner w chłodnym, suchym i dobrze wentylowanym miejscu, z dala od źródeł ciepła i ognia.\n\n4. Ryzyko zanieczyszczenia:\n   * Toner może plamić powierzchnie i ubrania.\n   * Używaj rękawic ochronnych podczas wymiany lub czyszczenia tonera.\n   * Natychmiast usuwaj wszelkie rozsypane substancje za pomocą odkurzacza z filtrem HEPA lub wilgotnej ściereczki.\n\n5. Zagrożenie dla dzieci:\n   * Toner i jego opakowanie mogą zawierać małe elementy, które stanowią ryzyko zadławienia dla dzieci.\n   * Przechowuj toner w miejscu niedostępnym dla dzieci.\n\n6. Oddziaływanie na środowisko:\n   * Zużyty toner i opakowania należy utylizować zgodnie z lokalnymi przepisami dotyczącymi ochrony środowiska.\n   * Nie wyrzucaj zużytego tonera do śmieci komunalnych.\n\n7. Kompatybilność:\n   * Używaj tylko tonerów przeznaczonych do konkretnego modelu drukarki.\n   * Użycie nieodpowiedniego tonera może uszkodzić drukarkę i wpłynąć na jakość wydruku.\n\n8. Przechowywanie:\n   * Przechowuj tonery w oryginalnym opakowaniu, w suchym i chłodnym miejscu, z dala od bezpośredniego światła słonecznego.\n   * Nie przechowuj tonerów w miejscach narażonych na duże zmiany temperatury i wilgotności.",
-                    "type": "TEXT"
-                },
-                "marketedBeforeGPSRObligation": false,
-                "deposits": []
-            }
-        ],
-        "parameters": [
-            {
-                "id": "11323",
-                "name": "Stan",
-                "values": [
-                    "Uszkodzony"
-                ],
-                "valuesIds": [
-                    "11323_238062"
-                ],
-                "rangeValue": null
-            }
-        ],
-        "images": [
-            "https://a.allegroimg.com/original/29ecfe/761ea7dc412f9eb21dee840f9416",
-            "https://a.allegroimg.com/original/1192c6/ea0ed98a424281846106e060d89a",
-            "https://a.allegroimg.com/original/110cb3/ea801f014b6fabf0cd44853052c3",
-            "https://a.allegroimg.com/original/112cba/30d7ddf14146b821d226e19850a4"
-        ],
-        "afterSalesServices": {
-            "impliedWarranty": {
-                "id": "4e8f1e2c-3f97-42c9-ad0d-4b9204320ee1"
-            },
-            "returnPolicy": {
-                "id": "2fae3e22-1ad2-41bd-b878-60070e5e2ee6"
-            },
-            "warranty": {
-                "id": "3c24f369-901a-431c-8961-c03924343d6d"
             }
         },
         "payments": {
@@ -2059,27 +1444,7 @@
                     "items": [
                         {
                             "type": "TEXT",
-                            "content": "<h2>Toner sprzedajemy jako uszkodzony, nie mamy możliwości zweryfikowania jego zapełnienia lub stanu,&nbsp; towar był używany, może pochodzić z demontażu.</h2><h1>Oryginalny toner Brother TN-2411</h1>"
-                        }
-                    ]
-                },
-                {
-                    "items": [
-                        {
-                            "type": "TEXT",
-                            "content": "<h2>Kompatybilność</h2> <ul> <li>Brother DCP-L2512D</li> <li>Brother DCP-L2532DW</li> <li>Brother DCP-L2552DN</li> <li>Brother HL-L2312D</li> <li>Brother HL-L2352DW</li> <li>Brother HL-L2372DN</li> <li>Brother MFC-L2712DW</li> <li>Brother MFC-L2712DN</li> <li>Brother MFC-L2732DW</li> <li>Brother MFC-L2752DW</li> </ul>"
-                        },
-                        {
-                            "type": "IMAGE",
-                            "url": "https://a.allegroimg.com/original/110cb3/ea801f014b6fabf0cd44853052c3"
-                        }
-                    ]
-                },
-                {
-                    "items": [
-                        {
-                            "type": "TEXT",
-                            "content": "<h2>Najważniejsze cechy:</h2> <ul> <li>Wydajność tonera do 1,200 strony zgodnie z normą ISO/IEC19752</li> <li>Wysokiej jakości oryginalna kaseta Brother</li> <li>Oszczędzaj czas i pieniądze</li> </ul>"
+                            "content": "<p>Oferta dotyczy samej podstawki do monitora dell G2724D, kolor czarny.</p>"
                         }
                     ]
                 }
@@ -2087,7 +1452,7 @@
         },
         "external": null,
         "category": {
-            "id": "260341"
+            "id": "260041"
         },
         "taxSettings": null,
         "sizeTable": null,
@@ -2155,7 +1520,7 @@
         "aiCoCreatedContent": {
             "images": []
         },
-        "id": "18771444609",
+        "id": "18768380392",
         "language": "pl-PL",
         "publication": {
             "status": "ACTIVE",
@@ -2178,10 +1543,691 @@
         "validation": {
             "errors": [],
             "warnings": [],
-            "validatedAt": "2026-07-17T20:06:13.635Z"
+            "validatedAt": "2026-07-16T21:19:28.586Z"
         },
-        "createdAt": "2026-07-17T20:04:44.000Z",
-        "updatedAt": "2026-07-17T20:19:45.538Z"
+        "createdAt": "2026-07-16T21:16:05.000Z",
+        "updatedAt": "2026-07-16T21:31:06.300Z"
+    },
+    {
+        "name": "Grill elektryczny De'Longhi MultiGrill CGH1020D 2000 W",
+        "productSet": [
+            {
+                "product": {
+                    "id": "ad1b82ba-d150-405c-acbe-dfa3db8b6239",
+                    "publication": {
+                        "status": "LISTED"
+                    },
+                    "parameters": [
+                        {
+                            "id": "224017",
+                            "name": "Kod producenta",
+                            "values": [
+                                "CGH1020D"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "248811",
+                            "name": "Marka",
+                            "values": [
+                                "De'Longhi"
+                            ],
+                            "valuesIds": [
+                                "248811_1131781"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "237206",
+                            "name": "Model",
+                            "values": [
+                                "MultiGrill CGH1020D"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "226917",
+                            "name": "Moc",
+                            "values": [
+                                "2000"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "226929",
+                            "name": "Szerokość grilla",
+                            "values": [
+                                "45.8"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "226937",
+                            "name": "Wysokość grilla",
+                            "values": [
+                                "18.5"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "226933",
+                            "name": "Głębokość grilla",
+                            "values": [
+                                "34.3"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "5253",
+                            "name": "Waga",
+                            "values": [
+                                "6.9"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "228165",
+                            "name": "Cechy dodatkowe",
+                            "values": [
+                                "pokrywa"
+                            ],
+                            "valuesIds": [
+                                "228165_8"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "17448",
+                            "name": "Waga produktu z opakowaniem jednostkowym",
+                            "values": [
+                                "10.2"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "250792",
+                            "name": "Kod taryfy celnej",
+                            "values": [
+                                "85166070"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "225693",
+                            "name": "EAN (GTIN)",
+                            "values": [
+                                "8004399790483"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        }
+                    ],
+                    "isAiCoCreated": true
+                },
+                "quantity": {
+                    "value": 1
+                },
+                "responsiblePerson": null,
+                "responsibleProducer": {
+                    "id": "c8dc38a9-7aa2-4904-bd91-9583a3944379"
+                },
+                "safetyInformation": {
+                    "description": "List of safety warnings for electric grills based on the requirements of General Product Safety Regulation (EU) 2023/988 (GPSR):\n\n* Risk of electric shock: Make sure that the device is connected to an efficient socket with grounding. Do not touch the plug or cable with wet hands. Avoid using the grill in places with high humidity. * Risk of burns: Do not touch the heated grill elements during use. Always wear protective gloves. * Fire risk: Do not use the grill near flammable materials. * Keeping clean: After each use, clean the grill to remove food debris and grease. Regular cleaning prevents dangerous accumulations. * Suitable storage: Store your grill in a dry and safe place, away from children. * Stable setting: Make sure the grill stands on a stable and even surface to prevent tipping over. * Long-lasting use: Don't leave your grill on unattended. * Outdoor use: If the grill is intended for indoor use only, do not use it outdoors in rain or wet conditions. * Accessories: Use only the accessories recommended by the manufacturer. * Extension cords: If you are using an extension cord, make sure it is suitable for grill power and fully developed.",
+                    "type": "TEXT"
+                },
+                "marketedBeforeGPSRObligation": false,
+                "deposits": []
+            }
+        ],
+        "parameters": [
+            {
+                "id": "11323",
+                "name": "Stan",
+                "values": [
+                    "Powystawowy"
+                ],
+                "valuesIds": [
+                    "11323_238058"
+                ],
+                "rangeValue": null
+            }
+        ],
+        "images": [
+            "https://a.allegroimg.com/original/007a89/71551f1e43779606e7ab93be6ea3",
+            "https://a.allegroimg.com/original/3398c0/307a049f41ca8eb9bb065fc68aa0",
+            "https://a.allegroimg.com/original/259dfd/16f79caf4084b93c156801781184",
+            "https://a.allegroimg.com/original/3381f8/42d7d6064cfdb455a231ed229e9f",
+            "https://a.allegroimg.com/original/11d890/d5327d8d48628d491b94158cde9c",
+            "https://a.allegroimg.com/original/334003/d821573e46bab150c85122863d5c",
+            "https://a.allegroimg.com/original/330add/124a905e4ae293bca36b23d58a15",
+            "https://a.allegroimg.com/original/336be7/40b782454da1a57d7b83d0098fee",
+            "https://a.allegroimg.com/original/33c1ba/eda4af7c4ef59374045d995dbc39",
+            "https://a.allegroimg.com/original/3342ac/717de77a49dba1c10d0b04483985",
+            "https://a.allegroimg.com/original/33a2ad/cfcc856e4e1ca415b8f89345dd07",
+            "https://a.allegroimg.com/original/25045b/164756804e75b6b3028cbd80551e",
+            "https://a.allegroimg.com/original/251fb9/40691d7b4a228f4bfc2c6944fa48"
+        ],
+        "afterSalesServices": {
+            "impliedWarranty": null,
+            "returnPolicy": {
+                "id": "2fae3e22-1ad2-41bd-b878-60070e5e2ee6"
+            },
+            "warranty": null
+        },
+        "payments": {
+            "invoice": "VAT"
+        },
+        "sellingMode": {
+            "format": null,
+            "price": null,
+            "startingPrice": null,
+            "minimalPrice": null
+        },
+        "stock": {
+            "available": 0,
+            "unit": "UNIT"
+        },
+        "location": {
+            "countryCode": "PL",
+            "province": "MALOPOLSKIE",
+            "city": "<redacted>",
+            "postCode": "<redacted>"
+        },
+        "delivery": {
+            "shippingRates": null,
+            "handlingTime": "PT24H",
+            "additionalInfo": null,
+            "shipmentDate": null
+        },
+        "description": {
+            "sections": [
+                {
+                    "items": [
+                        {
+                            "type": "TEXT",
+                            "content": "<h2>De'Longhi CGH1020D</h2> <p>DeLonghi</p>"
+                        }
+                    ]
+                },
+                {
+                    "items": [
+                        {
+                            "type": "IMAGE",
+                            "url": "https://a.allegroimg.com/original/3398c0/307a049f41ca8eb9bb065fc68aa0"
+                        },
+                        {
+                            "type": "TEXT",
+                            "content": "<ul> <li><b>Producent:</b> DeLonghi</li> <li><b>moc:</b> 2000 W</li> <li><b>załączone wyposażenie:</b> 2 płyty grillowe | 2 płyty płaskie | szpatułka do czyszczenia</li> <li><b>regulacja temperatury:</b> tak</li> <li><b>lampka kontrolna:</b> tak</li> <li><b>inne:</b> wyświetlacz LED</li> <li><b>nienagrzewające się rączki:</b> tak</li> <li><b>zastosowane technologie:</b> wyłącznik bezpieczeństwa | automatyczne wyłączanie | termostat | nieprzylegająca powierzchnia | wbudowana tacka na tłuszcz, demontowana do mycia</li> <li><b>wymiary:</b> 458x343x185 (szer. x głęb. x wys.) cm</li> <li><b>Kod producenta:</b> 0179510002 CGH1020D</li> <li><b>EAN:</b> 8004399790483</li> <li><b>Nazwa produktu:</b> De'Longhi CGH1020D</li> <li><b>Kod systemowy:</b> AGDM-GRIL-DEI-006</li> </ul>"
+                        }
+                    ]
+                },
+                {
+                    "items": [
+                        {
+                            "type": "IMAGE",
+                            "url": "https://a.allegroimg.com/original/259dfd/16f79caf4084b93c156801781184"
+                        },
+                        {
+                            "type": "IMAGE",
+                            "url": "https://a.allegroimg.com/original/3381f8/42d7d6064cfdb455a231ed229e9f"
+                        }
+                    ]
+                },
+                {
+                    "items": [
+                        {
+                            "type": "IMAGE",
+                            "url": "https://a.allegroimg.com/original/11d890/d5327d8d48628d491b94158cde9c"
+                        }
+                    ]
+                }
+            ]
+        },
+        "external": null,
+        "category": {
+            "id": "260556"
+        },
+        "taxSettings": null,
+        "sizeTable": null,
+        "discounts": {
+            "wholesalePriceList": null
+        },
+        "contact": null,
+        "fundraisingCampaign": null,
+        "messageToSellerSettings": {
+            "mode": "OPTIONAL"
+        },
+        "attachments": [],
+        "b2b": null,
+        "additionalServices": null,
+        "compatibilityList": null,
+        "additionalMarketplaces": {
+            "allegro-business-pl": {
+                "sellingMode": null,
+                "publication": {
+                    "state": "NOT_REQUESTED",
+                    "refusalReasons": []
+                }
+            },
+            "allegro-sk": {
+                "sellingMode": null,
+                "publication": {
+                    "state": "NOT_REQUESTED",
+                    "refusalReasons": []
+                }
+            },
+            "allegro-cz": {
+                "sellingMode": null,
+                "publication": {
+                    "state": "NOT_REQUESTED",
+                    "refusalReasons": []
+                }
+            },
+            "allegro-hu": {
+                "sellingMode": null,
+                "publication": {
+                    "state": "NOT_REQUESTED",
+                    "refusalReasons": []
+                }
+            },
+            "allegro-business-cz": {
+                "sellingMode": null,
+                "publication": {
+                    "state": "NOT_REQUESTED",
+                    "refusalReasons": []
+                }
+            }
+        },
+        "warnings": [],
+        "aiCoCreatedContent": {
+            "images": []
+        },
+        "id": "18757279235",
+        "language": "pl-PL",
+        "publication": {
+            "status": "INACTIVE",
+            "duration": null,
+            "endedBy": null,
+            "endingAt": null,
+            "startingAt": null,
+            "republish": false,
+            "marketplaces": {
+                "base": {
+                    "id": "allegro-pl"
+                },
+                "additional": []
+            }
+        },
+        "validation": {
+            "errors": [
+                {
+                    "code": "EMPTY_SHIPPING_RATES",
+                    "message": "No shipping rates set.",
+                    "details": "NON_BLOCKING",
+                    "path": "delivery.shippingRates.id",
+                    "userMessage": "Brak ustawionego cennika dostawy.",
+                    "metadata": []
+                },
+                {
+                    "code": "ConstraintViolationException.AfterSalesServiceConditionsRequiredByCompany",
+                    "message": "Offer Terms (for returns and complaints) are required for Business Accounts.",
+                    "details": "ConstraintViolationException.AfterSalesServiceConditionsRequiredByCompany",
+                    "path": "null",
+                    "userMessage": "Warunki oferty (zwroty, reklamacje) są wymagane dla kont firma.",
+                    "metadata": []
+                },
+                {
+                    "code": "ConstraintViolationException.AtLeastOneMode",
+                    "message": "You must select at least one sale method and enter the required prices.",
+                    "details": "ConstraintViolationException.AtLeastOneMode",
+                    "path": "sellingMode.null",
+                    "userMessage": "Musisz wybrać przynajmniej jeden sposób sprzedaży oraz podać wymagane ceny.",
+                    "metadata": []
+                }
+            ],
+            "warnings": [],
+            "validatedAt": "2026-07-13T07:19:34.320Z"
+        },
+        "createdAt": "2026-07-13T07:19:27.000Z",
+        "updatedAt": "2026-07-13T07:19:34.321Z"
+    },
+    {
+        "name": "Ładowarka GaN 200W Silver Monkay oraz 30 sztuk uszkodzonych ładowarek",
+        "productSet": [
+            {
+                "product": {
+                    "id": "b45ee7e9-d47a-400b-a815-3b343a427be7",
+                    "publication": {
+                        "status": "LISTED"
+                    },
+                    "parameters": [
+                        {
+                            "id": "224017",
+                            "name": "Kod producenta",
+                            "values": [
+                                "SMA156"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "248811",
+                            "name": "Marka",
+                            "values": [
+                                "Silver Monkey"
+                            ],
+                            "valuesIds": [
+                                "248811_1880883"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "18881",
+                            "name": "Przeznaczenie",
+                            "values": [
+                                "uniwersalna"
+                            ],
+                            "valuesIds": [
+                                "18881_11"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "249512",
+                            "name": "Kolor",
+                            "values": [
+                                "biały"
+                            ],
+                            "valuesIds": [
+                                "249512_1647414"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "207842",
+                            "name": "Złącza",
+                            "values": [
+                                "USB typ C",
+                                "USB"
+                            ],
+                            "valuesIds": [
+                                "207842_64",
+                                "207842_4"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "17448",
+                            "name": "Waga produktu z opakowaniem jednostkowym",
+                            "values": [
+                                "0.1"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "207818",
+                            "name": "Liczba urządzeń ładowanych jednocześnie",
+                            "values": [
+                                "4"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "207826",
+                            "name": "Prąd wyjściowy",
+                            "values": [
+                                "1500"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "207830",
+                            "name": "Napięcie wyjściowe",
+                            "values": [
+                                "20"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "207834",
+                            "name": "Przewód w zestawie",
+                            "values": [
+                                "nie"
+                            ],
+                            "valuesIds": [
+                                "207834_233986"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "207838",
+                            "name": "Długość przewodu",
+                            "values": [
+                                "2"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "207822",
+                            "name": "Zgodność ze standardem",
+                            "values": [
+                                "Quick Charge 1.0"
+                            ],
+                            "valuesIds": [
+                                "207822_1"
+                            ],
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "250792",
+                            "name": "Kod taryfy celnej",
+                            "values": [
+                                "85044060"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        },
+                        {
+                            "id": "225693",
+                            "name": "EAN (GTIN)",
+                            "values": [
+                                "5900779358560"
+                            ],
+                            "valuesIds": null,
+                            "rangeValue": null
+                        }
+                    ],
+                    "isAiCoCreated": true
+                },
+                "quantity": {
+                    "value": 1
+                },
+                "responsiblePerson": null,
+                "responsibleProducer": {
+                    "id": "a0dd0085-0097-4196-8582-8321d254527a"
+                },
+                "safetyInformation": {
+                    "description": "List of charger safety warnings based on the requirements of Regulation (EU) 2023/988 on General Product Safety (GPSR):\n\n1. Risk of electric shock:\n * Do not touch the charger or cable with wet hands. * Make sure that the outlet you are connecting the charger to is functional and has grounding. * Do not use the charger in places with high humidity, e.g. in the bathroom. * Disconnect the charger from the outlet when you are not using it. 2. Fire risk:\n * Use only chargers that are original or approved by the manufacturer of your device. * Do not cover the charger while charging to avoid overheating. * Do not use a damaged charger or cable. * Do not leave the charger unattended near flammable materials. 3. Risk of damage to the device:\n * Do not use the charger in extreme temperatures (below 0°C and above 40°C). * Protect your charger from drops and other mechanical damage. * Do not wrap the cable around the charger while it is still warm. * Do not pull the cable by disconnecting the charger from the outlet. 4. Health risks:\n * Do not place the charger near heat sources or in places with high humidity. * Disconnect the charger from the outlet if you notice any irregularities in its operation (e.g. smoke, strange smell, overheating). * Do not try to repair the charger yourself. 5. Child safety:\n * Keep the charger out of reach of children. * Make sure kids don't play with the charger or cable. * Supervise children while using the charger. 6. Environmental protection:\n * Do not throw away the used charger in a regular trash can. Return it to the electro-waste collection point. 7. Additional warnings:\n * Regularly check the status of the cable and charger. If you notice any damage, replace it with a new one. * Clean the charger with a dry cloth. Do not use liquids or detergents. * Do not use the charger near water or other liquids. * Make sure the charger voltage is compatible with the voltage in the electrical outlet.",
+                    "type": "TEXT"
+                },
+                "marketedBeforeGPSRObligation": false,
+                "deposits": []
+            }
+        ],
+        "parameters": [
+            {
+                "id": "11323",
+                "name": "Stan",
+                "values": [
+                    "Uszkodzony"
+                ],
+                "valuesIds": [
+                    "11323_238062"
+                ],
+                "rangeValue": null
+            }
+        ],
+        "images": [
+            "https://a.allegroimg.com/original/111f2e/cf232ca849d3a008e94353dc2f6e"
+        ],
+        "afterSalesServices": {
+            "impliedWarranty": {
+                "id": "4e8f1e2c-3f97-42c9-ad0d-4b9204320ee1"
+            },
+            "returnPolicy": {
+                "id": "2fae3e22-1ad2-41bd-b878-60070e5e2ee6"
+            },
+            "warranty": {
+                "id": "3c24f369-901a-431c-8961-c03924343d6d"
+            }
+        },
+        "payments": {
+            "invoice": "VAT"
+        },
+        "sellingMode": {
+            "format": "AUCTION",
+            "price": null,
+            "startingPrice": {
+                "amount": "20.00",
+                "currency": "PLN"
+            },
+            "minimalPrice": null
+        },
+        "stock": {
+            "available": 0,
+            "unit": "UNIT"
+        },
+        "location": {
+            "countryCode": "PL",
+            "province": "MALOPOLSKIE",
+            "city": "<redacted>",
+            "postCode": "<redacted>"
+        },
+        "delivery": {
+            "shippingRates": {
+                "id": "6dbd5dba-d908-4559-a770-55eb5b4cabfb"
+            },
+            "handlingTime": "PT0S",
+            "additionalInfo": null,
+            "shipmentDate": null
+        },
+        "description": {
+            "sections": [
+                {
+                    "items": [
+                        {
+                            "type": "TEXT",
+                            "content": "<h1>Licytacja dotyczy 30 sztuk uszkodzonych ładowarek, wszystkie widoczne są na zdjęciu.</h1>"
+                        }
+                    ]
+                }
+            ]
+        },
+        "external": null,
+        "category": {
+            "id": "19357"
+        },
+        "taxSettings": {
+            "subject": null,
+            "exemption": null,
+            "rates": [
+                {
+                    "rate": "23.00",
+                    "countryCode": "PL"
+                }
+            ]
+        },
+        "sizeTable": null,
+        "discounts": {
+            "wholesalePriceList": null
+        },
+        "contact": null,
+        "fundraisingCampaign": null,
+        "messageToSellerSettings": {
+            "mode": "OPTIONAL"
+        },
+        "attachments": [],
+        "b2b": null,
+        "additionalServices": null,
+        "compatibilityList": null,
+        "additionalMarketplaces": {
+            "allegro-business-pl": {
+                "sellingMode": null,
+                "publication": {
+                    "state": "NOT_REQUESTED",
+                    "refusalReasons": []
+                }
+            },
+            "allegro-sk": {
+                "sellingMode": null,
+                "publication": {
+                    "state": "NOT_REQUESTED",
+                    "refusalReasons": []
+                }
+            },
+            "allegro-cz": {
+                "sellingMode": null,
+                "publication": {
+                    "state": "NOT_REQUESTED",
+                    "refusalReasons": []
+                }
+            },
+            "allegro-hu": {
+                "sellingMode": null,
+                "publication": {
+                    "state": "NOT_REQUESTED",
+                    "refusalReasons": []
+                }
+            },
+            "allegro-business-cz": {
+                "sellingMode": null,
+                "publication": {
+                    "state": "NOT_REQUESTED",
+                    "refusalReasons": []
+                }
+            }
+        },
+        "warnings": [],
+        "aiCoCreatedContent": {
+            "images": []
+        },
+        "id": "18761171520",
+        "language": "pl-PL",
+        "publication": {
+            "status": "ENDED",
+            "duration": "PT168H",
+            "endedBy": "EXPIRATION",
+            "endingAt": "2026-07-21T14:14:04.000Z",
+            "startingAt": null,
+            "republish": false,
+            "marketplaces": {
+                "base": {
+                    "id": "allegro-pl"
+                },
+                "additional": []
+            }
+        },
+        "validation": {
+            "errors": [],
+            "warnings": [],
+            "validatedAt": "2026-07-14T13:43:40.264Z"
+        },
+        "createdAt": "2026-07-14T13:42:39.000Z",
+        "updatedAt": "2026-07-21T14:14:34.712Z"
     },
     {
         "name": "Bęben Brother DR-B023 DCP-B7520DW HL-B2080DW MFC-B7715DW",
