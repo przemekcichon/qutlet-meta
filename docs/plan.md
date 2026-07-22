@@ -684,11 +684,36 @@ wykonania i tak wynika z zależności, nie z numeru.
   **Odrzucona alternatywa:** świadome pomijanie zdjęć — prostszy zasiew i brak
   problemu wygasania, ale sandbox przestaje być realistycznym środowiskiem testowym,
   co jest całym celem tej fazy.
-- **D-3A.G5 (kategorie i parametry) [OTWARTE — rozstrzygnąć przy realizacji]:**
-  identyfikatory kategorii i parametrów w sandboxie **nie muszą** odpowiadać
-  produkcyjnym (sandbox odświeża ich listę kwartalnie). Zasiew może więc wymagać
-  mapowania kategorii prod→sandbox. Skala problemu ujawni się dopiero na realnych
-  zwrotkach z FAZY 3.
+- **D-3A.G5 (kategorie i parametry) [ROZSTRZYGNIĘTE — sesja 2026-07-22, na pomiarze]:**
+  obawa brzmiała: identyfikatory kategorii i parametrów w sandboxie **nie muszą**
+  odpowiadać produkcyjnym (sandbox odświeża ich listę kwartalnie). **Pomiar na
+  realnych danych** (komenda `sandbox-preflight`, 555 ofert snapshotu vs sandbox)
+  pokazał coś innego, niż zakładaliśmy:
+  - kategorie: **126/126 istnieje w sandboxie pod TYM SAMYM id**, wszystkie `leaf`;
+  - parametry oferty (`11323` Stan, `229205` Stan opakowania): **555/555 ofert
+    waliduje się** wobec słowników kategorii sandboxa (sprawdzone per oferta, w jej
+    własnej kategorii — nie krzyżowo);
+  - rozjazd jest **gdzie indziej**: 0/60 sprawdzonych produktów katalogu
+    (`productSet[].product.id`) istnieje w sandboxie (404 `ProductNotFound`), a
+    słowniki KONTA (polityki zwrotów, gwarancje, producenci odpowiedzialni) są tam
+    **puste** — 0/98 produkcyjnych UUID-ów. To rozstrzyga **D-3A.2.1** i **D-3A.2.3**.
+
+  **Decyzja użytkownika mimo tożsamości 1:1:** warstwa mapowania **powstaje**
+  (`SandboxSeed\IdMap`) i jest **wymagana** — brak wpisu = brak mapowania, a nie ciche
+  „pewnie to samo": kategoria bez wpisu pomija ofertę, parametr bez wpisu wypada z
+  payloadu, jedno i drugie ląduje w raporcie przebiegu. Uzasadnienie: tożsamość jest
+  stanem **zmierzonym dziś**, nie własnością środowiska; bez tej warstwy pierwsze
+  kwartalne przetasowanie przechodzi bezgłośnie. Tablica jest **generowana z pomiaru**
+  (`sandbox-preflight --write-id-map` — wyłącznie id potwierdzone żądaniem), nie pisana
+  ręcznie, więc po czyszczeniu sandboxa regeneracja daje **diff**, a nie domysł.
+  **Uczciwe nazwanie zakresu (ustalenie z recenzji):** generator produkuje wyłącznie wpisy
+  `id → id`, więc dziś warstwa jest **detektorem rozjazdu** (id zniknęło → brak wpisu → oferta
+  pominięta i odnotowana), a nie translatorem realnego przemapowania. Struktura pliku
+  (`categories` / `parameters` / `parameterValues`) na translację pozwala i `IdMap` ją czyta,
+  ale dopóki nikt nie wpisze tam pary różnych id, mapowania jako takiego nie ma.
+  **Odrzucone alternatywy:** brak warstwy (dziś wystarcza, ale ślepnie na przetasowanie)
+  oraz twardy STOP na pierwszej rozbieżności (jedna egzotyczna kategoria blokowałaby
+  zasiew całego asortymentu).
 
 **Nie mylić z warstwą surową (FAZA 5/6):** snapshot z tej fazy to **pliki** obejmujące
 całe konto, służące do odtworzenia sandboxa. Warstwa surowa to **meta na konkretnym
@@ -768,14 +793,14 @@ wznawialność przerwanego pobrania, log co pobrano.
   decyzji **D-3A.1.1**–**D-3A.1.3** w tym dokumencie. Bez kodu.
 - **Zależności:** brak (musi wejść PRZED uruchomieniem komendy z P-3A.1a).
 
-### P-3A.2 — Zasiew sandboxa ze snapshotu
+### 🟡 P-3A.2 — Zasiew sandboxa ze snapshotu
 - **Repo:** qutlet-allegro (slice `SandboxSeed/`)
 - **Zakres:** komenda WP-CLI tworząca w **sandboxie** oferty na podstawie snapshotu
   (slot `sandbox/write`), **idempotentnie** (D-3A.G1) — ponowne uruchomienie po
   kwartalnym czyszczeniu odtwarza stan, a nie dubluje. Przeniesienie **zdjęć** wraz z
   ich ponownym wypychaniem po wygaśnięciu (**D-3A.G4** — uwaga na konsekwencję dla
   idempotencji: warunkiem pominięcia jest KOMPLETNOŚĆ oferty, nie samo jej istnienie).
-  Obsługa mapowania kategorii/parametrów (**D-3A.G5**, wciąż OTWARTE). Twarda odmowa
+  Obsługa mapowania kategorii/parametrów (**D-3A.G5** — rozstrzygnięte w tej sesji). Twarda odmowa
   wykonania, gdy celem NIE jest sandbox (D-2.G7 / D-3A.G2) — przez
   `Auth\Environment::assert_offer_content_write_allowed()`.
 - **Zależności:** P-3A.1, FAZA 2 (slot `sandbox/write`).
@@ -783,7 +808,116 @@ wznawialność przerwanego pobrania, log co pobrano.
   założone, aplikacje sandboxowe (`sandbox/read`, `sandbox/write`) zarejestrowane wg
   D-2.G3 i D-2.G6. Sesja realizująca P-3A.2 i tak POTWIERDZA obecność sekretów pary
   `sandbox/write` w `wp-config.php` przed kodem (obecność slotu w `option list` nie
-  dowodzi obecności `client_id`/`client_secret`).
+  dowodzi obecności `client_id`/`client_secret`). **Potwierdzone 2026-07-22:** stałe
+  `QUTLET_ALLEGRO_SANDBOX_WRITE_CLIENT_ID`/`…_SECRET` obecne i niepuste, slot oddaje
+  ważny token (setki żądań przeszły).
+
+Decyzje punktu — wszystkie **zmierzone na żywym API**, nie wywnioskowane:
+
+- **D-3A.2.1 (oferta z DEFINICJĄ PRODUKTU) [USTALONE — sesja 2026-07-22; ZASTĘPUJE
+  wcześniejsze „oferta kategoryjna" z tej samej sesji]:** wszystkie 555 ofert snapshotu
+  jest produktowych, a w sandboxie **nie istnieje żaden ze sprawdzonych identyfikatorów
+  katalogu: 0/60** (404 `ProductNotFound`). Zmierzono próbkę 60 z 495 różnych UUID-ów —
+  wniosek o pozostałych jest ekstrapolacją, nie pomiarem, choć zerowa trafność na próbce i
+  odrębność katalogów sandboxa czynią go bezpiecznym. Pierwszym rozstrzygnięciem była **oferta kategoryjna**
+  (bez `productSet`, z parametrami produktu zepchniętymi na poziom oferty) — i **żywe API
+  ją obaliło**, zamykając logiczną pętlę: parametry sekcji produktu
+  (`options.describesProduct` w schemacie kategorii) są przez kategorię **wymagane**
+  (422 `MissingRequiredParameters`: Marka, Model, Kod producenta…), a jednocześnie
+  **zabronione** w sekcji oferty (422 `ParameterCategoryException` — „should not be
+  specified as in section `offer`", potwierdzone na `224017 Kod producenta`). W ofercie
+  kategoryjnej nie mają więc gdzie usiąść.
+  **Rozstrzygnięcie:** oferta niesie `productSet[0].product` z definicją produktu (nazwa,
+  kategoria, parametry, zdjęcia — wszystko ze snapshotu), a Allegro produkt **tworzy albo
+  dopasowuje** (wraca ze statusem `PROPOSED`). Parametry rozdziela schemat kategorii:
+  `describesProduct: true` → sekcja produktu, `false` → sekcja oferty. **Skutek uboczny
+  przyjęty świadomie:** zasiew pisze do KATALOGU PRODUKTÓW sandboxa, nie tylko do własnych
+  ofert. **Odrzucone alternatywy:** szukanie produktu po EAN przed utworzeniem (wierniejsze,
+  ale +1 żądanie na ofertę i drugie rozgałęzienie do przetestowania) oraz pomijanie
+  kategorii wymagających produktu (sandbox przestaje odwzorowywać asortyment, czyli traci
+  sens fazy).
+- **D-3A.2.2 (idempotencja: stanem jest SANDBOX, kluczem `external.id`) [USTALONE]:**
+  powiązanie oferta produkcyjna ↔ sandboxowa niesie `external.id` = produkcyjne
+  `offerId`; przed przebiegiem zasiew buduje indeks z `GET /sale/offers`. Świadomie
+  BEZ lokalnego rejestru „co wysłaliśmy": to sandbox jest kasowany kwartalnie, więc
+  lokalny rejestr rozjeżdżałby się z rzeczywistością **z definicji**. **Domknięcie
+  D-3A.G4:** warunkiem pominięcia jest KOMPLETNOŚĆ — zdjęcia wygasają po 7 dniach
+  niezależnie od ofert, więc zasiew pyta CDN, czy `primaryImage` nadal się serwuje, i przy
+  martwym zdjęciu PRZENOSI zdjęcia jeszcze raz (URL-e ze snapshotu → host uploadu), a
+  `PATCH` dostaje adresy SANDBOXOWE — produkcyjny adres API odrzuca (422
+  `OfferImagesNotFoundException`). Odświeżenie obejmuje galerię **i obrazy w opisie**:
+  wygasają razem, a sonda patrzy tylko na `primaryImage`, więc łatanie samej galerii
+  ustawiałoby ofertę z powrotem na „kompletną" z trwale martwymi obrazami w opisie
+  (ustalenie z niezależnej recenzji przed merge).
+  **Granica sondy (zmierzona, nie założona):** sprawdzamy JEDNO zdjęcie (`primaryImage`)
+  metodą HEAD, więc częściowo martwa galeria i oferta, której część transferów padła przy
+  tworzeniu, pozostają niewidoczne. Przy dzisiejszym modelu wygasania (wszystko naraz) to
+  nie boli — ale jest to założenie o środowisku, nie własność kodu.
+- **D-3A.2.3 (warunki konta: zasiew zakłada je sam) [USTALONE — sesja 2026-07-22]:**
+  pierwotnie „pomiń jako opcjonalne"; **żywe API to obaliło** — 422
+  `ReturnPolicyNotDefinedException` + `ImpliedWarrantyNotDefinedException` („You do not
+  have any Returns/Complaints Terms"), bo konto sandboxowe startuje bez jakichkolwiek
+  warunków. Decyzja użytkownika: zasiew zakłada brakujące warunki zwrotów i reklamacji
+  sam (`sale:settings:write` — scope, który **D-2.G6 nadało roli `write` właśnie
+  „wyłącznie do zasiewu sandboxa"**), idempotentnie: cokolwiek już na koncie jest, tego
+  używa. Adres w warunkach jest SYNTETYCZNY — nie ma powodu przenosić prawdziwego
+  adresu sprzedawcy do środowiska testowego. Okresy reklamacji `P2Y`/`P2Y` (API odrzuca
+  krótsze). **Odrzucona alternatywa:** handoff (użytkownik zakłada ręcznie w panelu) —
+  zasiew przestałby być samowystarczalny po kwartalnym czyszczeniu.
+- **D-3A.2.4 (bezpiecznik jako flaga, nie stała) [USTALONE]:** środowisko docelowe jest
+  jawną flagą `--environment` (domyślnie sandbox), żeby odmowa z D-2.G7 była REALNA i
+  testowalna: `--environment=production` uderza w
+  `Environment::assert_offer_content_write_allowed()` i kończy komendę PRZED pobraniem
+  tokenu (zweryfikowane runtime). Gdyby środowisko było stałą w kodzie, bezpiecznik nie
+  miałby czego bronić.
+
+- **D-3A.2.5 (zasoby konta zakładane przez zasiew — rozszerzenie D-3A.2.3) [USTALONE]:**
+  poza warunkami zwrotów i reklamacji zasiew zakłada jeszcze dwa zasoby, bo bez nich API
+  nie przyjmuje oferty, a konto sandboxowe ich nie ma:
+  - **zwykły (nie-fulfillmentowy) cennik dostawy** — konto dostaje od Allegro wyłącznie
+    cenniki One Fulfillment (7/7), a oferta wpięta w taki cennik wchodzi w reżim
+    fulfillmentu (`location` musi wskazywać magazyn Allegro, `handlingTime` 24 h,
+    polityka zwrotów fulfillmentowa). Zamiast udawać, że towar outletowy leży w magazynie
+    Allegro, zakładamy własny cennik `PHYSICAL` (pole `type` jest WYMAGANE — 422
+    `EMPTY_TYPE` — mimo że publiczna specyfikacja go nie pokazuje);
+  - **producenta odpowiedzialnego (GPSR)** — wymagany dla każdego produktu w ofercie i
+    wskazywalny WYŁĄCZNIE przez zasób konta: wariant `NAME` waliduje nazwę wobec słownika
+    konta (422 `RESPONSIBLE_PRODUCER_NAME_DOES_NOT_EXIST`), więc nie da się jej wyprowadzić
+    z danych oferty. Informacja o bezpieczeństwie pochodzi już ze snapshotu (mają ją
+    wszystkie 555 ofert).
+  Dane teleadresowe obu zasobów są SYNTETYCZNE **w całości** (łącznie z miastem i kodem
+  pocztowym). Pierwsza wersja przepisywała `postCode`/`city` ze snapshotu, czyli realną
+  lokalizację sprzedawcy — te same pola, które D-3A.G3 wskazuje jako redagowane w FAZIE 3;
+  wyłapała to niezależna recenzja przed merge.
+  **Osobno i świadomie:** `location` SAMEJ OFERTY jedzie ze snapshotu **verbatim** (z realnym
+  miastem i kodem sprzedawcy). Powód: to konto sandboxowe TEGO SAMEGO sprzedawcy, a lokalizacja
+  oferty współokreśla koszty i czas dostawy, więc jej podmiana zafałszowałaby środowisko
+  testowe. Dane nie opuszczają Allegro ani nie trafiają do repo — reżim D-3A.G3 dotyczy plików
+  snapshotu, nie treści wysyłanej na konto sprzedawcy.
+- **D-3A.2.6 (domknięcie punktu na 524/555) [USTALONE — decyzja użytkownika, 2026-07-22]:**
+  pełny przebieg dał **524 oferty w sandboxie (495 ACTIVE, 29 INACTIVE)**, czyli 94,4%
+  snapshotu. Pozostałe **31 NIE jest defektem zasiewu** — to zderzenie z katalogiem
+  produktów Allegro, zmierzone i rozbite na przyczyny:
+  - **22 × „wartość niejednoznaczna"** — parametr ma wartość zbiorczą (`inny`, `inna`,
+    `do innych irygatorów`). Na produkcji oferta wisiała na GOTOWEJ karcie produktu, więc
+    nikt nie musiał nic proponować; w sandboxie produkt dopiero powstaje, więc Allegro żąda
+    propozycji konkretnej wartości — a snapshot niesie tylko to samo słowo „inny".
+  - **9 × twarde realia katalogu** — produkt istnieje już w innej kategorii, EAN w katalogu
+    ma inną wartość, kategoria ma zablokowane tworzenie produktów, wartość „0" w parametrze,
+    brak wymaganego parametru „Kolekcja", niepoprawny czas trwania (jedyna oferta AUCTION).
+  Cel fazy (realistyczne środowisko testowe dla FAZ 4–6) jest osiągnięty: 126 kategorii i
+  pełna rozpiętość asortymentu. **Odrzucone alternatywy:** wycinanie parametrów o wartości
+  zbiorczej (odzyskałoby część z 22 kosztem wierności danych — a to właśnie na parametrach
+  będziemy testować mapowanie) oraz wymyślanie propozycji wartości (sandbox przestałby
+  odwzorowywać produkcję dokładnie tam, gdzie ma służyć za wzorzec).
+- **Handoff (użytkownik): ZREALIZOWANY (2026-07-22)** — pierwsze uruchomienie zwracało
+  **403 `OfferAccessDeniedException`** („Prowadząc sprzedaż na koncie zwykłym… nie możesz
+  korzystać z tej metody Publicznego API"): konto z handoffu 2026-07-21 było kontem
+  **zwykłym**, a publiczne API wymaga **firmowego**. Rotacja tokenu tego nie zmieniała
+  (sprawdzone), bo rzecz jest w koncie, nie w tokenie. Użytkownik założył sandboxowe konto
+  **firmowe** (`seller.id` 111346507) i autoryzował na nim sloty `sandbox/read` +
+  `sandbox/write` — tokeny są per konto. Pełny przebieg (~5000 żądań) uruchomił użytkownik
+  w shellu Locala: most MCP tnie wywołanie po ~2 minutach, co starcza na ~12 ofert.
 
 ---
 
@@ -954,12 +1088,27 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
   — **rozstrzygnąć przy realizacji, nie z góry**. Kandydaci: cienka warstwa wspólna
   na poziomie wtyczki albo rozszerzenie slice'a `Auth/` o klienta HTTP (token i tak
   jest jego odpowiedzialnością). Cokolwiek wyjdzie, ma być **jednym** miejscem.
-- **Weryfikacja:** PHPStan czysty + ponowny przebieg każdej z czterech komend na
-  realnych danych z tym samym wynikiem co przed refaktorem (dla `snapshot-offers`
-  wystarczy przebieg wznawiający na kompletnym snapshocie — musi zgłosić
-  0 pobranych / 555 obecnych, czyli idempotencję).
-- **Zależności:** P-3A.2 (żeby refaktor objął też ewentualne helpery zasiewu i nie
-  trzeba go było powtarzać).
+- **Aktualizacja po P-3A.2 (sesja 2026-07-22):** duplikacja urosła — slice `SandboxSeed/`
+  ma teraz DWIE komendy (`OfferSnapshotCommand`, `SandboxSeedCommand`) plus read-only sondę
+  (`SandboxPreflightCommand`), a w nich własne kopie `fetch`/`send`, `write`, `error_detail`,
+  `access_token`, `safe_name`. `SandboxSeedCommand` wykonuje też POST/PATCH (nie tylko GET),
+  więc wspólna powierzchnia HTTP musi objąć **żądania z ciałem**, nie tylko `GET`. Refaktor
+  ma przepiąć wszystkie komendy OBU slice'ów.
+- **Warunek wejścia (dług testowy z recenzji P-3A.2, 2026-07-22):** **PRZED** refaktorem
+  dopisać **testy jednostkowe `SandboxSeed\IdMap`** (PHPUnit — repo nie ma go dziś w ogóle,
+  więc harness zakłada ten punkt, nie P-3A.2, gdzie byłby scope creepem). Powód: niezmiennik
+  „brak cichego fallbacku do tożsamości" (brak wpisu → `null` → oferta pominięta/parametr
+  odrzucony, nigdy „pewnie to samo") trzyma się DZIŚ wyłącznie na czytaniu kodu, a to właśnie
+  ten refaktor jest zdarzeniem, które może go po cichu złamać. Testy (bez sieci): brak pliku
+  mapy → wyjątek; pusta sekcja `categories` → wyjątek; brak wpisu → `null`; wpis obecny →
+  zmapowane id. Sieć nie jest potrzebna — `IdMap` czyta wyłącznie plik JSON.
+- **Weryfikacja:** PHPStan czysty + zielone testy `IdMap` + ponowny przebieg każdej komendy
+  obu slice'ów na realnych danych z tym samym wynikiem co przed refaktorem (dla
+  `snapshot-offers` wystarczy przebieg wznawiający na kompletnym snapshocie — musi zgłosić
+  0 pobranych / 555 obecnych; dla `seed-sandbox` — ponowny przebieg raportujący same
+  `complete`, czyli idempotencję z D-3A.2.2).
+- **Zależności:** P-3A.2 (żeby refaktor objął też helpery zasiewu i sondy — a nie trzeba
+  go było powtarzać).
 
 ### P-6.1 — Import ofert → produkty Woo
 - **Repo:** qutlet-allegro (czyta/pisze pola core z FAZY 5)
