@@ -1,0 +1,250 @@
+[
+    {
+        "categories": [
+            {
+                "id": "5",
+                "name": "Dom i Ogród",
+                "parent": null,
+                "leaf": false,
+                "options": {
+                    "advertisement": false,
+                    "offersWithProductPublicationEnabled": false,
+                    "productCreationEnabled": false,
+                    "sellerCanRequirePurchaseComments": false
+                }
+            },
+            {
+                "id": "11763",
+                "name": "Dziecko",
+                "parent": null,
+                "leaf": false,
+                "options": {
+                    "advertisement": false,
+                    "offersWithProductPublicationEnabled": false,
+                    "productCreationEnabled": false,
+                    "sellerCanRequirePurchaseComments": false
+                }
+            },
+            {
+                "id": "42540aec-367a-4e5e-b411-17c09b08e41f",
+                "name": "Elektronika",
+                "parent": null,
+                "leaf": false,
+                "options": {
+                    "advertisement": false,
+                    "offersWithProductPublicationEnabled": true,
+                    "productCreationEnabled": true,
+                    "sellerCanRequirePurchaseComments": false
+                }
+            },
+            {
+                "id": "4bd97d96-f0ff-46cb-a52c-2992bd972bb1",
+                "name": "Firma i usługi",
+                "parent": null,
+                "leaf": false,
+                "options": {
+                    "advertisement": false,
+                    "offersWithProductPublicationEnabled": false,
+                    "productCreationEnabled": false,
+                    "sellerCanRequirePurchaseComments": false
+                }
+            },
+            {
+                "id": "a408e75a-cede-4587-8526-54e9be600d9f",
+                "name": "Kolekcje i sztuka",
+                "parent": null,
+                "leaf": false,
+                "options": {
+                    "advertisement": false,
+                    "offersWithProductPublicationEnabled": false,
+                    "productCreationEnabled": false,
+                    "sellerCanRequirePurchaseComments": true
+                }
+            },
+            {
+                "id": "38d588fd-7e9c-4c42-a4ae-6831775eca45",
+                "name": "Kultura i rozrywka",
+                "parent": null,
+                "leaf": false,
+                "options": {
+                    "advertisement": false,
+                    "offersWithProductPublicationEnabled": false,
+                    "productCreationEnabled": false,
+                    "sellerCanRequirePurchaseComments": false
+                }
+            },
+            {
+                "id": "ea5b98dd-4b6f-4bd0-8c80-22c2629132d0",
+                "name": "Moda",
+                "parent": null,
+                "leaf": false,
+                "options": {
+                    "advertisement": false,
+                    "offersWithProductPublicationEnabled": false,
+                    "productCreationEnabled": false,
+                    "sellerCanRequirePurchaseComments": false
+                }
+            },
+            {
+                "id": "3",
+                "name": "Motoryzacja",
+                "parent": null,
+                "leaf": false,
+                "options": {
+                    "advertisement": false,
+                    "offersWithProductPublicationEnabled": false,
+                    "productCreationEnabled": false,
+                    "sellerCanRequirePurchaseComments": false
+                }
+            },
+            {
+                "id": "20782",
+                "name": "Nieruchomości",
+                "parent": null,
+                "leaf": false,
+                "options": {
+                    "advertisement": true,
+                    "offersWithProductPublicationEnabled": false,
+                    "productCreationEnabled": false,
+                    "sellerCanRequirePurchaseComments": false
+                }
+            },
+            {
+                "id": "3919",
+                "name": "Sport i turystyka",
+                "parent": null,
+                "leaf": false,
+                "options": {
+                    "advertisement": false,
+                    "offersWithProductPublicationEnabled": false,
+                    "productCreationEnabled": false,
+                    "sellerCanRequirePurchaseComments": false
+                }
+            },
+            {
+                "id": "258832",
+                "name": "Supermarket",
+                "parent": null,
+                "leaf": false,
+                "options": {
+                    "advertisement": false,
+                    "offersWithProductPublicationEnabled": false,
+                    "productCreationEnabled": false,
+                    "sellerCanRequirePurchaseComments": false
+                }
+            },
+            {
+                "id": "1429",
+                "name": "Uroda",
+                "parent": null,
+                "leaf": false,
+                "options": {
+                    "advertisement": false,
+                    "offersWithProductPublicationEnabled": true,
+                    "productCreationEnabled": true,
+                    "sellerCanRequirePurchaseComments": false
+                }
+            },
+            {
+                "id": "121882",
+                "name": "Zdrowie",
+                "parent": null,
+                "leaf": false,
+                "options": {
+                    "advertisement": false,
+                    "offersWithProductPublicationEnabled": false,
+                    "productCreationEnabled": false,
+                    "sellerCanRequirePurchaseComments": false
+                }
+            }
+        ]
+    },
+    {
+        "categories": [
+            {
+                "id": "8845",
+                "name": "Fotografia",
+                "parent": {
+                    "id": "42540aec-367a-4e5e-b411-17c09b08e41f"
+                },
+                "leaf": false,
+                "options": {
+                    "advertisement": false,
+                    "offersWithProductPublicationEnabled": true,
+                    "productCreationEnabled": true,
+                    "sellerCanRequirePurchaseComments": false
+                }
+            },
+            {
+                "id": "2",
+                "name": "Komputery",
+                "parent": {
+                    "id": "42540aec-367a-4e5e-b411-17c09b08e41f"
+                },
+                "leaf": false,
+                "options": {
+                    "advertisement": false,
+                    "offersWithProductPublicationEnabled": true,
+                    "productCreationEnabled": true,
+                    "sellerCanRequirePurchaseComments": false
+                }
+            },
+            {
+                "id": "122233",
+                "name": "Konsole i automaty",
+                "parent": {
+                    "id": "42540aec-367a-4e5e-b411-17c09b08e41f"
+                },
+                "leaf": false,
+                "options": {
+                    "advertisement": false,
+                    "offersWithProductPublicationEnabled": true,
+                    "productCreationEnabled": true,
+                    "sellerCanRequirePurchaseComments": false
+                }
+            },
+            {
+                "id": "10",
+                "name": "RTV i AGD",
+                "parent": {
+                    "id": "42540aec-367a-4e5e-b411-17c09b08e41f"
+                },
+                "leaf": false,
+                "options": {
+                    "advertisement": false,
+                    "offersWithProductPublicationEnabled": true,
+                    "productCreationEnabled": true,
+                    "sellerCanRequirePurchaseComments": false
+                }
+            },
+            {
+                "id": "122332",
+                "name": "Sprzęt estradowy, studyjny i DJ-ski",
+                "parent": {
+                    "id": "42540aec-367a-4e5e-b411-17c09b08e41f"
+                },
+                "leaf": false,
+                "options": {
+                    "advertisement": false,
+                    "offersWithProductPublicationEnabled": true,
+                    "productCreationEnabled": true,
+                    "sellerCanRequirePurchaseComments": false
+                }
+            },
+            {
+                "id": "4",
+                "name": "Telefony i Akcesoria",
+                "parent": {
+                    "id": "42540aec-367a-4e5e-b411-17c09b08e41f"
+                },
+                "leaf": false,
+                "options": {
+                    "advertisement": false,
+                    "offersWithProductPublicationEnabled": true,
+                    "productCreationEnabled": true,
+                    "sellerCanRequirePurchaseComments": false
+                }
+            }
+        ]
+    }
+]
