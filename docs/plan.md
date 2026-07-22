@@ -443,7 +443,7 @@ reguły bezpieczeństwa: `docs/allegro-api-samples/README.md`.
   zobaczenia rozkładu kategorii. Indeks nie jest kontekstem dla AI ani źródłem
   mappingu (FAZA 4) — te czytają JSON.
 
-### P-3.1 — Zwrotki ofert (punkt wielorepowy → P-3.1a + P-3.1b)
+### 🟢 P-3.1 — Zwrotki ofert (punkt wielorepowy → P-3.1a + P-3.1b)
 
 Pierwotnie jeden punkt (produkt: pliki-próbki w meta). W realizacji (sesja
 2026-07-22) mechanizm pobrania okazał się kodem w `qutlet-allegro`, więc — zgodnie
