@@ -809,19 +809,26 @@ wznawialność przerwanego pobrania, log co pobrano.
 
 Decyzje punktu — wszystkie **zmierzone na żywym API**, nie wywnioskowane:
 
-- **D-3A.2.1 (oferta kategoryjna, nie produktowa) [USTALONE — sesja 2026-07-22]:**
-  wszystkie 555 ofert snapshotu jest produktowych, ale katalog produktów sandboxa nie
-  zna ani jednego z 495 UUID-ów (404 `ProductNotFound`, próba 60/60). `productSet`
-  odpada; oferta powstaje z `category` + `parameters`. **Konsekwencja odkryta na żywym
-  API:** parametry z sekcji PRODUKTU (`options.describesProduct` w schemacie kategorii)
-  NIE mogą jechać w `parameters` oferty — Allegro odrzuca całość błędem 422
-  `ParameterCategoryException` („should not be specified as in section `offer`",
-  potwierdzone na `224017 Kod producenta"). Zasiew filtruje je schematem kategorii.
-  Oferta w sandboxie jest więc uboższa niż produkcyjna (bez karty produktu) — świadomy
-  koszt. **Odrzucone alternatywy:** wysyłanie pełnej definicji produktu (sandbox
-  tworzyłby produkt — wierniejsze, ale każda oferta to dodatkowa walidacja i ryzyko
-  odrzuceń na EAN) oraz wariant hybrydowy (dwie ścieżki zapisu = dwa razy więcej
-  przypadków brzegowych).
+- **D-3A.2.1 (oferta z DEFINICJĄ PRODUKTU) [USTALONE — sesja 2026-07-22; ZASTĘPUJE
+  wcześniejsze „oferta kategoryjna" z tej samej sesji]:** wszystkie 555 ofert snapshotu
+  jest produktowych, ale katalog sandboxa nie zna ani jednego z 495 UUID-ów (404
+  `ProductNotFound`, próba 60/60). Pierwszym rozstrzygnięciem była **oferta kategoryjna**
+  (bez `productSet`, z parametrami produktu zepchniętymi na poziom oferty) — i **żywe API
+  ją obaliło**, zamykając logiczną pętlę: parametry sekcji produktu
+  (`options.describesProduct` w schemacie kategorii) są przez kategorię **wymagane**
+  (422 `MissingRequiredParameters`: Marka, Model, Kod producenta…), a jednocześnie
+  **zabronione** w sekcji oferty (422 `ParameterCategoryException` — „should not be
+  specified as in section `offer`", potwierdzone na `224017 Kod producenta`). W ofercie
+  kategoryjnej nie mają więc gdzie usiąść.
+  **Rozstrzygnięcie:** oferta niesie `productSet[0].product` z definicją produktu (nazwa,
+  kategoria, parametry, zdjęcia — wszystko ze snapshotu), a Allegro produkt **tworzy albo
+  dopasowuje** (wraca ze statusem `PROPOSED`). Parametry rozdziela schemat kategorii:
+  `describesProduct: true` → sekcja produktu, `false` → sekcja oferty. **Skutek uboczny
+  przyjęty świadomie:** zasiew pisze do KATALOGU PRODUKTÓW sandboxa, nie tylko do własnych
+  ofert. **Odrzucone alternatywy:** szukanie produktu po EAN przed utworzeniem (wierniejsze,
+  ale +1 żądanie na ofertę i drugie rozgałęzienie do przetestowania) oraz pomijanie
+  kategorii wymagających produktu (sandbox przestaje odwzorowywać asortyment, czyli traci
+  sens fazy).
 - **D-3A.2.2 (idempotencja: stanem jest SANDBOX, kluczem `external.id`) [USTALONE]:**
   powiązanie oferta produkcyjna ↔ sandboxowa niesie `external.id` = produkcyjne
   `offerId`; przed przebiegiem zasiew buduje indeks z `GET /sale/offers`. Świadomie
@@ -848,16 +855,45 @@ Decyzje punktu — wszystkie **zmierzone na żywym API**, nie wywnioskowane:
   tokenu (zweryfikowane runtime). Gdyby środowisko było stałą w kodzie, bezpiecznik nie
   miałby czego bronić.
 
-- **⛔ BLOKADA — handoff (użytkownik), zgłoszony 2026-07-22:** tworzenie ofert przez
-  publiczne API zwraca **403 `OfferAccessDeniedException`**: „Prowadząc sprzedaż na
-  koncie zwykłym (nie zarejestrowanym jako konto firma), nie możesz korzystać z tej
-  metody Publicznego API". Konto sandboxowe z handoffu 2026-07-21 jest kontem
-  **zwykłym**, a zasiew wymaga **firmowego**. To ograniczenie konta po stronie Allegro,
-  nie defekt kodu — reszta ścieżki zapisu jest zweryfikowana (warunki konta realnie
-  założone w sandboxie). Do odblokowania potrzebne jest sandboxowe konto **firmowe** i
-  ponowna autoryzacja OAuth slotów `sandbox/read` + `sandbox/write` na to konto (tokeny
-  są per konto). Dopóki to nie nastąpi, P-3A.2 zostaje 🟡 — ani jedna oferta nie
-  powstała.
+- **D-3A.2.5 (zasoby konta zakładane przez zasiew — rozszerzenie D-3A.2.3) [USTALONE]:**
+  poza warunkami zwrotów i reklamacji zasiew zakłada jeszcze dwa zasoby, bo bez nich API
+  nie przyjmuje oferty, a konto sandboxowe ich nie ma:
+  - **zwykły (nie-fulfillmentowy) cennik dostawy** — konto dostaje od Allegro wyłącznie
+    cenniki One Fulfillment (7/7), a oferta wpięta w taki cennik wchodzi w reżim
+    fulfillmentu (`location` musi wskazywać magazyn Allegro, `handlingTime` 24 h,
+    polityka zwrotów fulfillmentowa). Zamiast udawać, że towar outletowy leży w magazynie
+    Allegro, zakładamy własny cennik `PHYSICAL` (pole `type` jest WYMAGANE — 422
+    `EMPTY_TYPE` — mimo że publiczna specyfikacja go nie pokazuje);
+  - **producenta odpowiedzialnego (GPSR)** — wymagany dla każdego produktu w ofercie i
+    wskazywalny WYŁĄCZNIE przez zasób konta: wariant `NAME` waliduje nazwę wobec słownika
+    konta (422 `RESPONSIBLE_PRODUCER_NAME_DOES_NOT_EXIST`), więc nie da się jej wyprowadzić
+    z danych oferty. Informacja o bezpieczeństwie pochodzi już ze snapshotu (mają ją
+    wszystkie 555 ofert).
+  Dane teleadresowe obu zasobów są SYNTETYCZNE — sandbox to środowisko testowe.
+- **D-3A.2.6 (domknięcie punktu na 524/555) [USTALONE — decyzja użytkownika, 2026-07-22]:**
+  pełny przebieg dał **524 oferty w sandboxie (495 ACTIVE, 29 INACTIVE)**, czyli 94,4%
+  snapshotu. Pozostałe **31 NIE jest defektem zasiewu** — to zderzenie z katalogiem
+  produktów Allegro, zmierzone i rozbite na przyczyny:
+  - **22 × „wartość niejednoznaczna"** — parametr ma wartość zbiorczą (`inny`, `inna`,
+    `do innych irygatorów`). Na produkcji oferta wisiała na GOTOWEJ karcie produktu, więc
+    nikt nie musiał nic proponować; w sandboxie produkt dopiero powstaje, więc Allegro żąda
+    propozycji konkretnej wartości — a snapshot niesie tylko to samo słowo „inny".
+  - **9 × twarde realia katalogu** — produkt istnieje już w innej kategorii, EAN w katalogu
+    ma inną wartość, kategoria ma zablokowane tworzenie produktów, wartość „0" w parametrze,
+    brak wymaganego parametru „Kolekcja", niepoprawny czas trwania (jedyna oferta AUCTION).
+  Cel fazy (realistyczne środowisko testowe dla FAZ 4–6) jest osiągnięty: 126 kategorii i
+  pełna rozpiętość asortymentu. **Odrzucone alternatywy:** wycinanie parametrów o wartości
+  zbiorczej (odzyskałoby część z 22 kosztem wierności danych — a to właśnie na parametrach
+  będziemy testować mapowanie) oraz wymyślanie propozycji wartości (sandbox przestałby
+  odwzorowywać produkcję dokładnie tam, gdzie ma służyć za wzorzec).
+- **Handoff (użytkownik): ZREALIZOWANY (2026-07-22)** — pierwsze uruchomienie zwracało
+  **403 `OfferAccessDeniedException`** („Prowadząc sprzedaż na koncie zwykłym… nie możesz
+  korzystać z tej metody Publicznego API"): konto z handoffu 2026-07-21 było kontem
+  **zwykłym**, a publiczne API wymaga **firmowego**. Rotacja tokenu tego nie zmieniała
+  (sprawdzone), bo rzecz jest w koncie, nie w tokenie. Użytkownik założył sandboxowe konto
+  **firmowe** (`seller.id` 111346507) i autoryzował na nim sloty `sandbox/read` +
+  `sandbox/write` — tokeny są per konto. Pełny przebieg (~5000 żądań) uruchomił użytkownik
+  w shellu Locala: most MCP tnie wywołanie po ~2 minutach, co starcza na ~12 ofert.
 
 ---
 
