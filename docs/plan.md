@@ -1088,12 +1088,27 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
   — **rozstrzygnąć przy realizacji, nie z góry**. Kandydaci: cienka warstwa wspólna
   na poziomie wtyczki albo rozszerzenie slice'a `Auth/` o klienta HTTP (token i tak
   jest jego odpowiedzialnością). Cokolwiek wyjdzie, ma być **jednym** miejscem.
-- **Weryfikacja:** PHPStan czysty + ponowny przebieg każdej z czterech komend na
-  realnych danych z tym samym wynikiem co przed refaktorem (dla `snapshot-offers`
-  wystarczy przebieg wznawiający na kompletnym snapshocie — musi zgłosić
-  0 pobranych / 555 obecnych, czyli idempotencję).
-- **Zależności:** P-3A.2 (żeby refaktor objął też ewentualne helpery zasiewu i nie
-  trzeba go było powtarzać).
+- **Aktualizacja po P-3A.2 (sesja 2026-07-22):** duplikacja urosła — slice `SandboxSeed/`
+  ma teraz DWIE komendy (`OfferSnapshotCommand`, `SandboxSeedCommand`) plus read-only sondę
+  (`SandboxPreflightCommand`), a w nich własne kopie `fetch`/`send`, `write`, `error_detail`,
+  `access_token`, `safe_name`. `SandboxSeedCommand` wykonuje też POST/PATCH (nie tylko GET),
+  więc wspólna powierzchnia HTTP musi objąć **żądania z ciałem**, nie tylko `GET`. Refaktor
+  ma przepiąć wszystkie komendy OBU slice'ów.
+- **Warunek wejścia (dług testowy z recenzji P-3A.2, 2026-07-22):** **PRZED** refaktorem
+  dopisać **testy jednostkowe `SandboxSeed\IdMap`** (PHPUnit — repo nie ma go dziś w ogóle,
+  więc harness zakłada ten punkt, nie P-3A.2, gdzie byłby scope creepem). Powód: niezmiennik
+  „brak cichego fallbacku do tożsamości" (brak wpisu → `null` → oferta pominięta/parametr
+  odrzucony, nigdy „pewnie to samo") trzyma się DZIŚ wyłącznie na czytaniu kodu, a to właśnie
+  ten refaktor jest zdarzeniem, które może go po cichu złamać. Testy (bez sieci): brak pliku
+  mapy → wyjątek; pusta sekcja `categories` → wyjątek; brak wpisu → `null`; wpis obecny →
+  zmapowane id. Sieć nie jest potrzebna — `IdMap` czyta wyłącznie plik JSON.
+- **Weryfikacja:** PHPStan czysty + zielone testy `IdMap` + ponowny przebieg każdej komendy
+  obu slice'ów na realnych danych z tym samym wynikiem co przed refaktorem (dla
+  `snapshot-offers` wystarczy przebieg wznawiający na kompletnym snapshocie — musi zgłosić
+  0 pobranych / 555 obecnych; dla `seed-sandbox` — ponowny przebieg raportujący same
+  `complete`, czyli idempotencję z D-3A.2.2).
+- **Zależności:** P-3A.2 (żeby refaktor objął też helpery zasiewu i sondy — a nie trzeba
+  go było powtarzać).
 
 ### P-6.1 — Import ofert → produkty Woo
 - **Repo:** qutlet-allegro (czyta/pisze pola core z FAZY 5)
