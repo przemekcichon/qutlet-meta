@@ -669,11 +669,21 @@ wykonania i tak wynika z zależności, nie z numeru.
   **nigdy niecommitowane**. **Odrzucona alternatywa:** katalog poza wszystkimi repo
   (np. `C:/qutlet-snapshot/`) — mocniejsza izolacja, ale ścieżkę trzeba by podawać
   ręcznie przy każdym uruchomieniu i przenosić między sesjami.
-- **D-3A.G4 (zdjęcia) [OTWARTE — rozstrzygnąć przy realizacji P-3A.2]:** skoro
-  sandbox kasuje obrazy po 7 dniach, trzeba zdecydować, czy zasiew w ogóle je
-  przenosi (akceptując znikanie), czy świadomie je pomija. Do decyzji na realnych
-  danych. **Częściowo domknięte:** po stronie snapshotu rozstrzyga **D-3A.1.3**
-  (zapisujemy URL-e, nie binaria), co pytania o sam zasiew nie przesądza.
+- **D-3A.G4 (zdjęcia: PRZENOSIMY, wypychając ponownie po wygaśnięciu) [USTALONE —
+  sesja 2026-07-22]:** zasiew **przenosi zdjęcia** do sandboxa, a kasowanie ich przez
+  Allegro po 7 dniach akceptujemy jako normalny stan — przy kolejnym przebiegu
+  wypychamy je ponownie. Oferta bez zdjęć testuje mapowanie i render gorzej niż
+  oferta z nimi, a koszt ponownego wypchnięcia jest niski (snapshot trzyma URL-e,
+  **D-3A.1.3**, więc źródło jest zawsze pod ręką i nie wymaga lokalnych binariów).
+  **Konsekwencja WIĄŻĄCA dla P-3A.2 (nie przeoczyć):** zdjęcia wygasają **niezależnie
+  od ofert**, więc idempotencja zasiewu NIE MOŻE kończyć się na regule „oferta
+  istnieje → pomiń". Ponowny przebieg musi umieć **odświeżyć zdjęcia na ofercie,
+  która już istnieje** — inaczej po tygodniu sandbox ma komplet ofert bez obrazków i
+  żaden kolejny zasiew tego nie naprawi (reguła „oferta jest" wiecznie go pomija).
+  Innymi słowy: warunkiem pominięcia jest kompletność oferty, nie samo jej istnienie.
+  **Odrzucona alternatywa:** świadome pomijanie zdjęć — prostszy zasiew i brak
+  problemu wygasania, ale sandbox przestaje być realistycznym środowiskiem testowym,
+  co jest całym celem tej fazy.
 - **D-3A.G5 (kategorie i parametry) [OTWARTE — rozstrzygnąć przy realizacji]:**
   identyfikatory kategorii i parametrów w sandboxie **nie muszą** odpowiadać
   produkcyjnym (sandbox odświeża ich listę kwartalnie). Zasiew może więc wymagać
@@ -762,12 +772,18 @@ wznawialność przerwanego pobrania, log co pobrano.
 - **Repo:** qutlet-allegro (slice `SandboxSeed/`)
 - **Zakres:** komenda WP-CLI tworząca w **sandboxie** oferty na podstawie snapshotu
   (slot `sandbox/write`), **idempotentnie** (D-3A.G1) — ponowne uruchomienie po
-  kwartalnym czyszczeniu odtwarza stan, a nie dubluje. Obsługa mapowania
-  kategorii/parametrów (D-3A.G5) i rozstrzygnięcie sprawy zdjęć (D-3A.G4). Twarda
-  odmowa wykonania, gdy celem NIE jest sandbox (D-2.G7 / D-3A.G2).
+  kwartalnym czyszczeniu odtwarza stan, a nie dubluje. Przeniesienie **zdjęć** wraz z
+  ich ponownym wypychaniem po wygaśnięciu (**D-3A.G4** — uwaga na konsekwencję dla
+  idempotencji: warunkiem pominięcia jest KOMPLETNOŚĆ oferty, nie samo jej istnienie).
+  Obsługa mapowania kategorii/parametrów (**D-3A.G5**, wciąż OTWARTE). Twarda odmowa
+  wykonania, gdy celem NIE jest sandbox (D-2.G7 / D-3A.G2) — przez
+  `Auth\Environment::assert_offer_content_write_allowed()`.
 - **Zależności:** P-3A.1, FAZA 2 (slot `sandbox/write`).
-- **Handoff (użytkownik):** założenie konta w sandboxie Allegro oraz rejestracja
-  aplikacji sandboxowych (`sandbox/read`, `sandbox/write`) wg D-2.G3 i D-2.G6.
+- **Handoff (użytkownik): ZREALIZOWANY (2026-07-21)** — konto w sandboxie Allegro
+  założone, aplikacje sandboxowe (`sandbox/read`, `sandbox/write`) zarejestrowane wg
+  D-2.G3 i D-2.G6. Sesja realizująca P-3A.2 i tak POTWIERDZA obecność sekretów pary
+  `sandbox/write` w `wp-config.php` przed kodem (obecność slotu w `option list` nie
+  dowodzi obecności `client_id`/`client_secret`).
 
 ---
 
@@ -913,14 +929,46 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
   operacją zapisu jest aktualizacja stanu magazynowego; treści ofert tam nie
   tworzymy ani nie nadpisujemy.
 
+### P-6.0 — Refaktor: wspólne helpery HTTP/CLI w qutlet-allegro (BRAMKA FAZY 6)
+- **Repo:** qutlet-allegro
+- **Status: OBOWIĄZKOWY, blokujący.** Dopóki nie jest zrobiony, NIE zaczynamy P-6.1
+  ani dalszych punktów fazy. Nie jest to „miłe, jeśli starczy czasu" — jest to
+  warunek wejścia do FAZY 6.
+- **Problem (zmierzony, nie przeczuwany):** cztery komendy WP-CLI
+  (`ApiSamples\OfferSamplesCommand`, `CategorySamplesCommand`, `OrderSamplesCommand`,
+  `SandboxSeed\OfferSnapshotCommand`) mają **skopiowane** prywatne metody `fetch()`,
+  `write()`, `error_detail()`, `access_token()` (oraz `safe_name()` w części z nich).
+  Reguła trzech przekroczona — po P-3A.1a to czwarta kopia; duplikację potwierdziła
+  niezależna recenzja co do linii. Każda poprawka w obsłudze HTTP/tokenu wymaga dziś
+  czterech identycznych edycji, a rozjazd między nimi jest kwestią czasu.
+- **Zakres:** wydzielić wspólną powierzchnię (trait albo mała klasa-współpracownik)
+  dla żądań GET z bearer + wersjonowanym `Accept`, pobrania tokenu ze slotu, opisu
+  błędu i zapisu pliku; przepiąć wszystkie cztery komendy. **Czysty refaktor —
+  zachowanie bez zmian**, żadnej nowej funkcjonalności w tym punkcie (CLAUDE.md,
+  Git workflow pkt 2). Przy okazji drugi znany dług: w
+  `OrderSamplesCommand::form_ids_from_events()` pętla dobijająca nadpisuje etykietę
+  typu zdarzenia (selekcja jest poprawna, myli się tylko opis w manifeście/stdout).
+- **Uwaga o granicach:** wspólne helpery obsługują DWA slice'y (`ApiSamples/` i
+  `SandboxSeed/`), więc nie mieszczą się w żadnym z nich. To jedyny dopuszczalny
+  wyjątek od vertical slice w tym repo i wymaga świadomej decyzji, gdzie je posadzić
+  — **rozstrzygnąć przy realizacji, nie z góry**. Kandydaci: cienka warstwa wspólna
+  na poziomie wtyczki albo rozszerzenie slice'a `Auth/` o klienta HTTP (token i tak
+  jest jego odpowiedzialnością). Cokolwiek wyjdzie, ma być **jednym** miejscem.
+- **Weryfikacja:** PHPStan czysty + ponowny przebieg każdej z czterech komend na
+  realnych danych z tym samym wynikiem co przed refaktorem (dla `snapshot-offers`
+  wystarczy przebieg wznawiający na kompletnym snapshocie — musi zgłosić
+  0 pobranych / 555 obecnych, czyli idempotencję).
+- **Zależności:** P-3A.2 (żeby refaktor objął też ewentualne helpery zasiewu i nie
+  trzeba go było powtarzać).
+
 ### P-6.1 — Import ofert → produkty Woo
 - **Repo:** qutlet-allegro (czyta/pisze pola core z FAZY 5)
 - **Zakres:** pobranie ofert (`GET /sale/offers`, `GET /sale/product-offers/{id}`),
   utworzenie/aktualizacja produktów Woo wg mappingu (FAZA 4), wypełnienie warstwy
   surowej (FAZA 5), zastosowanie mapowania kategorii (P-4.2). Idempotencja (ponowny
   import nie duplikuje). Komenda WP-CLI (np. `wp qutlet-allegro import-offers`).
-- **Zależności:** FAZA 2 (slot `read`; środowisko wg D-6.G5), FAZA 4, FAZA 5
-  (oraz bootstrap P-0.3).
+- **Zależności:** **P-6.0 (bramka — nie zaczynamy przed refaktorem)**, FAZA 2
+  (slot `read`; środowisko wg D-6.G5), FAZA 4, FAZA 5 (oraz bootstrap P-0.3).
 
 ### P-6.2 — Synchronizacja stanów magazynowych (cron co ~2 min)
 - **Repo:** qutlet-allegro
