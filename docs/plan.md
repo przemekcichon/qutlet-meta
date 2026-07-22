@@ -472,7 +472,7 @@ jawną zależnością (`P-3.1b` → `P-3.1a`).
   `GET_sale-offers.json`, `GET_sale-product-offers.json`,
   `GET_sale-product-offers-parts.json`.
 
-#### 🟡 P-3.1a — Komenda pobierająca zwrotki ofert (qutlet-allegro)
+#### 🟢 P-3.1a — Komenda pobierająca zwrotki ofert (qutlet-allegro)
 - **Repo:** qutlet-allegro (slice `ApiSamples/`)
 - **Zakres:** read-only komenda WP-CLI: slotem `production/read`
   (`Auth\TokenRefresher::get_valid()`) pobiera `GET /sale/offers?limit=100` (jedna
@@ -485,7 +485,7 @@ jawną zależnością (`P-3.1b` → `P-3.1a`).
   D-0.3.1 zakazuje rejestracji tylko w bootstrapie FAZY 0).
 - **Zależności:** FAZA 2 (P-2.1b + P-2.2 — slot `production/read`; P-2.3 — ważny token).
 
-#### 🟡 P-3.1b — Zredagowane pliki-próbki ofert (qutlet-meta)
+#### 🟢 P-3.1b — Zredagowane pliki-próbki ofert (qutlet-meta)
 - **Repo:** qutlet-meta (`docs/allegro-api-samples/`)
 - **Zakres:** z surowego wyjścia P-3.1a złóż zredagowane próbki (**D-3.1.2**:
   `GET_sale-offers.json`, `GET_sale-product-offers.json`,
