@@ -1,0 +1,636 @@
+{
+    "offers": [
+        {
+            "id": "18780385602",
+            "name": "Słuchawki bezprzewodowe dokanałowe Soundcore Life Dot 3i z ANC czarne 36 h",
+            "category": {
+                "id": "85166"
+            },
+            "primaryImage": {
+                "url": "https://a.allegroimg.com/original/29783a/86ad524342c4a7cb9367a2298704"
+            },
+            "sellingMode": {
+                "format": "BUY_NOW",
+                "price": {
+                    "amount": "179.0",
+                    "currency": "PLN"
+                },
+                "minimalPrice": null,
+                "startingPrice": null,
+                "priceAutomation": null
+            },
+            "saleInfo": {
+                "currentPrice": null,
+                "biddersCount": 0
+            },
+            "stats": {
+                "watchersCount": 0,
+                "visitsCount": 0
+            },
+            "stock": {
+                "available": 1,
+                "sold": 0
+            },
+            "publication": {
+                "status": "ACTIVE",
+                "startingAt": null,
+                "startedAt": "2026-07-21T11:14:09.000Z",
+                "endingAt": null,
+                "endedAt": null,
+                "marketplaces": {
+                    "base": {
+                        "id": "allegro-pl"
+                    },
+                    "additional": [
+                        {
+                            "id": "allegro-business-pl"
+                        }
+                    ]
+                }
+            },
+            "afterSalesServices": {
+                "warranty": {
+                    "id": "48e03833-a89b-475a-9fa7-ce8118b7e637"
+                },
+                "returnPolicy": {
+                    "id": "2fae3e22-1ad2-41bd-b878-60070e5e2ee6"
+                },
+                "impliedWarranty": {
+                    "id": "4e8f1e2c-3f97-42c9-ad0d-4b9204320ee1"
+                }
+            },
+            "additionalServices": null,
+            "external": null,
+            "delivery": {
+                "shippingRates": {
+                    "id": "6dbd5dba-d908-4559-a770-55eb5b4cabfb"
+                }
+            },
+            "b2b": {
+                "buyableOnlyByBusiness": false
+            },
+            "fundraisingCampaign": null,
+            "isFulfillment": false,
+            "additionalMarketplaces": {
+                "allegro-business-pl": {
+                    "publication": {
+                        "state": "REFUSED"
+                    },
+                    "sellingMode": {
+                        "price": {
+                            "amount": "179.0",
+                            "currency": "PLN"
+                        },
+                        "priceAutomation": null
+                    },
+                    "stats": {
+                        "watchersCount": 0,
+                        "visitsCount": 0
+                    },
+                    "stock": {
+                        "sold": 0
+                    }
+                },
+                "allegro-cz": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                },
+                "allegro-business-cz": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                },
+                "allegro-sk": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                },
+                "allegro-hu": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                }
+            }
+        },
+        {
+            "id": "18771424113",
+            "name": "Bęben Brother DR-B023 DCP-B7520DW HL-B2080DW MFC-B7715DW",
+            "category": {
+                "id": "260338"
+            },
+            "primaryImage": {
+                "url": "https://a.allegroimg.com/original/296b8e/3e7ce2644982abfe5194a7d58880"
+            },
+            "sellingMode": {
+                "format": "BUY_NOW",
+                "price": {
+                    "amount": "35.0",
+                    "currency": "PLN"
+                },
+                "minimalPrice": null,
+                "startingPrice": null,
+                "priceAutomation": null
+            },
+            "saleInfo": {
+                "currentPrice": null,
+                "biddersCount": 0
+            },
+            "stats": {
+                "watchersCount": 0,
+                "visitsCount": 0
+            },
+            "stock": {
+                "available": 1,
+                "sold": 0
+            },
+            "publication": {
+                "status": "ACTIVE",
+                "startingAt": null,
+                "startedAt": "2026-07-17T20:00:24.000Z",
+                "endingAt": null,
+                "endedAt": null,
+                "marketplaces": {
+                    "base": {
+                        "id": "allegro-pl"
+                    },
+                    "additional": [
+                        {
+                            "id": "allegro-business-pl"
+                        }
+                    ]
+                }
+            },
+            "afterSalesServices": {
+                "warranty": {
+                    "id": "3c24f369-901a-431c-8961-c03924343d6d"
+                },
+                "returnPolicy": {
+                    "id": "2fae3e22-1ad2-41bd-b878-60070e5e2ee6"
+                },
+                "impliedWarranty": {
+                    "id": "4e8f1e2c-3f97-42c9-ad0d-4b9204320ee1"
+                }
+            },
+            "additionalServices": null,
+            "external": null,
+            "delivery": {
+                "shippingRates": {
+                    "id": "6dbd5dba-d908-4559-a770-55eb5b4cabfb"
+                }
+            },
+            "b2b": {
+                "buyableOnlyByBusiness": false
+            },
+            "fundraisingCampaign": null,
+            "isFulfillment": false,
+            "additionalMarketplaces": {
+                "allegro-business-pl": {
+                    "publication": {
+                        "state": "REFUSED"
+                    },
+                    "sellingMode": {
+                        "price": {
+                            "amount": "35.0",
+                            "currency": "PLN"
+                        },
+                        "priceAutomation": null
+                    },
+                    "stats": {
+                        "watchersCount": 0,
+                        "visitsCount": 0
+                    },
+                    "stock": {
+                        "sold": 0
+                    }
+                },
+                "allegro-cz": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                },
+                "allegro-business-cz": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                },
+                "allegro-sk": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                },
+                "allegro-hu": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                }
+            }
+        },
+        {
+            "id": "18768380392",
+            "name": "Podstawka do monitora Dell G2724D 27\"",
+            "category": {
+                "id": "260041"
+            },
+            "primaryImage": {
+                "url": "https://a.allegroimg.com/original/059724/f43dccf64117b57ab025b3fc7fbf"
+            },
+            "sellingMode": {
+                "format": "BUY_NOW",
+                "price": {
+                    "amount": "50.0",
+                    "currency": "PLN"
+                },
+                "minimalPrice": null,
+                "startingPrice": null,
+                "priceAutomation": null
+            },
+            "saleInfo": {
+                "currentPrice": null,
+                "biddersCount": 0
+            },
+            "stats": {
+                "watchersCount": 2,
+                "visitsCount": 185
+            },
+            "stock": {
+                "available": 1,
+                "sold": 0
+            },
+            "publication": {
+                "status": "ACTIVE",
+                "startingAt": null,
+                "startedAt": "2026-07-16T21:21:00.000Z",
+                "endingAt": null,
+                "endedAt": null,
+                "marketplaces": {
+                    "base": {
+                        "id": "allegro-pl"
+                    },
+                    "additional": [
+                        {
+                            "id": "allegro-business-pl"
+                        }
+                    ]
+                }
+            },
+            "afterSalesServices": {
+                "warranty": {
+                    "id": "87fe5998-4f67-454c-bd06-2b38167803ec"
+                },
+                "returnPolicy": {
+                    "id": "2fae3e22-1ad2-41bd-b878-60070e5e2ee6"
+                },
+                "impliedWarranty": {
+                    "id": "4e8f1e2c-3f97-42c9-ad0d-4b9204320ee1"
+                }
+            },
+            "additionalServices": null,
+            "external": null,
+            "delivery": {
+                "shippingRates": {
+                    "id": "6dbd5dba-d908-4559-a770-55eb5b4cabfb"
+                }
+            },
+            "b2b": {
+                "buyableOnlyByBusiness": false
+            },
+            "fundraisingCampaign": null,
+            "isFulfillment": false,
+            "additionalMarketplaces": {
+                "allegro-business-pl": {
+                    "publication": {
+                        "state": "REFUSED"
+                    },
+                    "sellingMode": {
+                        "price": {
+                            "amount": "50.0",
+                            "currency": "PLN"
+                        },
+                        "priceAutomation": null
+                    },
+                    "stats": {
+                        "watchersCount": 0,
+                        "visitsCount": 0
+                    },
+                    "stock": {
+                        "sold": 0
+                    }
+                },
+                "allegro-cz": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                },
+                "allegro-business-cz": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                },
+                "allegro-sk": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                },
+                "allegro-hu": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                }
+            }
+        },
+        {
+            "id": "18761171520",
+            "name": "Ładowarka GaN 200W Silver Monkay oraz 30 sztuk uszkodzonych ładowarek",
+            "category": {
+                "id": "19357"
+            },
+            "primaryImage": {
+                "url": "https://a.allegroimg.com/original/111f2e/cf232ca849d3a008e94353dc2f6e"
+            },
+            "sellingMode": {
+                "format": "AUCTION",
+                "price": null,
+                "minimalPrice": null,
+                "startingPrice": {
+                    "amount": "20.0",
+                    "currency": "PLN"
+                },
+                "priceAutomation": null
+            },
+            "saleInfo": {
+                "currentPrice": {
+                    "amount": "44.0",
+                    "currency": "PLN"
+                },
+                "biddersCount": 3
+            },
+            "stats": {
+                "watchersCount": 3,
+                "visitsCount": 24
+            },
+            "stock": {
+                "available": 0,
+                "sold": 1
+            },
+            "publication": {
+                "status": "ENDED",
+                "startingAt": null,
+                "startedAt": "2026-07-14T14:14:04.000Z",
+                "endingAt": "2026-07-21T14:14:04.000Z",
+                "endedAt": "2026-07-21T14:14:34.000Z",
+                "marketplaces": {
+                    "base": {
+                        "id": "allegro-pl"
+                    },
+                    "additional": []
+                }
+            },
+            "afterSalesServices": {
+                "warranty": {
+                    "id": "3c24f369-901a-431c-8961-c03924343d6d"
+                },
+                "returnPolicy": {
+                    "id": "2fae3e22-1ad2-41bd-b878-60070e5e2ee6"
+                },
+                "impliedWarranty": {
+                    "id": "4e8f1e2c-3f97-42c9-ad0d-4b9204320ee1"
+                }
+            },
+            "additionalServices": null,
+            "external": null,
+            "delivery": {
+                "shippingRates": {
+                    "id": "6dbd5dba-d908-4559-a770-55eb5b4cabfb"
+                }
+            },
+            "b2b": {
+                "buyableOnlyByBusiness": false
+            },
+            "fundraisingCampaign": null,
+            "isFulfillment": false,
+            "additionalMarketplaces": {
+                "allegro-business-pl": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                },
+                "allegro-cz": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                },
+                "allegro-business-cz": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                },
+                "allegro-sk": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                },
+                "allegro-hu": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                }
+            }
+        },
+        {
+            "id": "18757279235",
+            "name": "Grill elektryczny De'Longhi MultiGrill CGH1020D 2000 W",
+            "category": {
+                "id": "260556"
+            },
+            "primaryImage": {
+                "url": "https://a.allegroimg.com/original/007a89/71551f1e43779606e7ab93be6ea3"
+            },
+            "sellingMode": null,
+            "saleInfo": {
+                "currentPrice": null,
+                "biddersCount": 0
+            },
+            "stats": {
+                "watchersCount": 0,
+                "visitsCount": 0
+            },
+            "stock": {
+                "available": 0,
+                "sold": 0
+            },
+            "publication": {
+                "status": "INACTIVE",
+                "startingAt": null,
+                "startedAt": null,
+                "endingAt": null,
+                "endedAt": null,
+                "marketplaces": {
+                    "base": {
+                        "id": "allegro-pl"
+                    },
+                    "additional": []
+                }
+            },
+            "afterSalesServices": {
+                "warranty": null,
+                "returnPolicy": {
+                    "id": "2fae3e22-1ad2-41bd-b878-60070e5e2ee6"
+                },
+                "impliedWarranty": null
+            },
+            "additionalServices": null,
+            "external": null,
+            "delivery": {
+                "shippingRates": null
+            },
+            "b2b": {
+                "buyableOnlyByBusiness": false
+            },
+            "fundraisingCampaign": null,
+            "isFulfillment": false,
+            "additionalMarketplaces": {
+                "allegro-business-pl": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                },
+                "allegro-cz": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                },
+                "allegro-business-cz": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                },
+                "allegro-sk": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                },
+                "allegro-hu": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                }
+            }
+        },
+        {
+            "id": "18749618849",
+            "name": "Mysz bezprzewodowa Dell MS5120W optyczna nie działa BT",
+            "category": {
+                "id": "4575"
+            },
+            "primaryImage": {
+                "url": "https://a.allegroimg.com/original/298bd2/a2cc47e64fc3afbde99122ed416c"
+            },
+            "sellingMode": {
+                "format": "BUY_NOW",
+                "price": {
+                    "amount": "60.0",
+                    "currency": "PLN"
+                },
+                "minimalPrice": null,
+                "startingPrice": null,
+                "priceAutomation": null
+            },
+            "saleInfo": {
+                "currentPrice": null,
+                "biddersCount": 0
+            },
+            "stats": {
+                "watchersCount": 0,
+                "visitsCount": 2
+            },
+            "stock": {
+                "available": 1,
+                "sold": 0
+            },
+            "publication": {
+                "status": "ACTIVE",
+                "startingAt": null,
+                "startedAt": "2026-07-10T07:05:32.000Z",
+                "endingAt": null,
+                "endedAt": null,
+                "marketplaces": {
+                    "base": {
+                        "id": "allegro-pl"
+                    },
+                    "additional": [
+                        {
+                            "id": "allegro-business-pl"
+                        }
+                    ]
+                }
+            },
+            "afterSalesServices": {
+                "warranty": {
+                    "id": "48e03833-a89b-475a-9fa7-ce8118b7e637"
+                },
+                "returnPolicy": {
+                    "id": "2fae3e22-1ad2-41bd-b878-60070e5e2ee6"
+                },
+                "impliedWarranty": {
+                    "id": "4e8f1e2c-3f97-42c9-ad0d-4b9204320ee1"
+                }
+            },
+            "additionalServices": null,
+            "external": null,
+            "delivery": {
+                "shippingRates": {
+                    "id": "6dbd5dba-d908-4559-a770-55eb5b4cabfb"
+                }
+            },
+            "b2b": {
+                "buyableOnlyByBusiness": false
+            },
+            "fundraisingCampaign": null,
+            "isFulfillment": false,
+            "additionalMarketplaces": {
+                "allegro-business-pl": {
+                    "publication": {
+                        "state": "REFUSED"
+                    },
+                    "sellingMode": {
+                        "price": {
+                            "amount": "60.0",
+                            "currency": "PLN"
+                        },
+                        "priceAutomation": null
+                    },
+                    "stats": {
+                        "watchersCount": 0,
+                        "visitsCount": 0
+                    },
+                    "stock": {
+                        "sold": 0
+                    }
+                },
+                "allegro-cz": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                },
+                "allegro-business-cz": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                },
+                "allegro-sk": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                },
+                "allegro-hu": {
+                    "publication": {
+                        "state": "NOT_REQUESTED"
+                    }
+                }
+            }
+        }
+    ],
+    "count": 100,
+    "totalCount": 768
+}

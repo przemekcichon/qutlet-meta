@@ -409,7 +409,7 @@ wersje pierwotne są jawnie oznaczone jako odrzucone.
 
 ---
 
-## 🟦 FAZA 3 — Przykładowe zwrotki Allegro API — ROZPISANA
+## 🟨 FAZA 3 — Przykładowe zwrotki Allegro API — ROZPISANA
 
 Cel: zebrać realne, **zredagowane** zwrotki z endpointów Allegro do
 `docs/allegro-api-samples/` — żeby FAZA 4 (mapping) i późniejszy import
@@ -443,13 +443,57 @@ reguły bezpieczeństwa: `docs/allegro-api-samples/README.md`.
   zobaczenia rozkładu kategorii. Indeks nie jest kontekstem dla AI ani źródłem
   mappingu (FAZA 4) — te czytają JSON.
 
-### P-3.1 — Zwrotki ofert
-- **Zakres:** `GET /sale/offers` (paginacja `limit=100`), `GET /sale/product-offers/{offerId}`
-  (pełne + partial). Zapis jako `GET_sale-offers.json`, `GET_sale-product-offers.json`
-  (+ nagłówek: endpoint, data, parametry). Redakcja danych sprzedawcy.
-  Dobór ofert wg **D-3.G3** — kilka rozłącznych kategorii, żeby ujawnić zmienność
-  zestawu parametrów; opcjonalny płaski indeks CSV wg **D-3.G4** jako pomoc w doborze.
-- **Zależności:** FAZA 2 (slot `production/read`).
+### P-3.1 — Zwrotki ofert (punkt wielorepowy → P-3.1a + P-3.1b)
+
+Pierwotnie jeden punkt (produkt: pliki-próbki w meta). W realizacji (sesja
+2026-07-22) mechanizm pobrania okazał się kodem w `qutlet-allegro`, więc — zgodnie
+z regułą punktów wielorepowych — P-3.1 rozpada się na dwa pod-punkty / dwa PR-y z
+jawną zależnością (`P-3.1b` → `P-3.1a`).
+
+- **D-3.1.1 (mechanizm pobrania: zarejestrowana komenda WP-CLI, nie throwaway)
+  [USTALONE — sesja 2026-07-22]:** realne wywołania API wymagają PHP w runtime WP,
+  a most MCP `local-wp` TWARDO blokuje `wp eval`/`eval-file`/`shell` (potwierdzone
+  runtime — „blocked for safety, must be run manually"). Throwaway-skrypt dałoby się
+  odpalić tylko ręcznym handoffem w shellu Locala. **Zarejestrowana** komenda WP-CLI
+  NIE jest przez MCP blokowana → agent uruchamia pobranie sam (bez handoffu), a
+  komenda zostaje jako reużywalny zalążek pod FAZĘ 3A/6. Koszt świadomie przyjęty:
+  to KOD w `qutlet-allegro`, więc uchyla się LOKALNIE zdanie z intro fazy „mechanizm
+  minimalny, nie kod" — wyłącznie dla mechanizmu pobrania (P-3.1a); produktem P-3.1b
+  nadal są pliki-próbki w meta. **Odrzucona alternatywa:** throwaway + ręczny handoff
+  — meta-only, zero kodu w pluginie, ale wymaga ręcznego uruchomienia i nie jest
+  reużywalne.
+- **D-3.1.2 (partial = osobny endpoint `/parts`) [USTALONE — sesja 2026-07-22]:**
+  „partial" z zakresu to realna operacja Allegro
+  `GET /sale/product-offers/{offerId}/parts` (`getPartialProductOffer`,
+  `?include=stock&include=price`, `Accept: application/vnd.allegro.public.v1+json`)
+  — lżejszy, mniej rate-limitowany podzbiór pełnego zasobu, NIE tryb tego samego
+  wywołania. Próbkujemy więc TRZY endpointy: listę, pełną ofertę produktową i jej
+  `/parts`. Zgodnie z konwencją README (jeden plik = jeden endpoint) to trzy pliki:
+  `GET_sale-offers.json`, `GET_sale-product-offers.json`,
+  `GET_sale-product-offers-parts.json`.
+
+#### 🟡 P-3.1a — Komenda pobierająca zwrotki ofert (qutlet-allegro)
+- **Repo:** qutlet-allegro (slice `ApiSamples/`)
+- **Zakres:** read-only komenda WP-CLI: slotem `production/read`
+  (`Auth\TokenRefresher::get_valid()`) pobiera `GET /sale/offers?limit=100` (jedna
+  strona), auto-dobiera oferty z KILKU rozłącznych kategorii (**D-3.G3**), a dla
+  każdej woła `GET /sale/product-offers/{id}` (pełne) oraz `.../parts` (partial,
+  **D-3.1.2**). Zapisuje SUROWY JSON verbatim do katalogu z `--out` (poza repo) i
+  drukuje manifest (liczby, rozkład kategorii, wybrane `offerId`). Bez redakcji (to
+  P-3.1b) i bez JAKIEGOKOLWIEK zapisu do Allegro (tylko GET — D-2.G7 spełnione
+  trywialnie). Rejestracja pod guardem `WP_CLI` (pierwszy szkielet WP-CLI w allegro;
+  D-0.3.1 zakazuje rejestracji tylko w bootstrapie FAZY 0).
+- **Zależności:** FAZA 2 (P-2.1b + P-2.2 — slot `production/read`; P-2.3 — ważny token).
+
+#### 🟡 P-3.1b — Zredagowane pliki-próbki ofert (qutlet-meta)
+- **Repo:** qutlet-meta (`docs/allegro-api-samples/`)
+- **Zakres:** z surowego wyjścia P-3.1a złóż zredagowane próbki (**D-3.1.2**:
+  `GET_sale-offers.json`, `GET_sale-product-offers.json`,
+  `GET_sale-product-offers-parts.json`) + nagłówek (endpoint, data, parametry).
+  Redakcja danych sprzedawcy przed zapisem (**D-3.G1**); opcjonalny płaski indeks
+  CSV (**D-3.G4**) jako ilustracja rozkładu kategorii. Poprawka `.gitignore`
+  (deny-all `*` + jawna allow-lista zredagowanych plików).
+- **Zależności:** P-3.1a (dostarcza surowe dane).
 
 ### P-3.2 — Zwrotki kategorii
 - **Zakres:** `GET /sale/categories` (lista/traversal) + pojedyncza kategoria.

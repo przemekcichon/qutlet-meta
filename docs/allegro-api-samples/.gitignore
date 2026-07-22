@@ -1,5 +1,11 @@
-# Zwrotki Allegro API trzymamy TYLKO lokalnie — mogą zawierać tokeny/PII.
-# Do repo trafia wyłącznie README (i ten .gitignore). Resztę dociągamy w razie potrzeby.
+# Domyślnie NIE commitujemy zawartości tego katalogu: surowe zwrotki Allegro mogą
+# zawierać tokeny/PII (D-3.G1). Do repo trafiają WYŁĄCZNIE pliki jawnie odblokowane
+# niżej — ręcznie zredagowane próbki (struktura bez wrażliwej treści) + ich opis.
 *
 !README.md
 !.gitignore
+!SOURCES.md
+!GET_sale-offers.json
+!GET_sale-product-offers.json
+!GET_sale-product-offers-parts.json
+!index.csv
