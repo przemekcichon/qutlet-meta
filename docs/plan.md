@@ -495,7 +495,7 @@ jawną zależnością (`P-3.1b` → `P-3.1a`).
   (deny-all `*` + jawna allow-lista zredagowanych plików).
 - **Zależności:** P-3.1a (dostarcza surowe dane).
 
-### 🟡 P-3.2 — Zwrotki kategorii (punkt wielorepowy → P-3.2a + P-3.2b)
+### 🟢 P-3.2 — Zwrotki kategorii (punkt wielorepowy → P-3.2a + P-3.2b)
 
 Pierwotnie jeden punkt (produkt: plik-próbka w meta). W realizacji (sesja
 2026-07-22) — jak w P-3.1 — mechanizm pobrania okazał się kodem w `qutlet-allegro`
@@ -522,7 +522,7 @@ zależnością (`P-3.2b` → `P-3.2a`).
   (relewancja/rozpiętość > przypadkowość). Kategorie są **publiczne** → brak redakcji,
   ale reżim `.gitignore` (deny-all + allow-lista) utrzymany.
 
-#### 🟡 P-3.2a — Komenda pobierająca zwrotki kategorii (qutlet-allegro)
+#### 🟢 P-3.2a — Komenda pobierająca zwrotki kategorii (qutlet-allegro)
 - **Repo:** qutlet-allegro (slice `ApiSamples/`)
 - **Zakres:** read-only komenda WP-CLI `sample-categories`: slotem `production/read`
   (`Auth\TokenRefresher::get_valid()`) pobiera `GET /sale/categories` (korzeń),
@@ -534,7 +534,7 @@ zależnością (`P-3.2b` → `P-3.2a`).
   trywialnie spełniony). Rejestracja pod guardem `WP_CLI` obok `sample-offers`.
 - **Zależności:** FAZA 2 (P-2.1b + P-2.2 — slot `production/read`; P-2.3 — ważny token).
 
-#### 🟡 P-3.2b — Zredagowane pliki-próbki kategorii (qutlet-meta)
+#### 🟢 P-3.2b — Zredagowane pliki-próbki kategorii (qutlet-meta)
 - **Repo:** qutlet-meta (`docs/allegro-api-samples/`)
 - **Zakres:** z surowego wyjścia P-3.2a złóż pliki-próbki (**D-3.2.2**:
   `GET_sale-categories.json`, `GET_sale-categories-id.json`) + provenance w
