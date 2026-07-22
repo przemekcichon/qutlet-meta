@@ -542,7 +542,7 @@ zależnością (`P-3.2b` → `P-3.2a`).
   (**D-3.G1** spełnione trywialnie). Poprawka `.gitignore` (allow-lista dwóch plików).
 - **Zależności:** P-3.2a (dostarcza surowe dane).
 
-### P-3.3 — Zwrotki zamówień (PII — ostra redakcja)
+### 🟡 P-3.3 — Zwrotki zamówień (PII — ostra redakcja)
 - **Zakres:** `GET /order/events`, `GET /order/checkout-forms/{checkoutFormId}`.
   Zawierają dane kupujących → redakcja imion/adresów/email/telefonu/NIP z
   zachowaniem struktury i typów. Jeśli pełna redakcja niemożliwa → plik NIE do
