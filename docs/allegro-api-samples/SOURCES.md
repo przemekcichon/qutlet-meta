@@ -79,7 +79,10 @@ z P-3.1 (nasz asortyment to elektronika):
 - **traversal** (`?parent.id=…`) — dzieci **Elektroniki**
   (`42540aec-367a-4e5e-b411-17c09b08e41f`), tj. domeny naszych produktów;
 - **pojedyncza** (`/sale/categories/{id}`) — **liść** `85166` „Bezprzewodowe"
-  (`leaf: true`), kategoria oferty `18780385602` (słuchawki) z próbek P-3.1.
+  (`leaf: true`), kategoria oferty `18780385602` (słuchawki) z próbek P-3.1. Leży
+  w gałęzi Elektroniki, ale **kilka poziomów niżej** niż traversal wyżej (jego
+  `parent.id` = `66887`, nie sama Elektronika) — poziomów pośrednich celowo nie
+  próbkujemy (próbka pokazuje KSZTAŁTY węzłów, nie pełną ścieżkę drzewa).
 
 Kształty ujawnione przez ten dobór (istotne dla mappingu FAZY 4, P-4.2):
 - **id kategorii bywa liczbą-stringiem** (`"5"`, `"3"`, `"10"`) **albo UUID-em**
