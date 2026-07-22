@@ -542,12 +542,71 @@ zależnością (`P-3.2b` → `P-3.2a`).
   (**D-3.G1** spełnione trywialnie). Poprawka `.gitignore` (allow-lista dwóch plików).
 - **Zależności:** P-3.2a (dostarcza surowe dane).
 
-### 🟡 P-3.3 — Zwrotki zamówień (PII — ostra redakcja)
-- **Zakres:** `GET /order/events`, `GET /order/checkout-forms/{checkoutFormId}`.
-  Zawierają dane kupujących → redakcja imion/adresów/email/telefonu/NIP z
-  zachowaniem struktury i typów. Jeśli pełna redakcja niemożliwa → plik NIE do
-  repo (`.gitignore`, lokalnie).
-- **Zależności:** FAZA 2.
+### 🟡 P-3.3 — Zwrotki zamówień (PII — ostra redakcja; punkt wielorepowy → P-3.3a + P-3.3b)
+
+Pierwotnie jeden punkt (produkt: pliki-próbki w meta). W realizacji (sesja 2026-07-22)
+— jak w P-3.1 i P-3.2 — mechanizm pobrania okazał się kodem w `qutlet-allegro`, więc
+P-3.3 rozpada się na dwa pod-punkty / dwa PR-y z jawną zależnością (`P-3.3b` → `P-3.3a`).
+Zakres bazowy bez zmian: `GET /order/events` + `GET /order/checkout-forms/{checkoutFormId}`;
+zwrotki zawierają dane kupujących → redakcja imion/adresów/email/telefonu/NIP z zachowaniem
+struktury i typów. Jeśli pełna redakcja niemożliwa → plik NIE do repo (`.gitignore`, lokalnie).
+
+- **D-3.3.1 (mechanizm: NOWA zarejestrowana komenda `sample-orders`) [USTALONE — sesja
+  2026-07-22]:** zamówienia próbkuje osobna komenda WP-CLI `sample-orders`
+  (`OrderSamplesCommand`) w slice `ApiSamples/`, trzecia obok `sample-offers` i
+  `sample-categories`. Ta sama logika co D-3.1.1/D-3.2.1: **zarejestrowana** komenda działa
+  przez MCP bez handoffu, a osobna klasa trzyma jedną rodzinę endpointów w jednym miejscu
+  (diff czysto addytywny, pliki P-3.1a/P-3.2a nietknięte). **Odrzucona alternatywa:**
+  flaga `--orders` w `sample-offers` — miesza rodzinę `/order/*` w komendzie o nazwie „offers".
+- **D-3.3.2 (fallback `GET /order/checkout-forms` jako ŹRÓDŁO id) [USTALONE — sesja
+  2026-07-22]:** `GET /order/checkout-forms/{checkoutFormId}` potrzebuje **id**, a jedynym
+  jego źródłem w zadeklarowanym zakresie jest payload `/order/events`. Pusty strumień
+  (retencja / brak świeżej sprzedaży) blokowałby cały punkt, więc komenda może sięgnąć po
+  TRZECI endpoint — listę `GET /order/checkout-forms` — **wyłącznie** po `checkoutFormId`,
+  nigdy jako cel próbkowania. Numer decyzji jest cytowany w zmergowanym kodzie
+  (`OrderSamplesCommand`), więc jest wiążący. W realizacji fallback **nie był potrzebny**
+  (strumień zwrócił 100 zdarzeń). **Odrzucona alternatywa:** tylko events + ręczne podanie
+  id z panelu Allegro — czystszy zakres, ale wprowadza ręczny krok w środek automatu.
+- **D-3.3.3 (redakcja HYBRYDOWA, nie jednolita) [USTALONE — sesja 2026-07-22]:** wolny tekst
+  (imię, nazwisko, ulica, miasto, login, nazwa/opis punktu odbioru) → `"<redacted>"` jak w
+  P-3.1b; pola o istotnym FORMACIE (e-mail, telefon, kod pocztowy, identyfikator osobisty)
+  → wartości fałszywe, ale poprawne formalnie, żeby FAZA 4/6 mogła ćwiczyć parsowanie;
+  identyfikatory transakcji (`id`, `payment.id`, `lineItems[].id`) → **stabilne fałszywe
+  UUID-y w wersji czasowej** (Allegro odrzuca inne — potwierdzone komunikatem „Not valid
+  time UUID"), spójne między plikami. `null` NIGDY nie jest redagowany — nullowalność pola
+  to część badanego kształtu. **Odrzucone alternatywy:** wszędzie `"<redacted>"` (gubi
+  informację o formacie) oraz pełna pseudonimizacja wiarygodnymi danymi (zredagowany plik
+  wygląda jak realny → łatwo pomylić).
+- **D-3.3.4 (dwa pliki per endpoint; publikujemy PODZBIÓR pobranych) [USTALONE — sesja
+  2026-07-22]:** `GET_order-events.json` (strumień, przycięty) oraz
+  `GET_order-checkout-forms-id.json` (tablica pełnych zamówień) — konwencja README
+  „jeden plik = jeden endpoint". Komenda pobiera do 5 zamówień, ale do repo wchodzą tylko
+  te, które ilustrują RÓŻNE kształty (D-3.G3). Ustalenie z realizacji: zamówienia tego
+  samego sprzedawcy są niemal identyczne strukturalnie, więc dobór „jedno na typ zdarzenia"
+  jest słabym proxy różnorodności — realną różnicę robią gałęzie opcjonalne
+  (`delivery.pickupPoint` null vs obiekt, `payment.features` puste vs niepuste). Wybór
+  publikowanych plików robimy dopiero PO obejrzeniu kształtów, nie z góry.
+
+#### 🟡 P-3.3a — Komenda pobierająca zwrotki zamówień (qutlet-allegro)
+- **Repo:** qutlet-allegro (slice `ApiSamples/`)
+- **Zakres:** read-only komenda WP-CLI `sample-orders`: slotem `production/read`
+  (`Auth\TokenRefresher::get_valid()`; scope `allegro:api:orders:read` należy do roli
+  `read` wg D-2.G6) pobiera `GET /order/events`, wybiera `checkoutFormId` (D-3.G3, z
+  fallbackiem D-3.3.2) i dla każdego woła `GET /order/checkout-forms/{checkoutFormId}`,
+  z `Accept: application/vnd.allegro.public.v1+json`. Zapis SUROWEGO JSON verbatim do
+  `--out` (BEZWZGLĘDNIE poza repo — realne PII) + manifest. Tylko GET (D-2.G7 trywialnie
+  spełniony). Rejestracja pod guardem `WP_CLI` obok pozostałych komend slice'a.
+- **Zależności:** FAZA 2 (P-2.1b + P-2.2 — slot `production/read`; P-2.3 — ważny token).
+
+#### 🟡 P-3.3b — Zredagowane pliki-próbki zamówień (qutlet-meta)
+- **Repo:** qutlet-meta (`docs/allegro-api-samples/`)
+- **Zakres:** z surowego wyjścia P-3.3a złóż zredagowane próbki (**D-3.3.4**:
+  `GET_order-events.json`, `GET_order-checkout-forms-id.json`) + provenance w `SOURCES.md`
+  (sekcja P-3.3). Redakcja wg **D-3.3.3** wykonana skryptem, nie ręcznie — redakcja ma być
+  odtwarzalna i weryfikowalna (zrzut wszystkich wartości tekstowych + skan wzorców PII).
+  Poprawka `.gitignore` (allow-lista dwóch plików). Surowe wyjście NIE wchodzi do repo w
+  żadnej postaci (**D-3.G1**).
+- **Zależności:** P-3.3a (dostarcza surowe dane).
 
 ---
 
@@ -1016,7 +1075,8 @@ punkt, nie w PR-ze motywu (granica artefaktów).
 - `GET /sale/offers`, `GET /sale/product-offers/{offerId}` — próbka **P-3.1**, import **P-6.1**.
 - `GET /sale/categories` — próbka **P-3.2**, mapowanie **P-4.2**, import **P-6.1**.
 - `GET /order/events` (polling kursorowy), `GET /order/checkout-forms/{checkoutFormId}`
-  — próbka **P-3.3**, obsługa zamówień **P-6.3**.
+  — próbka **P-3.3**, obsługa zamówień **P-6.3**. Lista `GET /order/checkout-forms`
+  dochodzi jako awaryjne źródło `checkoutFormId` (**D-3.3.2**), nie jako cel próbkowania.
 - `PATCH /sale/product-offers/{offerId}` — push stanu magazynowego (slot `write`),
   **P-6.2** (NIE samplowany w FAZIE 3; na produkcji tylko stan — bezpiecznik D-2.G7).
 
