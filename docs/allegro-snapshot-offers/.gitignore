@@ -1,0 +1,11 @@
+# DENY-ALL. Ten katalog trzyma SUROWY, NIEZREDAGOWANY snapshot ofert produkcyjnych
+# Allegro (D-3A.G3) — pełne zwrotki zawierają m.in. adres sprzedawcy
+# (`location.city`, `location.postCode`), który w FAZIE 3 był redagowany PRZED
+# wejściem do repo. Tu nic z tego nie wchodzi do gita.
+#
+# Reżim odwrotny niż w `docs/allegro-api-samples/`: tam allow-lista rośnie o kolejne
+# ZREDAGOWANE próbki, tutaj NIE ROŚNIE NIGDY. Jedyne śledzone pliki to ten
+# `.gitignore` i `README.md` — czyli sama struktura katalogu, nigdy jego zawartość.
+*
+!.gitignore
+!README.md
