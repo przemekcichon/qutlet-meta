@@ -8,4 +8,6 @@
 !GET_sale-offers.json
 !GET_sale-product-offers.json
 !GET_sale-product-offers-parts.json
+!GET_sale-categories.json
+!GET_sale-categories-id.json
 !index.csv

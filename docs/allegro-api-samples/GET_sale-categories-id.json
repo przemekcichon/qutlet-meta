@@ -1,0 +1,14 @@
+{
+    "id": "85166",
+    "name": "Bezprzewodowe",
+    "parent": {
+        "id": "66887"
+    },
+    "leaf": true,
+    "options": {
+        "advertisement": false,
+        "offersWithProductPublicationEnabled": true,
+        "productCreationEnabled": true,
+        "sellerCanRequirePurchaseComments": false
+    }
+}

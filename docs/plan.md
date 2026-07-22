@@ -495,10 +495,52 @@ jawną zależnością (`P-3.1b` → `P-3.1a`).
   (deny-all `*` + jawna allow-lista zredagowanych plików).
 - **Zależności:** P-3.1a (dostarcza surowe dane).
 
-### P-3.2 — Zwrotki kategorii
-- **Zakres:** `GET /sale/categories` (lista/traversal) + pojedyncza kategoria.
-  Zapis `GET_sale-categories.json`.
-- **Zależności:** FAZA 2.
+### 🟡 P-3.2 — Zwrotki kategorii (punkt wielorepowy → P-3.2a + P-3.2b)
+
+Pierwotnie jeden punkt (produkt: plik-próbka w meta). W realizacji (sesja
+2026-07-22) — jak w P-3.1 — mechanizm pobrania okazał się kodem w `qutlet-allegro`
+(kategorie `/sale/…` wymagają tokenu OAuth + PHP w runtime WP, a most MCP `local-wp`
+blokuje `wp eval`), więc P-3.2 rozpada się na dwa pod-punkty / dwa PR-y z jawną
+zależnością (`P-3.2b` → `P-3.2a`).
+
+- **D-3.2.1 (mechanizm: NOWA zarejestrowana komenda, nie rozszerzenie
+  `sample-offers`) [USTALONE — sesja 2026-07-22]:** kategorie próbkuje osobna
+  komenda WP-CLI `sample-categories` (`CategorySamplesCommand`) w slice `ApiSamples/`.
+  Ta sama reguła co D-3.1.1: **zarejestrowana** komenda działa przez MCP bez handoffu,
+  `wp eval` jest blokowany. Osobna komenda (nie flaga w `sample-offers`), bo to inna
+  rodzina endpointów i inna odpowiedzialność — diff czysto addytywny, plik P-3.1a
+  nietknięty. **Odrzucona alternatywa:** `--categories` w `sample-offers` — miesza
+  dwie rodziny endpointów w komendzie o nazwie „offers".
+- **D-3.2.2 (dwa pliki per endpoint + dobór na naszą domenę) [USTALONE — sesja
+  2026-07-22]:** „lista/traversal" to JEDEN endpoint `GET /sale/categories` (różni się
+  parametrem `parent.id`), a „pojedyncza kategoria" to OSOBNY endpoint
+  `GET /sale/categories/{categoryId}`. Zgodnie z konwencją README (jeden plik = jeden
+  endpoint) → dwa pliki: `GET_sale-categories.json` (tablica dwóch zwrotek: korzeń +
+  traversal) oraz `GET_sale-categories-id.json` (pojedyncza). Dobór celowo relewantny
+  do naszego asortymentu (traversal w **Elektronikę**, pojedyncza = liść **85166**
+  „Bezprzewodowe" powiązany z ofertą audio z P-3.1) — spójne z duchem D-3.G3
+  (relewancja/rozpiętość > przypadkowość). Kategorie są **publiczne** → brak redakcji,
+  ale reżim `.gitignore` (deny-all + allow-lista) utrzymany.
+
+#### 🟡 P-3.2a — Komenda pobierająca zwrotki kategorii (qutlet-allegro)
+- **Repo:** qutlet-allegro (slice `ApiSamples/`)
+- **Zakres:** read-only komenda WP-CLI `sample-categories`: slotem `production/read`
+  (`Auth\TokenRefresher::get_valid()`) pobiera `GET /sale/categories` (korzeń),
+  `GET /sale/categories?parent.id={id}` (traversal, `parent.id` budowany ręcznie —
+  kropkowany klucz) oraz `GET /sale/categories/{id}` (pojedyncza), z
+  `Accept: application/vnd.allegro.public.v1+json`. Parametr traversalu auto-dobierany
+  (pierwsza kategoria korzenia `leaf: false`), nadpisywalny `--parent-id`/`--category-id`.
+  Zapis SUROWEGO JSON verbatim do `--out` (poza repo) + manifest. Tylko GET (D-2.G7
+  trywialnie spełniony). Rejestracja pod guardem `WP_CLI` obok `sample-offers`.
+- **Zależności:** FAZA 2 (P-2.1b + P-2.2 — slot `production/read`; P-2.3 — ważny token).
+
+#### 🟡 P-3.2b — Zredagowane pliki-próbki kategorii (qutlet-meta)
+- **Repo:** qutlet-meta (`docs/allegro-api-samples/`)
+- **Zakres:** z surowego wyjścia P-3.2a złóż pliki-próbki (**D-3.2.2**:
+  `GET_sale-categories.json`, `GET_sale-categories-id.json`) + provenance w
+  `SOURCES.md` (sekcja P-3.2). Kategorie publiczne → treść verbatim, brak redakcji
+  (**D-3.G1** spełnione trywialnie). Poprawka `.gitignore` (allow-lista dwóch plików).
+- **Zależności:** P-3.2a (dostarcza surowe dane).
 
 ### P-3.3 — Zwrotki zamówień (PII — ostra redakcja)
 - **Zakres:** `GET /order/events`, `GET /order/checkout-forms/{checkoutFormId}`.
