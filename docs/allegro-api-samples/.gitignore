@@ -10,4 +10,6 @@
 !GET_sale-product-offers-parts.json
 !GET_sale-categories.json
 !GET_sale-categories-id.json
+!GET_order-events.json
+!GET_order-checkout-forms-id.json
 !index.csv

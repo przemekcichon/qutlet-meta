@@ -1,0 +1,429 @@
+[
+    {
+        "id": "00000001-0000-11f1-8000-000000000001",
+        "messageToSeller": null,
+        "buyer": {
+            "id": "90000001",
+            "email": "kupujacy1@example.com",
+            "login": "<redacted>",
+            "firstName": "<redacted>",
+            "lastName": "<redacted>",
+            "companyName": null,
+            "guest": false,
+            "personalIdentity": null,
+            "phoneNumber": "+48 500 100 200",
+            "preferences": {
+                "language": "pl-PL"
+            },
+            "address": {
+                "street": "<redacted>",
+                "city": "<redacted>",
+                "postCode": "00-000",
+                "countryCode": "PL"
+            }
+        },
+        "payment": {
+            "id": "00000002-0000-11f1-8000-000000000002",
+            "type": "ONLINE",
+            "provider": "AF",
+            "finishedAt": "2026-05-24T15:47:05.187Z",
+            "paidAmount": {
+                "amount": "159.00",
+                "currency": "PLN"
+            },
+            "reconciliation": null,
+            "features": []
+        },
+        "status": "READY_FOR_PROCESSING",
+        "fulfillment": {
+            "status": "READY_FOR_SHIPMENT",
+            "shipmentSummary": {
+                "lineItemsSent": "ALL"
+            },
+            "provider": {
+                "id": "SELLER"
+            }
+        },
+        "delivery": {
+            "address": {
+                "firstName": "<redacted>",
+                "lastName": "<redacted>",
+                "street": "<redacted>",
+                "city": "<redacted>",
+                "zipCode": "00-000",
+                "countryCode": "PL",
+                "companyName": null,
+                "phoneNumber": "+48500100200",
+                "modifiedAt": null
+            },
+            "method": {
+                "id": "0960fef9-cc88-4558-b2b2-62331a20b5b2",
+                "name": "Allegro Kurier DHL (AD)"
+            },
+            "pickupPoint": null,
+            "cost": {
+                "amount": "0.00",
+                "currency": "PLN"
+            },
+            "smart": true,
+            "time": {
+                "from": "2026-05-25T22:00:00Z",
+                "to": "2026-05-26T21:59:59.999Z",
+                "guaranteed": null,
+                "dispatch": {
+                    "from": "2026-05-24T22:00:00Z",
+                    "to": "2026-05-25T21:59:59.999Z"
+                }
+            },
+            "calculatedNumberOfPackages": 1,
+            "cancellation": null
+        },
+        "invoice": {
+            "required": false,
+            "address": null,
+            "dueDate": null,
+            "features": null
+        },
+        "lineItems": [
+            {
+                "id": "00000003-0000-11f1-8000-000000000003",
+                "offer": {
+                    "id": "18332458328",
+                    "name": "Słuchawki bezprzewodowe ANC Soundcore Life Q30 Upgraded",
+                    "external": null,
+                    "productSet": null,
+                    "hsNumber": null
+                },
+                "quantity": 1,
+                "originalPrice": {
+                    "amount": "159.00",
+                    "currency": "PLN"
+                },
+                "price": {
+                    "amount": "159.00",
+                    "currency": "PLN"
+                },
+                "reconciliation": null,
+                "selectedAdditionalServices": [],
+                "vouchers": [],
+                "tax": {
+                    "rate": "23.00",
+                    "subject": null,
+                    "exemption": null
+                },
+                "boughtAt": "2026-05-24T15:46:54.770Z",
+                "discounts": null,
+                "deposit": null,
+                "serialNumbers": {
+                    "expected": false,
+                    "entries": []
+                }
+            }
+        ],
+        "surcharges": [],
+        "note": null,
+        "marketplace": {
+            "id": "allegro-pl"
+        },
+        "summary": {
+            "totalToPay": {
+                "amount": "159.00",
+                "currency": "PLN"
+            }
+        },
+        "updatedAt": "2026-05-24T15:47:05.187Z",
+        "revision": "b3a81206"
+    },
+    {
+        "id": "00000004-0000-11f1-8000-000000000004",
+        "messageToSeller": null,
+        "buyer": {
+            "id": "90000002",
+            "email": "kupujacy2@example.com",
+            "login": "<redacted>",
+            "firstName": "<redacted>",
+            "lastName": "<redacted>",
+            "companyName": null,
+            "guest": false,
+            "personalIdentity": null,
+            "phoneNumber": "+48 500 100 200",
+            "preferences": {
+                "language": "pl-PL"
+            },
+            "address": {
+                "street": "<redacted>",
+                "city": "<redacted>",
+                "postCode": "00-000",
+                "countryCode": "PL"
+            }
+        },
+        "payment": {
+            "id": "00000005-0000-11f1-8000-000000000005",
+            "type": "ONLINE",
+            "provider": "AF",
+            "finishedAt": "2026-05-23T19:23:25.062Z",
+            "paidAmount": {
+                "amount": "149.00",
+                "currency": "PLN"
+            },
+            "reconciliation": null,
+            "features": [
+                "ALLEGRO_PAY"
+            ]
+        },
+        "status": "READY_FOR_PROCESSING",
+        "fulfillment": {
+            "status": "READY_FOR_SHIPMENT",
+            "shipmentSummary": {
+                "lineItemsSent": "ALL"
+            },
+            "provider": {
+                "id": "SELLER"
+            }
+        },
+        "delivery": {
+            "address": {
+                "firstName": "<redacted>",
+                "lastName": "<redacted>",
+                "street": "<redacted>",
+                "city": "<redacted>",
+                "zipCode": "00-000",
+                "countryCode": "PL",
+                "companyName": null,
+                "phoneNumber": "+48500100200",
+                "modifiedAt": null
+            },
+            "method": {
+                "id": "2488f7b7-5d1c-4d65-b85c-4cbcf253fd93",
+                "name": "Allegro Paczkomaty InPost"
+            },
+            "pickupPoint": {
+                "id": "<redacted>",
+                "name": "<redacted>",
+                "description": "<redacted>",
+                "address": {
+                    "street": "<redacted>",
+                    "zipCode": "00-000",
+                    "city": "<redacted>",
+                    "countryCode": "PL"
+                }
+            },
+            "cost": {
+                "amount": "0.00",
+                "currency": "PLN"
+            },
+            "smart": true,
+            "time": {
+                "from": "2026-05-25T22:00:00Z",
+                "to": "2026-05-26T21:59:59.999Z",
+                "guaranteed": null,
+                "dispatch": {
+                    "from": "2026-05-24T22:00:00Z",
+                    "to": "2026-05-25T21:59:59.999Z"
+                }
+            },
+            "calculatedNumberOfPackages": 1,
+            "cancellation": null
+        },
+        "invoice": {
+            "required": false,
+            "address": null,
+            "dueDate": null,
+            "features": null
+        },
+        "lineItems": [
+            {
+                "id": "00000006-0000-11f1-8000-000000000006",
+                "offer": {
+                    "id": "18561896289",
+                    "name": "Słuchawki dokanałowe cmf by NOTHING Buds 2 niebieskie Bluetooth",
+                    "external": null,
+                    "productSet": null,
+                    "hsNumber": null
+                },
+                "quantity": 1,
+                "originalPrice": {
+                    "amount": "149.00",
+                    "currency": "PLN"
+                },
+                "price": {
+                    "amount": "149.00",
+                    "currency": "PLN"
+                },
+                "reconciliation": null,
+                "selectedAdditionalServices": [],
+                "vouchers": [],
+                "tax": {
+                    "rate": "23.00",
+                    "subject": null,
+                    "exemption": null
+                },
+                "boughtAt": "2026-05-23T19:23:22.636Z",
+                "discounts": null,
+                "deposit": null,
+                "serialNumbers": {
+                    "expected": false,
+                    "entries": []
+                }
+            }
+        ],
+        "surcharges": [],
+        "note": null,
+        "marketplace": {
+            "id": "allegro-pl"
+        },
+        "summary": {
+            "totalToPay": {
+                "amount": "149.00",
+                "currency": "PLN"
+            }
+        },
+        "updatedAt": "2026-05-23T19:23:25.062Z",
+        "revision": "1ab823c2"
+    },
+    {
+        "id": "00000007-0000-11f1-8000-000000000007",
+        "messageToSeller": null,
+        "buyer": {
+            "id": "9000003",
+            "email": "kupujacy3@example.com",
+            "login": "<redacted>",
+            "firstName": "<redacted>",
+            "lastName": "<redacted>",
+            "companyName": null,
+            "guest": false,
+            "personalIdentity": null,
+            "phoneNumber": "+48 500 100 200",
+            "preferences": {
+                "language": "pl-PL"
+            },
+            "address": {
+                "street": "<redacted>",
+                "city": "<redacted>",
+                "postCode": "00-000",
+                "countryCode": "PL"
+            }
+        },
+        "payment": {
+            "id": "00000008-0000-11f1-8000-000000000008",
+            "type": "ONLINE",
+            "provider": "AF",
+            "finishedAt": "2026-05-25T08:51:07.819Z",
+            "paidAmount": {
+                "amount": "129.00",
+                "currency": "PLN"
+            },
+            "reconciliation": null,
+            "features": []
+        },
+        "status": "READY_FOR_PROCESSING",
+        "fulfillment": {
+            "status": "READY_FOR_SHIPMENT",
+            "shipmentSummary": {
+                "lineItemsSent": "ALL"
+            },
+            "provider": {
+                "id": "SELLER"
+            }
+        },
+        "delivery": {
+            "address": {
+                "firstName": "<redacted>",
+                "lastName": "<redacted>",
+                "street": "<redacted>",
+                "city": "<redacted>",
+                "zipCode": "00-000",
+                "countryCode": "PL",
+                "companyName": null,
+                "phoneNumber": "+48500100200",
+                "modifiedAt": null
+            },
+            "method": {
+                "id": "0560b75e-88c3-4b79-bcf7-62331a20b5b2",
+                "name": "Allegro Odbiór w Punkcie DHL (AD)"
+            },
+            "pickupPoint": {
+                "id": "<redacted>",
+                "name": "<redacted>",
+                "description": null,
+                "address": {
+                    "street": "<redacted>",
+                    "zipCode": "00-000",
+                    "city": "<redacted>",
+                    "countryCode": "PL"
+                }
+            },
+            "cost": {
+                "amount": "0.00",
+                "currency": "PLN"
+            },
+            "smart": true,
+            "time": {
+                "from": "2026-05-26T22:00:00Z",
+                "to": "2026-05-27T21:59:59.999Z",
+                "guaranteed": null,
+                "dispatch": {
+                    "from": "2026-05-25T21:59:59.999Z",
+                    "to": "2026-05-25T21:59:59.999Z"
+                }
+            },
+            "calculatedNumberOfPackages": 1,
+            "cancellation": null
+        },
+        "invoice": {
+            "required": false,
+            "address": null,
+            "dueDate": null,
+            "features": null
+        },
+        "lineItems": [
+            {
+                "id": "00000009-0000-11f1-8000-000000000009",
+                "offer": {
+                    "id": "18253395061",
+                    "name": "Słuchawki bezprzewodowe nauszne Soundcore Space Q45 czarne - defekt",
+                    "external": null,
+                    "productSet": null,
+                    "hsNumber": null
+                },
+                "quantity": 1,
+                "originalPrice": {
+                    "amount": "129.00",
+                    "currency": "PLN"
+                },
+                "price": {
+                    "amount": "129.00",
+                    "currency": "PLN"
+                },
+                "reconciliation": null,
+                "selectedAdditionalServices": [],
+                "vouchers": [],
+                "tax": {
+                    "rate": "23.00",
+                    "subject": null,
+                    "exemption": null
+                },
+                "boughtAt": "2026-05-25T08:51:00.007Z",
+                "discounts": null,
+                "deposit": null,
+                "serialNumbers": {
+                    "expected": false,
+                    "entries": []
+                }
+            }
+        ],
+        "surcharges": [],
+        "note": null,
+        "marketplace": {
+            "id": "allegro-pl"
+        },
+        "summary": {
+            "totalToPay": {
+                "amount": "129.00",
+                "currency": "PLN"
+            }
+        },
+        "updatedAt": "2026-05-25T08:51:07.819Z",
+        "revision": "1ab823c2"
+    }
+]
