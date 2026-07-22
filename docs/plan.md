@@ -706,6 +706,11 @@ wykonania i tak wynika z zależności, nie z numeru.
   kwartalne przetasowanie przechodzi bezgłośnie. Tablica jest **generowana z pomiaru**
   (`sandbox-preflight --write-id-map` — wyłącznie id potwierdzone żądaniem), nie pisana
   ręcznie, więc po czyszczeniu sandboxa regeneracja daje **diff**, a nie domysł.
+  **Uczciwe nazwanie zakresu (ustalenie z recenzji):** generator produkuje wyłącznie wpisy
+  `id → id`, więc dziś warstwa jest **detektorem rozjazdu** (id zniknęło → brak wpisu → oferta
+  pominięta i odnotowana), a nie translatorem realnego przemapowania. Struktura pliku
+  (`categories` / `parameters` / `parameterValues`) na translację pozwala i `IdMap` ją czyta,
+  ale dopóki nikt nie wpisze tam pary różnych id, mapowania jako takiego nie ma.
   **Odrzucone alternatywy:** brak warstwy (dziś wystarcza, ale ślepnie na przetasowanie)
   oraz twardy STOP na pierwszej rozbieżności (jedna egzotyczna kategoria blokowałaby
   zasiew całego asortymentu).
@@ -795,7 +800,7 @@ wznawialność przerwanego pobrania, log co pobrano.
   kwartalnym czyszczeniu odtwarza stan, a nie dubluje. Przeniesienie **zdjęć** wraz z
   ich ponownym wypychaniem po wygaśnięciu (**D-3A.G4** — uwaga na konsekwencję dla
   idempotencji: warunkiem pominięcia jest KOMPLETNOŚĆ oferty, nie samo jej istnienie).
-  Obsługa mapowania kategorii/parametrów (**D-3A.G5**, wciąż OTWARTE). Twarda odmowa
+  Obsługa mapowania kategorii/parametrów (**D-3A.G5** — rozstrzygnięte w tej sesji). Twarda odmowa
   wykonania, gdy celem NIE jest sandbox (D-2.G7 / D-3A.G2) — przez
   `Auth\Environment::assert_offer_content_write_allowed()`.
 - **Zależności:** P-3A.1, FAZA 2 (slot `sandbox/write`).
@@ -811,8 +816,10 @@ Decyzje punktu — wszystkie **zmierzone na żywym API**, nie wywnioskowane:
 
 - **D-3A.2.1 (oferta z DEFINICJĄ PRODUKTU) [USTALONE — sesja 2026-07-22; ZASTĘPUJE
   wcześniejsze „oferta kategoryjna" z tej samej sesji]:** wszystkie 555 ofert snapshotu
-  jest produktowych, ale katalog sandboxa nie zna ani jednego z 495 UUID-ów (404
-  `ProductNotFound`, próba 60/60). Pierwszym rozstrzygnięciem była **oferta kategoryjna**
+  jest produktowych, a w sandboxie **nie istnieje żaden ze sprawdzonych identyfikatorów
+  katalogu: 0/60** (404 `ProductNotFound`). Zmierzono próbkę 60 z 495 różnych UUID-ów —
+  wniosek o pozostałych jest ekstrapolacją, nie pomiarem, choć zerowa trafność na próbce i
+  odrębność katalogów sandboxa czynią go bezpiecznym. Pierwszym rozstrzygnięciem była **oferta kategoryjna**
   (bez `productSet`, z parametrami produktu zepchniętymi na poziom oferty) — i **żywe API
   ją obaliło**, zamykając logiczną pętlę: parametry sekcji produktu
   (`options.describesProduct` w schemacie kategorii) są przez kategorię **wymagane**
@@ -835,8 +842,17 @@ Decyzje punktu — wszystkie **zmierzone na żywym API**, nie wywnioskowane:
   BEZ lokalnego rejestru „co wysłaliśmy": to sandbox jest kasowany kwartalnie, więc
   lokalny rejestr rozjeżdżałby się z rzeczywistością **z definicji**. **Domknięcie
   D-3A.G4:** warunkiem pominięcia jest KOMPLETNOŚĆ — zdjęcia wygasają po 7 dniach
-  niezależnie od ofert, więc zasiew pyta CDN, czy `primaryImage` nadal się serwuje, i
-  przy martwym zdjęciu robi `PATCH` z URL-ami ze snapshotu (D-3A.1.3) zamiast pominąć.
+  niezależnie od ofert, więc zasiew pyta CDN, czy `primaryImage` nadal się serwuje, i przy
+  martwym zdjęciu PRZENOSI zdjęcia jeszcze raz (URL-e ze snapshotu → host uploadu), a
+  `PATCH` dostaje adresy SANDBOXOWE — produkcyjny adres API odrzuca (422
+  `OfferImagesNotFoundException`). Odświeżenie obejmuje galerię **i obrazy w opisie**:
+  wygasają razem, a sonda patrzy tylko na `primaryImage`, więc łatanie samej galerii
+  ustawiałoby ofertę z powrotem na „kompletną" z trwale martwymi obrazami w opisie
+  (ustalenie z niezależnej recenzji przed merge).
+  **Granica sondy (zmierzona, nie założona):** sprawdzamy JEDNO zdjęcie (`primaryImage`)
+  metodą HEAD, więc częściowo martwa galeria i oferta, której część transferów padła przy
+  tworzeniu, pozostają niewidoczne. Przy dzisiejszym modelu wygasania (wszystko naraz) to
+  nie boli — ale jest to założenie o środowisku, nie własność kodu.
 - **D-3A.2.3 (warunki konta: zasiew zakłada je sam) [USTALONE — sesja 2026-07-22]:**
   pierwotnie „pomiń jako opcjonalne"; **żywe API to obaliło** — 422
   `ReturnPolicyNotDefinedException` + `ImpliedWarrantyNotDefinedException` („You do not
@@ -869,7 +885,15 @@ Decyzje punktu — wszystkie **zmierzone na żywym API**, nie wywnioskowane:
     konta (422 `RESPONSIBLE_PRODUCER_NAME_DOES_NOT_EXIST`), więc nie da się jej wyprowadzić
     z danych oferty. Informacja o bezpieczeństwie pochodzi już ze snapshotu (mają ją
     wszystkie 555 ofert).
-  Dane teleadresowe obu zasobów są SYNTETYCZNE — sandbox to środowisko testowe.
+  Dane teleadresowe obu zasobów są SYNTETYCZNE **w całości** (łącznie z miastem i kodem
+  pocztowym). Pierwsza wersja przepisywała `postCode`/`city` ze snapshotu, czyli realną
+  lokalizację sprzedawcy — te same pola, które D-3A.G3 wskazuje jako redagowane w FAZIE 3;
+  wyłapała to niezależna recenzja przed merge.
+  **Osobno i świadomie:** `location` SAMEJ OFERTY jedzie ze snapshotu **verbatim** (z realnym
+  miastem i kodem sprzedawcy). Powód: to konto sandboxowe TEGO SAMEGO sprzedawcy, a lokalizacja
+  oferty współokreśla koszty i czas dostawy, więc jej podmiana zafałszowałaby środowisko
+  testowe. Dane nie opuszczają Allegro ani nie trafiają do repo — reżim D-3A.G3 dotyczy plików
+  snapshotu, nie treści wysyłanej na konto sprzedawcy.
 - **D-3A.2.6 (domknięcie punktu na 524/555) [USTALONE — decyzja użytkownika, 2026-07-22]:**
   pełny przebieg dał **524 oferty w sandboxie (495 ACTIVE, 29 INACTIVE)**, czyli 94,4%
   snapshotu. Pozostałe **31 NIE jest defektem zasiewu** — to zderzenie z katalogiem
