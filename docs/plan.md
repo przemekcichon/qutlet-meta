@@ -779,7 +779,7 @@ wznawialność przerwanego pobrania, log co pobrano.
   wykonania, gdy celem NIE jest sandbox (D-2.G7 / D-3A.G2) — przez
   `Auth\Environment::assert_offer_content_write_allowed()`.
 - **Zależności:** P-3A.1, FAZA 2 (slot `sandbox/write`).
-- **Handoff (użytkownik): ZREALIZOWANY (2026-07-22)** — konto w sandboxie Allegro
+- **Handoff (użytkownik): ZREALIZOWANY (2026-07-21)** — konto w sandboxie Allegro
   założone, aplikacje sandboxowe (`sandbox/read`, `sandbox/write`) zarejestrowane wg
   D-2.G3 i D-2.G6. Sesja realizująca P-3A.2 i tak POTWIERDZA obecność sekretów pary
   `sandbox/write` w `wp-config.php` przed kodem (obecność slotu w `option list` nie
