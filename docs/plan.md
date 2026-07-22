@@ -610,7 +610,7 @@ struktury i typów. Jeśli pełna redakcja niemożliwa → plik NIE do repo (`.g
 
 ---
 
-## 🟦 FAZA 3A — Środowisko testowe: snapshot produkcji → sandbox — ROZPISANA
+## 🟨 FAZA 3A — Środowisko testowe: snapshot produkcji → sandbox — ROZPISANA
 
 Cel: dać sobie **realistyczne środowisko testowe**. Sandbox Allegro startuje pusty
 i nie ma żadnego oficjalnego sposobu przeniesienia do niego ofert z produkcji,
@@ -652,13 +652,28 @@ wykonania i tak wynika z zależności, nie z numeru.
   produkcja → snapshot → sandbox. **Nigdy** sandbox → produkcja. To bezpośrednie
   zastosowanie bezpiecznika D-2.G7: tworzenie i nadpisywanie treści ofert jest
   dozwolone wyłącznie wobec sandboxa.
-- **D-3A.G3 (snapshot poza repo) [USTALONE]:** snapshot to **pełne,
-  niezredagowane** dane produkcyjne — NIE trafia do gita (`.gitignore`), żyje
-  lokalnie. Tym różni się od FAZY 3, której produktem są **zredagowane, ręcznie
-  dobrane** próbki w repo. Dwie różne rzeczy, dwa różne reżimy bezpieczeństwa.
-- **D-3A.G4 (zdjęcia) [OTWARTE — rozstrzygnąć przy realizacji]:** skoro sandbox
-  kasuje obrazy po 7 dniach, trzeba zdecydować, czy zasiew w ogóle je przenosi
-  (akceptując znikanie), czy świadomie je pomija. Do decyzji na realnych danych.
+- **D-3A.G3 (snapshot poza GITEM, ale w drzewie qutlet-meta) [ZREWIDOWANE — sesja
+  2026-07-22]:** snapshot to **pełne, niezredagowane** dane produkcyjne — NIE trafia
+  do gita. Pierwotne brzmienie („żyje lokalnie, **poza repo**") wskazywało katalog
+  poza wszystkimi repozytoriami; **zrewidowane**: snapshot mieszka w
+  `qutlet-meta/docs/allegro-snapshot-offers/`, chroniony **deny-all `.gitignore`** —
+  tym samym mechanizmem, co `docs/allegro-api-samples/.gitignore`. Powód rewizji
+  (decyzja użytkownika): wszystkie dane z Allegro w jednym drzewie, a P-3A.2 zna
+  lokalizację snapshotu bez przekazywania ścieżki między sesjami.
+  **Przyjęte ryzyko, świadomie:** pełna zwrotka oferty zawiera `location.city` i
+  `location.postCode` (adres sprzedawcy), które w FAZIE 3 były REDAGOWANE przed
+  wejściem do repo — teraz leżą surowe w katalogu roboczym repo, więc jedyną barierą
+  przed publikacją jest `.gitignore` i zakaz `git add -f`. Rozróżnienie względem
+  FAZY 3 zostaje i jest teraz WYŁĄCZNIE reżimem, nie lokalizacją: FAZA 3 =
+  zredagowane, ręcznie dobrane, **commitowane**; FAZA 3A = surowe, kompletne,
+  **nigdy niecommitowane**. **Odrzucona alternatywa:** katalog poza wszystkimi repo
+  (np. `C:/qutlet-snapshot/`) — mocniejsza izolacja, ale ścieżkę trzeba by podawać
+  ręcznie przy każdym uruchomieniu i przenosić między sesjami.
+- **D-3A.G4 (zdjęcia) [OTWARTE — rozstrzygnąć przy realizacji P-3A.2]:** skoro
+  sandbox kasuje obrazy po 7 dniach, trzeba zdecydować, czy zasiew w ogóle je
+  przenosi (akceptując znikanie), czy świadomie je pomija. Do decyzji na realnych
+  danych. **Częściowo domknięte:** po stronie snapshotu rozstrzyga **D-3A.1.3**
+  (zapisujemy URL-e, nie binaria), co pytania o sam zasiew nie przesądza.
 - **D-3A.G5 (kategorie i parametry) [OTWARTE — rozstrzygnąć przy realizacji]:**
   identyfikatory kategorii i parametrów w sandboxie **nie muszą** odpowiadać
   produkcyjnym (sandbox odświeża ich listę kwartalnie). Zasiew może więc wymagać
@@ -670,15 +685,78 @@ całe konto, służące do odtworzenia sandboxa. Warstwa surowa to **meta na kon
 produkcie Woo**, służąca AI i podglądowi w adminie. Wspólne źródło, różny cykl życia
 i różni konsumenci.
 
-### P-3A.1 — Snapshot ofert z produkcji
-- **Repo:** qutlet-allegro (slice `SandboxSeed/`)
-- **Zakres:** komenda WP-CLI pobierająca oferty z **produkcji** slotem
-  `production/read` i zapisująca je jako trwały snapshot — surowy JSON
-  **verbatim**, bez transformacji (transformacja to FAZA 4/6; tu chodzi o wierną
-  kopię źródła). Paginacja, wznawialność przerwanego pobrania, log co pobrano.
-  Snapshot poza repo (D-3A.G3).
-- **Zależności:** FAZA 2 (P-2.1b + P-2.2 — slot `production/read`), FAZA 3
-  (znajomość realnego kształtu danych).
+### 🟡 P-3A.1 — Snapshot ofert z produkcji (punkt wielorepowy → P-3A.1a + P-3A.1b)
+
+Pierwotnie jeden punkt w `qutlet-allegro`. W realizacji (sesja 2026-07-22) decyzja o
+lokalizacji snapshotu (rewizja **D-3A.G3**) dołożyła artefakt w `qutlet-meta`
+(katalog snapshotu + jego `.gitignore`), więc punkt rozpada się na dwa pod-punkty /
+dwa PR-y z jawną zależnością (`P-3A.1a` → `P-3A.1b`). Zakres bazowy bez zmian:
+komenda WP-CLI pobierająca oferty z **produkcji** slotem `production/read` i
+zapisująca je jako trwały snapshot — surowy JSON **verbatim**, bez transformacji
+(transformacja to FAZA 4/6; tu chodzi o wierną kopię źródła). Paginacja,
+wznawialność przerwanego pobrania, log co pobrano.
+
+- **D-3A.1.1 (kompletna lista, pełne zwrotki tylko dla `ACTIVE`) [USTALONE — sesja
+  2026-07-22]:** snapshot zapisuje **wszystkie** strony `GET /sale/offers` (na dzień
+  decyzji `totalCount=768`, 8 stron po 100), ale pełne `GET /sale/product-offers/{id}`
+  pobiera **tylko dla ofert o `publication.status === 'ACTIVE'`**. Powód: zasiew
+  sandboxa (P-3A.2) odtwarza asortyment sprzedawalny, a nie archiwum — oferty
+  `ENDED`/`INACTIVE` zwiększyłyby liczbę żądań i śmieci w sandboxie bez wartości
+  testowej. Sama lista zostaje kompletna, więc oferty nieaktywne są w snapshocie
+  widoczne (id, kategoria, cena, stan) i można je dociągnąć później bez zgadywania,
+  czego brakuje. Literały statusu potwierdzone w realnych próbkach FAZY 3:
+  `ACTIVE`, `ENDED`, `INACTIVE` (case-sensitive, porównanie ścisłe `===`); manifest
+  liczy rozkład WSZYSTKICH napotkanych statusów, żeby wartość spoza tej trójki
+  ujawniła się na pełnych 768 ofertach, zamiast po cichu wpaść do worka „pominięte".
+  **Odrzucone alternatywy:** pełne zwrotki dla wszystkich 768 (wierniejsza kopia
+  źródła, ale P-3A.2 i tak musiałby filtrować) oraz sama lista bez pełnych zwrotek
+  (za uboga — brak `description`, `parameters`, `images`, czyli P-3A.2 nie ma z czego
+  odtworzyć oferty).
+- **D-3A.1.2 (wznawialność ze STANU NA DYSKU, bez pliku kursora) [USTALONE — sesja
+  2026-07-22]:** źródłem prawdy o postępie jest zawartość katalogu snapshotu:
+  `offers/<offerId>.json` istnieje → pomiń, nie ma → pobierz. Brak osobnego
+  `state.json` z kursorem, bo byłby **drugim** źródłem prawdy — rozjeżdżałby się przy
+  przerwaniu między zapisem pliku a zapisem stanu oraz przy ręcznym skasowaniu pliku.
+  Ta sama własność daje **idempotencję** wymaganą przez D-3A.G1: kolejne uruchomienie
+  bez zmian po stronie Allegro nie robi nic. `manifest.json` jest **raportem
+  przebiegu** (co pobrano, co pominięto i dlaczego, co padło), nie stanem sterującym.
+  Ponowne pobranie wymusza się flagą, nie kasowaniem stanu. **Odrzucona alternatywa:**
+  `state.json` z kursorem listy — szybszy start (bez skanu katalogu), ale przy 8
+  stronach listy oszczędność jest żadna wobec ryzyka rozjazdu.
+- **D-3A.1.3 (zdjęcia: tylko URL-e, bez binariów) [USTALONE — sesja 2026-07-22;
+  domyka D-3A.G4 po stronie P-3A.1]:** snapshot zapisuje zwrotkę verbatim, a w niej
+  `images[].url` do `a.allegroimg.com` — **nie** ściąga plików graficznych. Binaria nie
+  są potrzebne, bo Allegro przyjmuje zdjęcia z URL-a, a sandbox i tak kasuje je po 7
+  dniach (fakt ze źródła fazy), więc lokalna kopia szybko traciłaby sens. **D-3A.G4
+  pozostaje OTWARTE dla P-3A.2** — czy zasiew w ogóle wysyła zdjęcia, rozstrzygamy na
+  realnych danych przy zasiewie, a nie tutaj. **Odrzucona alternatywa:** ściąganie
+  binariów (≈768 × 7 plików, setki MB) — de facto przesądziłoby D-3A.G4.
+
+#### 🟡 P-3A.1a — Komenda snapshotu ofert (qutlet-allegro)
+- **Repo:** qutlet-allegro (slice `SandboxSeed/` — NOWY, nie `ApiSamples/`)
+- **Zakres:** komenda WP-CLI `snapshot-offers`: slotem `production/read`
+  (`Auth\TokenRefresher::get_valid()`, baza z
+  `Environment::for_environment(PRODUCTION)->api_base_url()`) paginuje
+  `GET /sale/offers` do wyczerpania `totalCount`, a dla ofert `ACTIVE` (**D-3A.1.1**)
+  woła `GET /sale/product-offers/{offerId}` — wszystko z
+  `Accept: application/vnd.allegro.public.v1+json`. Zapis SUROWEGO JSON **verbatim**
+  do `--out` (katalog z **P-3A.1b**): `list/offset-*.json`, `offers/<offerId>.json`,
+  `manifest.json`. Wznawialność i idempotencja ze stanu na dysku (**D-3A.1.2**).
+  Tylko GET → bezpiecznik D-2.G7 spełniony trywialnie, a kierunek D-3A.G2 (produkcja
+  → snapshot) wynika z braku jakiejkolwiek operacji zapisu do Allegro. Rejestracja
+  pod guardem `WP_CLI` obok komend `ApiSamples/`.
+- **Zależności:** FAZA 2 (P-2.1b + P-2.2 — slot `production/read`; P-2.3 — ważny
+  token), FAZA 3 (realny kształt danych), P-3A.1b (katalog docelowy musi być
+  gitignorowany, ZANIM wleją się do niego surowe dane).
+
+#### 🟡 P-3A.1b — Katalog snapshotu + rewizja D-3A.G3 (qutlet-meta)
+- **Repo:** qutlet-meta (`docs/allegro-snapshot-offers/`)
+- **Zakres:** założenie katalogu docelowego snapshotu z **deny-all `.gitignore`**
+  (allow-lista: wyłącznie `.gitignore` + `README.md`) oraz `README.md` opisującym
+  reżim bezpieczeństwa (surowe, niezredagowane dane produkcyjne — nigdy nie
+  commitujemy), zawartość i sposób odtworzenia. Plus rewizja **D-3A.G3** i zapis
+  decyzji **D-3A.1.1**–**D-3A.1.3** w tym dokumencie. Bez kodu.
+- **Zależności:** brak (musi wejść PRZED uruchomieniem komendy z P-3A.1a).
 
 ### P-3A.2 — Zasiew sandboxa ze snapshotu
 - **Repo:** qutlet-allegro (slice `SandboxSeed/`)
