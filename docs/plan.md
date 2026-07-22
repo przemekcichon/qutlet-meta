@@ -768,7 +768,7 @@ wznawialność przerwanego pobrania, log co pobrano.
   decyzji **D-3A.1.1**–**D-3A.1.3** w tym dokumencie. Bez kodu.
 - **Zależności:** brak (musi wejść PRZED uruchomieniem komendy z P-3A.1a).
 
-### P-3A.2 — Zasiew sandboxa ze snapshotu
+### 🟡 P-3A.2 — Zasiew sandboxa ze snapshotu
 - **Repo:** qutlet-allegro (slice `SandboxSeed/`)
 - **Zakres:** komenda WP-CLI tworząca w **sandboxie** oferty na podstawie snapshotu
   (slot `sandbox/write`), **idempotentnie** (D-3A.G1) — ponowne uruchomienie po
