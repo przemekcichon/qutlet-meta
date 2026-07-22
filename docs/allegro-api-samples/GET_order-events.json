@@ -1,0 +1,372 @@
+{
+    "events": [
+        {
+            "id": "1779564216943152",
+            "order": {
+                "seller": {
+                    "id": "136344477"
+                },
+                "buyer": {
+                    "id": "90000002",
+                    "email": "kupujacy2@example.com",
+                    "guest": false,
+                    "login": "<redacted>",
+                    "preferences": {
+                        "language": "pl-PL"
+                    }
+                },
+                "lineItems": [
+                    {
+                        "offer": {
+                            "id": "18561896289",
+                            "name": "Słuchawki dokanałowe cmf by NOTHING Buds 2 niebieskie Bluetooth",
+                            "external": null
+                        },
+                        "price": {
+                            "amount": "149.00",
+                            "currency": "PLN"
+                        },
+                        "id": "00000006-0000-11f1-8000-000000000006",
+                        "quantity": 1,
+                        "originalPrice": {
+                            "amount": "149.00",
+                            "currency": "PLN"
+                        },
+                        "boughtAt": "2026-05-23T19:23:22.636Z"
+                    }
+                ],
+                "checkoutForm": {
+                    "id": "00000004-0000-11f1-8000-000000000004",
+                    "revision": "7ebb1b0e"
+                },
+                "marketplace": {
+                    "id": "allegro-pl"
+                }
+            },
+            "type": "FILLED_IN",
+            "occurredAt": "2026-05-23T19:23:22.671Z"
+        },
+        {
+            "id": "1779564217213944",
+            "order": {
+                "seller": {
+                    "id": "136344477"
+                },
+                "buyer": {
+                    "id": "90000002",
+                    "email": "kupujacy2@example.com",
+                    "guest": false,
+                    "login": "<redacted>",
+                    "preferences": {
+                        "language": "pl-PL"
+                    }
+                },
+                "lineItems": [
+                    {
+                        "offer": {
+                            "id": "18561896289",
+                            "name": "Słuchawki dokanałowe cmf by NOTHING Buds 2 niebieskie Bluetooth",
+                            "external": null
+                        },
+                        "price": {
+                            "amount": "149.00",
+                            "currency": "PLN"
+                        },
+                        "id": "00000006-0000-11f1-8000-000000000006",
+                        "quantity": 1,
+                        "originalPrice": {
+                            "amount": "149.00",
+                            "currency": "PLN"
+                        },
+                        "boughtAt": "2026-05-23T19:23:22.636Z"
+                    }
+                ],
+                "checkoutForm": {
+                    "id": "00000004-0000-11f1-8000-000000000004",
+                    "revision": "7ebb1b0e"
+                },
+                "marketplace": {
+                    "id": "allegro-pl"
+                }
+            },
+            "type": "BOUGHT",
+            "occurredAt": "2026-05-23T19:23:22.671Z"
+        },
+        {
+            "id": "1779564224470065",
+            "order": {
+                "seller": {
+                    "id": "136344477"
+                },
+                "buyer": {
+                    "id": "90000002",
+                    "email": "kupujacy2@example.com",
+                    "guest": false,
+                    "login": "<redacted>",
+                    "preferences": {
+                        "language": "pl-PL"
+                    }
+                },
+                "lineItems": [
+                    {
+                        "offer": {
+                            "id": "18561896289",
+                            "name": "Słuchawki dokanałowe cmf by NOTHING Buds 2 niebieskie Bluetooth",
+                            "external": null
+                        },
+                        "price": {
+                            "amount": "149.00",
+                            "currency": "PLN"
+                        },
+                        "id": "00000006-0000-11f1-8000-000000000006",
+                        "quantity": 1,
+                        "originalPrice": {
+                            "amount": "149.00",
+                            "currency": "PLN"
+                        },
+                        "boughtAt": "2026-05-23T19:23:22.636Z"
+                    }
+                ],
+                "checkoutForm": {
+                    "id": "00000004-0000-11f1-8000-000000000004",
+                    "revision": "1ab823c2"
+                },
+                "marketplace": {
+                    "id": "allegro-pl"
+                }
+            },
+            "type": "READY_FOR_PROCESSING",
+            "occurredAt": "2026-05-23T19:23:25.062Z"
+        },
+        {
+            "id": "1779610068075980",
+            "order": {
+                "seller": {
+                    "id": "136344477"
+                },
+                "buyer": {
+                    "id": "90000002",
+                    "email": "kupujacy2@example.com",
+                    "guest": false,
+                    "login": "<redacted>",
+                    "preferences": {
+                        "language": "pl-PL"
+                    }
+                },
+                "lineItems": [
+                    {
+                        "offer": {
+                            "id": "18561896289",
+                            "name": "Słuchawki dokanałowe cmf by NOTHING Buds 2 niebieskie Bluetooth",
+                            "external": null
+                        },
+                        "price": {
+                            "amount": "149.00",
+                            "currency": "PLN"
+                        },
+                        "id": "00000006-0000-11f1-8000-000000000006",
+                        "quantity": 1,
+                        "originalPrice": {
+                            "amount": "149.00",
+                            "currency": "PLN"
+                        },
+                        "boughtAt": "2026-05-23T19:23:22.636Z"
+                    }
+                ],
+                "checkoutForm": {
+                    "id": "00000004-0000-11f1-8000-000000000004",
+                    "revision": "1ab823c2"
+                },
+                "marketplace": {
+                    "id": "allegro-pl"
+                }
+            },
+            "type": "FULFILLMENT_STATUS_CHANGED",
+            "occurredAt": "2026-05-24T08:07:36.793Z"
+        },
+        {
+            "id": "1779637629298762",
+            "order": {
+                "seller": {
+                    "id": "136344477"
+                },
+                "buyer": {
+                    "id": "90000001",
+                    "email": "kupujacy1@example.com",
+                    "guest": false,
+                    "login": "<redacted>",
+                    "preferences": {
+                        "language": "pl-PL"
+                    }
+                },
+                "lineItems": [
+                    {
+                        "offer": {
+                            "id": "18332458328",
+                            "name": "Słuchawki bezprzewodowe ANC Soundcore Life Q30 Upgraded",
+                            "external": null
+                        },
+                        "price": {
+                            "amount": "159.00",
+                            "currency": "PLN"
+                        },
+                        "id": "00000003-0000-11f1-8000-000000000003",
+                        "quantity": 1,
+                        "originalPrice": {
+                            "amount": "159.00",
+                            "currency": "PLN"
+                        },
+                        "boughtAt": "2026-05-24T15:46:54.770Z"
+                    }
+                ],
+                "checkoutForm": {
+                    "id": "00000001-0000-11f1-8000-000000000001",
+                    "revision": "07c1a370"
+                },
+                "marketplace": {
+                    "id": "allegro-pl"
+                }
+            },
+            "type": "FILLED_IN",
+            "occurredAt": "2026-05-24T15:46:54.807Z"
+        },
+        {
+            "id": "1779637629217665",
+            "order": {
+                "seller": {
+                    "id": "136344477"
+                },
+                "buyer": {
+                    "id": "90000001",
+                    "email": "kupujacy1@example.com",
+                    "guest": false,
+                    "login": "<redacted>",
+                    "preferences": {
+                        "language": "pl-PL"
+                    }
+                },
+                "lineItems": [
+                    {
+                        "offer": {
+                            "id": "18332458328",
+                            "name": "Słuchawki bezprzewodowe ANC Soundcore Life Q30 Upgraded",
+                            "external": null
+                        },
+                        "price": {
+                            "amount": "159.00",
+                            "currency": "PLN"
+                        },
+                        "id": "00000003-0000-11f1-8000-000000000003",
+                        "quantity": 1,
+                        "originalPrice": {
+                            "amount": "159.00",
+                            "currency": "PLN"
+                        },
+                        "boughtAt": "2026-05-24T15:46:54.770Z"
+                    }
+                ],
+                "checkoutForm": {
+                    "id": "00000001-0000-11f1-8000-000000000001",
+                    "revision": "07c1a370"
+                },
+                "marketplace": {
+                    "id": "allegro-pl"
+                }
+            },
+            "type": "BOUGHT",
+            "occurredAt": "2026-05-24T15:46:54.807Z"
+        },
+        {
+            "id": "1779637645744927",
+            "order": {
+                "seller": {
+                    "id": "136344477"
+                },
+                "buyer": {
+                    "id": "90000001",
+                    "email": "kupujacy1@example.com",
+                    "guest": false,
+                    "login": "<redacted>",
+                    "preferences": {
+                        "language": "pl-PL"
+                    }
+                },
+                "lineItems": [
+                    {
+                        "offer": {
+                            "id": "18332458328",
+                            "name": "Słuchawki bezprzewodowe ANC Soundcore Life Q30 Upgraded",
+                            "external": null
+                        },
+                        "price": {
+                            "amount": "159.00",
+                            "currency": "PLN"
+                        },
+                        "id": "00000003-0000-11f1-8000-000000000003",
+                        "quantity": 1,
+                        "originalPrice": {
+                            "amount": "159.00",
+                            "currency": "PLN"
+                        },
+                        "boughtAt": "2026-05-24T15:46:54.770Z"
+                    }
+                ],
+                "checkoutForm": {
+                    "id": "00000001-0000-11f1-8000-000000000001",
+                    "revision": "b3a81206"
+                },
+                "marketplace": {
+                    "id": "allegro-pl"
+                }
+            },
+            "type": "READY_FOR_PROCESSING",
+            "occurredAt": "2026-05-24T15:47:05.187Z"
+        },
+        {
+            "id": "1779692674215255",
+            "order": {
+                "seller": {
+                    "id": "136344477"
+                },
+                "buyer": {
+                    "id": "90000001",
+                    "email": "kupujacy1@example.com",
+                    "guest": false,
+                    "login": "<redacted>",
+                    "preferences": {
+                        "language": "pl-PL"
+                    }
+                },
+                "lineItems": [
+                    {
+                        "offer": {
+                            "id": "18332458328",
+                            "name": "Słuchawki bezprzewodowe ANC Soundcore Life Q30 Upgraded",
+                            "external": null
+                        },
+                        "price": {
+                            "amount": "159.00",
+                            "currency": "PLN"
+                        },
+                        "id": "00000003-0000-11f1-8000-000000000003",
+                        "quantity": 1,
+                        "originalPrice": {
+                            "amount": "159.00",
+                            "currency": "PLN"
+                        },
+                        "boughtAt": "2026-05-24T15:46:54.770Z"
+                    }
+                ],
+                "checkoutForm": {
+                    "id": "00000001-0000-11f1-8000-000000000001",
+                    "revision": "b3a81206"
+                },
+                "marketplace": {
+                    "id": "allegro-pl"
+                }
+            },
+            "type": "FULFILLMENT_STATUS_CHANGED",
+            "occurredAt": "2026-05-25T07:04:23.384Z"
+        }
+    ]
+}
