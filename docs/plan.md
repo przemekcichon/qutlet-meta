@@ -1048,7 +1048,7 @@ jak P-3.1/P-3.2/P-3.3.
   NIE rejestruje dla niej pola (D-5.1.1). Literały bierze VERBATIM z kontraktu, nie zgaduje.
 - **Zależności:** P-5.1a (kontrakt ustala literały), FAZA 4 (P-4.1), P-0.1 (bootstrap core).
 
-### P-5.3 — Podgląd warstwy surowej w adminie (read-only)
+### 🟢 P-5.3 — Podgląd warstwy surowej w adminie (read-only)
 - **Numeracja:** dopisany po P-5.2, ale w dokumencie stoi tuż po P-5.1 celowo —
   dzieli z nim slice i temat (warstwa surowa). P-5.2 (pola dyskretne) to osobny
   wątek. Numery czytamy jako identyfikatory, nie jako kolejność wykonania.
