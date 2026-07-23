@@ -18,7 +18,9 @@ odwzorowane na:
 - taksonomię marki `product_brand` (`kontrakt-danych.md` §3).
 
 **Rozszerzenie (P-4.2):** kategoria (`category.id` → `product_cat`) — **§7**.
-Mapping zamówień — **P-4.3**.
+**Rozszerzenie (P-4.3):** zamówienie Allegro → natywne zamówienie WooCommerce
+(`WC_Order`) — **§8**. Pokrywa `GET /order/checkout-forms/{checkoutFormId}` (pełne
+zamówienie) i `GET /order/events` (strumień zdarzeń → polling P-6.3).
 
 ## Źródła kształtu (ground-truth, nie z pamięci)
 - Zredagowane próbki: `docs/allegro-api-samples/GET_sale-offers.json`,
@@ -429,6 +431,278 @@ gałęzi (kosz `pozostałe` vs wstrzymanie importu) → decyzja FAZY 6 (7d).
 
 ---
 
+## 8. Zamówienie Allegro → zamówienie WooCommerce (`WC_Order`) (P-4.3)
+
+Odwzorowanie `GET /order/checkout-forms/{checkoutFormId}` (pełne zamówienie) i
+`GET /order/events` (strumień zdarzeń) na **natywne zamówienie WooCommerce**.
+Zależność: P-3.3 (kształt zamówień) + FAZA 1 (nasz model). Konsument mappingu =
+**P-6.3** (polling zamówień → tworzenie/aktualizacja `WC_Order`).
+
+### 8a. Ground-truth: gdzie mieszka model zamówień (ustalenie sesji P-4.3)
+
+**`docs/kontrakt-danych.md` NIE zawiera modelu zamówień** — kontrakt opisuje produkt
+(§1–§2), markę (§3), kanał Allegro (§4), blog (§5) i strony pomocy (§8), ale **żadnego
+pola zamówieniowego**. To NIE jest rozbieżność kod↔kontrakt wymagająca STOP (kontrakt
+świadomie opisuje tylko model FAZY 1 + pola ujawnione mappingiem do FAZY 5): zamówienia
+są **natywnymi obiektami WooCommerce** (`WC_Order`) — tak samo jak `_price`/`_stock`/
+`product_cat` są natywne dla produktu (§1). Dlatego mapping zamówienia kieruje:
+
+- **zamówienie Allegro → natywny `WC_Order`** (kupujący→billing, dostawa→shipping,
+  płatność, pozycje, status) — §8c;
+- **pola Allegro bez natywnego miejsca u nas → wejście do FAZY 5** (D-4.G2 / D-5.G1) —
+  §8e; FAZA 5 rejestruje je jako `post meta`/pola na zamówieniu (analogicznie do warstwy
+  surowej oferty, D-5.G4), gdy import (P-6.3) ich zażąda.
+
+Literały natywne `WC_Order` w §8c są przepisane z realnej instalacji WooCommerce tej
+maszyny (`includes/class-wc-order.php` — pola `billing`/`shipping`, `payment_method`,
+`transaction_id`, `customer_note`; `src/Enums/OrderInternalStatus.php` — slugi statusów
+`wc-*`), nie z pamięci.
+
+### 8b. Ground-truth kształtu zamówienia (nie z pamięci)
+
+Źródła: zredagowane próbki `docs/allegro-api-samples/GET_order-checkout-forms-id.json`
+(3 pełne zamówienia — 3 warianty dostawy) i `GET_order-events.json` (8 zdarzeń,
+4 typy); reguły redakcji i luki w `SOURCES.md` (sekcja P-3.3). **Redakcja zachowała
+kształt i typy** — `null` nigdy nie był redagowany, więc nullowalność w próbce = realna.
+
+**Dwie osie identyczności.** Zamówienie ma id **`checkoutForm.id`** (time UUID, np.
+`00000004-0000-11f1-8000-000000000004`) — to klucz zasobu `checkout-forms`. Strumień
+`events` niesie ten sam `id` w `events[].order.checkoutForm.id`, plus własny kursor
+`events[].id` (liczba-string, np. `1779564216943152`) i `revision` (zmiana treści).
+
+**Kwoty i stawki to STRINGI** (`price.amount` `"149.00"`, `tax.rate` `"23.00"`,
+`paidAmount.amount`, `delivery.cost.amount`) — transformacja `(float)` po naszej stronie,
+jak ceny ofert (§6). **Zawsze `currency: "PLN"`** w próbce.
+
+**Gałęzie opcjonalne (potwierdzone w próbce, P-3.3):**
+- `delivery.pickupPoint` — **cały obiekt albo `null`** (kurier pod adres vs paczkomat/punkt);
+- `payment.features` — tablica, bywa pusta (`[]`) lub niepusta (`["ALLEGRO_PAY"]`);
+- `invoice` — obiekt **zawsze**, ale `invoice.address`/`dueDate`/`features` = `null`,
+  gdy `invoice.required: false` (cała próbka);
+- `messageToSeller`, `note`, `buyer.companyName`, `buyer.personalIdentity`,
+  `lineItems[].discounts`, `deposit`, `reconciliation` = `null` w całej próbce.
+
+### 8c. `checkout-form` → natywny `WC_Order`
+
+Ścieżki JSON wskazują pełną zwrotkę `GET /order/checkout-forms/{checkoutFormId}`.
+Literał WP = natywna właściwość `WC_Order` (getter/setter, np. `set_billing_first_name()`).
+
+#### Kupujący → adres rozliczeniowy (`billing`)
+| Pole Allegro (ścieżka JSON) | Pole WP (`WC_Order`) | Transformacja / uwagi |
+|-----------------------------|----------------------|-----------------------|
+| `buyer.firstName`           | `billing.first_name` | wprost. PII — trafia do zamówienia zgodnie z jego naturą. |
+| `buyer.lastName`            | `billing.last_name`  | wprost. |
+| `buyer.email`              | `billing.email`      | wprost. |
+| `buyer.phoneNumber`        | `billing.phone`      | wprost (format bywa ze spacjami `+48 500 100 200` lub bez `+48500100200` — patrz §8f). |
+| `buyer.companyName`        | `billing.company`    | `null` w próbce; obecne przy kupującym-firmie (patrz luki §8f). |
+| `buyer.address.street`     | `billing.address_1`  | Allegro ma **jedno** pole `street`; Woo dzieli `address_1`/`address_2` → wszystko do `address_1`, `address_2` puste. |
+| `buyer.address.city`       | `billing.city`       | wprost. |
+| `buyer.address.postCode`   | `billing.postcode`   | ⚠ tu `postCode`, a w dostawie `zipCode` (§8f). |
+| `buyer.address.countryCode`| `billing.country`    | 2-literowy kod (`PL`). Woo `state` → puste (Allegro nie niesie województwa dla kupującego). |
+
+#### Dostawa → adres wysyłkowy (`shipping`) + metoda
+| Pole Allegro (ścieżka JSON) | Pole WP (`WC_Order`) | Transformacja / uwagi |
+|-----------------------------|----------------------|-----------------------|
+| `delivery.address.firstName`| `shipping.first_name`| wprost. |
+| `delivery.address.lastName` | `shipping.last_name` | wprost. |
+| `delivery.address.companyName` | `shipping.company` | `null` w próbce. |
+| `delivery.address.street`   | `shipping.address_1` | jedno pole → `address_1` (jak wyżej). |
+| `delivery.address.city`     | `shipping.city`      | wprost. |
+| `delivery.address.zipCode`  | `shipping.postcode`  | ⚠ `zipCode` (dostawa) vs `postCode` (kupujący) — §8f. |
+| `delivery.address.countryCode` | `shipping.country` | `PL`. |
+| `delivery.address.phoneNumber` | `shipping.phone`  | wprost. |
+| `delivery.method.name`      | pozycja wysyłki (`WC_Order_Item_Shipping`, nazwa) | np. „Allegro Kurier DHL (AD)", „Allegro Paczkomaty InPost". `delivery.method.id` (UUID) → meta pozycji (§8e). |
+| `delivery.cost.amount`      | suma wysyłki (`_order_shipping`) | `(float)` ze stringa. `0.00` w całej próbce (Smart/darmowa). |
+| `delivery.pickupPoint.{id,name,address}` | **brak natywnie** → FAZA 5 | paczkomat/punkt odbioru; `null` przy dostawie pod adres. Patrz §8e. |
+
+#### Płatność → dane płatności zamówienia
+| Pole Allegro (ścieżka JSON) | Pole WP (`WC_Order`) | Transformacja / uwagi |
+|-----------------------------|----------------------|-----------------------|
+| `payment.type` + `payment.provider` | `payment_method` / `payment_method_title` | stała metoda „Allegro" (np. `payment_method = "allegro"`, title z `type`/`provider` `ONLINE`/`AF`). Payload nie niesie gotowego sluga metody Woo — ustala import. |
+| `payment.id` (time UUID)    | `transaction_id` (`_transaction_id`) | identyfikator transakcji Allegro. |
+| `payment.finishedAt`        | `date_paid` (`_date_paid`) | ISO-8601 → znacznik. |
+| `payment.paidAmount.amount` | (uzgodnienie z `summary.totalToPay`) | kwota zapłacona; do rekoncyliacji sumy, nie osobne pole Woo. |
+| `payment.features` (`["ALLEGRO_PAY"]`/`[]`) | **brak natywnie** → FAZA 5 | cecha płatności; §8e. |
+
+#### Status Allegro → status `WC_Order` (D-4.3.2, propozycja)
+Allegro trzyma **dwie osie** stanu: `status` (zamówienia) i `fulfillment.status` (realizacji),
+a strumień dokłada `events[].type`. Woo ma **jedną** oś (`wc-*`). Kolaps propozycją:
+
+| Sygnał Allegro | Woo status (slug) | Uwaga |
+|----------------|-------------------|-------|
+| event `FILLED_IN` | *(brak zamówienia Woo albo `wc-pending`)* | koszyk wypełniony, **niezapłacone** — do decyzji P-6.3, czy w ogóle tworzyć zamówienie (§8d). |
+| event `BOUGHT` (⚠ `status = BOUGHT` spoza próbki) | `wc-pending` (`wc-on-hold`?) | zakupione, płatność jeszcze niepotwierdzona. `BOUGHT` w próbce występuje tylko jako `events[].type`, nie jako `checkoutForm.status`. |
+| `status = READY_FOR_PROCESSING` | `wc-processing` | **opłacone i gotowe do realizacji** — jedyny `status` w całej próbce. |
+| `fulfillment.status = READY_FOR_SHIPMENT` | `wc-processing` (bez zmiany) | gotowe do wysyłki; nie „completed" dopóki niewysłane. |
+| `fulfillment.status = SENT`/`DELIVERED`/… | `wc-completed` | ⚠ **wartości spoza próbki** — do potwierdzenia w FAZA 6 (§8f). |
+| anulowanie / zwrot | `wc-cancelled` / `wc-refunded` | ⚠ brak w próbce — kształt NIEZNANY, FAZA 6. |
+
+Slugi Woo (VERBATIM z instalacji): `wc-pending`, `wc-processing`, `wc-on-hold`,
+`wc-completed`, `wc-cancelled`, `wc-refunded`, `wc-failed`. Pełna reguła (która oś ma
+priorytet, obsługa anulowań/zwrotów) domyka się w **FAZA 6** wobec realnych statusów.
+
+#### Pozycje → pozycje zamówienia (`WC_Order_Item_Product`)
+| Pole Allegro (ścieżka JSON) | Pole WP (`WC_Order`) | Transformacja / uwagi |
+|-----------------------------|----------------------|-----------------------|
+| `lineItems[].offer.id`      | powiązanie z produktem Woo | klucz oferty Allegro → produkt utworzony w P-6.1 (§4a: offer `id` = indeksowany klucz Woo↔Allegro). To spina pozycję z produktem; gdy produktu brak (oferta nieimportowana) → decyzja P-6.3. |
+| `lineItems[].offer.name`    | nazwa pozycji           | wprost (np. „Słuchawki bezprzewodowe ANC Soundcore Life Q30 Upgraded"). |
+| `lineItems[].quantity`      | ilość pozycji           | int. W całej próbce `1` (§8f — brak zamówień wielosztukowych). |
+| `lineItems[].price.amount`  | suma pozycji (`line_total`) | `(float)`. |
+| `lineItems[].originalPrice.amount` | subtotal pozycji (`line_subtotal`) | `(float)`. W próbce równe `price` (brak rabatów). |
+| `lineItems[].tax.rate` (`"23.00"`) | stawka VAT pozycji | string → liczba. `tax.subject`/`exemption` = `null` → §8e. |
+| `lineItems[].id` (time UUID)| meta pozycji (Allegro line item id) | brak natywnie → FAZA 5 (traceability). |
+| `lineItems[].boughtAt`      | (kontekst czasu zakupu) | ISO-8601; kandydat na `date_created` zamówienia. |
+| `lineItems[].{selectedAdditionalServices,vouchers,discounts,deposit,serialNumbers,reconciliation}` | **brak/`[]`/`null`** → FAZA 5 | §8e. |
+
+#### Suma i pozostałe pola pierwszego poziomu
+| Pole Allegro (ścieżka JSON) | Pole WP (`WC_Order`) | Transformacja / uwagi |
+|-----------------------------|----------------------|-----------------------|
+| `summary.totalToPay.amount` | suma zamówienia (`_order_total`) | `(float)`; rekoncyliacja z `Σ lineItems + delivery.cost`. |
+| `messageToSeller`           | `customer_note`      | notatka kupującego. `null` w próbce. |
+| `note`                      | notatka prywatna zamówienia (`add_order_note`, private) | notatka sprzedawcy; `null` w próbce. NIE mylić z `customer_note`. |
+| `id` (checkoutFormId)       | **brak natywnie** → FAZA 5 | **klucz idempotencji importu** (P-6.3) — indeksowana meta na zamówieniu (analog offer `id`, §4a). |
+| `revision`, `updatedAt`     | **brak natywnie** → FAZA 5 | wykrycie zmian przy pollingu; §8e. |
+| `marketplace.id` (`allegro-pl`) | **brak natywnie** → FAZA 5 (lub `created_via`) | znacznik źródła zamówienia; §8e. |
+| `buyer.id` (Allegro)        | **brak natywnie** → FAZA 5 | id kupującego Allegro; §8e. |
+
+### 8d. `order/events` → tranzycje statusu (kontekst pollingu P-6.3)
+
+`GET /order/events` to **mechanizm pollingu** (P-6.3), nie źródło treści zamówienia —
+treść autorytatywnie daje `checkout-forms` (§8c). Zdarzenie niesie **lżejszy podzbiór**
+zamówienia (`events[].order`: `seller`, okrojony `buyer`, okrojone `lineItems`,
+`checkoutForm.{id,revision}`, `marketplace`) plus metadane strumienia.
+
+| Pole Allegro (ścieżka JSON) | Rola | Transformacja / uwagi |
+|-----------------------------|------|-----------------------|
+| `events[].id`               | **kursor pollingu** | liczba-string; parametr `from` kolejnego `GET /order/events` (P-6.3). Operacyjne, nie pole zamówienia. |
+| `events[].type`             | sygnał zmiany | `FILLED_IN` / `BOUGHT` / `READY_FOR_PROCESSING` / `FULFILLMENT_STATUS_CHANGED` — decyduje, czy pobrać/odświeżyć checkout-form i jaką tranzycję statusu zastosować (tabela w §8c). |
+| `events[].occurredAt`       | czas zdarzenia | ISO-8601. |
+| `events[].order.checkoutForm.id` | **klucz do pełnego zamówienia** | id do `GET /order/checkout-forms/{id}` (§8c). |
+| `events[].order.checkoutForm.revision` | wykrycie zmiany | zmiana `revision` → treść zamówienia się zmieniła → refetch. |
+| `events[].order.{seller,buyer,lineItems,marketplace}` | podzbiór treści | pokrywa się z §8c dla wspólnych pól; **autorytatywny jest checkout-form**, nie snapshot zdarzenia. |
+
+> **Uwaga o retencji/kolejności (SOURCES.md, P-3.3):** `GET /order/events` bez kursora
+> `from` zwraca **najstarsze** zachowane zdarzenia, nie najnowsze — polling P-6.3 musi
+> trzymać kursor (`events[].id`), nie odpytywać „od zera". Jedno zamówienie pojawia się
+> w strumieniu **wielokrotnie** (różne `type` w cyklu życia), więc import jest z natury
+> „upsert" po `checkoutForm.id`, nie „insert".
+
+### 8e. Pola Allegro BEZ odpowiednika u nas → wejście do FAZY 5
+
+Zgodnie z D-4.G2 / D-5.G1 — aspekty zamówienia bez natywnego miejsca w `WC_Order`,
+jawnie oznaczone jako wejście do FAZY 5 (rejestracja pola/meta na zamówieniu albo
+świadoma decyzja „nie przechowujemy"). Analogia do §4 (oferta): pełny surowy JSON
+zamówienia i tak może trafić verbatim do meta zamówienia (decyzja FAZA 5, jak D-5.G4).
+
+| Pole/aspekt Allegro | Znaczenie | Rekomendacja FAZA 5/6 |
+|---------------------|-----------|-----------------------|
+| `id` (checkoutFormId) | id zamówienia Allegro | **kluczowe** — indeksowana meta = klucz idempotencji importu (P-6.3), powiązanie Woo↔Allegro. |
+| `revision` | wersja treści zamówienia | wykrycie zmian przy pollingu (refetch po zmianie). |
+| `updatedAt` | znacznik modyfikacji | sync/diagnostyka. |
+| `marketplace.id` (`allegro-pl`) | rynek zamówienia | znacznik źródła (lub natywne `created_via`). |
+| `buyer.id` | id kupującego Allegro | powiązanie z kontem Allegro; meta zamówienia. |
+| `buyer.login` | login kupującego | **wrażliwe/PII** — bez funkcjonalnej potrzeby → **raczej NIE przechowujemy** (patrz §8g). |
+| `buyer.guest` (bool) | zakup jako gość | operacyjne; meta jeśli przyda się w obsłudze. |
+| `buyer.preferences.language` | język kupującego | operacyjne; zwykle `pl-PL`. |
+| `delivery.pickupPoint.{id,name,description,address}` | paczkomat/punkt odbioru | **kandydat na meta zamówienia** — natywne Woo nie modeluje punktu odbioru; potrzebny do etykiety/obsługi. `null` przy dostawie pod adres. |
+| `delivery.method.id` (UUID) | id metody dostawy Allegro | meta pozycji wysyłki (dopasowanie do metody Woo). |
+| `delivery.smart` (bool) | dostawa Smart | operacyjne. |
+| `delivery.time.*`, `delivery.calculatedNumberOfPackages`, `delivery.cancellation` | okna dostawy, liczba paczek, anulowanie | operacyjne; meta jeśli obsługa tego zażąda. |
+| `fulfillment.{status,shipmentSummary.lineItemsSent,provider.id}` | oś realizacji Allegro | steruje statusem Woo (§8c) + operacyjne (`provider.id = SELLER`). |
+| `payment.{id,type,provider,finishedAt}` | dane płatności | częściowo mapowane natywnie (§8c); reszta meta. |
+| `payment.features` (`["ALLEGRO_PAY"]`) | cechy płatności | meta; np. Allegro Pay. |
+| `payment.reconciliation`, `lineItems[].reconciliation` | rozliczenie | `null` w próbce; operacyjne. |
+| `invoice.required` (bool) | czy kupujący żąda faktury VAT | **meta zamówienia** — sygnał do wystawienia faktury. `false` w całej próbce. |
+| `invoice.address` (+ NIP) | dane do faktury | ⚠ `null` w próbce — **kształt NIEZNANY** (§8f). Docelowo: `billing.company` + NIP (meta). |
+| `invoice.dueDate`, `invoice.features` | termin/cechy faktury | `null` przy `required:false`. |
+| `lineItems[].id` (time UUID) | id pozycji Allegro | meta pozycji (traceability). |
+| `lineItems[].tax.{subject,exemption}` | podmiot/zwolnienie VAT | `null` w próbce; podatkowe → meta jeśli zajdzie potrzeba. |
+| `lineItems[].serialNumbers.{expected,entries}` | numery seryjne | `expected:false`, `entries:[]` w próbce. |
+| `lineItems[].{selectedAdditionalServices,vouchers,discounts,deposit}` | usługi/rabaty/kupony/kaucja pozycji | puste/`null` w próbce; kupony → natywne kupony Woo, gdy się pojawią (FAZA 6). |
+| `lineItems[].offer.{external,productSet,hsNumber}` | id zewn./zestaw/kod HS | `null` w próbce. |
+| `surcharges` | dopłaty | `[]` w próbce; natywnie → `WC_Order_Item_Fee`, gdy niepuste. |
+| `note` | prywatna notatka sprzedawcy | natywnie → prywatna notatka zamówienia; tu odnotowane jako aspekt bez 1:1 pola. |
+
+### 8f. Warianty i pułapki zamówień (z próbek P-3.3 + luki `SOURCES.md`)
+
+- **`postCode` vs `zipCode`:** kod pocztowy kupującego to `buyer.address.postCode`, a
+  odbiorcy — `delivery.address.zipCode`. **Różne nazwy klucza** dla tego samego pojęcia —
+  import musi czytać właściwy klucz per sekcja.
+- **`delivery.pickupPoint` null vs obiekt:** dostawa pod adres → `null`; paczkomat/punkt →
+  cały obiekt. Kod czytający punkt odbioru MUSI znieść oba (potwierdzone: warianty `[0]`
+  null vs `[1]`/`[2]` obiekt). W obiekcie `description` bywa `null` przy obecnym obiekcie.
+- **`payment.features` `[]` vs niepuste:** `["ALLEGRO_PAY"]` w jednym zamówieniu, `[]` w
+  pozostałych — tablica, nie flaga.
+- **`invoice` zawsze obiekt, pola `null`:** przy `invoice.required: false` `address`/
+  `dueDate`/`features` = `null`. **Kształt `invoice.address` (z NIP-em) jest NIEZNANY** —
+  cała próbka bez faktury (`SOURCES.md`: luka). Mapping faktury/NIP → **do potwierdzenia
+  przy pierwszym zamówieniu z fakturą (FAZA 6)**.
+- **Kwoty i `tax.rate` to STRINGI** (`"149.00"`, `"23.00"`) — `(float)`, nie porównanie
+  stringów; jak ceny ofert (§6).
+- **Telefon w dwóch formatach:** `+48 500 100 200` (ze spacjami) vs `+48500100200` (bez) —
+  API zwraca oba; normalizacja po naszej stronie, jeśli potrzebna.
+- **Jedna pozycja / jedna sztuka:** cała próbka ma dokładnie jedną `lineItems` o
+  `quantity: 1`. **Zamówienia wielopozycyjne i wielosztukowe = luka próbki** (`SOURCES.md`)
+  — mapping zakłada pętlę po `lineItems[]` i dowolne `quantity`, ale to weryfikuje FAZA 6.
+- **Statusy spoza próbki:** cała próbka to `status = READY_FOR_PROCESSING` +
+  `fulfillment.status = READY_FOR_SHIPMENT`. Statusy wysyłki/dostawy, **anulowania,
+  zwroty, `surcharges`, `vouchers`, `discounts`** — nieobecne; ich kształt i mapping na
+  `wc-completed`/`wc-cancelled`/`wc-refunded` domyka FAZA 6 (§8c).
+- **Kupujący-firma i kupujący-gość:** `buyer.guest: false` i `companyName: null` w całej
+  próbce — kształt firmowy/gościowy NIEZNANY (`SOURCES.md`).
+- **Snapshot zdarzenia ≠ pełne zamówienie:** `events[].order` to podzbiór; autorytatywny
+  jest `checkout-form`. Nie budować zamówienia z samego zdarzenia.
+
+### 8g. PII zamówień — zakres przechowywania
+
+W odróżnieniu od ofert (§4g dotyczył adresu **sprzedawcy**) zamówienia niosą **dane
+kupującego**. Część z nich trafia do natywnego `WC_Order` **zgodnie z naturą zamówienia**
+(imię/nazwisko/email/telefon/adres billing+shipping — bez nich nie da się zrealizować
+wysyłki). Zasada: **przechowujemy tylko to, co funkcjonalnie potrzebne**:
+
+| Pole Allegro | Decyzja | Podstawa |
+|--------------|---------|----------|
+| `buyer.firstName/lastName/email/phoneNumber`, `buyer.address.*`, `delivery.address.*` | **przechowujemy** (natywne billing/shipping) | niezbędne do obsługi i wysyłki zamówienia |
+| `buyer.personalIdentity` | **NIE przechowujemy** | wrażliwy identyfikator osobisty; brak funkcjonalnej potrzeby (`null` w próbce) |
+| `buyer.login` | **raczej NIE** (do potwierdzenia FAZA 6) | pseudonim kupującego; nie jest potrzebny do realizacji — jeśli zajdzie potrzeba, meta |
+| `invoice.address` + NIP | przechowujemy **tylko gdy `invoice.required: true`** | dane do faktury; kształt NIEZNANY (§8f) |
+
+Redakcja próbek w repo (`SOURCES.md`, D-3.3.3) jest ortogonalna do tej decyzji: dotyczy
+**plików-próbek w repo**, nie tego, co import zapisuje w bazie z realnych zwrotek.
+
+### Decyzje sesji P-4.3
+
+#### D-4.3.1 — zamówienie Allegro → natywny `WC_Order`; pola bez miejsca → FAZA 5 [proponowana — do potwierdzenia użytkownika]
+
+Kontrakt nie ma modelu zamówień (§8a); zamówienia są natywne w WooCommerce. Mapping
+kieruje zamówienie Allegro na `WC_Order` (billing z `buyer`, shipping z `delivery`,
+płatność, pozycje, status), a aspekty Allegro bez natywnego miejsca → FAZA 5 (§8e).
+**Odrzucona alternatywa:** własny CPT/model zamówień w core — dublowałby dojrzały model
+Woo (statusy, pozycje, adresy, notatki, raporty), łamał „core=dane, Woo READ-ONLY jako
+natywne źródło" i odcinał integracje ekosystemu Woo.
+
+#### D-4.3.2 — kolaps dwóch osi statusu Allegro (+ typ zdarzenia) → jeden `wc-*` [proponowana — pełna reguła w FAZA 6]
+
+Allegro ma osobno `status` i `fulfillment.status` plus `events[].type`; Woo ma jedną oś.
+Propozycja kolapsu w §8c (`READY_FOR_PROCESSING` → `wc-processing` jako jedyny potwierdzony
+przypadek). Statusy wysyłki/dostawy, anulowania i zwroty są **spoza próbki** → ostateczna
+reguła (priorytet osi, mapping `wc-completed`/`wc-cancelled`/`wc-refunded`) domyka FAZA 6.
+**Odrzucona alternatywa:** mapowanie 1:1 samego `status` bez uwzględnienia `fulfillment` i
+`type` — gubi moment wysyłki (nigdy nie osiągnie `wc-completed`).
+
+#### D-4.3.3 — powiązanie pozycji przez `offer.id`; idempotencja przez `checkoutForm.id` [proponowana]
+
+Pozycję z produktem Woo spina `lineItems[].offer.id` (klucz oferty z §4a, zapisany na
+produkcie w P-6.1); całe zamówienie jest idempotentne po `checkoutForm.id` (upsert, nie
+insert — strumień powtarza zamówienie, §8d). **Odrzucona alternatywa:** dopasowanie po
+nazwie/`offer.name` — kruche (nazwa się zmienia, nie jest kluczem).
+
+#### D-4.3.4 — PII: tylko zakres funkcjonalny; `personalIdentity`/`login` nieprzechowywane [proponowana]
+
+Do `WC_Order` trafia PII niezbędne do realizacji (billing/shipping); `personalIdentity`
+nie przechowujemy, `login` raczej nie (§8g). **Odrzucona alternatywa:** zapis całego
+`buyer` verbatim jako meta — gromadzi wrażliwe dane bez potrzeby (minimalizacja danych).
+
 ## Log decyzji (P-4.1)
 
 | Decyzja  | Rozstrzygnięcie | Podstawa |
@@ -444,7 +718,16 @@ gałęzi (kosz `pozostałe` vs wstrzymanie importu) → decyzja FAZY 6 (7d).
 | D-4.2.1  | kategoria = **kuratorski kolaps N:1** (126 liści Allegro → wąski, płaski, sklepowy zestaw `product_cat`), NIE mirror drzewa | decyzja użytkownika (sesja P-4.2) |
 | D-4.2.2  | kluczowanie **hybrydowe**: reguła gałęzi (przodek) + wyjątki per-liść; priorytet wyjątek > gałąź > gałąź wyższa; fallback nieznanej gałęzi → FAZA 6 | decyzja użytkownika (sesja P-4.2) |
 
+## Log decyzji (P-4.3)
+
+| Decyzja  | Rozstrzygnięcie | Podstawa |
+|----------|-----------------|----------|
+| D-4.3.1  | zamówienie Allegro → **natywny `WC_Order`** (billing z `buyer`, shipping z `delivery`, płatność, pozycje, status); pola bez natywnego miejsca → FAZA 5 | ground-truth: kontrakt bez modelu zamówień, Woo dostarcza natywnie — **proponowana**, do potwierdzenia |
+| D-4.3.2  | kolaps dwóch osi statusu Allegro (`status` + `fulfillment.status`) + `events[].type` → jeden `wc-*`; potwierdzony tylko `READY_FOR_PROCESSING → wc-processing`, reszta FAZA 6 | ground-truth próbki (jeden status) — **proponowana** |
+| D-4.3.3  | powiązanie pozycji przez `lineItems[].offer.id` (§4a); idempotencja importu po `checkoutForm.id` (upsert) | ground-truth strumienia (powtórzenia zdarzeń) — **proponowana** |
+| D-4.3.4  | PII: tylko zakres funkcjonalny do `WC_Order`; `personalIdentity` nieprzechowywany, `login` raczej nie | minimalizacja danych — **proponowana** |
+
 ## Odnośniki
-- Kontrakt danych (nasze pola): `docs/kontrakt-danych.md` (§1 Woo `product_cat`, §2/§4 ACF, §3 marka, §6 wartości liczone).
-- Plan: `docs/plan.md` → FAZA 4 (D-4.G1/G2), P-4.1/P-4.2; FAZA 5 (D-5.G1/G4 — odbiornik pól „bez odpowiednika”); FAZA 6 (import/sync, rozdzielczość kategorii + finalny zestaw termów).
-- Próbki kształtu: `docs/allegro-api-samples/` (README + `SOURCES.md`, sekcja P-3.2 — kategorie).
+- Kontrakt danych (nasze pola): `docs/kontrakt-danych.md` (§1 Woo `product_cat`, §2/§4 ACF, §3 marka, §6 wartości liczone). **Zamówienia — brak modelu w kontrakcie:** natywne `WC_Order` (§8a), pola bez miejsca → FAZA 5.
+- Plan: `docs/plan.md` → FAZA 4 (D-4.G1/G2), P-4.1/P-4.2/P-4.3; FAZA 5 (D-5.G1/G4 — odbiornik pól „bez odpowiednika”); FAZA 6 (import ofert P-6.1, sync stanów P-6.2, **obsługa zamówień P-6.3** — konsument §8).
+- Próbki kształtu: `docs/allegro-api-samples/` (README + `SOURCES.md`, sekcja P-3.2 kategorie, **sekcja P-3.3 zamówienia** — kształt + reguły redakcji + luki).
