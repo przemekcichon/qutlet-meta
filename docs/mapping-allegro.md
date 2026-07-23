@@ -17,7 +17,7 @@ odwzorowane na:
 - pola ACF FAZY 1 (`kontrakt-danych.md` §2, §4),
 - taksonomię marki `product_brand` (`kontrakt-danych.md` §3).
 
-Mapping kategorii (`category.id` → `product_cat`) to **P-4.2** — tu tylko odnośnik.
+**Rozszerzenie (P-4.2):** kategoria (`category.id` → `product_cat`) — **§7**.
 Mapping zamówień — **P-4.3**.
 
 ## Źródła kształtu (ground-truth, nie z pamięci)
@@ -52,7 +52,7 @@ Mapping zamówień — **P-4.3**.
 | `name`                                         | `post_title` (`get_the_title()`)      | Woo     | wprost (string). Zawsze obecne. |
 | `images[]` (tablica URL-i)                     | miniatura + galeria produktu Woo      | Woo     | `images[0]` → miniatura (`_thumbnail_id`), reszta → galeria. Na liście odpowiednik lekki: `[lista] primaryImage.url`. URL-e, nie pliki — import musi zaciągnąć obrazy (side-load, FAZA 6). Zawsze ≥1 obraz w snapshocie. |
 | `stock.available`                              | `_stock` (`get_stock_quantity()`)     | Woo     | int. Natura sklepu = pojedyncze egzemplarze (§1 kontraktu). `stock.unit` (UNIT/PAIR) → patrz §5 (FAZA 5). |
-| `category.id`                                  | taksonomia `product_cat`              | Woo tax | **przez P-4.2** (drzewo kategorii Allegro → `product_cat`). Tu tylko źródło. `id` bywa numeryczny LUB UUID — traktować jako opaque string. |
+| `category.id`                                  | taksonomia `product_cat`              | Woo tax | **przez §7 (P-4.2)** (drzewo kategorii Allegro → `product_cat`). Tu tylko źródło. `id` bywa numeryczny LUB UUID — traktować jako opaque string. |
 | `sellingMode.price.amount` + `.currency`       | Woo `_price` (**cena sklepu, nasza**) | Woo     | **NIE wprost.** Cena z oferty to cena kanału Allegro (→ `cena_allegro`, §2). Nasza cena sklepowa jest **liczona** (D-4.1.2, niżej). |
 
 > **Uwaga o dwóch cenach.** Oferta niesie tylko **jedną** cenę (`sellingMode.price`) —
@@ -126,6 +126,11 @@ egzemplarza, Allegro daje wartość domyślną).
 | `Nowy z defektem`            | 6                     | **C** (Mocne ślady) | ⚠ do potwierdzenia — „defekt" może kwalifikować do D, zależnie od sprawności |
 | `Uszkodzony`                 | 39                    | **C** (Mocne ślady) | ⚠ do potwierdzenia — jeśli niesprawny → raczej **D**; C zakłada „działa, mocne ślady” |
 | `Na części`                  | 3                     | **D** (Na części) | dopasowanie wprost |
+
+**Potwierdzenie zwinięć oznaczonych ⚠ DO POTWIERDZENIA** (`Po zwrocie` → B,
+`Uszkodzony` → C, `Nowy z defektem` → C) następuje w **FAZIE 6** — tam
+`klasa_stanu` faktycznie powstaje przy imporcie (auto-map z „Stan”), więc tam
+zapada ostateczna kalibracja tych trzech przypadków wobec realnej oceny egzemplarza.
 
 **Pola powiązane do warstwy surowej (nie do `klasa_stanu`):** offer-level
 `parameters[Stan opakowania]` (`id 229205`, w 485/555) oraz surowa wartość „Stan” —
@@ -264,6 +269,166 @@ dla tych pól (`stock.available` → `_stock`; `sellingMode.price` → `cena_all
 
 ---
 
+## 7. Kategoria: `category.id` → `product_cat` (P-4.2)
+
+Odwzorowanie kategorii Allegro na natywną taksonomię Woo `product_cat`
+(`kontrakt-danych.md` §1). Rozszerza wiersz `category.id` z §1 — tam tylko źródło,
+tu pełna transformacja. Zależność: P-3.2 (kształt kategorii) + FAZA 1 (nasze `product_cat`).
+
+### 7a. Ground-truth kształtu (nie z pamięci)
+
+Źródła: zredagowane próbki `docs/allegro-api-samples/GET_sale-categories.json`
+(korzeń + traversal Elektroniki) i `GET_sale-categories-id.json` (liść `85166`);
+rozkład `category.id` z pełnego snapshotu 555 ofert (`docs/allegro-snapshot-offers/`,
+poza repo).
+
+**Co niesie oferta.** W snapshocie **wszystkie 555 ofert** mają kategorię
+**wyłącznie** jako `category = { "id": "…" }` — sam identyfikator, **bez nazwy i bez
+ścieżki** (zweryfikowane: jedyny kształt klucza to `('id',)` w 555/555; `productSet[0].product`
+NIE niesie kategorii). To fundamentalny fakt dla mappingu: **z samej oferty nie da się
+poznać, co to za kategoria** — trzeba ją rozwiązać przez API drzewa.
+
+**Kształt węzła kategorii** (`GET /sale/categories` i `/sale/categories/{id}`, verbatim):
+
+```jsonc
+{
+  "id": "85166",              // opaque string; liść bywa numeryczny, korzeń bywa UUID
+  "name": "Bezprzewodowe",    // czytelna nazwa — TYLKO z API drzewa, nie z oferty
+  "parent": { "id": "66887" },// null na korzeniu, { "id": "<parentId>" } niżej
+  "leaf": true,               // true = dopiero na liściu wystawia się oferty
+  "options": { "advertisement": false, "offersWithProductPublicationEnabled": true,
+               "productCreationEnabled": true, "sellerCanRequirePurchaseComments": false }
+}
+```
+
+**Rozkład w snapshocie (555 ofert):** **126 różnych `category.id`**, wszystkie w tym
+zbiorze **numeryczne** (oferty siedzą na liściach), ale drzewo zawiera też
+**korzenie-UUID** (np. „Elektronika” = `42540aec-367a-4e5e-b411-17c09b08e41f`) →
+`category.id` traktować jako **opaque string**, nie liczbę (patrz §6). Rozkład jest
+długoogonowy: najliczniejszy liść `353` w 64 ofertach, `4575` w 41, `85166` w 32 —
+dziesiątki liści po 1–2 oferty. Nasza strona ma **kuratorsko płytki** `product_cat`
+(prototyp: `smartfony`/`laptopy`/`audio`/`gaming`, kontrakt §1 „przykładowe”). 126
+głębokich liści Allegro vs kilka naszych termów ⇒ mapowanie to **kolaps N:1**
+(D-4.2.1), nie odbicie drzewa.
+
+### 7b. Rozdzielczość `id` → nazwa + ścieżka (operacja importu, FAZA 6)
+
+Ponieważ oferta niesie **tylko** `category.id`, import musi rozwinąć go do nazwy i
+przodków przez API drzewa:
+
+1. `GET /sale/categories/{category.id}` → `{ id, name, parent, leaf }`.
+2. Dopóki `parent != null`, wołaj `GET /sale/categories/{parent.id}` — zbierasz
+   **ścieżkę od liścia do korzenia** (np. `85166 Bezprzewodowe → 66887 → … → Elektronika`).
+3. Ta ścieżka (nazwane przodki) jest wejściem do reguły kolapsu w 7d.
+
+To operacja **runtime importu (FAZA 6)**, nie tego dokumentu — drzewo jest stabilne,
+więc rozwiązania warto **cache’ować** (mapa `id → {name, parentId}`); szczegóły cache
+= FAZA 6. **Uwaga:** pełnej tabeli 126 liści **nie da się rozwinąć offline** — snapshot
+nie niesie nazw, a próbki nazywają tylko garść węzłów. Dlatego tabela 7d jest
+**ilustracyjna** (rozwiązywalne przykłady), a jej pełne wypełnienie + finalny zestaw
+naszych termów to zadanie kuracji przy imporcie (FAZA 6, patrz 7e).
+
+### 7c. Strategia: kuratorski kolaps N:1 [D-4.2.1]
+
+Wiele liści Allegro odwzorowujemy na **jeden** nasz kuratorski term `product_cat`.
+Zestaw termów jest **płaski i sklepowy** (rozszerzenie 4 przykładowych z prototypu wg
+realnego katalogu — patrz 7e), nie odbicie hierarchii Allegro. Spójne z kontraktem §1
+(natura sklepu = wąski, czytelny katalog outletu), a nie z 126-liściowym drzewem
+platformy, od której się uniezależniamy.
+
+### 7d. Kluczowanie kolapsu: hybryda gałąź + wyjątki [D-4.2.2]
+
+Regułę kolapsu kluczujemy **po przodku (gałęzi)**, z możliwością **nadpisania
+pojedynczego liścia**:
+
+1. **Domyślnie po gałęzi:** dopasuj po najbliższym przodku, dla którego mamy regułę
+   (np. cała gałąź „Telefony i Akcesoria” → `smartfony`). Nowy, niewidziany wcześniej
+   liść w znanej gałęzi trafia **automatycznie** — import nie gubi produktu.
+2. **Wyjątek per-liść:** liść, który łamie regułę gałęzi, dostaje własny wiersz
+   nadpisujący (np. `85166 „Bezprzewodowe”` leży w gałęzi „RTV i AGD”, ale to
+   słuchawki → `audio`, nie AGD).
+3. **Priorytet:** wyjątek per-liść > reguła gałęzi > reguła gałęzi wyższej.
+
+Ilustracja regułą (na węzłach rozwiązywalnych z próbek; **NIE jest to pełna tabela** —
+tę wypełnia FAZA 6):
+
+| Klucz reguły (przodek/liść, `id`)                 | Typ    | → `product_cat` | Podstawa |
+|---------------------------------------------------|--------|-----------------|----------|
+| gałąź „Telefony i Akcesoria” (`4`)                | gałąź  | `smartfony`     | dziecko Elektroniki (próbka traversal) |
+| gałąź „Komputery” (`2`)                            | gałąź  | `laptopy`       | dziecko Elektroniki (próbka traversal) |
+| gałąź „Konsole i automaty” (`122233`)             | gałąź  | `gaming`        | dziecko Elektroniki (próbka traversal) |
+| gałąź „Sprzęt estradowy, studyjny i DJ-ski” (`122332`) | gałąź | `audio`     | dziecko Elektroniki (próbka traversal) |
+| liść „Bezprzewodowe” (`85166`)                    | wyjątek| `audio`         | słuchawki BT; oferta `18780385602` (P-3.1) |
+| liść myszy (`4575`)                               | wyjątek| *(term peryferia, 7e)* | mysz BT (P-3.1 `index.csv`) |
+
+> **Dlaczego hybryda, a nie tylko gałąź:** szerokie gałęzie Allegro z natury mieszają
+> domeny — np. „RTV i AGD” (`10`) obejmuje i sprzęt audio (słuchawki), i duże AGD
+> (grill `260556`), i drobne akcesoria/zasilanie (`19357`). Sama reguła gałęzi zlałaby
+> to w jeden term; wyjątki per-liść pozwalają rozdzielić to, co dla klienta sklepu jest
+> różnym asortymentem (np. słuchawki `85166` → `audio`, nie AGD). Dlatego gałąź daje
+> **domyślny bucket**, a liście-wyjątki go **korygują**.
+>
+> **Zastrzeżenie (granica danych):** dokładnej przynależności tych liści do gałęzi
+> **nie da się rozstrzygnąć offline** — snapshot nie niesie nazw ani przodków, a próbki
+> rozwiązują tylko dzieci Elektroniki + liść `85166` (jego `parent.id = 66887`
+> pozostaje nierozwiązany). Powyższe przypisania gałęzi są **ilustracyjne**;
+> faktyczną ścieżkę każdego liścia ustala rozdzielczość przy imporcie (7b, FAZA 6).
+
+**Fallback (nieznana gałąź / brak reguły):** gdy ani liść, ani żaden przodek nie ma
+reguły, produkt nie może „wisieć bez kategorii”. **Propozycja (do potwierdzenia w
+FAZIE 6):** przypisać do term-kosza `pozostałe` (albo wstrzymać import produktu do
+ręcznej kuracji) i **zalogować** nierozwiązaną gałąź, żeby kurator dopisał regułę. Wybór
+„kosz vs wstrzymanie” to zachowanie importu → decyzja FAZY 6.
+
+### 7e. Zestaw docelowych termów `product_cat` (kuracja)
+
+Prototyp definiuje 4 przykładowe termy (`smartfony`/`laptopy`/`audio`/`gaming`,
+kontrakt §1 „przykładowe”). Realny katalog (555 ofert, 126 liści) obejmuje jednak
+domeny bez odpowiednika w tej czwórce — z samych próbek widać co najmniej: **peryferia**
+(mysz `4575`, akcesoria monitora `260041`), **fotografia** (gałąź `8845`), **RTV/AGD**
+(`260556`), **zasilanie/akcesoria** (`19357`), **materiały eksploatacyjne** (`260338`).
+Finalny, kuratorski zestaw termów **rośnie ponad tę czwórkę** i jest ustalany przy
+imporcie (FAZA 6), gdy wszystkie 126 liści zostaną rozwiązane do nazw. Ustabilizowane
+slugi wracają wtedy do `kontrakt-danych.md` §1. `product_cat` jest hierarchiczne, więc
+zestaw MOŻE mieć płytką hierarchię, ale duch pozostaje: **wąski, sklepowy, nie 126 liści.**
+
+### 7f. Aspekty kategorii BEZ odpowiednika u nas → wejście do FAZY 5
+
+Zgodnie z zakresem P-4.2 (i D-4.G2 / D-5.G1) — pola/aspekty węzła kategorii bez miejsca
+w naszym modelu, jawnie oznaczone jako wejście do FAZY 5:
+
+| Aspekt Allegro | Znaczenie | Rekomendacja FAZA 5/6 |
+|----------------|-----------|-----------------------|
+| surowy `category.id` (liść) + rozwiązana ścieżka przodków | źródłowa kategoria oferty | **kandydat na pole warstwy surowej** na produkcie (traceability Woo↔Allegro, re-mapping po zmianie reguł, diagnostyka). Decyzja rejestracji → FAZA 5 (D-5.G4: i tak jest w verbatim JSON oferty, tu chodzi o ewentualne **wyprowadzenie** do osobnego, indeksowanego pola). |
+| `options.{advertisement, offersWithProductPublicationEnabled, productCreationEnabled, sellerCanRequirePurchaseComments}` | flagi publikacji/aukcji węzła | **nie przechowujemy** — operacyjne po stronie Allegro, bez znaczenia dla naszego `product_cat`. |
+| `leaf` (bool) | węzeł wewnętrzny vs liść | **nie przechowujemy** — strukturalne dla traversalu (7b), nie dla produktu. |
+| pełne drzewo kategorii (cache `id → {name, parentId}`) | słownik do rozwiązywania `id`→ścieżka | **infrastruktura importu (FAZA 6)**, nie pole produktu. Nie „wisi w próżni” — konsumuje go rozdzielczość 7b. |
+
+### Decyzje sesji P-4.2
+
+#### D-4.2.1 — kuratorski kolaps N:1 kategorii Allegro → `product_cat` [USTALONE — decyzja użytkownika]
+
+126 liści Allegro (w 555 ofertach) odwzorowujemy na **wąski, kuratorski** zestaw termów
+`product_cat` — wiele liści → jeden nasz term. Zestaw jest płaski i sklepowy (7c, 7e),
+spójny z kontraktem §1. **Odrzucona alternatywa:** mirror poddrzewa Allegro
+(Elektronika > Komputery > … jako wielopoziomowe `product_cat`, ~1:1 z liśćmi) — wierny,
+ale głęboki katalog sprzeczny z „natura sklepu” (kontrakt §1); byłby szumem nawigacyjnym
+i wymagałby rewizji kontraktu. Uniezależniamy się od platformy — nie odbijamy jej drzewa.
+
+#### D-4.2.2 — hybrydowe kluczowanie: reguła gałęzi + wyjątki per-liść [USTALONE — decyzja użytkownika]
+
+Kolaps (D-4.2.1) kluczujemy **po przodku (gałęzi)** z **nadpisaniem per-liść** (7d):
+gałąź daje domyślny bucket, liście-wyjątki go korygują; priorytet
+wyjątek > gałąź > gałąź wyższa. Zaleta: nowy liść w znanej gałęzi mapuje się
+automatycznie (import nie gubi produktu), a mieszane gałęzie (RTV i AGD) rozdziela
+wyjątek. **Odrzucone alternatywy:** (a) per-liść exact id (do 126 wierszy) — precyzyjne,
+ale kruche (każdy nowy liść wypada z mapowania do ręcznego dopisania) i wymaga rozwiązania
+wszystkich 126 id→nazwa z góry; (b) tylko po gałęzi — proste i odporne na nowe liście, ale
+grubo zlewa mieszane gałęzie (np. słuchawki i duże AGD w jeden term). Fallback nieznanej
+gałęzi (kosz `pozostałe` vs wstrzymanie importu) → decyzja FAZY 6 (7d).
+
+---
+
 ## Log decyzji (P-4.1)
 
 | Decyzja  | Rozstrzygnięcie | Podstawa |
@@ -272,7 +437,14 @@ dla tych pól (`stock.available` → `_stock`; `sellingMode.price` → `cena_all
 | D-4.1.2  | Woo `_price` = `cena_allegro × (1 − stawka_rabatu)`; `stawka_rabatu` globalna (śr. prowizje Allegro/mies.) + override per produkt; ujawnia nowe elementy modelu → FAZA 5 | decyzja użytkownika (sesja P-4.1) |
 | D-4.1.3  | marka = `Marka.values[0] ?? Producent.values[0]` (fallback na „Producent”) → `product_brand` | ground-truth snapshotu (219/555 tylko „Producent”) — **proponowana**, do potwierdzenia |
 
+## Log decyzji (P-4.2)
+
+| Decyzja  | Rozstrzygnięcie | Podstawa |
+|----------|-----------------|----------|
+| D-4.2.1  | kategoria = **kuratorski kolaps N:1** (126 liści Allegro → wąski, płaski, sklepowy zestaw `product_cat`), NIE mirror drzewa | decyzja użytkownika (sesja P-4.2) |
+| D-4.2.2  | kluczowanie **hybrydowe**: reguła gałęzi (przodek) + wyjątki per-liść; priorytet wyjątek > gałąź > gałąź wyższa; fallback nieznanej gałęzi → FAZA 6 | decyzja użytkownika (sesja P-4.2) |
+
 ## Odnośniki
-- Kontrakt danych (nasze pola): `docs/kontrakt-danych.md` (§1 Woo, §2/§4 ACF, §3 marka, §6 wartości liczone).
-- Plan: `docs/plan.md` → FAZA 4 (D-4.G1/G2), P-4.1; FAZA 5 (D-5.G1/G4 — odbiornik pól „bez odpowiednika”); FAZA 6 (import/sync).
-- Próbki kształtu: `docs/allegro-api-samples/` (README + `SOURCES.md`).
+- Kontrakt danych (nasze pola): `docs/kontrakt-danych.md` (§1 Woo `product_cat`, §2/§4 ACF, §3 marka, §6 wartości liczone).
+- Plan: `docs/plan.md` → FAZA 4 (D-4.G1/G2), P-4.1/P-4.2; FAZA 5 (D-5.G1/G4 — odbiornik pól „bez odpowiednika”); FAZA 6 (import/sync, rozdzielczość kategorii + finalny zestaw termów).
+- Próbki kształtu: `docs/allegro-api-samples/` (README + `SOURCES.md`, sekcja P-3.2 — kategorie).
