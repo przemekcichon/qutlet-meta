@@ -1234,13 +1234,68 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
 - **Zależności:** P-3A.2 (żeby refaktor objął też helpery zasiewu i sondy — a nie trzeba
   go było powtarzać).
 
-### P-6.1 — Import ofert → produkty Woo
-- **Repo:** qutlet-allegro (czyta/pisze pola core z FAZY 5)
-- **Zakres:** pobranie ofert (`GET /sale/offers`, `GET /sale/product-offers/{id}`),
+### P-6.1 — Import ofert → produkty Woo — punkt wielorepowy → P-6.1a + P-6.1b
+- **Repo:** qutlet-core (P-6.1a) + qutlet-allegro (P-6.1b)
+- **Zakres (całość):** pobranie ofert (`GET /sale/offers`, `GET /sale/product-offers/{id}`),
   utworzenie/aktualizacja produktów Woo wg mappingu (FAZA 4), wypełnienie warstwy
   surowej (FAZA 5), zastosowanie mapowania kategorii (P-4.2). Idempotencja (ponowny
   import nie duplikuje). Komenda WP-CLI (np. `wp qutlet-allegro import-offers`).
-- **Zależności:** **P-6.0 (bramka — nie zaczynamy przed refaktorem)**, FAZA 2
+- **Rozbicie (ground-truth sesji 2026-07-23):** import liczy `_price` wg D-4.1.2 z
+  globalnej stawki rabatu, ale jej rejestracji (mapping D-4.1.2 „Gdzie żyje":
+  Settings API w `qutlet-core`, propozycja do FAZY 5) NIE zrealizował żaden punkt
+  FAZY 5 — powierzchnia ustawień nie istnieje w kodzie. Ustawienia/glue Woo to
+  odpowiedzialność core, więc punkt jest wielorepowy i rozpada się na P-6.1a (core:
+  stawka) i P-6.1b (allegro: import). Literały stawki → kontrakt §11 (ten PR).
+
+#### Decyzje sesji P-6.1 (2026-07-23)
+- **D-6.1.1 (źródło stawki rabatu) [USTALONE — decyzja użytkownika]:** stawka
+  zależy od miesięcznych kosztów prowadzenia działalności na Allegro → wprowadzana
+  RĘCZNIE jako **globalna opcja wtyczki** (strona ustawień pod menu WooCommerce,
+  rejestruje core) + opcjonalne **nadpisanie na poziomie produktu** (pole w
+  zakładce General panelu danych produktu Woo). Import czyta: nadpisanie ??
+  globalna. Literały (VERBATIM): kontrakt §11.
+- **D-6.1.2 (fallback kategorii bez reguły) [USTALONE — decyzja użytkownika]:**
+  oferta, której nie łapie żadna reguła kolapsu (mapping §7d), dostaje term-kosz
+  `pozostale` (`product_cat`) + wpis w logu komendy z nierozwiązaną gałęzią
+  (id + rozwiązane nazwy), żeby kurator dopisał regułę. Import nie gubi produktów.
+  Odrzucona alternatywa: wstrzymanie importu produktu do ręcznej kuracji.
+- **D-6.1.3 (VAT już teraz) [USTALONE — decyzja użytkownika]:** import wpina
+  `taxSettings.rates[].rate` w natywny podatek produktu Woo (kontrakt §10.2) już
+  w P-6.1b: `tax_status = taxable` + klasa podatkowa per stawka (23% → klasa
+  standardowa, inne → klasa `VAT <stawka>%` zakładana idempotentnie). Konfiguracja
+  samych TABEL stawek Woo (kwoty per klasa) pozostaje ręczna — handoff.
+- **D-6.1.4 (kalibracja auto-mapy „Stan") [USTALONE — decyzja użytkownika]:**
+  tabela D-4.1.1 potwierdzona bez zmian (`Po zwrocie`→B, `Nowy z defektem`→C,
+  `Uszkodzony`→C). Import ustawia `klasa_stanu` TYLKO gdy pole puste — ręczna
+  korekta sprzedawcy (ocena egzemplarza) nie jest nadpisywana kolejnym przebiegiem.
+
+#### 🟡 P-6.1a — Stawka rabatu: globalna opcja + nadpisanie per produkt (qutlet-core)
+- **Repo:** qutlet-core (slice `Pricing/`)
+- **Zakres:** rejestracja globalnej opcji stawki rabatu (strona ustawień pod menu
+  WooCommerce; Settings API wewnątrz slice'a — vertical slice, bez globalnego
+  `settings/`) + pole nadpisania per produkt w zakładce General danych produktu
+  (`woocommerce_product_options_general_product_data` + zapis) + helper efektywnej
+  stawki dla konsumenta (P-6.1b). Literały VERBATIM z kontraktu §11. BEZ liczenia
+  cen — formuła D-4.1.2 jest zachowaniem importu (P-6.1b), nie tego punktu.
+- **Zależności:** P-0.1 (bootstrap core); kontrakt §11 (literały — PR rozbicia P-6.1).
+
+#### 🟡 P-6.1b — Komenda importu ofert (qutlet-allegro)
+- **Repo:** qutlet-allegro (slice `OfferSync/` — feature rozproszony; producent
+  danych surowych, pola rejestruje core: FAZA 5)
+- **Zakres:** komenda WP-CLI `wp qutlet-allegro import-offers`, parametryzowana
+  środowiskiem (D-6.G5; slot `read`, domyślnie sandbox): pobiera oferty `ACTIVE`
+  (`GET /sale/offers` → `GET /sale/product-offers/{id}`), tworzy/aktualizuje
+  produkty Woo wg mappingu FAZY 4 (pola natywne §1, ACF §2, marka D-4.1.3,
+  `_price` wg D-4.1.2 ze stawki P-6.1a), rozwiązuje kategorię przez API drzewa
+  (§7b) i kolapsuje wg reguł D-4.2.2 z fallbackiem D-6.1.2, wypełnia warstwę
+  surową FAZY 5 (verbatim JSON + pola parsowane w TEJ SAMEJ operacji, z tej samej
+  zwrotki — D-6.G4) i pola `AllegroLink` (§10.1), GTIN → natywne
+  `global_unique_id`, VAT wg D-6.1.3, side-load zdjęć (`images[]` → miniatura +
+  galeria). Idempotencja: klucz `_qutlet_allegro_offer_id`; ponowny import
+  aktualizuje, nie duplikuje; przebieg wznawialny (timeout mostu MCP — komenda
+  nadaje się do ponownego uruchomienia bez szkody). Oferty `AUCTION` i
+  `productSet` o długości > 1 są jawnie pomijane z raportem (mapping §6).
+- **Zależności:** **P-6.0 (bramka — spełniona)**, P-6.1a (stawka rabatu), FAZA 2
   (slot `read`; środowisko wg D-6.G5), FAZA 4, FAZA 5 (oraz bootstrap P-0.3).
 
 ### P-6.2 — Synchronizacja stanów magazynowych (cron co ~2 min)

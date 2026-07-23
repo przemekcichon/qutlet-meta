@@ -382,6 +382,42 @@ się realne użycie (wtedy otworzy je własny punkt). Zgodne z „zarabianiem na
 
 ---
 
+## 11. Cena sklepu — stawka rabatu (FAZA 6 — P-6.1)
+
+Powierzchnia danych formuły ceny sklepu (D-4.1.2, `docs/mapping-allegro.md`):
+
+```
+_price = cena_allegro × (1 − stawka/100)
+```
+
+zaokrąglone do grosza (2 miejsca). `stawka` w **procentach** (np. `10` = 10%).
+Efektywna stawka = nadpisanie per produkt ?? globalna opcja. Wartość globalna
+odpowiada średnim miesięcznym kosztom prowadzenia działalności na Allegro
+(prowizje itd.) i jest wprowadzana **ręcznie** (D-6.1.1) — żadne pole nie jest
+wypełniane przez sync. Formułę STOSUJE import/sync (`qutlet-allegro`, P-6.1b);
+rejestracja powierzchni = `qutlet-core` (P-6.1a, slice `Pricing/`).
+
+| Pole (znaczenie)         | Literał                  | Miejsce | Typ            | Opcjonalne? | Uwagi |
+|--------------------------|--------------------------|---------|----------------|-------------|-------|
+| Globalna stawka rabatu   | `qutlet_stawka_rabatu`   | option  | string (procent, numeryczny) | tak (brak/puste → `0`) | opcja WP (`get_option`), rejestruje core; strona ustawień pod menu WooCommerce (D-6.1.1). Odczyt: `get_option( 'qutlet_stawka_rabatu', '' )`. |
+| Nadpisanie per produkt   | `_qutlet_stawka_rabatu`  | meta    | string (procent, numeryczny) | tak         | pole w zakładce **General** panelu danych produktu Woo; puste → używana globalna. Edytowane ręcznie w adminie, **NIE nadpisywane przez sync** (to nasza decyzja cenowa, nie fakt z Allegro). |
+
+Uwagi:
+- Oba literały przechowują procent jako **string numeryczny** (konwencja meta/opcji
+  WP; Woo tak samo trzyma `_price`) — konsument rzutuje `(float)`.
+- `_price` pozostaje polem natywnym Woo (§1) i jest **przeliczane przy każdym
+  imporcie/sync** z aktualnej stawki i `cena_allegro` — ręczna edycja `_price`
+  zostanie nadpisana (formuła jest źródłem prawdy ceny sklepu, D-4.1.2);
+  trwałą korektę robi się nadpisaniem stawki per produkt.
+- Nota „~X% taniej" na froncie: liczona (§6), bez zmian.
+
+### Odnośniki (§11)
+- Mapping: `docs/mapping-allegro.md` D-4.1.2 (formuła, „Gdzie żyje").
+- Plan: `docs/plan.md` → P-6.1 (rozbicie, D-6.1.1), P-6.1a (rejestracja),
+  P-6.1b (zastosowanie formuły).
+
+---
+
 ## Log decyzji (P-1.0)
 
 | Decyzja  | Rozstrzygnięcie                                        | Podstawa |
@@ -410,3 +446,9 @@ się realne użycie (wtedy otworzy je własny punkt). Zgodne z „zarabianiem na
 | D-5.2.2  | rejestrujemy 3 pola dyskretne (`_qutlet_allegro_offer_id`, `_qutlet_mpn`, `_qutlet_allegro_category_id` + `_qutlet_allegro_category_path`); GTIN → natywne Woo `global_unique_id`, VAT → natywny podatek Woo; GPSR/warranty/compat/updatedAt zostają w verbatim JSON | decyzja użytkownika (sesja 2026-07-23) |
 | D-5.2.3  | 3 pola = prywatne `register_post_meta`, źródło Allegro, nadpisywane sync, R/O (etos §9.1), NIE ACF | decyzja użytkownika (sesja 2026-07-23) |
 | D-5.2.4  | slice `AllegroLink/` (≠ `ProductInfo/`; mirror w qutlet-allegro sync) — proponowany, potwierdza P-5.2b | decyzja użytkownika (sesja 2026-07-23) |
+
+## Log decyzji (P-6.1 — rozbicie)
+
+| Decyzja  | Rozstrzygnięcie                                                                 | Podstawa |
+|----------|--------------------------------------------------------------------------------|----------|
+| D-6.1.1  | stawka rabatu = globalna opcja `qutlet_stawka_rabatu` (strona pod menu WooCommerce, rejestruje core) + nadpisanie per produkt `_qutlet_stawka_rabatu` (zakładka General danych produktu); wprowadzana ręcznie, nie przez sync | decyzja użytkownika (sesja 2026-07-23) |
