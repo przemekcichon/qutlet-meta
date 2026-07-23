@@ -187,8 +187,8 @@ warto **wyprowadzić** do pól parsowanych / osobnych oraz które są operacyjne
 | `productSet[0].product.parameters[]` (`id`,`name`,`values[]`,`valuesIds`,`rangeValue`) | pełna specyfikacja (etykieta→wartość) | **warstwa przerobiona/parsowana** (D-5.G4): specyfikacja techniczna produktu. 391 różnych nazw parametrów w snapshocie; rozłączne per kategoria. Wybrane wprost mapowane: „Marka”/„Producent” (§3). Reszta = spec do wyświetlenia/AI. |
 | param `EAN (GTIN)` (`id 225693`) | kod EAN | w 535/555. Kandydat na osobne pole (SKU/GTIN, wyszukiwanie/dopasowanie). |
 | param `Kod producenta` (`id 224017`) | MPN | w 538/555. Kandydat na osobne pole. |
-| param `Model` (`id 237206`) | model | w 252/555. |
-| `productSet[0].product.parameters[].rangeValue` | wartości zakresowe (min/max) | zawsze `null` w snapshocie; kształt do zachowania. |
+| param `Model` | model | nazwa „Model” w 252/555, ale rozłożona na **5 różnych id per kategoria** (`237206`:211, `250439`:32, `249460`:4, `250441`:3, `250442`:2). Dopasowanie po NAZWIE, nie po jednym id (w przeciwieństwie do Marki/Producenta/EAN, które mają po jednym spójnym id). |
+| `productSet[0].product.parameters[].rangeValue` | wartości zakresowe (min/max) | w większości `null`; **26 parametrów** niesie zakres o kształcie `{from, to}` (stringi) — np. „Pasmo przenoszenia” `{from:"20", to:"20000"}`, „Obwód nadgarstka”. Kształt do zachowania. |
 
 ### 4c. Bezpieczeństwo produktu (GPSR) i podmioty odpowiedzialne
 | Pole Allegro | Znaczenie | Rekomendacja |
