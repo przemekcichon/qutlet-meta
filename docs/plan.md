@@ -970,8 +970,11 @@ to warstwa surowa/przerobiona opisów i specyfikacji.
 - **Zależności:** FAZA 4 (mapping dyktuje pełny zestaw pól).
 - **D-5.G1 [USTALONE]:** FAZA 5 jest jedynym miejscem rejestracji pól nie-Woo po
   mappingu — nic z FAZY 4 nie ma prawa „wisieć w próżni".
-- **D-5.G2 [OTWARTE]:** dokładny zestaw pól — z FAZY 4; literały do
-  `docs/kontrakt-danych.md`.
+- **D-5.G2 [ROZSTRZYGNIĘTE — P-5.1a + P-5.2a]:** dokładny zestaw pól — z FAZY 4;
+  literały do `docs/kontrakt-danych.md`. Rozstrzygnięty w dwóch blokach: opis +
+  specyfikacja (warstwa surowa/przerobiona) → §9 (P-5.1a); pozostałe pola dyskretne
+  (oferta §4 + kategoria §7f) → §10 (P-5.2a). Pola zamówieniowe (`mapping` §8e) są
+  poza FAZĄ 5 (siedzą na `WC_Order`, sterowane P-6.3 — D-5.2.1).
 - **D-5.G3 (ukrycie warstwy surowej) [ROZSTRZYGNIĘTE — sesja 2026-07-21]:** warstwa
   surowa nie jest renderowana na froncie w ogóle (motyw czyta wyłącznie warstwę
   przerobioną, D-8.G1). W adminie jest widoczna, ale **tylko do odczytu** — nie ma
@@ -1060,13 +1063,88 @@ jak P-3.1/P-3.2/P-3.3.
   danych to sprawa właściciela pola, czyli core.
 - **Zależności:** P-5.1.
 
-### P-5.2 — Pozostałe pola nie-Woo z mappingu
-- **Zakres:** rejestracja dyskretnych pól z Allegro, które mapping (FAZA 4)
-  oznaczył jako nieobjęte natywnie przez Woo i niebędące opisem/specyfikacją
-  (np. GTIN/EAN, gwarancja, parametry dostawy/zwrotów, parametry kategorii) —
-  o ile mapping potwierdzi brak natywnego pola Woo. Dla każdego: rejestracja albo
-  jawna decyzja „nie przechowujemy".
-- **Zależności:** FAZA 4 (P-4.1, P-4.2).
+### P-5.2 — Pozostałe pola dyskretne nie-Woo z mappingu — punkt wielorepowy → P-5.2a + P-5.2b
+
+Rejestracja dyskretnych pól z Allegro, które mapping (FAZA 4) oznaczył jako
+nieobjęte natywnie przez Woo i **niebędące opisem/specyfikacją** (tamto = P-5.1) —
+o ile mapping potwierdzi brak natywnego pola Woo. Dla każdego pola: rejestracja
+albo jawna decyzja „nie przechowujemy" (D-5.G1 — nic nie wisi w próżni). W
+realizacji (sesja 2026-07-23) — jak P-5.1 — okazał się **wielorepowy**: literały
+muszą najpierw wejść do kontraktu (`docs/kontrakt-danych.md`, qutlet-meta — D-5.G2
+„literały do kontraktu"), a rejestracja pól to kod w qutlet-core. Zgodnie z regułą
+punktów wielorepowych (osobne `origin` = osobne PR-y) rozpada się na dwa
+pod-punkty / dwa PR-y z jawną zależnością (`P-5.2b` → `P-5.2a`).
+
+- **D-5.2.1 (zakres = tylko produkt: oferta + kategoria; zamówienia poza P-5.2)
+  [USTALONE — sesja 2026-07-23]:** P-5.2 rejestruje dyskretne pola nie-Woo z
+  mappingu **oferty** (`mapping` §4) i **kategorii** (§7f) — pola na PRODUKCIE.
+  Pola zamówieniowe „bez odpowiednika u nas" (`mapping` §8e — punkt odbioru,
+  `checkoutFormId`, `buyer.id` itd.) siedzą na natywnym `WC_Order`, nie na
+  produkcie, i są sterowane przez P-4.3/P-6.3 — **poza zakresem P-5.2**; ich
+  rejestracja (meta na zamówieniu) należy do osobnego punktu związanego z P-6.3.
+  Spójne z zadeklarowanymi zależnościami P-5.2 (P-4.1, P-4.2 — nie P-4.3).
+  **Odrzucona alternatywa:** wciągnąć §8e tu — poszerza punkt poza jego zależności
+  i miesza model produktu z modelem zamówienia.
+- **D-5.2.2 (zestaw pól dyskretnych: 3 rejestrujemy, reszta natywnie/w JSON)
+  [USTALONE — decyzja użytkownika, sesja 2026-07-23]:** wszystko z oferty i tak
+  trafia verbatim do `_qutlet_allegro_offer` (JSON, D-5.G4), więc pole dyskretne
+  „zarabia" na osobną rejestrację tylko, gdy musi być **indeksowane/wyszukiwalne**,
+  **odwzorowane na natywne Woo** albo **wystawione niezależnie** od blobu.
+  **Rejestrujemy (3):**
+  - `id` oferty (klucz powiązania Woo↔Allegro, idempotencja importu P-6.1, kotwica
+    sync, źródło `allegro_url`; `mapping` §4a „kluczowe") — brak natywnego Woo;
+  - `Kod producenta` (MPN, `mapping` §4b, 538/555) — brak natywnego Woo, do
+    wyszukiwania/dopasowania;
+  - surowy `category.id` (liść) + rozwiązana ścieżka przodków (`mapping` §7f) —
+    traceability Woo↔Allegro, re-mapping po zmianie reguł, diagnostyka.
+  **NIE rejestrujemy (natywne Woo lub zostaje w JSON-ie):**
+  - `EAN (GTIN)` → **natywne Woo** `global_unique_id` (zweryfikowane w Woo 10.9.4:
+    `get/set_global_unique_id`, walidacja formatu) — import zapisze pole natywne (FAZA 6);
+  - `taxSettings.rates[].rate` (VAT) → **natywne** ustawienia podatku produktu Woo;
+    wpięcie = FAZA 6;
+  - GPSR `safetyInformation`, `afterSalesServices.{warranty,returnPolicy}.id`,
+    `compatibilityList`, `updatedAt` → **zostają w verbatim JSON** (`_qutlet_allegro_offer`);
+    bez osobnego pola, dopóki nie pojawi się realne użycie (feature „zwroty",
+    render GPSR w FAZIE 8, sync-diff w FAZIE 6 — każde otworzy własny punkt);
+  - `location` (PII sprzedawcy), `options`/`leaf` kategorii, `publication`/`validation`/
+    `language`/`format`/`stock.unit` i pola zawsze `null`/puste → **nie przechowujemy**
+    osobno (decyzje już w `mapping` §4d/§4f/§4g/§7f).
+- **D-5.2.3 (przechowywanie: 3 pola = prywatne `register_post_meta`, źródło Allegro,
+  nadpisywane sync) [USTALONE — sesja 2026-07-23]:** wszystkie trzy pola to
+  **prywatne post meta** (`register_post_meta`, prefiks `_qutlet_`, `auth_callback`
+  → false, `show_in_rest = false`, ukryte w „Custom Fields"), zapisywane przez sync
+  (`update_post_meta`), R/O w adminie — ten sam etos co warstwa surowa (§9.1). To
+  fakty z Allegro, nie treść autorska, więc NIE ACF (ACF = narzędzie edycji, D-5.G4).
+  Literały → kontrakt (P-5.2a, `docs/kontrakt-danych.md` §10).
+- **D-5.2.4 (slice — NIE `ProductInfo/`) [PROPONOWANE — potwierdza P-5.2b]:** te
+  pola to inny wątek niż opis+specyfikacja (`ProductInfo/`). Grupują je „tożsamość
+  i powiązanie produktu z jego źródłem w Allegro" → proponowany slice **`AllegroLink/`**
+  (mirror w qutlet-allegro przy sync — feature rozproszony, ta sama nazwa slice'a).
+  Ostateczną nazwę potwierdza P-5.2b po ground-truth (prompt „decyzja punktu").
+- **Zależności:** FAZA 4 (P-4.1, P-4.2), P-0.1 (bootstrap core).
+
+#### 🟡 P-5.2a — Kontrakt pól dyskretnych nie-Woo (qutlet-meta)
+- **Repo:** qutlet-meta (`docs/kontrakt-danych.md`)
+- **Zakres:** dopisać do kontraktu sekcję §10 — pełne rozliczenie pól dyskretnych
+  nie-Woo z mappingu oferty (§4) i kategorii (§7f): literały trzech rejestrowanych
+  pól (`_qutlet_allegro_offer_id`, `_qutlet_mpn`, `_qutlet_allegro_category_id` +
+  `_qutlet_allegro_category_path`), miejsca składowania, typy, kształty, opcjonalność
+  oraz jawne decyzje „natywne Woo"/„zostaje w JSON"/„nie przechowujemy" dla reszty
+  (D-5.G1 — nic nie wisi w próżni), z odnośnikami do `mapping` §4a/§4b/§4c/§4d/§4f/§7f.
+  **Bez kodu** — ustala literały, które konsumuje P-5.2b (D-5.G2). Decyzje modelu:
+  D-5.2.1/D-5.2.2/D-5.2.3.
+- **Zależności:** FAZA 4 (P-4.1 §4 ujawnia pola oferty; P-4.2 §7f — kategorii).
+
+#### P-5.2b — Rejestracja pól dyskretnych nie-Woo (qutlet-core)
+- **Repo:** qutlet-core (slice `AllegroLink/` — potwierdzenie nazwy D-5.2.4)
+- **Zakres:** rejestracja trzech pól wg kontraktu z P-5.2a — prywatne
+  `register_post_meta` (`_qutlet_` prefiks, R/O dla edycji użytkownika `auth_callback`
+  → false, `show_in_rest = false`, nadpisywane sync), wzorzec `RawLayerMeta`
+  (`ProductInfo/`, §9.1). Bez pól dla GTIN (natywne Woo `global_unique_id`) i VAT
+  (natywne ustawienia podatku Woo) — te tylko wpina import (FAZA 6). Literały bierze
+  VERBATIM z kontraktu, nie zgaduje.
+- **Zależności:** P-5.2a (kontrakt ustala literały), FAZA 4 (P-4.1, P-4.2), P-0.1
+  (bootstrap core).
 
 ---
 
