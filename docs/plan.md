@@ -1030,7 +1030,7 @@ jak P-3.1/P-3.2/P-3.3.
   rozproszony, ta sama nazwa slice'a — D-5.G4); dzieli go P-5.3 (podgląd w adminie).
 - **Zależności:** FAZA 4 (P-4.1).
 
-#### 🟡 P-5.1a — Kontrakt warstwy surowej/przerobionej (qutlet-meta)
+#### 🟢 P-5.1a — Kontrakt warstwy surowej/przerobionej (qutlet-meta)
 - **Repo:** qutlet-meta (`docs/kontrakt-danych.md`)
 - **Zakres:** dopisać do kontraktu sekcję modelu FAZY 5 — literały pól warstwy
   surowej (JSON + opis + specyfikacja parsed) i przerobionej (opis; specyfikacja =
@@ -1039,7 +1039,7 @@ jak P-3.1/P-3.2/P-3.3.
   które konsumuje P-5.1b (D-5.G2). Decyzje modelu: D-5.1.1/D-5.1.2/D-5.1.3.
 - **Zależności:** FAZA 4 (P-4.1 ujawnia pola bez odpowiednika — `mapping-allegro.md` §4).
 
-#### 🟡 P-5.1b — Rejestracja warstwy surowej/przerobionej (qutlet-core)
+#### 🟢 P-5.1b — Rejestracja warstwy surowej/przerobionej (qutlet-core)
 - **Repo:** qutlet-core (slice `ProductInfo/`)
 - **Zakres:** rejestracja pól wg kontraktu ustalonego w P-5.1a — trzy pola surowe
   (`register_post_meta`, prywatne `_qutlet_`, R/O dla edycji użytkownika, nadpisywane
