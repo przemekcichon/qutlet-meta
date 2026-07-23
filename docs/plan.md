@@ -1129,7 +1129,7 @@ pod-punkty / dwa PR-y z jawną zależnością (`P-5.2b` → `P-5.2a`).
   Ostateczną nazwę potwierdza P-5.2b po ground-truth (prompt „decyzja punktu").
 - **Zależności:** FAZA 4 (P-4.1, P-4.2), P-0.1 (bootstrap core).
 
-#### 🟡 P-5.2a — Kontrakt pól dyskretnych nie-Woo (qutlet-meta)
+#### 🟢 P-5.2a — Kontrakt pól dyskretnych nie-Woo (qutlet-meta)
 - **Repo:** qutlet-meta (`docs/kontrakt-danych.md`)
 - **Zakres:** dopisać do kontraktu sekcję §10 — pełne rozliczenie pól dyskretnych
   nie-Woo z mappingu oferty (§4) i kategorii (§7f): literały trzech rejestrowanych
