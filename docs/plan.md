@@ -921,7 +921,7 @@ Decyzje punktu — wszystkie **zmierzone na żywym API**, nie wywnioskowane:
 
 ---
 
-## 🟨 FAZA 4 — Data mapping Allegro ↔ WP — ROZPISANA
+## 🟩 FAZA 4 — Data mapping Allegro ↔ WP — ROZPISANA
 
 Cel: spisać w **`docs/mapping-allegro.md`** odwzorowanie: pole w zwrotce Allegro
 (FAZA 3) → nasze pole WP (`docs/kontrakt-danych.md`, FAZA 1) → transformacja.
