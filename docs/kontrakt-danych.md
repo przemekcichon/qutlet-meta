@@ -372,6 +372,19 @@ się realne użycie (wtedy otworzy je własny punkt). Zgodne z „zarabianiem na
 | kategoria: `options.*`, `leaf`, pełne drzewo (cache) | **nie przechowujemy** jako pole produktu (drzewo = infrastruktura importu FAZA 6) | `mapping` §7f |
 | `responsibleProducer`, `responsiblePerson`, `marketedBeforeGPSRObligation`, `deposits`, `sizeTable`, `discounts.*`, `contact`, `fundraisingCampaign`, `additionalServices`, `b2b`, `messageToSellerSettings`, `attachments`, `aiCoCreatedContent`, `isAiCoCreated` | **nie przechowujemy** osobno (null/puste w snapshocie / brak użycia; i tak w JSON) | `mapping` §4c/§4d/§4e |
 
+### 10.5 Stan operacyjny syncu stanów (FAZA 6 — P-6.2; właściciel: `qutlet-allegro`, NIE rejestruje core)
+
+Literały stanu OPERACYJNEGO synchronizacji stanów magazynowych (P-6.2b). To nie
+jest model danych produktu (fakty z Allegro), tylko wewnętrzna księgowość syncu —
+dlatego świadomie **poza rejestracją core** (D-6.2.3): zapisuje i czyta wyłącznie
+`qutlet-allegro`, prefiks `_` chroni meta przed UI „Custom Fields" natywnie.
+
+| Literał | Miejsce | Typ | Znaczenie |
+|---------|---------|-----|-----------|
+| `_qutlet_allegro_stock_push_pending` | meta (produkt) | string (unix timestamp) | marker ZALEGŁEGO pusha stanu Woo→Allegro (natychmiastowy push z hooka padł). Obecność = cron ma ponowić push AKTUALNEGO stanu Woo, zanim zastosuje jakikolwiek pull dla tego produktu (D-6.2.4). Kasowany po udanym pushu. |
+| `qutlet_allegro_stock_sync_cursor_{środowisko}` | option (`autoload = no`) | string (id ostatniego przetworzonego zdarzenia `order/events`) | kursor przyrostowego pulla per środowisko (np. `qutlet_allegro_stock_sync_cursor_sandbox`). Własny kursor P-6.2 — NIE współdzielony z przyszłym pollingiem zamówień P-6.3 (osobni konsumenci, osobne kursory). |
+| `qutlet_allegro_stock_sync_lock_{środowisko}` | option (`autoload = no`) | string (unix timestamp) | zamek przebiegu `sync-stock` per środowisko, wzorzec `Auth\RefreshLock` (atomowy `INSERT IGNORE`, łamanie osieroconego zamka po timeoucie). |
+
 ### Odnośniki (§10)
 - Mapping (skąd płyną te pola z Allegro): `docs/mapping-allegro.md` §4a (id oferty),
   §4b (parametry: GTIN natywne, MPN), §4c (GPSR), §4d (podatki/dostawa/usługi/kompatybilność),
@@ -452,3 +465,10 @@ Uwagi:
 | Decyzja  | Rozstrzygnięcie                                                                 | Podstawa |
 |----------|--------------------------------------------------------------------------------|----------|
 | D-6.1.1  | stawka rabatu = globalna opcja `qutlet_stawka_rabatu` (strona pod menu WooCommerce, rejestruje core) + nadpisanie per produkt `_qutlet_stawka_rabatu` (zakładka General danych produktu); wprowadzana ręcznie, nie przez sync | decyzja użytkownika (sesja 2026-07-23) |
+
+## Log decyzji (P-6.2)
+
+| Decyzja  | Rozstrzygnięcie                                                                 | Podstawa |
+|----------|--------------------------------------------------------------------------------|----------|
+| D-6.G3   | stan: zdarzeniowo dwukierunkowo (push z Woo natychmiast hookiem zamówienia, pull z Allegro cronem po `order/events`) + okresowa rekoncyliacja; konflikt → niższy stan; restock tylko na Allegro; pull obejmuje stan + cenę (`/parts` → `_stock`, `cena_allegro`, przeliczenie `_price` wg §11) | decyzja użytkownika (sesja 2026-07-23) |
+| D-6.2.3  | stan operacyjny syncu (marker zaległego pusha, kursor, lock) = meta/opcje własne `qutlet-allegro` (§10.5), świadomie POZA rejestracją core — księgowość procesu, nie model danych | plan P-6.2 (sesja 2026-07-23) |
