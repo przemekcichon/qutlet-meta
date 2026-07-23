@@ -23,8 +23,9 @@ się błędne. Nie rośnie per-sesja.
 prototypu (`design/vanilla`, w szczególności `js/data.js` — jawna mapa pól na
 WP/Woo/ACF — oraz komentarze w `produkt.html`). Obejmuje model FAZY 1 (produkt,
 taksonomie, kanał Allegro, blog, strony pomocy). Pola ujawnione dopiero przez
-mapping Allegro (FAZA 4 → rejestracja w FAZIE 5) dopiszemy w swoim czasie —
-patrz `docs/plan.md`.
+mapping Allegro (FAZA 4 → rejestracja w FAZIE 5) dopisujemy w swoim czasie —
+patrz `docs/plan.md`. **§9 (P-5.1a)** dokłada model warstwy surowej/przerobionej
+(opis + specyfikacja produktu) — pierwszy blok FAZY 5.
 
 **Odwzorowanie z Allegro (skąd bierzemy te pola):** `docs/mapping-allegro.md`
 (D-4.G1). Ten plik mówi „co budujemy”, mapping mówi „skąd to płynie z Allegro”.
@@ -217,6 +218,81 @@ D-8.G3). Ten wiersz w kontrakcie istnieje, by jawnie odnotować „brak pól".
 
 ---
 
+## 9. Warstwa surowa/przerobiona produktu (FAZA 5 — P-5.1a)
+
+Pierwszy blok modelu **FAZY 5** (rozszerzenie modelu wg mappingu). Odbiornik pól
+opisu i specyfikacji ujawnionych przez mapping oferty jako „bez odpowiednika u nas"
+(`docs/mapping-allegro.md` §4b/§4e, D-4.G2 / D-5.G1). Rejestruje je `qutlet-core`
+w slice `ProductInfo/` (P-5.1b); wypełnia je później sync z Allegro (`qutlet-allegro`,
+FAZA 6 — feature rozproszony, ta sama nazwa slice'a, D-5.G4).
+
+**Model dwuwarstwowy (D-5.G4).** Ten sam byt (opis + specyfikacja produktu) żyje w
+dwóch warstwach:
+
+- **surowa** — wierna kopia tego, co przyszło z Allegro; **ukryta na froncie**
+  (motyw jej nie czyta, D-5.G3/D-8.G1), w adminie tylko do odczytu, **nadpisywana
+  przy każdym sync**. Sens: kontekst dla AI (FAZA 7) i zasiew sandboxa (FAZA 3A).
+- **przerobiona** — to, co ostatecznie widać na stronie produktu Qutlet; powstaje z
+  surowej przez AI + ręczną redakcję, **NIGDY nie nadpisywana przez sync**.
+
+### 9.1 Warstwa surowa (rejestruje `qutlet-core` — `register_post_meta`)
+
+Prywatne `post meta` na produkcie (`post_type == product`). Prefiks `_qutlet_` =
+meta prywatna (ukryta w UI „Custom Fields", `is_protected_meta`). **Nie ACF** —
+tych pól nikt nie edytuje (ACF = narzędzie edycji, D-5.G4); edycja przez użytkownika
+zablokowana (`auth_callback` → false), a sync zapisuje je bezpośrednio
+(`update_post_meta`). `show_in_rest = false` (warstwa niewidoczna publicznie).
+
+| Pole (znaczenie)        | Literał (`meta_key`)                | Miejsce | Typ            | Opcjonalne? | Źródło Allegro (mapping) | Kształt / uwagi |
+|-------------------------|-------------------------------------|---------|----------------|-------------|--------------------------|-----------------|
+| Pełna oferta (verbatim) | `_qutlet_allegro_offer`             | meta    | string (JSON)  | tak         | cała zwrotka `GET /sale/product-offers/{id}` (`mapping` §4) | JSON **verbatim, bajt-w-bajt** — warunek zasiewu sandboxa (FAZA 3A) i najlepszy kontekst AI (FAZA 7). Brak → produkt nie pochodzi z Allegro (utworzony ręcznie). |
+| Opis prozą (surowy)     | `_qutlet_allegro_description_raw`    | meta    | string (HTML)  | tak         | `description.sections[].items[]` type `TEXT` (`mapping` §4e) | wyprowadzony z JSON-a: sekcje `TEXT` sklejone w prozę (obrazy `IMAGE` pomijane tu — są w verbatim JSON). Wejście do przeróbki AI. Puste → oferta bez opisu tekstowego. |
+| Specyfikacja (surowa)   | `_qutlet_allegro_specification_raw`  | meta    | array          | tak         | `productSet[0].product.parameters[]` (`mapping` §4b) | tablica par etykieta→wartość, kształt niżej. Puste → oferta bez parametrów. |
+
+**Kształt `_qutlet_allegro_specification_raw`** (serializowana tablica; wypełnia sync w FAZIE 6):
+
+```jsonc
+[
+  { "etykieta": "Marka",           "wartosc": "Soundcore" },     // parameters[].name → .values[0]
+  { "etykieta": "EAN (GTIN)",      "wartosc": "0194644089870" },
+  { "etykieta": "Pasmo przenoszenia", "wartosc": "20–20000 Hz" } // rangeValue {from,to} spłaszczone do stringu
+]
+```
+
+Uwagi do kształtu:
+- **Spłaszczenie do wyświetlenia** (D-5.G4 „wygodne do wyświetlania bez parsowania blobu"):
+  wiele wartości (`values[]`) sklejane do jednego stringu; `rangeValue {from,to}` →
+  string zakresu. Bogatszy, w pełni wierny kształt zostaje w `_qutlet_allegro_offer`.
+- Parametry mapowane wprost gdzie indziej (Marka/Producent → `product_brand` §3,
+  „Stan" → `klasa_stanu` §2) MOGĄ pozostać także tu (surowy podgląd oryginału) — to
+  decyzja parsera przy sync (FAZA 6), nie rejestracji (P-5.1b).
+- Dokładne reguły ekstrakcji (które parametry, jak sklejać) = FAZA 6; P-5.1b tylko
+  **rejestruje** pole i deklaruje ten kształt jako kontrakt dla producenta (sync).
+
+### 9.2 Warstwa przerobiona (finalna — na stronie produktu)
+
+| Pole (znaczenie)       | Literał              | Miejsce | Typ                 | Opcjonalne? | Uwagi |
+|------------------------|----------------------|---------|---------------------|-------------|-------|
+| Opis (przerobiony)     | `opis`               | ACF     | WYSIWYG (rich text) | tak         | user-facing opis produktu pokazywany na stronie; wypełniany przez AI (FAZA 7) i redagowany ręcznie; **NIE nadpisywany przez sync**. Wzorzec rejestracji jak `zawartosc_zestawu` (§2). Puste → motyw ukrywa/fallback (FAZA 8). Odczyt: `get_field('opis')` / `get_post_meta($id,'opis',true)`. |
+| Specyfikacja (przerob.)| **atrybuty WooCommerce** (`_product_attributes`) | Woo | atrybuty produktu (custom, per-produkt) | tak | **natywny mechanizm Woo** — `qutlet-core` NIE rejestruje dla niej pola (D-5.1.1). Glue/sync zapisuje atrybuty produktu; motyw renderuje natywnie (zakładka „Informacje dodatkowe" / własny render FAZA 8). Odczyt: `$product->get_attributes()`. Puste → brak tabeli spec. |
+
+**Dlaczego opis = ACF, a specyfikacja = atrybuty WC (asymetria świadoma):** opis to
+swobodny rich text jednego pola → ACF WYSIWYG (jak `zawartosc_zestawu`). Specyfikacja
+to zbiór par etykieta→wartość, który WooCommerce modeluje natywnie jako **atrybuty
+produktu** (custom, per-produkt — pasuje do rozłącznych parametrów per kategoria,
+`mapping` §4b) i renderuje bez naszego kodu. Rejestrowanie własnego repeatera
+dublowałoby natywny mechanizm Woo. **Warstwa surowa** specyfikacji NIE może być
+atrybutami WC, bo atrybuty są z natury widoczne na froncie — została więc wewnętrznym
+meta (§9.1, D-5.1.2).
+
+### Odnośniki (§9)
+- Mapping (skąd płyną te pola z Allegro): `docs/mapping-allegro.md` §4b (parametry →
+  specyfikacja), §4e (opis/media → warstwa surowa/AI), §4 (cały surowy JSON w meta).
+- Plan: `docs/plan.md` → FAZA 5 (D-5.G1/G3/G4), P-5.1 (D-5.1.1/D-5.1.2/D-5.1.3),
+  P-5.3 (podgląd warstwy surowej w adminie).
+
+---
+
 ## Log decyzji (P-1.0)
 
 | Decyzja  | Rozstrzygnięcie                                        | Podstawa |
@@ -228,3 +304,11 @@ D-8.G3). Ten wiersz w kontrakcie istnieje, by jawnie odnotować „brak pól".
 | P-1.4    | `meta_key` czasu czytania = `_qutlet_reading_time`     | decyzja użytkownika |
 | P-1.4    | czas czytania = meta **opcjonalna**; motyw obsługuje brak (fallback / ukrycie) — bez backfillu | decyzja użytkownika (realizacja P-1.4) |
 | P-1.5    | strony pomocy = Pages + menu + wtyczki; brak pól w core| prototyp + D-1.5.1 |
+
+## Log decyzji (P-5.1a)
+
+| Decyzja  | Rozstrzygnięcie                                                                 | Podstawa |
+|----------|--------------------------------------------------------------------------------|----------|
+| D-5.1.1  | dwuwarstwowość → przechowywanie: surowa = 3 prywatne `register_post_meta` (`_qutlet_allegro_offer` JSON verbatim, `_qutlet_allegro_description_raw`, `_qutlet_allegro_specification_raw` tablica); przerobiona: `opis` = ACF WYSIWYG, specyfikacja = natywne atrybuty WooCommerce (core nie rejestruje pola) | decyzja użytkownika (sesja 2026-07-23) |
+| D-5.1.2  | surowa specyfikacja = wewnętrzne meta, NIE atrybuty WC (atrybuty front-facing → nie utrzymają ukrycia/rozdzielenia surowa↔przerobiona; D-5.G3/G4) | decyzja użytkownika (sesja 2026-07-23) |
+| D-5.1.3  | slice `ProductInfo/` (mirror w qutlet-allegro sync; dzieli go P-5.3)            | decyzja użytkownika (sesja 2026-07-23) |

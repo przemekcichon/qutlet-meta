@@ -48,6 +48,19 @@ Jeśli agent nie będzie miał możliwości zrobienia czegoś w Localu (np. narz
 MCP niedostępne, bo add-on wyłączony albo serwer nie odpowiada), to ma przekazać
 zadanie do mnie (handoff) z opisem co i dlaczego nie może zrobić.
 
+**Antywirus (Avast) kasuje pliki repo — zawsze przywracaj.** Avast na tej maszynie
+bywa nadgorliwy (patrz też problem z certyfikatami przy composerze) i potrafi
+wrzucić do kwarantanny śledzone pliki repo — obserwowane na `phpstan.neon`, ale
+może dotyczyć innych plików. Bywa to **przypadkowy misclick** na nakładających się
+promptach Avasta (przycisk „Kwarantanna" ląduje tam, gdzie chwilę wcześniej było
+„OK"), nie świadoma zmiana. **Reguła:** gdy `git status` w którymś repo pokazuje
+śledzony plik jako `deleted` w working tree, a nie ma to związku z realizowanym
+zadaniem (zwłaszcza pliki konfiguracji/narzędzi jak `phpstan.neon`) — **przywróć go**
+(`git restore <plik>`) ZANIM zaczniesz pracę i **nigdy nie wciągaj takiego usunięcia
+do commita**. Traktuj to jak szum środowiska, nie intencję. Jeśli usuniętego pliku
+nie ma w indeksie/HEAD (czyli to jednak realna, świadoma zmiana) — nie przywracaj po
+cichu, tylko zapytaj.
+
 ## Dokumenty projektu (docs/ w qutlet-meta)
 Źródła prawdy i procesy pracy — agent czyta je SAM, nie zgaduje. Nie znajdujesz
 pliku → poproś użytkownika.
