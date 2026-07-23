@@ -361,11 +361,18 @@ tę wypełnia FAZA 6):
 | liść „Bezprzewodowe” (`85166`)                    | wyjątek| `audio`         | słuchawki BT; oferta `18780385602` (P-3.1) |
 | liść myszy (`4575`)                               | wyjątek| *(term peryferia, 7e)* | mysz BT (P-3.1 `index.csv`) |
 
-> **Dlaczego hybryda, a nie tylko gałąź:** gałąź „RTV i AGD” (`10`) miesza domeny —
-> siedzą pod nią i słuchawki (`85166` → `audio`), i duże AGD (grill `260556`), i
-> zasilanie (`19357`). Sama reguła gałęzi zlałaby je w jeden term; wyjątki per-liść
-> pozwalają rozdzielić to, co dla klienta sklepu jest różnym asortymentem. Dlatego
-> gałąź daje **domyślny bucket**, a liście-wyjątki go **korygują**.
+> **Dlaczego hybryda, a nie tylko gałąź:** szerokie gałęzie Allegro z natury mieszają
+> domeny — np. „RTV i AGD” (`10`) obejmuje i sprzęt audio (słuchawki), i duże AGD
+> (grill `260556`), i drobne akcesoria/zasilanie (`19357`). Sama reguła gałęzi zlałaby
+> to w jeden term; wyjątki per-liść pozwalają rozdzielić to, co dla klienta sklepu jest
+> różnym asortymentem (np. słuchawki `85166` → `audio`, nie AGD). Dlatego gałąź daje
+> **domyślny bucket**, a liście-wyjątki go **korygują**.
+>
+> **Zastrzeżenie (granica danych):** dokładnej przynależności tych liści do gałęzi
+> **nie da się rozstrzygnąć offline** — snapshot nie niesie nazw ani przodków, a próbki
+> rozwiązują tylko dzieci Elektroniki + liść `85166` (jego `parent.id = 66887`
+> pozostaje nierozwiązany). Powyższe przypisania gałęzi są **ilustracyjne**;
+> faktyczną ścieżkę każdego liścia ustala rozdzielczość przy imporcie (7b, FAZA 6).
 
 **Fallback (nieznana gałąź / brak reguły):** gdy ani liść, ani żaden przodek nie ma
 reguły, produkt nie może „wisieć bez kategorii”. **Propozycja (do potwierdzenia w
