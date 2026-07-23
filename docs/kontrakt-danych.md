@@ -381,7 +381,7 @@ dlatego świadomie **poza rejestracją core** (D-6.2.3): zapisuje i czyta wyłą
 
 | Literał | Miejsce | Typ | Znaczenie |
 |---------|---------|-----|-----------|
-| `_qutlet_allegro_stock_push_pending` | meta (produkt) | string (unix timestamp) | marker ZALEGŁEGO pusha stanu Woo→Allegro (natychmiastowy push z hooka padł). Obecność = cron ma ponowić push AKTUALNEGO stanu Woo, zanim zastosuje jakikolwiek pull dla tego produktu (D-6.2.4). Kasowany po udanym pushu. |
+| `_qutlet_allegro_stock_push_pending` | meta (produkt) | string (unix timestamp) | marker ZALEGŁEGO pusha stanu Woo→Allegro (natychmiastowy push z hooka padł). Obecność = cron ma ponowić push AKTUALNEGO stanu Woo, zanim zastosuje jakikolwiek pull dla tego produktu (D-6.2.4). Kasowany po udanym pushu ALBO gdy marker jest starszy niż próg porzucenia (recenzja P-6.2b: bez tego progu przyczyny trwałe — np. brak rozpoznawalnego pochodzenia — blokowałyby pull na zawsze; porzucenie loguje się jako wymagające interwencji człowieka, próg w `StockPusher::PENDING_STALE_SECONDS`). |
 | `qutlet_allegro_stock_sync_cursor_{środowisko}` | option (`autoload = no`) | string (id ostatniego przetworzonego zdarzenia `order/events`) | kursor przyrostowego pulla per środowisko (np. `qutlet_allegro_stock_sync_cursor_sandbox`). Własny kursor P-6.2 — NIE współdzielony z przyszłym pollingiem zamówień P-6.3 (osobni konsumenci, osobne kursory). |
 | `qutlet_allegro_stock_sync_lock_{środowisko}` | option (`autoload = no`) | string (unix timestamp) | zamek przebiegu `sync-stock` per środowisko, wzorzec `Auth\RefreshLock` (atomowy `INSERT IGNORE`, łamanie osieroconego zamka po timeoucie). |
 
