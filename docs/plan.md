@@ -1154,7 +1154,7 @@ pod-punkty / dwa PR-y z jawną zależnością (`P-5.2b` → `P-5.2a`).
 
 ---
 
-## 🟦 FAZA 6 — Import i synchronizacja Allegro ↔ Woo (qutlet-allegro) — ROZPISANA
+## 🟨 FAZA 6 — Import i synchronizacja Allegro ↔ Woo (qutlet-allegro) — ROZPISANA
 
 Cel: właściwa rola `qutlet-allegro` — zaciąganie ofert Allegro do produktów Woo i
 utrzymywanie synchronu (stany magazynowe, zmiany oferty, zamówienia). Mocno oparta
@@ -1187,7 +1187,7 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
   operacją zapisu jest aktualizacja stanu magazynowego; treści ofert tam nie
   tworzymy ani nie nadpisujemy.
 
-### P-6.0 — Refaktor: wspólne helpery HTTP/CLI w qutlet-allegro (BRAMKA FAZY 6)
+### 🟢 P-6.0 — Refaktor: wspólne helpery HTTP/CLI w qutlet-allegro (BRAMKA FAZY 6)
 - **Repo:** qutlet-allegro
 - **Status: OBOWIĄZKOWY, blokujący.** Dopóki nie jest zrobiony, NIE zaczynamy P-6.1
   ani dalszych punktów fazy. Nie jest to „miłe, jeśli starczy czasu" — jest to
