@@ -26,6 +26,11 @@ taksonomie, kanał Allegro, blog, strony pomocy). Pola ujawnione dopiero przez
 mapping Allegro (FAZA 4 → rejestracja w FAZIE 5) dopiszemy w swoim czasie —
 patrz `docs/plan.md`.
 
+**Odwzorowanie z Allegro (skąd bierzemy te pola):** `docs/mapping-allegro.md`
+(D-4.G1). Ten plik mówi „co budujemy”, mapping mówi „skąd to płynie z Allegro”.
+Mapping oferty (P-4.1) ujawnił też nowe elementy modelu do FAZY 5 — m.in. globalną
+`stawka_rabatu` (z niej liczona cena sklepu Woo `_price`) i jej nadpisanie per produkt.
+
 ---
 
 ## Konwencje

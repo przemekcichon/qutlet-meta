@@ -921,7 +921,7 @@ Decyzje punktu — wszystkie **zmierzone na żywym API**, nie wywnioskowane:
 
 ---
 
-## 🟦 FAZA 4 — Data mapping Allegro ↔ WP — ROZPISANA
+## 🟨 FAZA 4 — Data mapping Allegro ↔ WP — ROZPISANA
 
 Cel: spisać w **`docs/mapping-allegro.md`** odwzorowanie: pole w zwrotce Allegro
 (FAZA 3) → nasze pole WP (`docs/kontrakt-danych.md`, FAZA 1) → transformacja.
@@ -938,7 +938,7 @@ miejsca u nas — to wejście do FAZY 5.
   jawnie znacz pola Allegro BEZ odpowiednika u nas — wszystkie trafiają jako
   wejście do **FAZY 5** (rozszerzenie modelu), która jest ich jedynym odbiornikiem.
 
-### P-4.1 — Mapping oferta → produkt Woo
+### 🟡 P-4.1 — Mapping oferta → produkt Woo
 - **Zakres:** odwzorowanie pól z `GET /sale/offers` i `/sale/product-offers/{id}`
   na produkt Woo + pola z FAZY 1 (marka, klasa stanu, ceny, kanał Allegro).
 - **Zależności:** P-3.1, FAZA 1.
