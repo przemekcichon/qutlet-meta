@@ -943,7 +943,7 @@ miejsca u nas — to wejście do FAZY 5.
   na produkt Woo + pola z FAZY 1 (marka, klasa stanu, ceny, kanał Allegro).
 - **Zależności:** P-3.1, FAZA 1.
 
-### P-4.2 — Mapping kategorie Allegro → `product_cat`
+### 🟡 P-4.2 — Mapping kategorie Allegro → `product_cat`
 - **Zakres:** odwzorowanie drzewa kategorii Allegro na taksonomię Woo.
 - **Zależności:** P-3.2, FAZA 1.
 
