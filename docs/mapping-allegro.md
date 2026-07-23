@@ -520,7 +520,7 @@ Literał WP = natywna właściwość `WC_Order` (getter/setter, np. `set_billing
 |-----------------------------|----------------------|-----------------------|
 | `payment.type` + `payment.provider` | `payment_method` / `payment_method_title` | stała metoda „Allegro" (np. `payment_method = "allegro"`, title z `type`/`provider` `ONLINE`/`AF`). Payload nie niesie gotowego sluga metody Woo — ustala import. |
 | `payment.id` (time UUID)    | `transaction_id` (`_transaction_id`) | identyfikator transakcji Allegro. |
-| `payment.finishedAt`        | `date_paid` (`_date_paid_gmt`) | ISO-8601 → znacznik. |
+| `payment.finishedAt`        | `date_paid` (`_date_paid`) | ISO-8601 → znacznik. |
 | `payment.paidAmount.amount` | (uzgodnienie z `summary.totalToPay`) | kwota zapłacona; do rekoncyliacji sumy, nie osobne pole Woo. |
 | `payment.features` (`["ALLEGRO_PAY"]`/`[]`) | **brak natywnie** → FAZA 5 | cecha płatności; §8e. |
 
@@ -531,7 +531,7 @@ a strumień dokłada `events[].type`. Woo ma **jedną** oś (`wc-*`). Kolaps pro
 | Sygnał Allegro | Woo status (slug) | Uwaga |
 |----------------|-------------------|-------|
 | event `FILLED_IN` | *(brak zamówienia Woo albo `wc-pending`)* | koszyk wypełniony, **niezapłacone** — do decyzji P-6.3, czy w ogóle tworzyć zamówienie (§8d). |
-| event `BOUGHT` / `status = BOUGHT` | `wc-pending` (`wc-on-hold`?) | zakupione, płatność jeszcze niepotwierdzona. |
+| event `BOUGHT` (⚠ `status = BOUGHT` spoza próbki) | `wc-pending` (`wc-on-hold`?) | zakupione, płatność jeszcze niepotwierdzona. `BOUGHT` w próbce występuje tylko jako `events[].type`, nie jako `checkoutForm.status`. |
 | `status = READY_FOR_PROCESSING` | `wc-processing` | **opłacone i gotowe do realizacji** — jedyny `status` w całej próbce. |
 | `fulfillment.status = READY_FOR_SHIPMENT` | `wc-processing` (bez zmiany) | gotowe do wysyłki; nie „completed" dopóki niewysłane. |
 | `fulfillment.status = SENT`/`DELIVERED`/… | `wc-completed` | ⚠ **wartości spoza próbki** — do potwierdzenia w FAZA 6 (§8f). |
