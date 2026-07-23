@@ -1259,6 +1259,46 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
   mappingu (P-4.3). Traktowanie PII zgodnie z zasadami bezpieczeństwa.
 - **Zależności:** FAZA 2 (slot `read`; środowisko wg D-6.G5), P-4.3, P-6.1.
 
+### P-6.4 — Import kupujących Allegro jako klientów Woo (marketing własny) — [OTWARTE]
+- **Repo:** qutlet-allegro (tworzenie/dopasowanie klienta przy imporcie zamówienia
+  P-6.3) + ewentualnie qutlet-core (oznaczenie źródła / pole). Feature rozproszony;
+  granice per repo rozstrzygamy przy realizacji kroku 3.
+- **Status: WARUNKOWY, niezrealizowany.** Realizacja w kodzie (krok 3) startuje
+  **tylko**, jeśli obie bramki prawno-regulaminowe (kroki 1–2) wyjdą na „tak". Do
+  tego czasu zamówienia Allegro pozostają **gościnne** (D-4.3.1/D-4.3.4 — minimalizacja
+  PII kupującego), a ten punkt jest tylko zapisany. Wysyłka do realnych osób jest
+  nieodwracalna i outward-facing — nie ruszamy kroku 3 bez jawnego „tak".
+- **Cel (produktowy):** przy imporcie zamówienia Allegro utworzyć/dopasować konto
+  klienta Woo (`WC_Customer`) po `buyer.email`, oznaczyć je jako pozyskane z Allegro
+  i — o ile prawo i regulamin na to pozwalają — wysłać wiadomość powitalną „w gronie
+  klientów Qutleta" z zaproszeniem do newslettera o nowych dropach.
+- **D-6.4.1 (trzy bramki — kolejność wiążąca) [OTWARTE]:**
+  1. **Podstawa prawna wysyłki (sprawdza użytkownik — handoff, poza kodem).**
+     Weryfikacja w prawie telekomunikacyjnym / prawie komunikacji elektronicznej +
+     RODO, czy marketing bezpośredni do **własnych klientów** (osób, które u nas
+     kupiły) można oprzeć na **prawnie uzasadnionym interesie** (RODO motyw 47) z
+     **opcją sprzeciwu** (opt-out), bez uprzedniej zgody. Wstępne rozeznanie
+     użytkownika: dla klienta własnego jest to dopuszczalne. Do potwierdzenia:
+     dokładny zakres (czy sam mail „zapisz się na newsletter" mieści się w tej
+     podstawie, czy już wymaga zgody) oraz wymóg łatwego opt-outu w każdej wiadomości.
+  2. **Regulamin Allegro (sprawdza użytkownik — handoff, poza kodem).** Weryfikacja,
+     czy warunki Allegro pozwalają użyć danych kupującego pozyskanych przy realizacji
+     zamówienia do **własnego marketingu** sprzedawcy (czy nie zabraniają
+     przeciągania klienta poza platformę). Kolizja z regulaminem = ryzyko konta
+     sprzedawcy (spójne z etosem D-2.G7 „nie psujemy żywego konta") → wtedy krok 3
+     NIE wchodzi.
+  3. **Implementacja w kodzie — warunkowa (tylko gdy 1 i 2 = „tak").** Przy imporcie
+     zamówienia (P-6.3) idempotentny upsert `WC_Customer` po `buyer.email` (bez
+     duplikatów), oznaczenie źródła „allegro", wiadomość powitalna oraz zapis do
+     newslettera przez **double opt-in** (osobna, potwierdzana zgoda na newsletter —
+     niezależna od podstawy z kroku 1), z opcją sprzeciwu/wypisu w każdej wiadomości.
+     Backend newslettera = ten sam, co formularz na stronie (D-8.G3, FAZA 8) — nie
+     budujemy drugiego.
+- **Zależności:** P-6.3 (dostarcza `buyer.email` i moment utworzenia zamówienia),
+  D-8.G3 (backend newslettera). Kroki 1–2 = handoff do użytkownika, blokują krok 3.
+- **Uwaga (granice):** to osobny wątek (klient / retencja), nie część czystego
+  importu/sync — jeśli urośnie, wydzielić do własnej fazy.
+
 ---
 
 ## 🟨 FAZA 7 — Przeróbka opisów przez AI (nowy plugin `qutlet-ai`) — ROZPISANA
