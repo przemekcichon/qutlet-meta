@@ -947,7 +947,7 @@ miejsca u nas — to wejście do FAZY 5.
 - **Zakres:** odwzorowanie drzewa kategorii Allegro na taksonomię Woo.
 - **Zależności:** P-3.2, FAZA 1.
 
-### 🟡 P-4.3 — Mapping zamówienia Allegro → zamówienia Woo
+### 🟢 P-4.3 — Mapping zamówienia Allegro → zamówienia Woo
 - **Zakres:** odwzorowanie `order events` / `checkout-forms` na model zamówień Woo.
 - **Zależności:** P-3.3.
 
