@@ -25,7 +25,8 @@ WP/Woo/ACF — oraz komentarze w `produkt.html`). Obejmuje model FAZY 1 (produkt
 taksonomie, kanał Allegro, blog, strony pomocy). Pola ujawnione dopiero przez
 mapping Allegro (FAZA 4 → rejestracja w FAZIE 5) dopisujemy w swoim czasie —
 patrz `docs/plan.md`. **§9 (P-5.1a)** dokłada model warstwy surowej/przerobionej
-(opis + specyfikacja produktu) — pierwszy blok FAZY 5.
+(opis + specyfikacja produktu) — pierwszy blok FAZY 5. **§10 (P-5.2a)** dokłada
+pozostałe pola dyskretne nie-Woo z mappingu (oferta + kategoria) — drugi blok FAZY 5.
 
 **Odwzorowanie z Allegro (skąd bierzemy te pola):** `docs/mapping-allegro.md`
 (D-4.G1). Ten plik mówi „co budujemy”, mapping mówi „skąd to płynie z Allegro”.
@@ -293,6 +294,93 @@ meta (§9.1, D-5.1.2).
 
 ---
 
+## 10. Pozostałe pola dyskretne nie-Woo (FAZA 5 — P-5.2a)
+
+Drugi blok modelu **FAZY 5**. Odbiornik pól **dyskretnych** ujawnionych przez
+mapping oferty (`mapping` §4) i kategorii (§7f) jako „bez odpowiednika u nas",
+a **niebędących** opisem/specyfikacją (te → §9). Zakres świadomie **tylko produkt**:
+pola zamówieniowe (`mapping` §8e) siedzą na natywnym `WC_Order`, nie na produkcie,
+i należą do osobnego punktu związanego z P-6.3 (D-5.2.1). Rejestruje je `qutlet-core`
+w slice `AllegroLink/` (P-5.2b); wypełnia je później sync z Allegro (`qutlet-allegro`,
+FAZA 6 — feature rozproszony, ta sama nazwa slice'a).
+
+**Zasada „zarabiania" na osobne pole (D-5.2.2).** Cała oferta trafia i tak verbatim
+do `_qutlet_allegro_offer` (JSON, §9.1). Pole dyskretne rejestrujemy osobno **tylko**,
+gdy musi być **indeksowane/wyszukiwalne**, **odwzorowane na natywne Woo** albo
+**wystawione niezależnie** od blobu. Reszta zostaje w JSON-ie albo trafia natywnie
+do Woo. Poniżej pełne rozliczenie — nic nie „wisi w próżni" (D-5.G1).
+
+### 10.1 Pola rejestrowane (rejestruje `qutlet-core` — `register_post_meta`)
+
+Prywatne `post meta` na produkcie (`post_type == product`), semantyka jak warstwa
+surowa §9.1: prefiks `_qutlet_` (`is_protected_meta`, ukryte w „Custom Fields"),
+edycja użytkownika zablokowana (`auth_callback` → false), `show_in_rest = false`,
+wypełnia je sync (`update_post_meta`), R/O w adminie, **nadpisywane przy każdym sync**.
+To fakty z Allegro, nie treść autorska → **nie ACF** (D-5.2.3).
+
+| Pole (znaczenie)          | Literał (`meta_key`)           | Miejsce | Typ           | Opcjonalne? | Źródło Allegro (mapping) | Kształt / uwagi |
+|---------------------------|--------------------------------|---------|---------------|-------------|--------------------------|-----------------|
+| Id oferty (klucz powiązania) | `_qutlet_allegro_offer_id`  | meta    | string        | tak         | `id` oferty (`mapping` §4a) | numeryczny string (np. `"18780385602"`) — trzymamy jako **string** (opaque, nie liczba). Klucz idempotencji importu (P-6.1), kotwica sync `/parts`, źródło `allegro_url` (`https://allegro.pl/oferta/{id}`). Indeks pod szybkie wyszukanie produktu po `offer_id` = FAZA 6 (rejestracja tu tylko deklaruje meta). Brak → produkt nie pochodzi z Allegro (utworzony ręcznie). |
+| Kod producenta (MPN)      | `_qutlet_mpn`                  | meta    | string        | tak         | param `Kod producenta` (`id 224017`, `mapping` §4b) | MPN — identyfikator producenta (rodzeństwo GTIN). W 538/555 ofert. Do wyszukiwania/dopasowania po stronie importu. Brak natywnego pola Woo (GTIN ma — patrz 10.2). Puste → oferta bez „Kodu producenta". MPN MOŻE też wystąpić w surowej specyfikacji (§9.1) — to osobne, indeksowane wyprowadzenie. |
+| Źródłowa kategoria Allegro (liść) | `_qutlet_allegro_category_id` | meta | string      | tak         | `category.id` (`mapping` §1, §7f) | opaque string (liść bywa numeryczny, ale traktować jak string — §7a). Surowy identyfikator kategorii oferty (traceability Woo↔Allegro, re-mapping po zmianie reguł D-4.2.2, diagnostyka). NIE zastępuje `product_cat` — to ślad źródła. Puste → produkt nie z Allegro. |
+| Ścieżka przodków kategorii | `_qutlet_allegro_category_path` | meta | array         | tak         | rozwiązana ścieżka `id`→nazwa (`mapping` §7b) | tablica węzłów **od liścia do korzenia**, kształt niżej. Wynik rozdzielczości drzewa (operacja importu, FAZA 6). Puste/brak → nierozwiązana (lub produkt nie z Allegro). |
+
+**Kształt `_qutlet_allegro_category_path`** (serializowana tablica; wypełnia sync w FAZIE 6):
+
+```jsonc
+[
+  { "id": "85166", "name": "Bezprzewodowe" },  // liść (category.id oferty)
+  { "id": "66887", "name": "…" },              // kolejni przodkowie…
+  { "id": "42540aec-…", "name": "Elektronika" } // …aż do korzenia (bywa UUID)
+]
+```
+
+Uwagi do kształtu:
+- Kolejność **liść → korzeń** (jak traversal `mapping` §7b krok 2). Reguły ekstrakcji
+  (rozdzielczość `id`→nazwa, cache drzewa) = FAZA 6; P-5.2b tylko **rejestruje** pole
+  i deklaruje ten kształt jako kontrakt dla producenta (sync).
+- `_qutlet_allegro_category_id` = `path[0].id` (liść). Trzymamy oba: sam liść jest
+  indeksowalnym kluczem, ścieżka niesie czytelny kontekst bez ponownego traversalu.
+
+### 10.2 Pola natywne Woo (NIE rejestrujemy własnego pola — wpina import w FAZIE 6)
+
+| Pole Allegro | Znaczenie | Natywne miejsce Woo | Uwaga |
+|--------------|-----------|---------------------|-------|
+| param `EAN (GTIN)` (`id 225693`, `mapping` §4b) | kod EAN/GTIN | `global_unique_id` (`get/set_global_unique_id`) | **zweryfikowane w Woo 10.9.4** (`abstracts/abstract-wc-product.php`): getter/setter + walidacja formatu (cyfry/`X`/`-`). Import zapisuje pole natywne (FAZA 6) — core NIE rejestruje własnego. |
+| `taxSettings.rates[].rate` (`mapping` §4d, 503/555) | stawka VAT | natywne ustawienia podatku produktu Woo | odwzorowanie stawki na natywny podatek Woo = zachowanie importu (FAZA 6); core NIE rejestruje pola. |
+
+### 10.3 Pola bez osobnego pola — zostają w verbatim JSON (`_qutlet_allegro_offer`)
+
+Dostępne w blobie §9.1; osobnego, parsowanego pola NIE dodajemy, dopóki nie pojawi
+się realne użycie (wtedy otworzy je własny punkt). Zgodne z „zarabianiem na pole"
+(D-5.2.2).
+
+| Pole Allegro | Znaczenie | Dlaczego bez osobnego pola |
+|--------------|-----------|----------------------------|
+| `safetyInformation.{description,type}` (GPSR, `mapping` §4c) | ostrzeżenia bezpieczeństwa | render prawny = FAZA 8; do tego czasu w JSON. Kandydat na pole, gdy front tego zażąda. |
+| `afterSalesServices.{warranty,returnPolicy,impliedWarranty}.id` (`mapping` §4d) | referencje polityk sprzedawcy (opaque UUID) | same id, bez treści; feature „zwroty" (rozproszony slice) jeszcze nie istnieje. |
+| `compatibilityList` (`mapping` §4d, 12/555) | „pasuje do…" (akcesoria) | niska liczność; osobne pole dla akcesoriów otworzymy przy realnym feature. |
+| `updatedAt` (`mapping` §4f) | znacznik modyfikacji oferty | wykrycie zmian to infrastruktura sync (FAZA 6); ew. indeksowane pole tam. |
+| `productSet[0].product.id`, `external`, `stock.unit`, `payments.invoice`, `publication.*`, `additionalMarketplaces.*`, `validation.*`, `language`, `sellingMode.format` | rozmaite (identyfikatory katalogowe, operacyjne, metadane) | operacyjne / w JSON — patrz decyzje `mapping` §4a/§4d/§4f. |
+
+### 10.4 Pola, których NIE przechowujemy (decyzja już w mappingu)
+
+| Pole Allegro | Decyzja | Podstawa |
+|--------------|---------|----------|
+| `location.{city,postCode}` | **nie przechowujemy** — PII sprzedawcy | `mapping` §4g |
+| kategoria: `options.*`, `leaf`, pełne drzewo (cache) | **nie przechowujemy** jako pole produktu (drzewo = infrastruktura importu FAZA 6) | `mapping` §7f |
+| `responsibleProducer`, `responsiblePerson`, `marketedBeforeGPSRObligation`, `deposits`, `sizeTable`, `discounts.*`, `contact`, `fundraisingCampaign`, `additionalServices`, `b2b`, `messageToSellerSettings`, `attachments`, `aiCoCreatedContent`, `isAiCoCreated` | **nie przechowujemy** osobno (null/puste w snapshocie / brak użycia; i tak w JSON) | `mapping` §4c/§4d/§4e |
+
+### Odnośniki (§10)
+- Mapping (skąd płyną te pola z Allegro): `docs/mapping-allegro.md` §4a (id oferty),
+  §4b (parametry: GTIN natywne, MPN), §4c (GPSR), §4d (podatki/dostawa/usługi/kompatybilność),
+  §4f (metadane), §7f (aspekty kategorii bez odpowiednika).
+- Plan: `docs/plan.md` → FAZA 5 (D-5.G1/G2), P-5.2 (D-5.2.1/D-5.2.2/D-5.2.3/D-5.2.4),
+  P-5.2a (kontrakt) → P-5.2b (rejestracja w core).
+- Warstwa surowa (pełny JSON, z którego wyprowadzane są pola dyskretne): §9.1.
+
+---
+
 ## Log decyzji (P-1.0)
 
 | Decyzja  | Rozstrzygnięcie                                        | Podstawa |
@@ -312,3 +400,12 @@ meta (§9.1, D-5.1.2).
 | D-5.1.1  | dwuwarstwowość → przechowywanie: surowa = 3 prywatne `register_post_meta` (`_qutlet_allegro_offer` JSON verbatim, `_qutlet_allegro_description_raw`, `_qutlet_allegro_specification_raw` tablica); przerobiona: `opis` = ACF WYSIWYG, specyfikacja = natywne atrybuty WooCommerce (core nie rejestruje pola) | decyzja użytkownika (sesja 2026-07-23) |
 | D-5.1.2  | surowa specyfikacja = wewnętrzne meta, NIE atrybuty WC (atrybuty front-facing → nie utrzymają ukrycia/rozdzielenia surowa↔przerobiona; D-5.G3/G4) | decyzja użytkownika (sesja 2026-07-23) |
 | D-5.1.3  | slice `ProductInfo/` (mirror w qutlet-allegro sync; dzieli go P-5.3)            | decyzja użytkownika (sesja 2026-07-23) |
+
+## Log decyzji (P-5.2a)
+
+| Decyzja  | Rozstrzygnięcie                                                                 | Podstawa |
+|----------|--------------------------------------------------------------------------------|----------|
+| D-5.2.1  | zakres P-5.2 = tylko produkt (oferta §4 + kategoria §7f); pola zamówień (`mapping` §8e) na `WC_Order`, sterowane P-6.3 → poza P-5.2 | decyzja użytkownika (sesja 2026-07-23) |
+| D-5.2.2  | rejestrujemy 3 pola dyskretne (`_qutlet_allegro_offer_id`, `_qutlet_mpn`, `_qutlet_allegro_category_id` + `_qutlet_allegro_category_path`); GTIN → natywne Woo `global_unique_id`, VAT → natywny podatek Woo; GPSR/warranty/compat/updatedAt zostają w verbatim JSON | decyzja użytkownika (sesja 2026-07-23) |
+| D-5.2.3  | 3 pola = prywatne `register_post_meta`, źródło Allegro, nadpisywane sync, R/O (etos §9.1), NIE ACF | decyzja użytkownika (sesja 2026-07-23) |
+| D-5.2.4  | slice `AllegroLink/` (≠ `ProductInfo/`; mirror w qutlet-allegro sync) — proponowany, potwierdza P-5.2b | decyzja użytkownika (sesja 2026-07-23) |
