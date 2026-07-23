@@ -974,7 +974,8 @@ to warstwa surowa/przerobiona opisów i specyfikacji.
   literały do `docs/kontrakt-danych.md`. Rozstrzygnięty w dwóch blokach: opis +
   specyfikacja (warstwa surowa/przerobiona) → §9 (P-5.1a); pozostałe pola dyskretne
   (oferta §4 + kategoria §7f) → §10 (P-5.2a). Pola zamówieniowe (`mapping` §8e) są
-  poza FAZĄ 5 (siedzą na `WC_Order`, sterowane P-6.3 — D-5.2.1).
+  poza **P-5.2** (siedzą na `WC_Order`, nie na produkcie; sterowane P-6.3) — ich
+  rejestracja to osobny punkt jeszcze NIE rozpisany w planie (D-5.2.1, otwarta luka).
 - **D-5.G3 (ukrycie warstwy surowej) [ROZSTRZYGNIĘTE — sesja 2026-07-21]:** warstwa
   surowa nie jest renderowana na froncie w ogóle (motyw czyta wyłącznie warstwę
   przerobioną, D-8.G1). W adminie jest widoczna, ale **tylko do odczytu** — nie ma
@@ -1083,6 +1084,11 @@ pod-punkty / dwa PR-y z jawną zależnością (`P-5.2b` → `P-5.2a`).
   produkcie, i są sterowane przez P-4.3/P-6.3 — **poza zakresem P-5.2**; ich
   rejestracja (meta na zamówieniu) należy do osobnego punktu związanego z P-6.3.
   Spójne z zadeklarowanymi zależnościami P-5.2 (P-4.1, P-4.2 — nie P-4.3).
+  **Otwarta luka planu (do rozpisania, NIE w P-5.2a):** taki punkt jeszcze NIE
+  istnieje — P-6.3 jest w `qutlet-allegro` (import zamówień), a rejestracja meta na
+  `WC_Order` to kod core; `mapping` §8a/§8e kieruje te pola do „FAZY 5". Decyzja
+  użytkownika: osobny punkt core (np. P-5.4 — rejestracja meta zamówienia) obok
+  P-6.3, czy rejestrację złożyć w zakres P-6.3.
   **Odrzucona alternatywa:** wciągnąć §8e tu — poszerza punkt poza jego zależności
   i miesza model produktu z modelem zamówienia.
 - **D-5.2.2 (zestaw pól dyskretnych: 3 rejestrujemy, reszta natywnie/w JSON)
