@@ -953,7 +953,7 @@ miejsca u nas — to wejście do FAZY 5.
 
 ---
 
-## 🟦 FAZA 5 — Rozszerzenie modelu wg mappingu (qutlet-core) — ROZPISANA
+## 🟨 FAZA 5 — Rozszerzenie modelu wg mappingu (qutlet-core) — ROZPISANA
 
 Cel: zarejestrować w `qutlet-core` **WSZYSTKIE** pola, których WooCommerce nie
 obejmuje natywnie, a które ujawni mapping (FAZA 4). To **jedyny odbiornik** pól
@@ -998,15 +998,55 @@ to warstwa surowa/przerobiona opisów i specyfikacji.
 - **Konsumenci warstwy surowej (trzej, wszyscy tylko do odczytu):** `qutlet-ai`
   (przeróbka opisów, FAZA 7), podgląd w adminie (P-5.3), zasiew sandboxa (FAZA 3A).
 
-### P-5.1 — Warstwa surowa/przerobiona (opis + specyfikacja)
-- **Zakres:** rejestracja (wg D-5.G4) pola **surowego JSON** z pełną ofertą Allegro
-  (`post meta`, verbatim, nieedytowalne) oraz wyprowadzonych z niego **pól surowych**
-  (opis prozą + specyfikacja etykieta→wartość; źródło = Allegro, nadpisywane przy
-  sync, niewidoczne na froncie), a także pól **przerobionych** (user-facing,
-  edytowane ręcznie, NIE nadpisywane przez sync).
+### P-5.1 — Warstwa surowa/przerobiona (opis + specyfikacja) — punkt wielorepowy → P-5.1a + P-5.1b
+
+Rejestracja (wg D-5.G4) pola **surowego JSON** z pełną ofertą Allegro (`post meta`,
+verbatim, nieedytowalne), wyprowadzonych z niego **pól surowych** (opis prozą +
+specyfikacja etykieta→wartość; źródło = Allegro, nadpisywane przy sync, niewidoczne
+na froncie) oraz pól **przerobionych** (user-facing, edytowane ręcznie/AI, NIE
+nadpisywane przez sync). W realizacji (sesja 2026-07-23) okazał się **wielorepowy**:
+literały modelu FAZY 5 muszą najpierw wejść do kontraktu (`docs/kontrakt-danych.md`,
+qutlet-meta — D-5.G2 „literały do kontraktu"), a rejestracja pól to kod w
+qutlet-core. Zgodnie z regułą punktów wielorepowych (osobne `origin` = osobne PR-y)
+rozpada się na dwa pod-punkty / dwa PR-y z jawną zależnością (`P-5.1b` → `P-5.1a`),
+jak P-3.1/P-3.2/P-3.3.
+
+- **D-5.1.1 (dwuwarstwowość → przechowywanie) [USTALONE — sesja 2026-07-23]:**
+  warstwa **surowa** = trzy prywatne pola `register_post_meta` (pełny JSON oferty
+  verbatim; opis prozą wyprowadzony; specyfikacja parsed jako tablica
+  etykieta→wartość) — ukryte na froncie, R/O w adminie, nadpisywane przy sync.
+  Warstwa **przerobiona**: **opis** = pole ACF WYSIWYG (edytowalne, wypełniane
+  przez AI w FAZIE 7); **specyfikacja** = **natywne atrybuty produktu
+  WooCommerce** (`_product_attributes`) — glue je zapisuje, motyw renderuje
+  natywnie, core NIE rejestruje dla niej własnego pola. Literały → kontrakt (P-5.1a).
+- **D-5.1.2 (surowa specyfikacja = wewnętrzne meta, NIE atrybuty WC) [USTALONE —
+  sesja 2026-07-23]:** atrybuty WooCommerce są z natury widoczne na froncie, więc
+  NIE mogą trzymać warstwy surowej (ukrytej, nadpisywanej sync). Surowa
+  specyfikacja zostaje serializowaną tablicą w prywatnym `post meta`; atrybuty WC
+  pełnią rolę wyłącznie dla warstwy przerobionej. Spójne z D-5.G3/D-5.G4.
+- **D-5.1.3 (slice `ProductInfo/`) [USTALONE — sesja 2026-07-23]:** slice nosi
+  nazwę `ProductInfo/` (model informacji o produkcie: źródło surowe z Allegro +
+  finalna postać na stronie). Mirror w qutlet-allegro przy sync (feature
+  rozproszony, ta sama nazwa slice'a — D-5.G4); dzieli go P-5.3 (podgląd w adminie).
 - **Zależności:** FAZA 4 (P-4.1).
-- **Uwaga:** literały (nazwy meta) ustala `docs/kontrakt-danych.md` — nie zgadujemy
-  ich tutaj (D-5.G2).
+
+#### 🟡 P-5.1a — Kontrakt warstwy surowej/przerobionej (qutlet-meta)
+- **Repo:** qutlet-meta (`docs/kontrakt-danych.md`)
+- **Zakres:** dopisać do kontraktu sekcję modelu FAZY 5 — literały pól warstwy
+  surowej (JSON + opis + specyfikacja parsed) i przerobionej (opis; specyfikacja =
+  natywne atrybuty WC), miejsca składowania, typy, kształty, opcjonalność, wzajemne
+  odnośniki z `docs/mapping-allegro.md` (D-4.G1). **Bez kodu** — ustala literały,
+  które konsumuje P-5.1b (D-5.G2). Decyzje modelu: D-5.1.1/D-5.1.2/D-5.1.3.
+- **Zależności:** FAZA 4 (P-4.1 ujawnia pola bez odpowiednika — `mapping-allegro.md` §4).
+
+#### 🟡 P-5.1b — Rejestracja warstwy surowej/przerobionej (qutlet-core)
+- **Repo:** qutlet-core (slice `ProductInfo/`)
+- **Zakres:** rejestracja pól wg kontraktu ustalonego w P-5.1a — trzy pola surowe
+  (`register_post_meta`, prywatne `_qutlet_`, R/O dla edycji użytkownika, nadpisywane
+  sync) oraz pole przerobione `opis` (ACF WYSIWYG, wzorzec ProductCondition/
+  AllegroChannel). Specyfikacja przerobiona = natywne atrybuty WooCommerce → core
+  NIE rejestruje dla niej pola (D-5.1.1). Literały bierze VERBATIM z kontraktu, nie zgaduje.
+- **Zależności:** P-5.1a (kontrakt ustala literały), FAZA 4 (P-4.1), P-0.1 (bootstrap core).
 
 ### P-5.3 — Podgląd warstwy surowej w adminie (read-only)
 - **Numeracja:** dopisany po P-5.2, ale w dokumencie stoi tuż po P-5.1 celowo —
