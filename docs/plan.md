@@ -953,7 +953,7 @@ miejsca u nas — to wejście do FAZY 5.
 
 ---
 
-## 🟨 FAZA 5 — Rozszerzenie modelu wg mappingu (qutlet-core) — ROZPISANA
+## 🟩 FAZA 5 — Rozszerzenie modelu wg mappingu (qutlet-core) — ROZPISANA
 
 Cel: zarejestrować w `qutlet-core` **WSZYSTKIE** pola, których WooCommerce nie
 obejmuje natywnie, a które ujawni mapping (FAZA 4). To **jedyny odbiornik** pól
@@ -1141,7 +1141,7 @@ pod-punkty / dwa PR-y z jawną zależnością (`P-5.2b` → `P-5.2a`).
   D-5.2.1/D-5.2.2/D-5.2.3.
 - **Zależności:** FAZA 4 (P-4.1 §4 ujawnia pola oferty; P-4.2 §7f — kategorii).
 
-#### P-5.2b — Rejestracja pól dyskretnych nie-Woo (qutlet-core)
+#### 🟢 P-5.2b — Rejestracja pól dyskretnych nie-Woo (qutlet-core)
 - **Repo:** qutlet-core (slice `AllegroLink/` — potwierdzenie nazwy D-5.2.4)
 - **Zakres:** rejestracja trzech pól wg kontraktu z P-5.2a — prywatne
   `register_post_meta` (`_qutlet_` prefiks, R/O dla edycji użytkownika `auth_callback`
