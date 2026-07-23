@@ -1234,7 +1234,7 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
 - **Zależności:** P-3A.2 (żeby refaktor objął też helpery zasiewu i sondy — a nie trzeba
   go było powtarzać).
 
-### P-6.1 — Import ofert → produkty Woo — punkt wielorepowy → P-6.1a + P-6.1b
+### 🟢 P-6.1 — Import ofert → produkty Woo — punkt wielorepowy → P-6.1a + P-6.1b
 - **Repo:** qutlet-core (P-6.1a) + qutlet-allegro (P-6.1b)
 - **Zakres (całość):** pobranie ofert (`GET /sale/offers`, `GET /sale/product-offers/{id}`),
   utworzenie/aktualizacja produktów Woo wg mappingu (FAZA 4), wypełnienie warstwy
@@ -1269,7 +1269,7 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
   `Uszkodzony`→C). Import ustawia `klasa_stanu` TYLKO gdy pole puste — ręczna
   korekta sprzedawcy (ocena egzemplarza) nie jest nadpisywana kolejnym przebiegiem.
 
-#### 🟡 P-6.1a — Stawka rabatu: globalna opcja + nadpisanie per produkt (qutlet-core)
+#### 🟢 P-6.1a — Stawka rabatu: globalna opcja + nadpisanie per produkt (qutlet-core)
 - **Repo:** qutlet-core (slice `Pricing/`)
 - **Zakres:** rejestracja globalnej opcji stawki rabatu (strona ustawień pod menu
   WooCommerce; Settings API wewnątrz slice'a — vertical slice, bez globalnego
@@ -1279,7 +1279,7 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
   cen — formuła D-4.1.2 jest zachowaniem importu (P-6.1b), nie tego punktu.
 - **Zależności:** P-0.1 (bootstrap core); kontrakt §11 (literały — PR rozbicia P-6.1).
 
-#### 🟡 P-6.1b — Komenda importu ofert (qutlet-allegro)
+#### 🟢 P-6.1b — Komenda importu ofert (qutlet-allegro)
 - **Repo:** qutlet-allegro (slice `OfferSync/` — feature rozproszony; producent
   danych surowych, pola rejestruje core: FAZA 5)
 - **Zakres:** komenda WP-CLI `wp qutlet-allegro import-offers`, parametryzowana
