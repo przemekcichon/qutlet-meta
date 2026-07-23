@@ -728,6 +728,6 @@ nie przechowujemy, `login` raczej nie (§8g). **Odrzucona alternatywa:** zapis c
 | D-4.3.4  | PII: tylko zakres funkcjonalny do `WC_Order`; `personalIdentity` nieprzechowywany, `login` raczej nie | minimalizacja danych — **proponowana** |
 
 ## Odnośniki
-- Kontrakt danych (nasze pola): `docs/kontrakt-danych.md` (§1 Woo `product_cat`, §2/§4 ACF, §3 marka, §6 wartości liczone). **Zamówienia — brak modelu w kontrakcie:** natywne `WC_Order` (§8a), pola bez miejsca → FAZA 5.
+- Kontrakt danych (nasze pola): `docs/kontrakt-danych.md` (§1 Woo `product_cat`, §2/§4 ACF, §3 marka, §6 wartości liczone; **§9 warstwa surowa/przerobiona produktu — P-5.1a**, odbiornik pól opisu/specyfikacji z §4b/§4e). **Zamówienia — brak modelu w kontrakcie:** natywne `WC_Order` (§8a), pola bez miejsca → FAZA 5.
 - Plan: `docs/plan.md` → FAZA 4 (D-4.G1/G2), P-4.1/P-4.2/P-4.3; FAZA 5 (D-5.G1/G4 — odbiornik pól „bez odpowiednika”); FAZA 6 (import ofert P-6.1, sync stanów P-6.2, **obsługa zamówień P-6.3** — konsument §8).
 - Próbki kształtu: `docs/allegro-api-samples/` (README + `SOURCES.md`, sekcja P-3.2 kategorie, **sekcja P-3.3 zamówienia** — kształt + reguły redakcji + luki).
