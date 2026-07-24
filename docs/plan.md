@@ -1564,6 +1564,16 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
   tego czasu zamówienia Allegro pozostają **gościnne** (D-4.3.1/D-4.3.4 — minimalizacja
   PII kupującego), a ten punkt jest tylko zapisany. Wysyłka do realnych osób jest
   nieodwracalna i outward-facing — nie ruszamy kroku 3 bez jawnego „tak".
+- **Obserwacja użytkownika (sesja 2026-07-24) — do rozstrzygnięcia, status BEZ zmian:**
+  użytkownik zauważył, że dane zamawiającego ściągają się i są obecne w zamówieniu, i
+  wstępnie uznał P-6.4 za „ogarnięte". UWAGA — to prawdopodobnie pomyłka zakresu: dane
+  kupującego (billing z `buyer`, shipping z `delivery`) w zaimportowanym `WC_Order` to
+  zakres **P-6.3** (zamówienia GOŚCINNE, D-6.3.5), który JEST zrealizowany. P-6.4 to co
+  innego — tworzenie/dopasowanie **konta klienta** `WC_Customer` (po `buyer.email`) +
+  marketing własny (newsletter), wciąż WARUNKOWE za bramkami 1–2 (podstawa prawna +
+  regulamin Allegro). Obecność danych kupującego w zamówieniu NIE domyka P-6.4. Do
+  potwierdzenia z użytkownikiem: czy pierwotny cel P-6.4 (konto klienta + newsletter
+  powitalny) jest nadal pożądany, czy punkt można zamknąć jako zbędny.
 - **Cel (produktowy):** przy imporcie zamówienia Allegro utworzyć/dopasować konto
   klienta Woo (`WC_Customer`) po `buyer.email`, oznaczyć je jako pozyskane z Allegro
   i — o ile prawo i regulamin na to pozwalają — wysłać wiadomość powitalną „w gronie
@@ -1594,6 +1604,48 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
   D-8.G3 (backend newslettera). Kroki 1–2 = handoff do użytkownika, blokują krok 3.
 - **Uwaga (granice):** to osobny wątek (klient / retencja), nie część czystego
   importu/sync — jeśli urośnie, wydzielić do własnej fazy.
+
+### P-6.5 — Synchronizacja statusów/tranzycji zamówień Allegro → Woo — [OTWARTE, do rozpisania]
+- **Repo:** qutlet-allegro (slice `OrderSync/` — rozszerzenie importu P-6.3b; zapis
+  przez natywne WC CRUD, wzorzec D-6.3.4).
+- **Kontekst (sesja 2026-07-24, zgłoszenie użytkownika):** realizuje „osobny punkt"
+  zapowiedziany wprost w **D-6.3.1** — tranzycje wysyłki/anulowania/zwrotu
+  (`FULFILLMENT_STATUS_CHANGED` poza `READY_FOR_SHIPMENT`, docelowe `wc-completed`/
+  `wc-cancelled`/`wc-refunded`) miały kształt SPOZA próbki §8f i zostały ODŁOŻONE do
+  czasu, aż będą realne zwrotki. Objaw: użytkownik zmienił status zamówienia na Allegro,
+  ale zaimportowane do Woo zamówienie dalej ma `wc-processing` — statusy nie są ściągane.
+- **Zakres (szkic — do rozpisania wobec realnych zwrotek):** przyrostowy polling już
+  pobiera `GET /order/events` (P-6.3b, kursor per środowisko); rozpoznać zdarzenia
+  zmiany statusu/fulfillmentu i odwzorować na tranzycję statusu istniejącego `WC_Order`
+  (dopasowanie po `checkoutForm.id` — istniejąca idempotentna meta `_qutlet_allegro_checkout_form_id`,
+  D-6.3.6). NIE tworzyć nowego zamówienia dla samej zmiany statusu — aktualizować istniejące.
+- **Pod-decyzje [OTWARTE — do rozstrzygnięcia z użytkownikiem przy realizacji]:**
+  - mapowanie statusów Allegro → Woo — ustalić z REALNYCH próbek tranzycji, nie z pamięci
+    (dociągnąć do `docs/allegro-api-samples/` przez handoff);
+  - kierunek: tylko pull Allegro→Woo (zgłoszona potrzeba), czy w przyszłości też push
+    Woo→Allegro (wysyłka nadana w Woo → oznacz na Allegro)? Push = zapis do żywego konta →
+    rozważyć wobec etosu D-2.G7 (choć D-2.G7 dotyczy TREŚCI oferty, nie statusu zamówienia —
+    do jawnego rozstrzygnięcia, czy status zamówienia podlega analogicznemu bezpiecznikowi);
+  - kolizja z ręczną zmianą statusu w adminie Woo (nie nadpisywać w kółko?).
+- **Zależności:** P-6.3 (import zamówień, kursor/lock/idempotencja, `GET /order/events`),
+  realne próbki tranzycji (handoff — zmienić status na Allegro i zebrać zwrotki).
+
+### P-6.6 — Order attribution „Allegro" dla zaimportowanych zamówień — [OTWARTE, do rozpisania]
+- **Repo:** qutlet-allegro (slice `OrderSync/`; zapis meta przez natywne WC CRUD, wzorzec D-6.3.4).
+- **Kontekst (sesja 2026-07-24, zgłoszenie użytkownika):** w sekcji „Order attribution"
+  na zamówieniu pole **Origin** jest PUSTE dla zamówień zaciągniętych z Allegro. Cel:
+  oznaczać pochodzenie tych zamówień jako „Allegro", żeby atrybucja źródła sprzedaży była
+  czytelna w adminie i raportach Woo.
+- **Zakres (szkic — do rozpisania po ground-truth):** przy imporcie/upsercie `WC_Order`
+  (P-6.3b) ustawić atrybucję pochodzenia tak, by admin Woo pokazał „Allegro" jako Origin.
+  Konkretne meta klucze Woo (rodzina `_wc_order_attribution_*`) oraz sposób, w jaki Woo
+  WYLICZA etykietę „Origin" z tych meta — do ustalenia w ground-truth: czytać kod
+  WooCommerce (R/O, po ścieżce absolutnej), NIE brać literałów z pamięci.
+- **Pod-decyzje [OTWARTE]:** dokładny `source_type`/`utm_source` (lub inny zestaw meta)
+  dający czytelną etykietę „Allegro"; czy tylko dla nowo importowanych zamówień, czy też
+  wsteczna migracja już zaimportowanych.
+- **Zależności:** P-6.3b (import zamówień — miejsce zapisu meta), kod WooCommerce
+  (weryfikacja modelu Order attribution danej wersji Woo).
 
 ---
 
