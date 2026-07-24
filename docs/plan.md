@@ -1430,7 +1430,7 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
   niż same zdarzenia, żeby żadne nie czekało na kolejny tick); Local = środowisko
   izolowane.
 
-### P-6.2c — Konfigurowalne środowiska harmonogramu sync-stock (wp-config.php)
+### 🟢 P-6.2c — Konfigurowalne środowiska harmonogramu sync-stock (wp-config.php)
 - **Repo:** qutlet-allegro (slice `OfferSync/` — rozszerzenie `StockSyncScheduler` z P-6.2b)
 - **Kontekst (sesja 2026-07-24, po pierwszym realnym uruchomieniu):** `StockSyncScheduler`
   dziś hardkoduje `ENVIRONMENTS = [SANDBOX, PRODUCTION]` jako stałą klasy (poprawka
