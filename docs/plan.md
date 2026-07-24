@@ -1463,7 +1463,7 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
 - **Handoff:** brak — czysta konfiguracja kodowa + wpis w `wp-config.php`, żadnej zmiany
   poza samą stałą (Local = środowisko izolowane, ale to nie dotyka runtime poza configiem).
 
-### 🟡 P-6.3 — Obsługa zamówień Allegro → Woo — punkt wielorepowy → P-6.3a + P-6.3b
+### 🟢 P-6.3 — Obsługa zamówień Allegro → Woo — punkt wielorepowy → P-6.3a + P-6.3b
 - **Repo:** qutlet-meta (P-6.3a) + qutlet-allegro (P-6.3b)
 - **Zakres (całość):** przyrostowy polling `GET /order/events` (własny kursor per
   środowisko), pobranie `GET /order/checkout-forms/{checkoutFormId}` dla zmienionych
@@ -1534,7 +1534,7 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
   D-6.3.4), odnośniki do `mapping` §8. Jawnie: BEZ verbatim blobu (D-6.3.5). **Bez kodu.**
 - **Zależności:** P-4.3 (`mapping` §8 — kształt i mapowanie), D-6.3.4/D-6.3.5/D-6.3.6.
 
-#### P-6.3b — Komenda importu zamówień (qutlet-allegro)
+#### 🟢 P-6.3b — Komenda importu zamówień (qutlet-allegro)
 - **Repo:** qutlet-allegro (slice `OrderSync/` — nowy; producent danych zamówień;
   proponowany, potwierdza P-6.3b po ground-truth)
 - **Zakres:** komenda WP-CLI `wp qutlet-allegro sync-orders --environment=<env>` (D-6.G5;
