@@ -1649,6 +1649,87 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
 - **Zależności:** P-6.3b (import zamówień — miejsce zapisu meta), kod WooCommerce
   (weryfikacja modelu Order attribution danej wersji Woo).
 
+### P-6.7 — Model egzemplarz↔produkt: polityka GTIN, agregacja sztuk, widget „inne sztuki" — [OTWARTE, do rozpisania]
+- **Repo:** WIELOREPOWY (feature rozproszony) — kontrakt (`qutlet-meta`, rewizja
+  §10.2 + ew. §1/§10.1), import + filtr GTIN + agregacja (`qutlet-allegro`, slice
+  `OfferSync/`), pole/relacja modelu (`qutlet-core`), render widgetu (`qutlet-theme`).
+  Prawie na pewno **rozpad na kilka pod-punktów** przy realizacji (osobne PR-y per repo).
+- **Kontekst (sesja 2026-07-24, zgłoszenie użytkownika):** import P-6.1 zgłaszał masowo
+  `Warning: … GTIN … odrzucony przez Woo: Invalid or duplicated GTIN…`. Przyczyna
+  zmierzona w źródle Woo 10.9.4 (`is_existing_global_unique_id`,
+  `class-wc-product-data-store-cpt.php:1310`): Woo egzekwuje unikalność
+  `global_unique_id` w obrębie `product` ORAZ `product_variation` — założenie „1 GTIN =
+  1 sprzedawalny byt" jest z natury sprzeczne z jednosztukowym outletem, gdzie ten sam
+  MODEL legalnie się powtarza (te same słuchawki po zwrocie = wiele ofert, ten sam EAN).
+  Po imporcie 524 ofert: 451 z zapisanym EAN, **56 odrzuconych jako duplikat**, 17 bez
+  EAN. Rozjazd z kontraktem §10.2, który zakładał unikalność. Warianty WooCommerce
+  ODRZUCONE jako rozwiązanie: (a) technicznie nie omijają kolizji (unikalność łapie też
+  `product_variation`); (b) oś „wariantu" byłaby tożsamością egzemplarza, nie cechą
+  produktu — kosztem galerii per sztuka, osobnych stron, widoczności w siatce okazji i
+  spójności z modelem 1 oferta = 1 produkt.
+- **D-6.7.1 (polityka GTIN = wariant „b", rozluźnienie unikalności) [USTALONE —
+  decyzja użytkownika 2026-07-24]:** ZACHOWUJEMY natywne pole `global_unique_id`
+  (przydatne w feedach produktowych / Google Shopping dla używek, gdzie `condition=used`
+  różnicuje sztuki), a unikalność rozluźniamy filtrem `wc_product_pre_has_global_unique_id`
+  (Woo wystawia go dokładnie na takie przypadki), by egzemplarze tego samego modelu mogły
+  dzielić GTIN. Rewiduje kontrakt §10.2 (dziś: „native + first-wins + warning"). Odrzucony
+  wariant „a" (nie zapisywać natywnego pola, EAN tylko we własnej meta) — czystszy u
+  źródła, ale traci natywne pole pod feedy, których użytkownik chce.
+- **D-6.7.2 (widget „inne sztuki tego modelu") [USTALONE — decyzja użytkownika
+  2026-07-24]:** CHCEMY nieniszczący widget grupujący egzemplarze po GTIN (np. „ten
+  model masz w N sztukach, od X zł") — BEZ zwijania stron; każda sztuka zachowuje własną
+  stronę, zdjęcia i klasę stanu. Dane/relacja: core/allegro; render: theme (FAZA 8).
+- **D-6.7.3 (wyjątek od „1 produkt = 1 oferta") [USTALONE kierunkowo — decyzja
+  użytkownika 2026-07-24; mechanika OTWARTA]:** zasada „jeden produkt = jedna oferta"
+  (P-6.1) PRZESTAJE być bezwzględna. Dopuszczamy wyjątek: **ten sam model + ten sam stan
+  (`klasa_stanu`)** MOŻE być JEDNYM produktem agregującym wiele sztuk (`_stock` > 1,
+  wiele `offer_id`). Zjawisko rzadkie-ale-nie-superrzadkie. To zmienia model importu i
+  sync — patrz pod-decyzje.
+- **Pod-decyzje [OTWARTE — do rozstrzygnięcia przy realizacji]:**
+  - kryterium agregacji: sam GTIN, czy GTIN + `klasa_stanu` (a co gdy brak GTIN)? Różne
+    fizyczne sztuki mają RÓŻNE zdjęcia mimo tego samego modelu — czy agregować mimo to,
+    czy tylko przy zgodności także zdjęć/opisu? (zdjęcia to rdzeń wartości outletu);
+  - klucz idempotencji: `_qutlet_allegro_offer_id` staje się potencjalnie WIELOWARTOŚCIOWY
+    (lista offer_id na produkt) — jak przechowywać (rewizja kontraktu §10.1), jak import
+    decyduje „dołóż sztukę do istniejącego" vs „nowy produkt";
+  - stan magazynowy: przy agregacji `_stock` = liczba niesprzedanych sztuk; sprzedaż w
+    sklepie musi zdjąć KONKRETNĄ ofertę Allegro (którą?) — ripple na **P-6.2** (sync
+    stanów) i **P-6.5** (statusy zamówień);
+  - trash/wycofanie JEDNEJ z wielu sztuk agregatu (spójne z D-6.2.x „trash = wycofane");
+  - warstwa surowa przy wielu ofertach: `_qutlet_allegro_offer` verbatim per oferta
+    (lista?), opis/specyfikacja z której oferty;
+  - co jeszcze polega na unikalności `global_unique_id` (feedy, wyszukiwarka Woo) po
+    włączeniu filtra z D-6.7.1.
+- **Zależności:** P-6.1 (import, klucz `offer_id`, zapis GTIN), P-6.2 (sync stanów —
+  agregacja go dotyka), FAZA 5 (pola `AllegroLink`/warstwa surowa), FAZA 8 (render
+  widgetu). Rewizja kontraktu §10.2 (i ew. §10.1) to pierwszy pod-punkt (meta).
+
+### P-6.8 — Raport liści kategorii + kuracja mapy `product_cat` — [OTWARTE, do rozpisania]
+- **Repo:** `qutlet-allegro` (komenda raportu + reguły `OfferSync/CategoryMapRules`);
+  kuracja docelowych termów wraca do kontraktu §1 (`qutlet-meta`). Prawdopodobne rozbicie:
+  raport (allegro) → kuracja reguł + docelowe slugi do kontraktu (allegro + meta).
+- **Kontekst (sesja 2026-07-24, zgłoszenie użytkownika):** import 524 ofert ujawnił, że
+  startowe (ilustracyjne, `mapping` §7d) reguły `CategoryMapRules` są ZA GRUBE — gałąź
+  „Komputery" → `laptopy` złapała 247 produktów (w środku huby, obudowy, monitory,
+  słuchawki), „Telefony i Akcesoria" → `smartfony` 148 (same akcesoria: etui, szkła,
+  powerbanki), a **34 gałęzie bez reguły** trafiły do kosza `pozostale`. Realny asortyment
+  wychodzi daleko poza czwórkę prototypu (AGD drobne, higiena, oświetlenie, kable, ogród,
+  dziecko, GPS…). Do porządnej mapy użytkownik potrzebuje WSZYSTKICH liści naraz.
+- **Zakres (szkic):** komenda WP-CLI raportująca każdy liść kategorii Allegro obecny w
+  imporcie: `id` liścia, nazwa, PEŁNA ścieżka do korzenia, liczba zaimportowanych
+  produktów, obecnie przypisany term `product_cat`, dopasowana reguła (leaf/branch) albo
+  „kosz — brak reguły". Czyta z zapisanych meta `_qutlet_allegro_category_path` (zero
+  żądań do Allegro dla znanych liści; `leaf` wynika z faktu, że oferty istnieją tylko na
+  liściach), z opcją dociągnięcia z API dla id spoza katalogu. Wyjście do pliku/CSV =
+  warsztat użytkownika do zaprojektowania docelowej mapy.
+- **Pod-decyzje [OTWARTE]:** format wyjścia (CSV pod arkusz?); komenda jako
+  read-only RAPORT (kuracja reguł ręczna) vs wsparcie edycji; docelowy zestaw termów
+  sklepu = **decyzja sprzedażowa użytkownika** (`mapping` §7e), potem ustabilizowane slugi
+  → kontrakt §1; czy rozbić zbyt grube reguły gałęzi na węższe równolegle z dopisaniem
+  brakujących 34.
+- **Zależności:** P-6.1 (import wypełnił ścieżki kategorii), P-4.2 (D-4.2.1/D-4.2.2 —
+  strategia kolapsu N:1, hybryda gałąź+wyjątek).
+
 ---
 
 ## 🟨 FAZA 7 — Przeróbka opisów przez AI (nowy plugin `qutlet-ai`) — ROZPISANA
