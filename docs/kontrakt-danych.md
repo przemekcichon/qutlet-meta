@@ -524,6 +524,51 @@ i konsumpcją.
 `wc-refunded` poza P-6.5 (D-6.5.3). Sync statusu NIE polega na `revision` (D-6.5.7 —
 `fulfillment` nie bumpuje `revision`).
 
+### 12.6 Order attribution — Origin „Allegro" (P-6.6, D-6.6.1/D-6.6.2)
+
+**Inny mechanizm niż `created_via`.** `OrderWriter::apply()` ustawia natywne pole
+`WC_Order::created_via = 'allegro'` (§12 intro) OD POCZĄTKU (P-6.3b) — to zweryfikowane
+poprawnie działa (`wp_wc_order_operational_data.created_via`, sprawdzone na realnym
+zamówieniu sandbox). Ale pole „Origin" widoczne w adminie Woo (metabox „Order
+attribution" + kolumna listy zamówień) liczy się z ZUPEŁNIE OSOBNEJ rodziny meta —
+`_wc_order_attribution_*` — którą import NIE wypełniał, stąd zgłoszony objaw (P-6.6).
+
+**Ground-truth WooCommerce 10.9.4 (kod źródłowy, sesja 2026-07-25, R/O):** etykietę
+liczy `OrderAttributionMeta::get_origin_label( $source_type, $utm_source )`
+(`src/Internal/Traits/OrderAttributionMeta.php:276-370`). Dla `source_type` ∈
+`{typein, admin, mobile_app, pos}` oraz nierozpoznanego (`default`) — słowo STAŁE,
+ignorujące `utm_source` („Direct"/„Web admin"/„Mobile app"/„Point of Sale"/„Unknown").
+Dla `source_type` ∈ `{utm, organic, referral}` — szablon z `%s` wstawiający `utm_source`
+WPROST (po `ucfirst()` + przycięciu nawiasów): „Source: %s" / „Organic: %s" /
+„Referral: %s". Bez zaimportowanej atrybucji (stan SPRZED tego punktu) `source_type`
+czytany jest jako pusty string → gałąź `default` → Origin wyświetla się jako
+**„Unknown"** (NIE dosłowna pustka — doprecyzowanie objawu z opisu planu P-6.6).
+
+**Literały (piszemy TYLKO wartości; klucze i rejestrację ma WooCommerce core — inaczej
+niż `_qutlet_allegro_*`, to NIE nasz prefiks, nie ma tu decyzji „rejestrować/nie
+rejestrować"):**
+
+| Pole (znaczenie) | Literał (`meta_key`) | Miejsce | Wartość (D-6.6.1) | Właściciel klucza | Kształt / uwagi |
+|------------------|----------------------|---------|--------------------|--------------------|------------------|
+| Typ źródła atrybucji | `_wc_order_attribution_source_type` | meta `WC_Order` (natywny prefiks Woo `_wc_order_attribution_`) | `referral` | WooCommerce core (rejestruje mechanizm; my tylko ustawiamy wartość) | zapis przez `update_meta_data()` (D-6.3.4), TYLKO gdy klucz jeszcze nie istnieje na zamówieniu (nie nadpisuje istniejącej realnej atrybucji) |
+| Źródło (nazwa wyświetlana) | `_wc_order_attribution_utm_source` | meta `WC_Order` (jw.) | `Allegro` — reużyty literał {@see `OrderMapper::payment_title()`} (już używany jako `payment_method_title`, jedno źródło stringa) | jw. | jw. |
+
+**D-6.6.1 (source_type = `referral`) [USTALONE — decyzja użytkownika 2026-07-25]:**
+Origin wyświetli się jako **„Referral: Allegro"**. Odrzucone: `organic` („Organic:
+Allegro" — mylące, sugeruje ruch z wyszukiwarki), `utm` („Source: Allegro" — sugeruje
+kampanię ze śledzonymi parametrami UTM, które tu nie występują). Goły napis „Allegro"
+bez prefiksu NIE jest osiągalny przez `source_type`+`utm_source` w kodzie standardowym
+(wymagałby globalnego filtra `wc_order_attribution_origin_label`, który nie dostaje
+obiektu zamówienia — nie da się nim warunkować per-zamówienie, więc odrzucone).
+
+**D-6.6.2 (backfill = TAK, jednorazowa komenda) [USTALONE — decyzja użytkownika
+2026-07-25]:** oprócz zapisu przy każdym imporcie/przebudowie treści zamówienia
+(`OrderWriter::apply()`), osobna jednorazowa komenda WP-CLI (`qutlet-allegro`,
+bez zależności od API Allegro — czysto lokalna operacja) uzupełnia atrybucję na
+zamówieniach zaimportowanych PRZED tym punktem. Reguły identyczne jak przy imporcie:
+tylko zamówienia z kluczem `_qutlet_allegro_checkout_form_id` (§12.1), pomija kosz
+(D-6.2.1/D-6.3.4), pomija zamówienia, które już mają `_wc_order_attribution_source_type`.
+
 ### Odnośniki (§12)
 - Mapping (kształt zamówienia + pełne mapowanie): `docs/mapping-allegro.md` §8
   (§8c natywny `WC_Order`, §8d polling `order/events`, §8e pola bez natywnego miejsca,
@@ -531,8 +576,12 @@ i konsumpcją.
 - Próbki kształtu: `docs/allegro-api-samples/GET_order-events.json`,
   `GET_order-checkout-forms-id.json` (zredagowane, ale prawdziwe kształty i typy).
 - Plan: `docs/plan.md` → P-6.3 (rozbicie, D-6.3.1–D-6.3.6), P-6.3a (ten kontrakt),
-  P-6.3b (import), P-6.4 (warunkowy import kupujących — konsument `buyer.email`).
+  P-6.3b (import), P-6.4 (warunkowy import kupujących — konsument `buyer.email`),
+  P-6.6 (order attribution „Allegro", §12.6).
 - Stan operacyjny stanów magazynowych (analogiczny wzorzec, osobne literały): §10.5.
+- Order attribution WooCommerce: `src/Internal/Traits/OrderAttributionMeta.php`,
+  `src/Internal/Orders/OrderAttributionController.php` (ścieżka absolutna w
+  CLAUDE.md, sekcja WooCommerce READ-ONLY).
 
 ---
 
