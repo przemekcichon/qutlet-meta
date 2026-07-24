@@ -1084,11 +1084,11 @@ pod-punkty / dwa PR-y z jawną zależnością (`P-5.2b` → `P-5.2a`).
   produkcie, i są sterowane przez P-4.3/P-6.3 — **poza zakresem P-5.2**; ich
   rejestracja (meta na zamówieniu) należy do osobnego punktu związanego z P-6.3.
   Spójne z zadeklarowanymi zależnościami P-5.2 (P-4.1, P-4.2 — nie P-4.3).
-  **Otwarta luka planu (do rozpisania, NIE w P-5.2a):** taki punkt jeszcze NIE
-  istnieje — P-6.3 jest w `qutlet-allegro` (import zamówień), a rejestracja meta na
-  `WC_Order` to kod core; `mapping` §8a/§8e kieruje te pola do „FAZY 5". Decyzja
-  użytkownika: osobny punkt core (np. P-5.4 — rejestracja meta zamówienia) obok
-  P-6.3, czy rejestrację złożyć w zakres P-6.3.
+  **Luka domknięta (sesja P-6.3, 2026-07-24):** rozstrzygnięto, że osobny punkt core
+  NIE powstaje — meta zamówienia pisze allegro przez natywne WC CRUD
+  (`$order->update_meta_data()`), bez rejestracji w core (D-6.3.4: inaczej niż
+  produktowe `post_meta`, meta `WC_Order` nie ma kolizji z UI edycji, a pod HPOS nie
+  jest `post_meta`). Literały modelu zamówień → kontrakt §12 (P-6.3a); import → P-6.3b.
   **Odrzucona alternatywa:** wciągnąć §8e tu — poszerza punkt poza jego zależności
   i miesza model produktu z modelem zamówienia.
 - **D-5.2.2 (zestaw pól dyskretnych: 3 rejestrujemy, reszta natywnie/w JSON)
@@ -1428,12 +1428,132 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
   niż same zdarzenia, żeby żadne nie czekało na kolejny tick); Local = środowisko
   izolowane.
 
-### P-6.3 — Obsługa zamówień Allegro → Woo
-- **Repo:** qutlet-allegro
-- **Zakres:** polling `GET /order/events` (kursor), pobranie
-  `GET /order/checkout-forms/{checkoutFormId}`, odwzorowanie na zamówienia Woo wg
-  mappingu (P-4.3). Traktowanie PII zgodnie z zasadami bezpieczeństwa.
-- **Zależności:** FAZA 2 (slot `read`; środowisko wg D-6.G5), P-4.3, P-6.1.
+### P-6.2c — Konfigurowalne środowiska harmonogramu sync-stock (wp-config.php)
+- **Repo:** qutlet-allegro (slice `OfferSync/` — rozszerzenie `StockSyncScheduler` z P-6.2b)
+- **Kontekst (sesja 2026-07-24, po pierwszym realnym uruchomieniu):** `StockSyncScheduler`
+  dziś hardkoduje `ENVIRONMENTS = [SANDBOX, PRODUCTION]` jako stałą klasy (poprawka
+  qutlet-allegro#14 — pierwsza wersja z P-6.2b leciała TYLKO na produkcji, co okazało się
+  błędne, gdy realny test na sandboksie nigdy nie doczekał się automatycznej synchronizacji).
+  Działa poprawnie, ale każda zmiana (np. wyłączenie sandboksa z automatyki po zakończeniu
+  fazy testów, albo odwrotnie) wymaga edycji kodu + branch/PR/merge. Użytkownik chce
+  przełącznik operacyjny bez deploya — decyzja: `wp-config.php`, analogicznie do
+  istniejącego wzorca stałych Allegro (D-2.G3) i kluczy API dostawców AI (CLAUDE.md) —
+  NIE opcja w bazie/adminie (to nie jest ustawienie użytkownika biznesowego, tylko
+  konfiguracja operacyjna środowiska, jak sekrety).
+- **Zakres:** nowa stała `wp-config.php` czytana przez `StockSyncScheduler` zamiast/obok
+  dzisiejszej stałej klasy `ENVIRONMENTS`; brak stałej → bezpieczny fallback (dzisiejsze,
+  already-zweryfikowane zachowanie); stała obecna ale pusta/nieprawidłowa → log
+  ostrzegawczy + ten sam fallback (NIE cichy no-op — literówka operatora ma być widoczna
+  w logu crona, nie zniknąć bez śladu).
+- **Pod-decyzje [OTWARTE — do rozstrzygnięcia przy realizacji]:**
+  - D-6.2c.1 (nazwa i format stałej): propozycja
+    `QUTLET_ALLEGRO_SYNC_STOCK_ENVIRONMENTS` jako string rozdzielony przecinkami (np.
+    `"sandbox,production"` albo samo `"production"`) — prostsze do edycji narzędziami
+    typu `edit_wp_config` (MCP), które przyjmują tylko literały skalarne, nie tablice
+    (`define()` w PHP 7+ technicznie przyjąłby tablicę, ale to zwiększa tarcie edycji).
+  - D-6.2c.2 (fallback bez stałej): czy brak stałej = oba środowiska (dzisiejsze,
+    zweryfikowane zachowanie — REKOMENDACJA) czy tylko produkcja (pierwotny zamiar sprzed
+    poprawki #14)? Zawężenie powinno wymagać ŚWIADOMEGO wpisania stałej, nie być domyślne.
+  - D-6.2c.3 (walidacja): nieprawidłowa wartość (literówka, nieznane środowisko) — log
+    ostrzegawczy + fallback (REKOMENDACJA — harmonogram nie powinien milczeć na zawsze
+    z powodu literówki) czy twardy błąd zatrzymujący `wp cron event run` na TYM tyknięciu
+    (ryzyko: ubiłoby też inne due zdarzenia w tym samym tyknięciu, jak `RefreshScheduler` —
+    patrz uzasadnienie `WP_CLI::runcommand()` w `StockSyncScheduler`, ten sam problem)?
+- **Zależności:** P-6.2b (`StockSyncScheduler`, qutlet-allegro#13 + fix #14).
+- **Handoff:** brak — czysta konfiguracja kodowa + wpis w `wp-config.php`, żadnej zmiany
+  poza samą stałą (Local = środowisko izolowane, ale to nie dotyka runtime poza configiem).
+
+### 🟡 P-6.3 — Obsługa zamówień Allegro → Woo — punkt wielorepowy → P-6.3a + P-6.3b
+- **Repo:** qutlet-meta (P-6.3a) + qutlet-allegro (P-6.3b)
+- **Zakres (całość):** przyrostowy polling `GET /order/events` (własny kursor per
+  środowisko), pobranie `GET /order/checkout-forms/{checkoutFormId}` dla zmienionych
+  zamówień, odwzorowanie na **natywny `WC_Order`** wg mappingu (P-4.3, `mapping` §8).
+  Idempotencja po `checkoutForm.id` (upsert, nie insert — strumień powtarza zamówienie,
+  §8d). PII wg minimalizacji (D-6.3.5). Traktowanie PII zgodnie z zasadami bezpieczeństwa.
+- **Rozbicie (sesja 2026-07-24):** klucz idempotencji + kursor + lock + dyskretne meta
+  zamówienia to literały, a te wg D-5.G2 najpierw wchodzą do kontraktu
+  (`docs/kontrakt-danych.md`, qutlet-meta); komenda importu to kod w qutlet-allegro.
+  Osobne `origin` = osobne PR-y → dwa pod-punkty z jawną zależnością (P-6.3b → P-6.3a),
+  jak P-5.1/P-5.2. Rozstrzygnięto: **bez punktu core** (D-6.3.4 — meta zamówienia pisze
+  allegro przez natywne WC CRUD, core nie rejestruje) — punkt jest DWU-, nie trzyrepowy.
+- **Zależności (całość):** FAZA 2 (slot `read`; środowisko wg D-6.G5), P-4.3, P-6.1.
+
+#### Decyzje sesji P-6.3 (2026-07-24)
+- **D-6.3.1 (próg tworzenia = opłacone) [USTALONE — decyzja użytkownika]:** `WC_Order`
+  powstaje dopiero dla `status = READY_FOR_PROCESSING` → `wc-processing` (jedyny
+  potwierdzony status próbki, §8c). Zdarzenia/statusy `FILLED_IN` (niezapłacony koszyk)
+  i `BOUGHT` (płatność niepotwierdzona) są POMIJANE + logowane — nie tworzymy
+  nieopłaconych zamówień w Woo. Tranzycje wysyłki/anulowania/zwrotu
+  (`FULFILLMENT_STATUS_CHANGED` poza `READY_FOR_SHIPMENT`, `wc-completed`/`wc-cancelled`/
+  `wc-refunded`) mają kształt SPOZA próbki (§8f) → odłożone do osobnego punktu wobec
+  realnych zwrotek; do tego czasu zamówienie zostaje `wc-processing`, a nierozpoznana
+  tranzycja jest logowana. **Odrzucona alternatywa:** tworzyć od `BOUGHT`/`FILLED_IN` —
+  zaśmieca Woo koszykami, które mogą nigdy nie zostać opłacone.
+- **D-6.3.2 (brak produktu → pozycja bez powiązania + log) [USTALONE — decyzja
+  użytkownika]:** gdy `lineItems[].offer.id` nie ma odpowiadającego produktu w Woo
+  (oferta nieimportowana), zamówienie i tak POWSTAJE; pozycję dodajemy po nazwie i cenie
+  z payloadu bez powiązania z produktem, z ostrzeżeniem w logu — realna, opłacona
+  sprzedaż nie może zniknąć. **Odrzucona alternatywa:** pomijać całe zamówienie (gubi
+  sprzedaż) / auto-import oferty w torze zamówień (miesza odpowiedzialności
+  import↔zamówienia, wydłuża przebieg).
+- **D-6.3.3 (tylko komenda WP-CLI; cron osobno) [USTALONE — decyzja użytkownika]:** P-6.3
+  dostarcza komendę `wp qutlet-allegro sync-orders` (ręcznie/debug). Automatyczny polling
+  (scheduler WP-Cron wzorca `StockSyncScheduler`) to OSOBNY, kolejny punkt — mniejszy,
+  łatwiejszy do recenzji zakres.
+- **D-6.3.4 (meta zamówienia przez WC CRUD, bez rejestracji w core) [USTALONE — decyzja
+  użytkownika]:** pola §8e siadają na natywnym `WC_Order` zapisywane przez
+  `$order->update_meta_data()` (allegro pisze), BEZ formalnej rejestracji w core. Inaczej
+  niż produktowe `post_meta` (R/O w adminie, ukrycie w „Custom Fields", unik ACF — §9.1/
+  §10.1) meta zamówienia nie ma kolizji z UI edycji; pod HPOS meta zamówienia nie jest
+  `post_meta`, więc `register_post_meta` i tak nie miałoby zastosowania. Literały (klucz
+  idempotencji, kursor, lock, dyskretne meta) → kontrakt §12 (P-6.3a). **Odrzucona
+  alternatywa:** osobny punkt core rejestrujący model meta zamówienia — narzut bez jasnej
+  korzyści dla natywnego obiektu Woo.
+- **D-6.3.5 (PII — potwierdza D-4.3.4) [USTALONE — decyzja użytkownika]:** do `WC_Order`
+  trafia tylko zakres funkcjonalny (billing z `buyer`, shipping z `delivery`, telefon,
+  email); `personalIdentity` i `login` NIE przechowywane (`mapping` §8g). Zamówienia są
+  GOŚCINNE — P-6.3 NIE tworzy ani nie dopasowuje kont klientów Woo (to warunkowy, otwarty
+  P-6.4). BEZ verbatim blobu zamówienia (kontrast z ofertą §9.1 — blob niósłby PII bez
+  potrzeby, minimalizacja danych). Potwierdza proponowane D-4.3.1/D-4.3.4.
+- **D-6.3.6 (idempotencja, kursor, lock — osobne od P-6.2) [USTALONE]:** upsert po
+  `checkoutForm.id` (indeksowana meta `_qutlet_allegro_checkout_form_id`); przyrost po
+  `GET /order/events` z WŁASNYM kursorem `qutlet_allegro_order_sync_cursor_{środowisko}`
+  — NIE współdzielony z kursorem stanów P-6.2 (`qutlet_allegro_stock_sync_cursor_*`,
+  §10.5): osobni konsumenci tego samego endpointu, osobne kursory. Lock
+  `qutlet_allegro_order_sync_lock_{środowisko}` wzorca `StockSyncLock`/`Auth\RefreshLock`.
+  Autorytatywna treść z `checkout-form`, nie ze snapshotu zdarzenia (§8d). Literały → §12.
+
+#### 🟡 P-6.3a — Kontrakt zamówień Allegro → WC_Order (qutlet-meta)
+- **Repo:** qutlet-meta (`docs/kontrakt-danych.md`)
+- **Zakres:** dopisać sekcję §12 — literały modelu zamówień: klucz idempotencji
+  `_qutlet_allegro_checkout_form_id` (indeksowana meta `WC_Order`), dyskretne meta
+  zamówienia (`_qutlet_allegro_order_revision`, `_qutlet_allegro_pickup_point`), meta
+  pozycji (`_qutlet_allegro_line_item_id`, `_qutlet_allegro_delivery_method_id`) oraz
+  stan operacyjny syncu zamówień (kursor + lock per środowisko). Miejsca składowania,
+  typy, opcjonalność, właściciel (qutlet-allegro, przez WC CRUD — NIE rejestruje core,
+  D-6.3.4), odnośniki do `mapping` §8. Jawnie: BEZ verbatim blobu (D-6.3.5). **Bez kodu.**
+- **Zależności:** P-4.3 (`mapping` §8 — kształt i mapowanie), D-6.3.4/D-6.3.5/D-6.3.6.
+
+#### P-6.3b — Komenda importu zamówień (qutlet-allegro)
+- **Repo:** qutlet-allegro (slice `OrderSync/` — nowy; producent danych zamówień;
+  proponowany, potwierdza P-6.3b po ground-truth)
+- **Zakres:** komenda WP-CLI `wp qutlet-allegro sync-orders --environment=<env>` (D-6.G5;
+  slot `read`): lock (D-6.3.6), przyrostowy polling `GET /order/events` z własnym kursorem
+  (§8d — kursor, nie „od zera"), dla zamówień o statusie `READY_FOR_PROCESSING` (D-6.3.1)
+  pobranie `GET /order/checkout-forms/{id}` i upsert `WC_Order` po `checkoutForm.id`
+  (D-6.3.6): billing z `buyer`, shipping z `delivery` (`postCode` vs `zipCode`,
+  `pickupPoint` null vs obiekt — §8f), płatność (`payment_method` „allegro",
+  `transaction_id`, `date_paid`), pozycje (`lineItems[]`, powiązanie po `offer.id`; brak
+  produktu → pozycja bez powiązania, D-6.3.2), suma, `customer_note` z `messageToSeller`;
+  dyskretne meta §8e przez WC CRUD (literały §12). Kwoty i `tax.rate` to STRINGI →
+  `(float)` (§8f). PII wg D-6.3.5 (bez `personalIdentity`/`login`, gościnne, bez kont
+  klientów). 429 → przerwanie bez ruszania kursora (backoff = kolejny przebieg). Nowy kod
+  HTTP/token używa traitu `Cli\AllegroCliSupport` (bramka P-6.0). Wzorce paginacji/kursora/
+  locka powielone z `OfferSync\SyncStockCommand`, nie wymyślane od nowa. Scheduler WP-Cron
+  — POZA zakresem (D-6.3.3).
+- **Zależności:** **P-6.3a (literały §12)**, P-6.0 (trait), FAZA 2 (slot `read`;
+  środowisko D-6.G5), P-4.3 (`mapping` §8), P-6.1 (produkty + `_qutlet_allegro_offer_id`
+  do powiązania pozycji). Konsument: P-6.4 (dostarcza `buyer.email` + moment utworzenia).
 
 ### P-6.4 — Import kupujących Allegro jako klientów Woo (marketing własny) — [OTWARTE]
 - **Repo:** qutlet-allegro (tworzenie/dopasowanie klienta przy imporcie zamówienia
