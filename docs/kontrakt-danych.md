@@ -506,6 +506,24 @@ przechowywane**, chyba że osobny, przyszły punkt je otworzy:
 | `marketplace.id`, `updatedAt`, `payment.features`, `fulfillment.*`, `delivery.{smart,time,calculatedNumberOfPackages,cancellation}`, `invoice.*`, `lineItems[].{tax.subject,serialNumbers,vouchers,discounts,…}` | **nie przechowujemy** osobno (operacyjne / `null`/puste w próbce / brak użycia) — otworzy je własny punkt przy realnej potrzebie | `mapping` §8e/§8f |
 | `invoice.address` + NIP | **nie przechowujemy** — kształt NIEZNANY (cała próbka `invoice.required:false`); mapping faktury domyka pierwsze zamówienie z fakturą | `mapping` §8f/§8g |
 
+### 12.5 Własny status zamówienia `wc-shipped` (rejestruje `qutlet-core`, P-6.5)
+
+Wyjątek od reguły „statusy `WC_Order` nie są naszymi literałami" (§12 intro): synchronizacja
+statusów Allegro→Woo (**P-6.5**, D-6.5.4/D-6.5.5) potrzebuje stanu „wysłane", którego
+WooCommerce natywnie nie ma. Rejestruje go **`qutlet-core`** jako glue Woo (nie `qutlet-allegro`
+— CLAUDE.md: „integrujesz się z Woo → core"); `qutlet-allegro` tylko go USTAWIA przy mapowaniu
+`fulfillment.status = SENT`. Literał wchodzi do kontraktu NAJPIERW (D-5.G2), przed rejestracją
+i konsumpcją.
+
+| Pole (znaczenie) | Literał (slug statusu) | Miejsce | Rejestracja | Źródło Allegro | Kształt / uwagi |
+|------------------|------------------------|---------|-------------|----------------|-----------------|
+| Status „Wysłane" | `wc-shipped` | status `WC_Order` (`register_post_status` + filtr `wc_order_statuses`) | `qutlet-core`, slice `OrderSync/` (P-6.5b) | `fulfillment.status = SENT` (`mapping` §8c) | etykieta „Wysłane"; semantyka **opłacone, nieterminalne** (między `wc-processing` a `wc-completed`). `set_status()` normalizuje prefiks `wc-`. Ustawiany przez pull P-6.5c; `PICKED_UP` → `wc-completed`, `CANCELLED` → `wc-cancelled` (natywne). |
+
+**Mapowanie osi Allegro → status Woo (P-6.5, D-6.5.4)** — pełna tabela w `mapping-allegro.md`
+§8c. Priorytet: `status = CANCELLED` (terminalny) przed `fulfillment.status`. `RETURNED` /
+`wc-refunded` poza P-6.5 (D-6.5.3). Sync statusu NIE polega na `revision` (D-6.5.7 —
+`fulfillment` nie bumpuje `revision`).
+
 ### Odnośniki (§12)
 - Mapping (kształt zamówienia + pełne mapowanie): `docs/mapping-allegro.md` §8
   (§8c natywny `WC_Order`, §8d polling `order/events`, §8e pola bez natywnego miejsca,
