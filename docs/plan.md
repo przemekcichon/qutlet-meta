@@ -1403,13 +1403,15 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
     (marker D-6.2.3, próg porzucenia); backoff na HTTP 429 (przerwanie przebiegu
     bez przesunięcia kursora — kolejne tyknięcie jest naturalnym ponowieniem);
   - tryb `--full`: okresowa rekoncyliacja z listy `GET /sale/offers` (niesie
-    stan + cenę) wg reguł D-6.2.4 — osobne, rzadsze zdarzenie WP-Cron (raz
-    dziennie w nocy wystarcza — zmierzone: przebieg `--full` na 555 ofertach
-    trwa pojedyncze sekundy, w przeciwieństwie do pełnego importu P-6.1b, który
-    dociąga PEŁNĄ zwrotkę + zdjęcia + drzewo kategorii per oferta);
-  - **`StockSyncScheduler`** (D-6.G1 zrewidowane): rejestruje własny interwał
-    (`cron_schedules`, ~2 min) i zdarzenie WP-Cron dla `sync-stock` oraz osobne
-    zdarzenie dzienne dla `sync-stock --full`; wzorzec `Auth\RefreshScheduler`
+    stan + cenę) wg reguł D-6.2.4 — osobne zdarzenie WP-Cron co ~30 min
+    (zmierzone na realnym sandboksie: przebieg `--full` na 555 ofertach trwa
+    pojedyncze sekundy, w przeciwieństwie do pełnego importu P-6.1b, który
+    dociąga PEŁNĄ zwrotkę + zdjęcia + drzewo kategorii per oferta — stąd 30 min
+    jest tanie, decyzja użytkownika po zmierzeniu, zamiast pierwotnie
+    rozważanej kadencji nocnej);
+  - **`StockSyncScheduler`** (D-6.G1 zrewidowane): rejestruje własne interwały
+    (`cron_schedules`, ~2 min i ~30 min) i osobne zdarzenia WP-Cron dla
+    `sync-stock` i `sync-stock --full`; wzorzec `Auth\RefreshScheduler`
     (self-healing `wp_schedule_event` na `init`, `wp_clear_scheduled_hook` przy
     dezaktywacji). Callback woła `SyncStockCommand::__invoke()` z gotowym
     `$assoc_args` — bez przepisywania logiki (proces `wp cron event run
