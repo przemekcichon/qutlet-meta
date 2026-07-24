@@ -1683,7 +1683,7 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
   Allegro (enumy statusów), P-6.5a→P-6.5b→P-6.5c (łańcuch wielorepowy). Potwierdzenie
   runtime mapowania — PO implementacji (test tranzycji na sandbox/prod).
 
-#### P-6.5a — Domknięcie mapowania statusów + literał `wc-shipped` (qutlet-meta)
+#### 🟢 P-6.5a — Domknięcie mapowania statusów + literał `wc-shipped` (qutlet-meta)
 - **Repo/artefakt:** `qutlet-meta` (docs) — bez zależności (pierwszy w łańcuchu).
 - **Zakres:** domknąć mapowanie w `mapping-allegro.md` §8c/§8f (zdjąć „⚠ spoza próbki",
   wpisać enumy z dokumentacji Allegro, notę o `revision`), dopisać literał `wc-shipped` +
