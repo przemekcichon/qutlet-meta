@@ -1162,10 +1162,28 @@ na WP-CLI (skill `wp-wpcli-and-ops`), runtime przez narzędzia MCP `wp_cli`. Fea
 producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/`.
 
 ### Decyzje globalne fazy
-- **D-6.G1 (harmonogram) [USTALONE]:** zadania czasowo-krytyczne = **systemowy
-  cron → własna komenda WP-CLI** (np. `wp qutlet-allegro sync-stock`), z
-  `DISABLE_WP_CRON`. WP-Cron NIE daje kadencji co 2 min. Ustawienie systemowego
-  crona na Local by Flywheel = **handoff** (środowisko izolowane).
+- **D-6.G1 (harmonogram) [ZREWIDOWANE — decyzja użytkownika, sesja 2026-07-24]:**
+  pierwotne sformułowanie („WP-Cron NIE daje kadencji co 2 min") było zbyt
+  kategoryczne — WordPress pozwala zarejestrować własny interwał przez filtr
+  `cron_schedules` (np. 120 s). Zamiast systemowego crona wołającego BEZPOŚREDNIO
+  naszą komendę WP-CLI, wzorzec analogiczny do innego projektu użytkownika:
+  **systemowy cron tyka JEDNĄ, stałą linią** (`wp cron event run --due-now`,
+  częstotliwość ~1 min), a CAŁA logika harmonogramu (interwały, które hooki,
+  kiedy) mieszka w kodzie jako `wp_schedule_event()` — wersjonowana, widoczna
+  przez `wp cron event list`. Zmiana kadencji / dodanie zadania nigdy nie dotyka
+  configu systemowego. `DISABLE_WP_CRON` nadal potrzebne (inaczej pageview-owy
+  pseudo-cron też próbowałby odpalać zdarzenia — nieszkodliwe dzięki lockom, ale
+  osłabia gwarancję „tyka dokładnie wtedy, gdy chcemy"). Callback zdarzenia woła
+  ISTNIEJĄCĄ logikę komendy (`SyncStockCommand::__invoke()` z gotowym
+  `$assoc_args`) bez przepisywania — `wp cron event run --due-now` i tak działa
+  w pełnym procesie WP-CLI, więc `WP_CLI::error()`/`success()` w środku nadal
+  działają. Realizacja: klasa `StockSyncScheduler` (allegro), wzorzec
+  `Auth\RefreshScheduler` (self-healing `wp_schedule_event` na `init`,
+  `wp_clear_scheduled_hook` przy dezaktywacji) — ten plik notuje też rozgraniczenie
+  względem D-6.G1, wymaga poprawki komentarza przy tej rewizji. Ustawienie
+  systemowego crona (JEDNA linia tyknięcia) na Local by Flywheel = **handoff**
+  (środowisko izolowane) — prościej niż poprzednia wersja (nie trzeba już dwóch
+  osobnych wpisów o różnej kadencji).
 - **D-6.G2 (limity/rzetelność) [USTALONE]:** chronimy przed nakładaniem przebiegów
   (lock) i limitami API Allegro — przyrostowo (tylko zmienione oferty / sterowanie
   `order/events`), z backoffem; NIE ciągniemy pełnej listy ofert co 2 min na ślepo.
@@ -1315,7 +1333,9 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
 ### 🟡 P-6.2 — Synchronizacja stanów magazynowych (cron co ~2 min) — punkt wielorepowy → P-6.2a + P-6.2b
 - **Repo:** qutlet-core (P-6.2a) + qutlet-allegro (P-6.2b)
 - **Zakres (całość):** komenda WP-CLI `wp qutlet-allegro sync-stock` odpalana
-  systemowym cronem; pull stanów i cen Allegro→Woo oraz push Woo→Allegro
+  przez `wp_schedule_event()` na własnym interwale (D-6.G1 zrewidowane —
+  systemowy cron tyka JEDNĄ linią `wp cron event run --due-now`, cała logika
+  harmonogramu w kodzie); pull stanów i cen Allegro→Woo oraz push Woo→Allegro
   (`PATCH`, slot `write`); natychmiastowy push zdarzeniowy przy sprzedaży w
   sklepie (hook Woo); lock przeciw nakładaniu, obsługa rate-limitów
   (przyrost/backoff). Realizuje D-6.G3 (rozstrzygnięte — patrz decyzje globalne).
@@ -1341,12 +1361,17 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
   Komenda `sync-stock` jest parametryzowana `--environment` (D-6.G5) i pomija
   produkty o pochodzeniu innym niż wskazane środowisko (bezpiecznik przed
   wypchnięciem stanu sandboxowego produktu na produkcję i odwrotnie).
-- **D-6.2.3 (stan operacyjny syncu — poza modelem danych) [USTALONE]:** marker
-  zaległego pusha to meta `_qutlet_allegro_stock_push_pending` (właściciel:
-  qutlet-allegro; celowo NIE rejestrowane przez core — to stan operacyjny syncu,
-  nie fakt modelu; kontrakt §10.5). Kursor `order/events` per środowisko w opcji
-  `qutlet_allegro_stock_sync_cursor_{środowisko}`. Lock przebiegu wg wzorca
-  `Auth\RefreshLock` (atomowy `INSERT IGNORE`, łamanie osieroconego zamka).
+- **D-6.2.3 (stan operacyjny syncu — poza modelem danych) [USTALONE, doprecyzowane
+  po recenzji]:** marker zaległego pusha to meta `_qutlet_allegro_stock_push_pending`
+  (właściciel: qutlet-allegro; celowo NIE rejestrowane przez core — to stan
+  operacyjny syncu, nie fakt modelu; kontrakt §10.5). Kursor `order/events` per
+  środowisko w opcji `qutlet_allegro_stock_sync_cursor_{środowisko}`. Lock przebiegu
+  wg wzorca `Auth\RefreshLock` (atomowy `INSERT IGNORE`, łamanie osieroconego
+  zamka). **Doprecyzowanie (recenzja P-6.2b):** marker ma próg PORZUCENIA (1h) —
+  bez niego przyczyny trwałe (brak rozpoznawalnego pochodzenia, brak zarządzania
+  stanem) blokowałyby pull dla produktu na zawsze (D-6.2.4 czeka, dopóki marker
+  istnieje). Po przekroczeniu progu marker jest czyszczony bezwarunkowo i logowany
+  jako wymagający interwencji człowieka.
 - **D-6.2.4 (rekoncyliacja bezpieczna kierunkowo) [USTALONE]:** przy rekoncyliacji
   z listy `GET /sale/offers` **obniżenie** stanu w Woo stosujemy wprost (kierunek
   bezpieczny — nigdy nadsprzedaż), ale **podniesienie** stanu w Woo dopiero po
@@ -1375,19 +1400,31 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
     `GET /order/events` z własnym kursorem (D-6.G2 — NIE pełna lista co 2 min),
     dla zmienionych ofert `GET .../parts` → zapis `_stock` + `cena_allegro` +
     przeliczenie `_price` wg stawki (kontrakt §11); ponowienie zaległych pushy
-    (marker D-6.2.3); backoff na HTTP 429 (przerwanie przebiegu — kadencja crona
-    jest naturalnym ponowieniem);
+    (marker D-6.2.3, próg porzucenia); backoff na HTTP 429 (przerwanie przebiegu
+    bez przesunięcia kursora — kolejne tyknięcie jest naturalnym ponowieniem);
   - tryb `--full`: okresowa rekoncyliacja z listy `GET /sale/offers` (niesie
-    stan + cenę) wg reguł D-6.2.4 — osobny, rzadszy wpis crona;
+    stan + cenę) wg reguł D-6.2.4 — osobne, rzadsze zdarzenie WP-Cron (raz
+    dziennie w nocy wystarcza — zmierzone: przebieg `--full` na 555 ofertach
+    trwa pojedyncze sekundy, w przeciwieństwie do pełnego importu P-6.1b, który
+    dociąga PEŁNĄ zwrotkę + zdjęcia + drzewo kategorii per oferta);
+  - **`StockSyncScheduler`** (D-6.G1 zrewidowane): rejestruje własny interwał
+    (`cron_schedules`, ~2 min) i zdarzenie WP-Cron dla `sync-stock` oraz osobne
+    zdarzenie dzienne dla `sync-stock --full`; wzorzec `Auth\RefreshScheduler`
+    (self-healing `wp_schedule_event` na `init`, `wp_clear_scheduled_hook` przy
+    dezaktywacji). Callback woła `SyncStockCommand::__invoke()` z gotowym
+    `$assoc_args` — bez przepisywania logiki (proces `wp cron event run
+    --due-now` i tak jest pełnym WP-CLI, `WP_CLI::error()`/`success()` działają);
   - listener akcji domenowej core (P-6.2a): natychmiastowy `PATCH` stanu do
     Allegro (slot `write`; środowisko z pochodzenia produktu — D-6.2.2; krótki
-    timeout; awaria → marker zaległego pusha + log, cron domyka);
+    timeout; awaria → marker zaległego pusha + log, kolejne tyknięcie domyka);
   - poprawka kosza (D-6.2.1) w `ProductWriter::find_product_id()` + pomijanie
     produktów z kosza w imporcie i syncu (log, zero zapisów, zero pushy).
 - **Zależności:** P-6.2a (akcja domenowa), FAZA 2 (sloty `read` + `write`),
   P-6.1b (slice `OfferSync/`, klucz `_qutlet_allegro_offer_id`).
-- **Handoff:** konfiguracja systemowego crona na Local (kadencja ~2 min dla
-  `sync-stock`, rzadsza dla `--full`; Local = środowisko izolowane).
+- **Handoff:** `DISABLE_WP_CRON=true` w `wp-config.php` + JEDNA linia systemowego
+  tyknięcia na Local (`wp cron event run --due-now`, kadencja ~1 min — częstsza
+  niż same zdarzenia, żeby żadne nie czekało na kolejny tick); Local = środowisko
+  izolowane.
 
 ### P-6.3 — Obsługa zamówień Allegro → Woo
 - **Repo:** qutlet-allegro
