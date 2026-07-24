@@ -1428,6 +1428,41 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
   niż same zdarzenia, żeby żadne nie czekało na kolejny tick); Local = środowisko
   izolowane.
 
+### P-6.2c — Konfigurowalne środowiska harmonogramu sync-stock (wp-config.php)
+- **Repo:** qutlet-allegro (slice `OfferSync/` — rozszerzenie `StockSyncScheduler` z P-6.2b)
+- **Kontekst (sesja 2026-07-24, po pierwszym realnym uruchomieniu):** `StockSyncScheduler`
+  dziś hardkoduje `ENVIRONMENTS = [SANDBOX, PRODUCTION]` jako stałą klasy (poprawka
+  qutlet-allegro#14 — pierwsza wersja z P-6.2b leciała TYLKO na produkcji, co okazało się
+  błędne, gdy realny test na sandboksie nigdy nie doczekał się automatycznej synchronizacji).
+  Działa poprawnie, ale każda zmiana (np. wyłączenie sandboksa z automatyki po zakończeniu
+  fazy testów, albo odwrotnie) wymaga edycji kodu + branch/PR/merge. Użytkownik chce
+  przełącznik operacyjny bez deploya — decyzja: `wp-config.php`, analogicznie do
+  istniejącego wzorca stałych Allegro (D-2.G3) i kluczy API dostawców AI (CLAUDE.md) —
+  NIE opcja w bazie/adminie (to nie jest ustawienie użytkownika biznesowego, tylko
+  konfiguracja operacyjna środowiska, jak sekrety).
+- **Zakres:** nowa stała `wp-config.php` czytana przez `StockSyncScheduler` zamiast/obok
+  dzisiejszej stałej klasy `ENVIRONMENTS`; brak stałej → bezpieczny fallback (dzisiejsze,
+  already-zweryfikowane zachowanie); stała obecna ale pusta/nieprawidłowa → log
+  ostrzegawczy + ten sam fallback (NIE cichy no-op — literówka operatora ma być widoczna
+  w logu crona, nie zniknąć bez śladu).
+- **Pod-decyzje [OTWARTE — do rozstrzygnięcia przy realizacji]:**
+  - D-6.2c.1 (nazwa i format stałej): propozycja
+    `QUTLET_ALLEGRO_SYNC_STOCK_ENVIRONMENTS` jako string rozdzielony przecinkami (np.
+    `"sandbox,production"` albo samo `"production"`) — prostsze do edycji narzędziami
+    typu `edit_wp_config` (MCP), które przyjmują tylko literały skalarne, nie tablice
+    (`define()` w PHP 7+ technicznie przyjąłby tablicę, ale to zwiększa tarcie edycji).
+  - D-6.2c.2 (fallback bez stałej): czy brak stałej = oba środowiska (dzisiejsze,
+    zweryfikowane zachowanie — REKOMENDACJA) czy tylko produkcja (pierwotny zamiar sprzed
+    poprawki #14)? Zawężenie powinno wymagać ŚWIADOMEGO wpisania stałej, nie być domyślne.
+  - D-6.2c.3 (walidacja): nieprawidłowa wartość (literówka, nieznane środowisko) — log
+    ostrzegawczy + fallback (REKOMENDACJA — harmonogram nie powinien milczeć na zawsze
+    z powodu literówki) czy twardy błąd zatrzymujący `wp cron event run` na TYM tyknięciu
+    (ryzyko: ubiłoby też inne due zdarzenia w tym samym tyknięciu, jak `RefreshScheduler` —
+    patrz uzasadnienie `WP_CLI::runcommand()` w `StockSyncScheduler`, ten sam problem)?
+- **Zależności:** P-6.2b (`StockSyncScheduler`, qutlet-allegro#13 + fix #14).
+- **Handoff:** brak — czysta konfiguracja kodowa + wpis w `wp-config.php`, żadnej zmiany
+  poza samą stałą (Local = środowisko izolowane, ale to nie dotyka runtime poza configiem).
+
 ### 🟡 P-6.3 — Obsługa zamówień Allegro → Woo — punkt wielorepowy → P-6.3a + P-6.3b
 - **Repo:** qutlet-meta (P-6.3a) + qutlet-allegro (P-6.3b)
 - **Zakres (całość):** przyrostowy polling `GET /order/events` (własny kursor per
