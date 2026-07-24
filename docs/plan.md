@@ -1523,7 +1523,7 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
   `qutlet_allegro_order_sync_lock_{środowisko}` wzorca `StockSyncLock`/`Auth\RefreshLock`.
   Autorytatywna treść z `checkout-form`, nie ze snapshotu zdarzenia (§8d). Literały → §12.
 
-#### 🟡 P-6.3a — Kontrakt zamówień Allegro → WC_Order (qutlet-meta)
+#### 🟢 P-6.3a — Kontrakt zamówień Allegro → WC_Order (qutlet-meta)
 - **Repo:** qutlet-meta (`docs/kontrakt-danych.md`)
 - **Zakres:** dopisać sekcję §12 — literały modelu zamówień: klucz idempotencji
   `_qutlet_allegro_checkout_form_id` (indeksowana meta `WC_Order`), dyskretne meta
