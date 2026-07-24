@@ -23,6 +23,8 @@ statusu planowania (ROZPISANA/ZATWIERDZONA to planowanie, ikona to realizacja).
 - 🟦 **faza — do realizacji** (jeszcze nierozpoczęta).
 - 🟨 **faza — w trakcie** / 🟡 **punkt — w trakcie** (aktualnie realizowany).
 - 🟩 **faza — zrealizowana** / 🟢 **punkt — zrealizowany** (domknięty + zmergowany).
+- ❓ **„Someday maybe"** — punkt zapisany, ale coraz mniej pewne, że go wdrożymy;
+  parkujemy pomysł bez zobowiązania do realizacji (może zniknąć).
 
 Reguły granularności:
 - **Do realizacji (🟦)** oznaczamy **TYLKO fazy**, nie podpunkty (inaczej sam szum).
@@ -1555,7 +1557,7 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
   środowisko D-6.G5), P-4.3 (`mapping` §8), P-6.1 (produkty + `_qutlet_allegro_offer_id`
   do powiązania pozycji). Konsument: P-6.4 (dostarcza `buyer.email` + moment utworzenia).
 
-### P-6.4 — Import kupujących Allegro jako klientów Woo (marketing własny) — [OTWARTE]
+### ❓ P-6.4 — Import kupujących Allegro jako klientów Woo (marketing własny) — [OTWARTE]
 - **Repo:** qutlet-allegro (tworzenie/dopasowanie klienta przy imporcie zamówienia
   P-6.3) + ewentualnie qutlet-core (oznaczenie źródła / pole). Feature rozproszony;
   granice per repo rozstrzygamy przy realizacji kroku 3.
