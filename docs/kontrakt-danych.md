@@ -382,7 +382,7 @@ dlatego świadomie **poza rejestracją core** (D-6.2.3): zapisuje i czyta wyłą
 | Literał | Miejsce | Typ | Znaczenie |
 |---------|---------|-----|-----------|
 | `_qutlet_allegro_stock_push_pending` | meta (produkt) | string (unix timestamp) | marker ZALEGŁEGO pusha stanu Woo→Allegro (natychmiastowy push z hooka padł). Obecność = cron ma ponowić push AKTUALNEGO stanu Woo, zanim zastosuje jakikolwiek pull dla tego produktu (D-6.2.4). Kasowany po udanym pushu ALBO gdy marker jest starszy niż próg porzucenia (recenzja P-6.2b: bez tego progu przyczyny trwałe — np. brak rozpoznawalnego pochodzenia — blokowałyby pull na zawsze; porzucenie loguje się jako wymagające interwencji człowieka, próg w `StockPusher::PENDING_STALE_SECONDS`). |
-| `qutlet_allegro_stock_sync_cursor_{środowisko}` | option (`autoload = no`) | string (id ostatniego przetworzonego zdarzenia `order/events`) | kursor przyrostowego pulla per środowisko (np. `qutlet_allegro_stock_sync_cursor_sandbox`). Własny kursor P-6.2 — NIE współdzielony z przyszłym pollingiem zamówień P-6.3 (osobni konsumenci, osobne kursory). |
+| `qutlet_allegro_stock_sync_cursor_{środowisko}` | option (`autoload = no`) | string (id ostatniego przetworzonego zdarzenia `order/events`) | kursor przyrostowego pulla per środowisko (np. `qutlet_allegro_stock_sync_cursor_sandbox`). Własny kursor P-6.2 — NIE współdzielony z pollingiem zamówień P-6.3 (osobni konsumenci, osobne kursory; kursor zamówień: §12.3). |
 | `qutlet_allegro_stock_sync_lock_{środowisko}` | option (`autoload = no`) | string (unix timestamp) | zamek przebiegu `sync-stock` per środowisko, wzorzec `Auth\RefreshLock` (atomowy `INSERT IGNORE`, łamanie osieroconego zamka po timeoucie). |
 
 ### Odnośniki (§10)
@@ -431,6 +431,93 @@ Uwagi:
 
 ---
 
+## 12. Zamówienie Allegro → `WC_Order` (FAZA 6 — P-6.3)
+
+Powierzchnia danych **importu zamówień** Allegro → WooCommerce (P-6.3b). W odróżnieniu
+od produktu (§1–§11) zamówienie jest **natywnym obiektem `WC_Order`** — kontrakt świadomie
+NIE dublował dotąd modelu zamówień (`docs/mapping-allegro.md` §8a). Ten rozdział spisuje
+**tylko** literały specyficzne dla Allegro, które import dokłada na natywne zamówienie:
+klucz idempotencji, dyskretne meta bez natywnego miejsca (`mapping` §8e) oraz stan
+operacyjny pollingu. Pola natywne (billing z `buyer`, shipping z `delivery`, płatność,
+pozycje, status) **nie są naszymi literałami** — to natywne właściwości `WC_Order` z
+mappingu §8c (analogia do §10.2 dla produktu).
+
+**Właściciel i sposób zapisu (D-6.3.4).** Wszystkie meta poniżej pisze i czyta wyłącznie
+`qutlet-allegro` przez **natywne WC CRUD** (`$order->update_meta_data()` /
+`$item->update_meta_data()`), a stan operacyjny przez `get_option`/`update_option`. Core
+ich **NIE rejestruje** (`register_post_meta` nie ma zastosowania: inaczej niż produktowe
+`post_meta`, meta `WC_Order` nie ma kolizji z UI edycji, a pod HPOS nie jest `post_meta`).
+Prefiks `_qutlet_allegro_` — zwięzłość i spójność z resztą repo, nie ochrona rejestracją.
+
+**Minimalizacja PII (D-6.3.5 / `mapping` §8g).** Do zamówienia trafia tylko zakres
+funkcjonalny (imię/nazwisko/email/telefon/adres → natywne billing/shipping). **BEZ verbatim
+blobu zamówienia** (kontrast z ofertą §9.1 — blob niósłby wrażliwe dane bez potrzeby).
+`buyer.personalIdentity` i `buyer.login` **nie przechowywane**. Zamówienia GOŚCINNE —
+import NIE tworzy kont klientów Woo (to warunkowy, otwarty P-6.4).
+
+### 12.1 Meta zamówienia (`WC_Order`, zapis przez WC CRUD)
+
+| Pole (znaczenie) | Literał (`meta_key`) | Miejsce | Typ | Opcjonalne? | Źródło Allegro (mapping) | Kształt / uwagi |
+|------------------|----------------------|---------|-----|-------------|--------------------------|-----------------|
+| Id zamówienia Allegro (klucz idempotencji) | `_qutlet_allegro_checkout_form_id` | meta `WC_Order` | string | nie (na zamówieniach z importu) | `id` / `checkoutForm.id` (`mapping` §8c/§8e) | time UUID (np. `"00000001-0000-11f1-8000-000000000001"`) — **string opaque**. Klucz idempotencji: upsert po nim (`mapping` §8d — strumień powtarza zamówienie), nie insert. Powiązanie Woo↔Allegro (analog `_qutlet_allegro_offer_id`, §10.1). Szybkie wyszukanie zamówienia po tym kluczu (`wc_get_orders`) = zachowanie importu P-6.3b. |
+| Rewizja treści zamówienia | `_qutlet_allegro_order_revision` | meta `WC_Order` | string | tak | `revision` (`mapping` §8c/§8e) | np. `"b3a81206"`. Wykrycie zmiany treści przy pollingu (zmiana `revision` → refetch/aktualizacja). Brak → nierozpoznana rewizja / import sprzed pola. |
+| Punkt odbioru / paczkomat | `_qutlet_allegro_pickup_point` | meta `WC_Order` | array (serializowana) | tak | `delivery.pickupPoint` (`mapping` §8e/§8f) | zapisywane **tylko gdy `delivery.pickupPoint` ≠ `null`** (dostawa pod adres → brak meta). Natywne Woo nie modeluje punktu odbioru. Kształt niżej. `description` bywa `null` przy obecnym obiekcie (§8f). |
+
+**Kształt `_qutlet_allegro_pickup_point`** (serializowana tablica; zapisuje import P-6.3b):
+
+```jsonc
+{
+  "id": "…",            // id punktu/paczkomatu
+  "name": "…",          // nazwa punktu
+  "description": null,  // bywa null przy obecnym obiekcie (§8f)
+  "address": { "street": "…", "zipCode": "00-000", "city": "…", "countryCode": "PL" }
+}
+```
+
+### 12.2 Meta pozycji zamówienia (`WC_Order_Item_*`, zapis przez WC CRUD)
+
+| Pole (znaczenie) | Literał (`meta_key`) | Miejsce | Typ | Opcjonalne? | Źródło Allegro (mapping) | Kształt / uwagi |
+|------------------|----------------------|---------|-----|-------------|--------------------------|-----------------|
+| Id pozycji Allegro | `_qutlet_allegro_line_item_id` | meta pozycji (`WC_Order_Item_Product`) | string | tak | `lineItems[].id` (`mapping` §8e) | time UUID (traceability pozycja Woo↔Allegro). |
+| Id metody dostawy Allegro | `_qutlet_allegro_delivery_method_id` | meta pozycji wysyłki (`WC_Order_Item_Shipping`) | string | tak | `delivery.method.id` (`mapping` §8c/§8e) | UUID (np. `"0960fef9-cc88-4558-b2b2-62331a20b5b2"`). Dopasowanie/etykieta metody dostawy; nazwa (`delivery.method.name`) → nazwa pozycji wysyłki natywnie (§8c). |
+
+### 12.3 Stan operacyjny syncu zamówień (option, właściciel `qutlet-allegro`)
+
+Wewnętrzna księgowość pollingu — jak §10.5 dla stanów, świadomie POZA rejestracją core;
+prefiks `_`/brak `autoload`. **Osobne od kursora/zamka stanów P-6.2** (§10.5): ten sam
+endpoint `GET /order/events`, ale osobny konsument (treść zamówień, nie stan magazynowy)
+→ współdzielenie nadpisywałoby sobie postęp (D-6.3.6).
+
+| Literał | Miejsce | Typ | Znaczenie |
+|---------|---------|-----|-----------|
+| `qutlet_allegro_order_sync_cursor_{środowisko}` | option (`autoload = no`) | string (id ostatniego przetworzonego zdarzenia `order/events`) | kursor przyrostowego pollingu zamówień per środowisko (np. `qutlet_allegro_order_sync_cursor_sandbox`). NIE współdzielony z `qutlet_allegro_stock_sync_cursor_*` (§10.5). |
+| `qutlet_allegro_order_sync_lock_{środowisko}` | option (`autoload = no`) | string (unix timestamp) | zamek przebiegu `sync-orders` per środowisko, wzorzec `StockSyncLock`/`Auth\RefreshLock` (atomowy `INSERT IGNORE`, łamanie osieroconego zamka po timeoucie). |
+
+### 12.4 Pola Allegro NIE przechowywane osobno
+
+Zgodnie z minimalizacją (D-6.3.5) i „zarabianiem na pole" (D-5.2.2), reszta pól zamówienia
+nie dostaje osobnego meta. Nie ma verbatim blobu, więc pola poniżej **nie są nigdzie
+przechowywane**, chyba że osobny, przyszły punkt je otworzy:
+
+| Pole Allegro | Decyzja | Podstawa |
+|--------------|---------|----------|
+| `buyer.personalIdentity`, `buyer.login` | **nie przechowujemy** — wrażliwe / brak potrzeby | `mapping` §8g, D-6.3.5 |
+| `buyer.id`, `buyer.guest`, `buyer.preferences.language` | **nie przechowujemy** osobno (email trafia natywnie do billing; `buyer.id` otworzy dopiero warunkowy P-6.4) | `mapping` §8e, D-6.3.5 |
+| `marketplace.id`, `updatedAt`, `payment.features`, `fulfillment.*`, `delivery.{smart,time,calculatedNumberOfPackages,cancellation}`, `invoice.*`, `lineItems[].{tax.subject,serialNumbers,vouchers,discounts,…}` | **nie przechowujemy** osobno (operacyjne / `null`/puste w próbce / brak użycia) — otworzy je własny punkt przy realnej potrzebie | `mapping` §8e/§8f |
+| `invoice.address` + NIP | **nie przechowujemy** — kształt NIEZNANY (cała próbka `invoice.required:false`); mapping faktury domyka pierwsze zamówienie z fakturą | `mapping` §8f/§8g |
+
+### Odnośniki (§12)
+- Mapping (kształt zamówienia + pełne mapowanie): `docs/mapping-allegro.md` §8
+  (§8c natywny `WC_Order`, §8d polling `order/events`, §8e pola bez natywnego miejsca,
+  §8f warianty/pułapki, §8g PII).
+- Próbki kształtu: `docs/allegro-api-samples/GET_order-events.json`,
+  `GET_order-checkout-forms-id.json` (zredagowane, ale prawdziwe kształty i typy).
+- Plan: `docs/plan.md` → P-6.3 (rozbicie, D-6.3.1–D-6.3.6), P-6.3a (ten kontrakt),
+  P-6.3b (import), P-6.4 (warunkowy import kupujących — konsument `buyer.email`).
+- Stan operacyjny stanów magazynowych (analogiczny wzorzec, osobne literały): §10.5.
+
+---
+
 ## Log decyzji (P-1.0)
 
 | Decyzja  | Rozstrzygnięcie                                        | Podstawa |
@@ -472,3 +559,11 @@ Uwagi:
 |----------|--------------------------------------------------------------------------------|----------|
 | D-6.G3   | stan: zdarzeniowo dwukierunkowo (push z Woo natychmiast hookiem zamówienia, pull z Allegro cronem po `order/events`) + okresowa rekoncyliacja; konflikt → niższy stan; restock tylko na Allegro; pull obejmuje stan + cenę (`/parts` → `_stock`, `cena_allegro`, przeliczenie `_price` wg §11) | decyzja użytkownika (sesja 2026-07-23) |
 | D-6.2.3  | stan operacyjny syncu (marker zaległego pusha, kursor, lock) = meta/opcje własne `qutlet-allegro` (§10.5), świadomie POZA rejestracją core — księgowość procesu, nie model danych | plan P-6.2 (sesja 2026-07-23) |
+
+## Log decyzji (P-6.3)
+
+| Decyzja  | Rozstrzygnięcie                                                                 | Podstawa |
+|----------|--------------------------------------------------------------------------------|----------|
+| D-6.3.4  | meta zamówienia (§12) pisze `qutlet-allegro` przez natywne WC CRUD (`$order->update_meta_data()`), BEZ rejestracji w core — inaczej niż produktowe `post_meta`, meta `WC_Order` nie ma kolizji z UI edycji, a pod HPOS nie jest `post_meta`; punkt dwurepowy (meta + allegro), nie trzyrepowy | decyzja użytkownika (sesja 2026-07-24) |
+| D-6.3.5  | do `WC_Order` tylko zakres funkcjonalny (billing/shipping/telefon/email); `personalIdentity`/`login` NIE; BEZ verbatim blobu zamówienia; zamówienia gościnne (bez kont klientów — to warunkowy P-6.4) — potwierdza `mapping` D-4.3.4 | decyzja użytkownika (sesja 2026-07-24) |
+| D-6.3.6  | idempotencja upsert po `checkoutForm.id` (`_qutlet_allegro_checkout_form_id`); własny kursor `qutlet_allegro_order_sync_cursor_{środowisko}` (NIE współdzielony z P-6.2, §10.5) + lock `qutlet_allegro_order_sync_lock_{środowisko}` (§12.3) | plan P-6.3 (sesja 2026-07-24) |
