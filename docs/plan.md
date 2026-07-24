@@ -1692,7 +1692,7 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
   mappingu) — realizowane w tej sesji.
 - **Zależności:** brak. Odblokowuje P-6.5b (literał z kontraktu).
 
-#### P-6.5b — Rejestracja statusu `wc-shipped` („Wysłane") (qutlet-core)
+#### 🟢 P-6.5b — Rejestracja statusu `wc-shipped` („Wysłane") (qutlet-core)
 - **Repo/artefakt:** `qutlet-core`, slice `OrderSync/` (glue do WooCommerce → core).
 - **Zakres:** zarejestrować własny status zamówienia `wc-shipped` przez `register_post_status`
   + filtr `wc_order_statuses` (etykieta „Wysłane"), semantyka **opłacone, nieterminalne**
