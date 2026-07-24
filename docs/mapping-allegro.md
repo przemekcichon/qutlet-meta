@@ -532,11 +532,12 @@ a strumień dokłada `events[].type`. Woo ma **jedną** oś (`wc-*`). Kolaps pro
 |----------------|-------------------|-------|
 | event `FILLED_IN` | *(brak zamówienia Woo albo `wc-pending`)* | koszyk wypełniony, **niezapłacone** — do decyzji P-6.3, czy w ogóle tworzyć zamówienie (§8d). |
 | event `BOUGHT` (⚠ `status = BOUGHT` spoza próbki) | `wc-pending` (`wc-on-hold`?) | zakupione, płatność jeszcze niepotwierdzona. `BOUGHT` w próbce występuje tylko jako `events[].type`, nie jako `checkoutForm.status`. |
-| `status = READY_FOR_PROCESSING` + fulfillment `NEW`/`PROCESSING`/`READY_FOR_SHIPMENT`/`READY_FOR_PICKUP` | `wc-processing` | **opłacone, gotowe do realizacji** — próg tworzenia `WC_Order`; bez zmiany dopóki niewysłane. |
-| `fulfillment.status = SENT` | `wc-shipped` | **wysłane** → własny status Woo `wc-shipped` (rejestruje `qutlet-core`, D-6.5.5 — Woo nie ma natywnego „wysłane"). |
+| `status = READY_FOR_PROCESSING` + fulfillment `NEW`/`PROCESSING`/`READY_FOR_SHIPMENT` | `wc-processing` | **opłacone, gotowe do realizacji** — próg tworzenia `WC_Order`; bez zmiany dopóki niewysłane. |
+| `fulfillment.status = SENT` **lub** `READY_FOR_PICKUP` | `wc-shipped` | **wysłane / czeka na odbiór w punkcie** → własny status Woo `wc-shipped` (rejestruje `qutlet-core`, D-6.5.5 — Woo nie ma natywnego „wysłane"). Cykl paczkomatu: `SENT → READY_FOR_PICKUP → PICKED_UP`, więc `READY_FOR_PICKUP` jest PO wysyłce — mapowanie na `wc-processing` COFAŁOBY status (regresja), stąd oba → `wc-shipped`. |
 | `fulfillment.status = PICKED_UP` | `wc-completed` | **odebrane przez kupującego** = zrealizowane. |
 | `status = CANCELLED` (event `BUYER_CANCELLED`/`AUTO_CANCELLED`) | `wc-cancelled` | oś `status` ma **priorytet** nad `fulfillment` (terminalny). Auto po 7 dniach bez zapłaty / 14 dla przelewu. |
 | `fulfillment.status = RETURNED` | *(poza zakresem P-6.5)* | zwrot — zmienia się AUTOMATYCZNIE (sprzedawca nie ustawia); `wc-refunded` żyje na osobnych endpointach (`/order/customer-returns`, `/payments/refunds`) → osobny punkt (D-6.5.3). Log + skip. |
+| *nieznany `fulfillment.status`* (spoza enumeracji) | *(bez zmiany)* | Allegro dodaje nowe statusy realizacji z czasem — nierozpoznanej wartości **NIE mapujemy na `wc-processing`** (to cofnęłoby już-wysłane zamówienie): zostawiamy bieżący status Woo + log. |
 
 Slugi Woo (VERBATIM z instalacji): `wc-pending`, `wc-processing`, `wc-on-hold`,
 `wc-completed`, `wc-cancelled`, `wc-refunded`, `wc-failed`; **`wc-shipped` = nowy status
