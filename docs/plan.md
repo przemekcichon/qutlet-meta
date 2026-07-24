@@ -1607,30 +1607,113 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
 - **Uwaga (granice):** to osobny wątek (klient / retencja), nie część czystego
   importu/sync — jeśli urośnie, wydzielić do własnej fazy.
 
-### P-6.5 — Synchronizacja statusów/tranzycji zamówień Allegro → Woo — [OTWARTE, do rozpisania]
-- **Repo:** qutlet-allegro (slice `OrderSync/` — rozszerzenie importu P-6.3b; zapis
-  przez natywne WC CRUD, wzorzec D-6.3.4).
+### 🟡 P-6.5 — Synchronizacja statusów/tranzycji zamówień Allegro → Woo — [ROZPISANY, wielorepowy]
+- **Feature rozproszony (ten sam slice `OrderSync/` w 3 repo).** Wybór własnego statusu
+  `wc-shipped` (D-6.5.5) przesunął punkt z „rozszerzenia importu w allegro" na feature
+  wielorepowy: rejestracja statusu Woo to **glue do WooCommerce → core** (CLAUDE.md:
+  „integrujesz się z Woo → core"), a nowy literał `wc-shipped` wchodzi **najpierw do
+  kontraktu** (D-5.G2). Stąd rozbicie na trzy pod-punkty z osobnymi branchami/PR i jawną
+  zależnością (a → b → c):
+  - **P-6.5a — `qutlet-meta` (docs):** domknąć mapowanie statusów w `mapping-allegro.md`
+    §8c/§8f (zdjąć „⚠ spoza próbki"), dopisać literał `wc-shipped` + tabelę mapowania do
+    `kontrakt-danych.md` §12, zapisać decyzje D-6.5.1–D-6.5.7 w `plan.md`. Ten pod-punkt =
+    NINIEJSZE rozpisanie (rewizja planu) + rewizja kontraktu/mappingu. *(brak zależności)*
+  - **P-6.5b — `qutlet-core` (slice `OrderSync/`):** zarejestrować własny status
+    zamówienia `wc-shipped` („Wysłane") jako glue Woo — `register_post_status` + filtr
+    `wc_order_statuses`, semantyka „opłacone, nieterminalne" (widoczny w adminie i w
+    „Moje konto"). NIE w allegro. *(zależy od P-6.5a — literał z kontraktu)*
+  - **P-6.5c — `qutlet-allegro` (slice `OrderSync/`):** właściwa synchronizacja statusów
+    (tor eventowy + rekoncyliacja `--full`). *(zależy od P-6.5b — konsumuje `wc-shipped`)*
 - **Kontekst (sesja 2026-07-24, zgłoszenie użytkownika):** realizuje „osobny punkt"
-  zapowiedziany wprost w **D-6.3.1** — tranzycje wysyłki/anulowania/zwrotu
-  (`FULFILLMENT_STATUS_CHANGED` poza `READY_FOR_SHIPMENT`, docelowe `wc-completed`/
-  `wc-cancelled`/`wc-refunded`) miały kształt SPOZA próbki §8f i zostały ODŁOŻONE do
-  czasu, aż będą realne zwrotki. Objaw: użytkownik zmienił status zamówienia na Allegro,
-  ale zaimportowane do Woo zamówienie dalej ma `wc-processing` — statusy nie są ściągane.
-- **Zakres (szkic — do rozpisania wobec realnych zwrotek):** przyrostowy polling już
-  pobiera `GET /order/events` (P-6.3b, kursor per środowisko); rozpoznać zdarzenia
-  zmiany statusu/fulfillmentu i odwzorować na tranzycję statusu istniejącego `WC_Order`
-  (dopasowanie po `checkoutForm.id` — istniejąca idempotentna meta `_qutlet_allegro_checkout_form_id`,
-  D-6.3.6). NIE tworzyć nowego zamówienia dla samej zmiany statusu — aktualizować istniejące.
-- **Pod-decyzje [OTWARTE — do rozstrzygnięcia z użytkownikiem przy realizacji]:**
-  - mapowanie statusów Allegro → Woo — ustalić z REALNYCH próbek tranzycji, nie z pamięci
-    (dociągnąć do `docs/allegro-api-samples/` przez handoff);
-  - kierunek: tylko pull Allegro→Woo (zgłoszona potrzeba), czy w przyszłości też push
-    Woo→Allegro (wysyłka nadana w Woo → oznacz na Allegro)? Push = zapis do żywego konta →
-    rozważyć wobec etosu D-2.G7 (choć D-2.G7 dotyczy TREŚCI oferty, nie statusu zamówienia —
-    do jawnego rozstrzygnięcia, czy status zamówienia podlega analogicznemu bezpiecznikowi);
-  - kolizja z ręczną zmianą statusu w adminie Woo (nie nadpisywać w kółko?).
-- **Zależności:** P-6.3 (import zamówień, kursor/lock/idempotencja, `GET /order/events`),
-  realne próbki tranzycji (handoff — zmienić status na Allegro i zebrać zwrotki).
+  zapowiedziany wprost w **D-6.3.1** — tranzycje wysyłki/anulowania miały kształt SPOZA
+  próbki (§8f) i zostały ODŁOŻONE. Objaw: użytkownik zmienił status zamówienia na Allegro,
+  ale zaimportowane do Woo zamówienie dalej ma `wc-processing`. **Źródło mapowania (sesja
+  2026-07-24):** zamiast runtime-próbek — enumy z DOKUMENTACJI Allegro REST API (dwie
+  osie: `checkoutForm.status` + `fulfillment.status`; typy `order/events`), do
+  POTWIERDZENIA realnym runtime PO implementacji (test na sandbox/prod).
+- **Ground-truth (kod na dysku, sesja 2026-07-24) — dwie obserwacje kształtujące kod:**
+  1. **`revision` NIE zmienia się przy zmianie fulfillmentu** (zmierzone w
+     `GET_order-events.json`: zdarzenia `READY_FOR_PROCESSING` i `FULFILLMENT_STATUS_CHANGED`
+     tego samego zamówienia mają identyczny `revision` — `1ab823c2` / `b3a81206`). Obecny
+     NO-OP po `revision` w `OrderWriter::upsert()` PRZEŁKNĄŁBY tranzycję → sync statusu MUSI
+     iść osobną ścieżką niż wykrywanie zmian treści (D-6.5.7).
+  2. **Kursor `qutlet_allegro_order_sync_cursor_{env}` już przelatuje nad zdarzeniami
+     fulfillmentu bez akcji** (dziś liczone jako `not_ready`, kursor się przesuwa) →
+     zamówienia zmienione PRZED wdrożeniem P-6.5c nie dostaną ponownego zdarzenia i utkną
+     w `wc-processing`. Zgłoszony objaw dotyczy właśnie takiego już-utkniętego zamówienia →
+     potrzebny tor rekoncyliacji (D-6.5.6). **Kursor pozostaje jeden** (ten sam konsument:
+     treść+status zamówienia); NIE dokładamy nowego kursora ani nowej meta.
+- **Zakres kodu P-6.5c (do implementacji, po ground-truth):**
+  - **Tor eventowy:** rozszerzyć zbiór konsumowanych typów zdarzeń poza
+    `READY_FOR_PROCESSING` o `FULFILLMENT_STATUS_CHANGED`, `BUYER_CANCELLED`,
+    `AUTO_CANCELLED` (`FILLED_IN`/`BOUGHT` nadal pomijane — niepłacone, próg tworzenia =
+    opłacone, D-6.3.1). Dla każdego unikalnego `checkoutForm.id` pobrać AUTORYTATYWNY
+    `GET /order/checkout-forms/{id}` i zrekoncyliować do stanu bieżącego.
+  - **Mapowanie → status Woo** liczone przez `OrderMapper` z obu osi (`status` +
+    `fulfillment.status`), oś `status = CANCELLED` ma priorytet (terminalny). Zastąpić
+    hardkod `set_status('processing')` w `OrderWriter` wartością z mappera.
+  - **Próg tworzenia bez zmian:** brak istniejącego `WC_Order` → tworzymy TYLKO dla
+    `READY_FOR_PROCESSING`; dla samej tranzycji (SENT/CANCELLED) bez istniejącego
+    zamówienia → skip (nie tworzymy). Istniejące w KOSZU → nie ruszamy (D-6.2.1/D-6.3.4).
+  - **Zastosowanie statusu niezależnie od `revision`** (D-6.5.7): target liczony z
+    mappingu i ustawiany, gdy różny od bieżącego `$order->get_status()` — nawet gdy
+    `revision` bez zmian. Przejść przez istniejący `save()` z wyciszeniem maili i blokadą
+    `woocommerce_can_reduce_order_stock` (`OrderWriter`), by tranzycja nie wysłała maila
+    do kupującego ani nie ruszyła stanu (stan OWNED przez `sync-stock`, D-6.G3).
+  - **Rekoncyliacja `--full`** (wzorzec `OfferSync\SyncStockCommand::--full`): iteruje
+    zaimportowane `WC_Order` w stanie NIETERMINALNYM (mają `_qutlet_allegro_checkout_form_id`),
+    refetch checkout-form, stosuje mapowanie. Naprawia backlog i dryf. Tor przyrostowy
+    (kursor) obsługuje przyszłość; `--full` — zaległości.
+  - **Testy:** czyste funkcje mapujące status (obie osie → slug Woo) PHPUnitem, wzorzec
+    istniejących testów `OrderSync` (bez WP/sieci); PHPStan level 5. Runtime (tranzycje na
+    żywym/sandbox koncie) = potwierdzenie PO implementacji (D-6.5.4).
+- **Decyzje [USTALONE — sesja 2026-07-24]:**
+  - **D-6.5.1 — kierunek = TYLKO pull Allegro→Woo.** Zero zapisu do żywego konta Allegro
+    (slot `read`, D-6.G5). Push Woo→Allegro (wysyłka nadana w Woo → oznacz na Allegro) NIE
+    wchodzi; gdyby kiedyś — osobny punkt z jawnym bezpiecznikiem analogicznym do D-2.G7
+    (D-2.G7 dotyczy TREŚCI oferty; status zamówienia to inna powierzchnia zapisu).
+  - **D-6.5.2 — kolizja z ręczną zmianą w adminie = Allegro jest źródłem prawdy.** Pull
+    nadpisuje status Woo wg mapowania; kosz pozostaje JEDYNYM wyjątkiem „nie ruszamy"
+    (D-6.3.4). Świadoma prostota; brak dodatkowej meta „ostatnio zsync." — WC status jest
+    zapisem stanu.
+  - **D-6.5.3 — zwroty/refundy poza P-6.5 → osobny punkt.** `fulfillment.status = RETURNED`
+    (zmienia się AUTOMATYCZNIE, sprzedawca nie ustawia) oraz `wc-refunded` żyją na OSOBNYCH
+    endpointach (`/order/customer-returns`, `/payments/refunds`), nie na checkout-forms →
+    inny konsument/kursor. P-6.5 ich NIE dotyka (log + skip `RETURNED`).
+  - **D-6.5.4 — mapowanie statusów (enumy z dokumentacji Allegro; potwierdzenie runtime
+    po implementacji):**
+
+    | Sygnał Allegro | Woo | Uwaga |
+    |----------------|-----|-------|
+    | `status = READY_FOR_PROCESSING` + fulfillment `NEW`/`PROCESSING`/`READY_FOR_SHIPMENT`/`READY_FOR_PICKUP` | `wc-processing` | próg tworzenia; bez zmiany |
+    | `fulfillment.status = SENT` | `wc-shipped` | nowy status core (D-6.5.5) |
+    | `fulfillment.status = PICKED_UP` | `wc-completed` | odebrane = zrealizowane |
+    | `status = CANCELLED` (`BUYER_CANCELLED`/`AUTO_CANCELLED`) | `wc-cancelled` | oś `status` ma PRIORYTET nad fulfillment |
+    | `fulfillment.status = RETURNED` | — | poza zakresem (D-6.5.3); log + skip |
+
+    Slugi Woo VERBATIM z instalacji (`wc-processing`, `wc-completed`, `wc-cancelled`) +
+    nowy `wc-shipped` (D-6.5.5). Enumy Allegro `status`: `BOUGHT`/`FILLED_IN`/
+    `READY_FOR_PROCESSING`/`CANCELLED`; `fulfillment.status`: `NEW`/`PROCESSING`/
+    `READY_FOR_SHIPMENT`/`SENT`/`READY_FOR_PICKUP`/`PICKED_UP`/`CANCELLED`/`RETURNED`.
+  - **D-6.5.5 — własny status `wc-shipped` („Wysłane") rejestruje CORE (glue Woo), nie
+    allegro.** Woo nie ma natywnego stanu „wysłane"; `SENT` zasługuje na własny status
+    (wierność osi Allegro). Literał `wc-shipped` wchodzi NAJPIERW do kontraktu §12
+    (D-5.G2) → P-6.5a, potem rejestracja w core → P-6.5b, potem konsumpcja w allegro →
+    P-6.5c. Odrzucony wariant „SENT→wc-completed bez nowego statusu" (prostszy, ale
+    zlewa wysłane z odebranym).
+  - **D-6.5.6 — tor rekoncyliacji `--full`** (wzorzec `SyncStockCommand`): oprócz toru
+    przyrostowego (kursor, przyszłość) komenda dostaje tryb pełny, który iteruje
+    zaimportowane zamówienia w stanie nieterminalnym i dociąga ich bieżący status z
+    Allegro — bo kursor już przeleciał nad historycznymi zdarzeniami fulfillmentu
+    (naprawa zgłoszonego objawu + dryf).
+  - **D-6.5.7 — sync statusu NIE polega na `revision`.** Zmierzone: zmiana fulfillmentu
+    nie bumpuje `revision`, więc NO-OP po `revision` przełknąłby tranzycję. Target status
+    liczony z mapowania i stosowany, gdy różny od bieżącego `WC_Order` status — niezależnie
+    od `revision` (rewizja nadal steruje przebudową TREŚCI: pozycje/adresy/suma).
+- **Zależności:** P-6.3b (import zamówień: kursor/lock/idempotencja, `GET /order/events`,
+  `OrderMapper`/`OrderWriter`, klucz `_qutlet_allegro_checkout_form_id`), dokumentacja
+  Allegro (enumy statusów), P-6.5a→P-6.5b→P-6.5c (łańcuch wielorepowy). Potwierdzenie
+  runtime mapowania — PO implementacji (test tranzycji na sandbox/prod).
 
 ### P-6.6 — Order attribution „Allegro" dla zaimportowanych zamówień — [OTWARTE, do rozpisania]
 - **Repo:** qutlet-allegro (slice `OrderSync/`; zapis meta przez natywne WC CRUD, wzorzec D-6.3.4).

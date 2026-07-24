@@ -532,14 +532,21 @@ a strumień dokłada `events[].type`. Woo ma **jedną** oś (`wc-*`). Kolaps pro
 |----------------|-------------------|-------|
 | event `FILLED_IN` | *(brak zamówienia Woo albo `wc-pending`)* | koszyk wypełniony, **niezapłacone** — do decyzji P-6.3, czy w ogóle tworzyć zamówienie (§8d). |
 | event `BOUGHT` (⚠ `status = BOUGHT` spoza próbki) | `wc-pending` (`wc-on-hold`?) | zakupione, płatność jeszcze niepotwierdzona. `BOUGHT` w próbce występuje tylko jako `events[].type`, nie jako `checkoutForm.status`. |
-| `status = READY_FOR_PROCESSING` | `wc-processing` | **opłacone i gotowe do realizacji** — jedyny `status` w całej próbce. |
-| `fulfillment.status = READY_FOR_SHIPMENT` | `wc-processing` (bez zmiany) | gotowe do wysyłki; nie „completed" dopóki niewysłane. |
-| `fulfillment.status = SENT`/`DELIVERED`/… | `wc-completed` | ⚠ **wartości spoza próbki** — do potwierdzenia w FAZA 6 (§8f). |
-| anulowanie / zwrot | `wc-cancelled` / `wc-refunded` | ⚠ brak w próbce — kształt NIEZNANY, FAZA 6. |
+| `status = READY_FOR_PROCESSING` + fulfillment `NEW`/`PROCESSING`/`READY_FOR_SHIPMENT`/`READY_FOR_PICKUP` | `wc-processing` | **opłacone, gotowe do realizacji** — próg tworzenia `WC_Order`; bez zmiany dopóki niewysłane. |
+| `fulfillment.status = SENT` | `wc-shipped` | **wysłane** → własny status Woo `wc-shipped` (rejestruje `qutlet-core`, D-6.5.5 — Woo nie ma natywnego „wysłane"). |
+| `fulfillment.status = PICKED_UP` | `wc-completed` | **odebrane przez kupującego** = zrealizowane. |
+| `status = CANCELLED` (event `BUYER_CANCELLED`/`AUTO_CANCELLED`) | `wc-cancelled` | oś `status` ma **priorytet** nad `fulfillment` (terminalny). Auto po 7 dniach bez zapłaty / 14 dla przelewu. |
+| `fulfillment.status = RETURNED` | *(poza zakresem P-6.5)* | zwrot — zmienia się AUTOMATYCZNIE (sprzedawca nie ustawia); `wc-refunded` żyje na osobnych endpointach (`/order/customer-returns`, `/payments/refunds`) → osobny punkt (D-6.5.3). Log + skip. |
 
 Slugi Woo (VERBATIM z instalacji): `wc-pending`, `wc-processing`, `wc-on-hold`,
-`wc-completed`, `wc-cancelled`, `wc-refunded`, `wc-failed`. Pełna reguła (która oś ma
-priorytet, obsługa anulowań/zwrotów) domyka się w **FAZA 6** wobec realnych statusów.
+`wc-completed`, `wc-cancelled`, `wc-refunded`, `wc-failed`; **`wc-shipped` = nowy status
+rejestrowany przez `qutlet-core`** (D-6.5.5, kontrakt §12). Enumy Allegro (z dokumentacji
+REST API, do potwierdzenia runtime po implementacji — D-6.5.4): `status` =
+`BOUGHT`/`FILLED_IN`/`READY_FOR_PROCESSING`/`CANCELLED`; `fulfillment.status` =
+`NEW`/`PROCESSING`/`READY_FOR_SHIPMENT`/`SENT`/`READY_FOR_PICKUP`/`PICKED_UP`/`CANCELLED`/`RETURNED`;
+typy `order/events` = `FILLED_IN`/`BOUGHT`/`READY_FOR_PROCESSING`/`FULFILLMENT_STATUS_CHANGED`/`BUYER_CANCELLED`/`AUTO_CANCELLED`.
+Pełna reguła (priorytet osi, tranzycje wysyłki/anulowania) rozstrzygnięta w **P-6.5**
+(pull-only Allegro→Woo, D-6.5.1); zwroty/refundy — osobny punkt (D-6.5.3).
 
 #### Pozycje → pozycje zamówienia (`WC_Order_Item_Product`)
 | Pole Allegro (ścieżka JSON) | Pole WP (`WC_Order`) | Transformacja / uwagi |
@@ -645,9 +652,16 @@ zamówienia i tak może trafić verbatim do meta zamówienia (decyzja FAZA 5, ja
   `quantity: 1`. **Zamówienia wielopozycyjne i wielosztukowe = luka próbki** (`SOURCES.md`)
   — mapping zakłada pętlę po `lineItems[]` i dowolne `quantity`, ale to weryfikuje FAZA 6.
 - **Statusy spoza próbki:** cała próbka to `status = READY_FOR_PROCESSING` +
-  `fulfillment.status = READY_FOR_SHIPMENT`. Statusy wysyłki/dostawy, **anulowania,
-  zwroty, `surcharges`, `vouchers`, `discounts`** — nieobecne; ich kształt i mapping na
-  `wc-completed`/`wc-cancelled`/`wc-refunded` domyka FAZA 6 (§8c).
+  `fulfillment.status = READY_FOR_SHIPMENT`. Wartości wysyłki/dostawy/anulowania są
+  nieobecne w próbce, ale **enumy pochodzą z dokumentacji Allegro REST API** i mapping
+  domknięto w **P-6.5** (§8c, D-6.5.4) — runtime potwierdza je PO implementacji (test
+  tranzycji na sandbox/prod). `surcharges`/`vouchers`/`discounts` nadal nieobecne w próbce.
+  Zwroty/refundy (`RETURNED`, `wc-refunded`) — osobny punkt (D-6.5.3).
+- **`revision` NIE zmienia się przy zmianie `fulfillment.status`:** zmierzone w
+  `GET_order-events.json` — zdarzenia `READY_FOR_PROCESSING` i `FULFILLMENT_STATUS_CHANGED`
+  tego samego zamówienia mają identyczny `revision` (`1ab823c2` / `b3a81206`). Sync statusu
+  (P-6.5) NIE może polegać na `revision` (D-6.5.7): `revision` steruje przebudową TREŚCI
+  (pozycje/adresy/suma), status realizacji jest OSOBNĄ osią.
 - **Kupujący-firma i kupujący-gość:** `buyer.guest: false` i `companyName: null` w całej
   próbce — kształt firmowy/gościowy NIEZNANY (`SOURCES.md`).
 - **Snapshot zdarzenia ≠ pełne zamówienie:** `events[].order` to podzbiór; autorytatywny
