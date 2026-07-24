@@ -1607,7 +1607,7 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
 - **Uwaga (granice):** to osobny wątek (klient / retencja), nie część czystego
   importu/sync — jeśli urośnie, wydzielić do własnej fazy.
 
-### 🟡 P-6.5 — Synchronizacja statusów/tranzycji zamówień Allegro → Woo — [ROZPISANY, wielorepowy]
+### 🟢 P-6.5 — Synchronizacja statusów/tranzycji zamówień Allegro → Woo — [ROZPISANY, wielorepowy]
 - **Feature rozproszony (ten sam slice `OrderSync/` w 3 repo).** Wybór własnego statusu
   `wc-shipped` (D-6.5.5) przesunął punkt z „rozszerzenia importu w allegro" na feature
   wielorepowy: rejestracja statusu Woo to **glue do WooCommerce → core** (CLAUDE.md:
@@ -1700,7 +1700,7 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
   VERBATIM z kontraktu §12.5. NIE w allegro. Bez logiki syncu (to P-6.5c).
 - **Zależności:** P-6.5a (literał `wc-shipped` w kontrakcie). Odblokowuje P-6.5c.
 
-#### P-6.5c — Synchronizacja statusów Allegro → Woo (qutlet-allegro)
+#### 🟢 P-6.5c — Synchronizacja statusów Allegro → Woo (qutlet-allegro)
 - **Repo/artefakt:** `qutlet-allegro`, slice `OrderSync/` (rozszerzenie importu P-6.3b).
 - **Zakres kodu (po ground-truth):**
   - **Tor eventowy:** rozszerzyć zbiór konsumowanych typów zdarzeń poza
