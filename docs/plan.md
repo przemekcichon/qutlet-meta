@@ -1330,7 +1330,7 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
 - **Zależności:** **P-6.0 (bramka — spełniona)**, P-6.1a (stawka rabatu), FAZA 2
   (slot `read`; środowisko wg D-6.G5), FAZA 4, FAZA 5 (oraz bootstrap P-0.3).
 
-### 🟡 P-6.2 — Synchronizacja stanów magazynowych (cron co ~2 min) — punkt wielorepowy → P-6.2a + P-6.2b
+### 🟢 P-6.2 — Synchronizacja stanów magazynowych (cron co ~2 min) — punkt wielorepowy → P-6.2a + P-6.2b
 - **Repo:** qutlet-core (P-6.2a) + qutlet-allegro (P-6.2b)
 - **Zakres (całość):** komenda WP-CLI `wp qutlet-allegro sync-stock` odpalana
   przez `wp_schedule_event()` na własnym interwale (D-6.G1 zrewidowane —
@@ -1380,7 +1380,7 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
   sprzedanego egzemplarza). Produkty z markerem zaległego pusha najpierw
   domykają push, dopiero potem podlegają pull.
 
-#### 🟡 P-6.2a — Mostek zdarzeń stanu zamówienia Woo (qutlet-core)
+#### 🟢 P-6.2a — Mostek zdarzeń stanu zamówienia Woo (qutlet-core)
 - **Repo:** qutlet-core (slice `OfferSync/` — feature rozproszony, ta sama nazwa
   slice'a co w qutlet-allegro)
 - **Zakres:** hooki Woo `woocommerce_reduce_order_item_stock` i
@@ -1392,7 +1392,7 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
   (qutlet-allegro) nie dotyka hooków Woo (granice repo).
 - **Zależności:** P-0.1 (bootstrap core); konsument: P-6.2b.
 
-#### 🟡 P-6.2b — Komenda sync-stock + push/pull stanów (qutlet-allegro)
+#### 🟢 P-6.2b — Komenda sync-stock + push/pull stanów (qutlet-allegro)
 - **Repo:** qutlet-allegro (slice `OfferSync/`)
 - **Zakres:**
   - komenda WP-CLI `wp qutlet-allegro sync-stock --environment=<env>` (D-6.G5;
