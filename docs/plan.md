@@ -1903,7 +1903,7 @@ P-6.8a — więc **P-6.8a → P-6.8b**.
   ścieżki (opt-in, patrz decyzje wyżej). Wyjście CSV (`--out=`) albo tabela na stdout.
 - **Zależności:** P-6.1 (import wypełnił ścieżki kategorii), P-4.2.
 
-#### P-6.8b — Kuracja reguł + docelowy zestaw termów `product_cat` (qutlet-meta + qutlet-allegro)
+#### 🟡 P-6.8b — Kuracja reguł + docelowy zestaw termów `product_cat` (qutlet-meta + qutlet-allegro)
 - **Repo:** `qutlet-meta` (decyzja sprzedażowa użytkownika → `mapping-allegro.md` §7e →
   ustabilizowane slugi do `kontrakt-danych.md` §1) + `qutlet-allegro` (rozszerzenie
   `CategoryMapRules::LEAF_RULES`/`BRANCH_RULES` o brakujące gałęzie i węższe reguły

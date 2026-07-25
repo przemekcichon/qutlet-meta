@@ -382,17 +382,53 @@ FAZIE 6):** przypisać do term-kosza `pozostałe` (albo wstrzymać import produk
 ręcznej kuracji) i **zalogować** nierozwiązaną gałąź, żeby kurator dopisał regułę. Wybór
 „kosz vs wstrzymanie” to zachowanie importu → decyzja FAZY 6.
 
-### 7e. Zestaw docelowych termów `product_cat` (kuracja)
+### 7e. Zestaw docelowych termów `product_cat` (kuracja P-6.8b, USTALONE)
 
-Prototyp definiuje 4 przykładowe termy (`smartfony`/`laptopy`/`audio`/`gaming`,
-kontrakt §1 „przykładowe”). Realny katalog (555 ofert, 126 liści) obejmuje jednak
-domeny bez odpowiednika w tej czwórce — z samych próbek widać co najmniej: **peryferia**
-(mysz `4575`, akcesoria monitora `260041`), **fotografia** (gałąź `8845`), **RTV/AGD**
-(`260556`), **zasilanie/akcesoria** (`19357`), **materiały eksploatacyjne** (`260338`).
-Finalny, kuratorski zestaw termów **rośnie ponad tę czwórkę** i jest ustalany przy
-imporcie (FAZA 6), gdy wszystkie 126 liści zostaną rozwiązane do nazw. Ustabilizowane
-slugi wracają wtedy do `kontrakt-danych.md` §1. `product_cat` jest hierarchiczne, więc
-zestaw MOŻE mieć płytką hierarchię, ale duch pozostaje: **wąski, sklepowy, nie 126 liści.**
+Prototyp definiował 4 przykładowe termy (`smartfony`/`laptopy`/`audio`/`gaming`,
+kontrakt §1 „przykładowe”). Import 524 ofert (sesja 2026-07-24) ujawnił, że startowe
+reguły `CategoryMapRules` z 7d były ZA GRUBE: gałąź „Komputery” (`2`) → `laptopy` złapała
+247 produktów (w środku peryferia, podzespoły, monitory, kable, drukowanie — laptopów
+wśród nich tylko 2 sztuki), „Telefony i Akcesoria” (`4`) → `smartfony` złapała 148
+produktów (same akcesoria — 0 realnych telefonów), a 34 gałęzie bez reguły trafiały do
+kosza `pozostale`. Kuracja P-6.8b (sesja 2026-07-25, na podstawie pełnego raportu 120
+liści — `wp qutlet-allegro category-report`, `docs/allegro-api-samples/index.csv`)
+ustala **finalny, 18-termowy zestaw** (decyzja sprzedażowa użytkownika):
+
+| Slug (`product_cat`)     | Klucz reguły (gałąź/liść, `id`)                              | Priorytet vs domyślny |
+|---------------------------|--------------------------------------------------------------|------------------------|
+| `smartfony`               | *(brak reguły — zarezerwowany, dziś 0 ofert)*                | — |
+| `telefony-akcesoria`      | gałąź `4` „Telefony i Akcesoria” (był `smartfony`)            | domyślny całej gałęzi |
+| `komputery`               | wyjątki liść `491` „Laptopy”, `486` „Komputery stacjonarne”   | nadpisuje `2` |
+| `komputery-i-podzespoly`  | gałęzie `4226` „Podzespoły komputerowe”, `4475` „Dyski i pamięci przenośne”; fallback gałęzi `2` „Komputery” (był `laptopy`) | domyślny gałęzi `2` |
+| `monitory`                | gałąź `260017` „Monitory komputerowe”                        | — |
+| `peryferia`               | gałęzie `4564` „Urządzenia wskazujące”, `259422` „Mikrofony i słuchawki” (domyślnie), `89253` „Tablety”; fallback gałęzi `497` „Akcesoria (Laptop, PC)” | — |
+| `kable-i-adaptery`        | gałęzie `4689` „Kable, taśmy, przedłużacze”, `4691` „Przejściówki, śledzie”, `67193` „Elektronika” (domena kabli RTV) | — |
+| `urzadzenia-sieciowe`     | gałąź `4413` „Urządzenia sieciowe”                            | — |
+| `drukowanie`              | gałąź `4578` „Drukarki i skanery”                             | — |
+| `zasilanie`               | gałąź `4551` „Listwy zasilające i UPS”; wyjątek liść `147906` „Zasilacze do laptopów” | nadpisuje `2` |
+| `audio`                   | gałąź `122332` „Sprzęt estradowy, studyjny i DJ-ski” (bez zmian); wyjątki liść `85166` (bez zmian), `259427` „Słuchawki przewodowe”, `259426` „Słuchawki bezprzewodowe”, `259434` „Głośniki” | nadpisuje `259422`/`2` |
+| `gaming`                  | gałąź `122233` „Konsole i automaty” (bez zmian); wyjątki liść `82326` „Gry na konsole”, `260043` „Gogle VR”, `257064` „Fotele gamingowe”, `4569` „Pady” | nadpisuje `497`/`4564`/globalny fallback |
+| `agd-drobne`              | gałąź `67414` „AGD drobne”; fallback gałęzi `10` „RTV i AGD” (pokrywa TV-uchwyty `717`, car audio `709`, akcesoria kamer sportowych `8785` — marginalne, brak własnego klastra) | domyślny gałęzi `10` |
+| `oswietlenie`             | gałąź `5317` „Oświetlenie”                                    | — |
+| `ogrod`                   | gałąź `1532` „Ogród”; fallback gałęzi `5` „Dom i Ogród” (pokrywa budownictwo/ogrzewanie `1520` — 1 szt., brak klastra) | domyślny gałęzi `5` |
+| `gps-i-lokalizacja`       | gałąź `67093` „GPS i akcesoria”                               | — |
+| `higiena-i-zdrowie`       | gałąź `121882` „Zdrowie”                                      | — |
+| `pozostale`               | globalny fallback (D-6.1.2) — WYŁĄCZNIE pojedyncze, nieklastrowane liście poza elektroniką (biuro/kalkulatory `64486`, dziecko/krzesełka `99333`, przemysł `16696`) | — |
+
+**Zasada doboru granularności:** klaster ≥2 liści o wspólnej tożsamości funkcjonalnej
+dostaje własny term (np. `kable-i-adaptery` scala 10+ liści z domeny PC i RTV pod
+wspólnym „to jest kabel/adapter”); pojedynczy, semantycznie odosobniony liść zostaje w
+`pozostale`, żeby nie mnożyć termów pod 1 produkt. `smartfony` to jedyny świadomy wyjątek
+— zarezerwowany mimo 0 dzisiejszych ofert, bo prototyp opiera dwa taby kanału (Qutlet/
+Allegro) na stronie PRODUKTU telefonu jako scenariuszu docelowym.
+
+**Zmiana nazwy sluga:** `laptopy` → `komputery` — poprzednia nazwa myliła laptopy z całą
+gałęzią PC (dokładnie ta sama pułapka nazewnicza co `smartfony` vs akcesoria), więc nazwę
+naprawiono razem z regułą.
+
+Ustabilizowana lista slugów (bez pełnej tabeli reguł — ta mieszka w kodzie) jest w
+`kontrakt-danych.md` §1.1. Pełna implementacja reguł: `CategoryMapRules::LEAF_RULES` /
+`BRANCH_RULES` (qutlet-allegro, P-6.8b pod-punkt kodowy).
 
 ### 7f. Aspekty kategorii BEZ odpowiednika u nas → wejście do FAZY 5
 
