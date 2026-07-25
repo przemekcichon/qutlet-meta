@@ -1156,7 +1156,7 @@ pod-punkty / dwa PR-y z jawną zależnością (`P-5.2b` → `P-5.2a`).
 
 ---
 
-## 🟨 FAZA 6 — Import i synchronizacja Allegro ↔ Woo (qutlet-allegro) — ROZPISANA
+## 🟩 FAZA 6 — Import i synchronizacja Allegro ↔ Woo (qutlet-allegro) — ROZPISANA
 
 Cel: właściwa rola `qutlet-allegro` — zaciąganie ofert Allegro do produktów Woo i
 utrzymywanie synchronu (stany magazynowe, zmiany oferty, zamówienia). Mocno oparta
@@ -1874,7 +1874,7 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
   oknie zapisu przez `ProductWriter`. Format nadal walidowany przez Woo (bez zmian).
 - **Zależności:** brak (dokumentacyjny, poprzedza P-6.7b).
 
-#### P-6.7b — Implementacja filtra w imporcie (`qutlet-allegro`, slice `OfferSync/`)
+#### 🟢 P-6.7b — Implementacja filtra w imporcie (`qutlet-allegro`, slice `OfferSync/`)
 - **Zakres:** owinąć wywołanie `set_global_unique_id()` w `ProductWriter.php:181-191`
   filtrem `wc_product_pre_has_global_unique_id` → `__return_true` (SKORYGOWANE przy
   implementacji, sesja 2026-07-25 — pierwotny zapis tego punktu błędnie podawał
@@ -1976,7 +1976,7 @@ P-6.8a — więc **P-6.8a → P-6.8b**.
   jedną komendę robiącą import + tranzycje), wzorzec `StockSyncScheduler` (P-6.2b),
   systemowy tick crona (D-6.G1, handoff — już istnieje dla `sync-stock`).
 
-### P-6.10 — Agregacja sztuk (GTIN) + widget „inne sztuki tego modelu" (odłożone z P-6.7) — [OTWARTE, do rozpisania]
+### ❓ P-6.10 — Agregacja sztuk (GTIN) + widget „inne sztuki tego modelu" (odłożone z P-6.7) — [OTWARTE, do rozpisania]
 - **Repo:** WIELOREPOWY (feature rozproszony) — prawdopodobnie kontrakt (`qutlet-meta`,
   rewizja §10.1 kształtu `_qutlet_allegro_offer_id` i ew. §10.2), agregacja przy
   imporcie + sync stanów (`qutlet-allegro`, slice `OfferSync/`), pole/relacja modelu
