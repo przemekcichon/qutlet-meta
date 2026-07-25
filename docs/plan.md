@@ -1729,7 +1729,7 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
     żywym/sandbox koncie) = potwierdzenie PO implementacji (D-6.5.4).
 - **Zależności:** P-6.5b (konsumuje status `wc-shipped`), P-6.3b (infrastruktura importu).
 
-### 🟡 P-6.6 — Order attribution „Allegro" dla zaimportowanych zamówień — [ROZPISANY, dwurepowy]
+### 🟢 P-6.6 — Order attribution „Allegro" dla zaimportowanych zamówień — [ZREALIZOWANY, dwurepowy]
 - **Feature dwurepowy (kontrakt + kod).** Ground-truth realnego kodu (sesja 2026-07-25)
   ujawnił, że „Origin" to natywny mechanizm WooCommerce ZUPEŁNIE OSOBNY od
   `created_via` (ten drugi już ustawiany poprawnie przez `OrderWriter::apply()` od
@@ -1788,7 +1788,7 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
 - **Zależności:** P-6.3b (import zamówień — miejsce zapisu meta), ground-truth kodu
   WooCommerce 10.9.4 (zweryfikowany w tej sesji, kontrakt §12.6).
 
-#### 🟡 P-6.6a — Kontrakt: literały atrybucji + decyzje (qutlet-meta)
+#### 🟢 P-6.6a — Kontrakt: literały atrybucji + decyzje (qutlet-meta)
 - **Repo/artefakt:** `qutlet-meta` (docs) — pierwszy w łańcuchu (wzorzec P-6.5a).
 - **Zakres:** dopisać §12.6 do `kontrakt-danych.md` (literały
   `_wc_order_attribution_source_type`/`_wc_order_attribution_utm_source`, wartości
@@ -1796,7 +1796,7 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
   `plan.md`. **To jest niniejsze rozpisanie.**
 - **Zależności:** brak. Odblokowuje P-6.6b (literały z kontraktu).
 
-#### P-6.6b — Zapis atrybucji przy imporcie + backfill (qutlet-allegro)
+#### 🟢 P-6.6b — Zapis atrybucji przy imporcie + backfill (qutlet-allegro)
 - **Repo/artefakt:** `qutlet-allegro`, slice `OrderSync/` (rozszerzenie `OrderWriter`,
   P-6.3b/D-6.3.4).
 - **Zakres:** patrz „Zakres kodu P-6.6b" wyżej — `OrderWriter::apply()` + komenda
