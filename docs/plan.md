@@ -1803,11 +1803,10 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
   `backfill-order-attribution`.
 - **Zależności:** P-6.6a (literały w kontrakcie), P-6.3b (infrastruktura importu).
 
-### P-6.7 — Model egzemplarz↔produkt: polityka GTIN, agregacja sztuk, widget „inne sztuki" — [OTWARTE, do rozpisania]
-- **Repo:** WIELOREPOWY (feature rozproszony) — kontrakt (`qutlet-meta`, rewizja
-  §10.2 + ew. §1/§10.1), import + filtr GTIN + agregacja (`qutlet-allegro`, slice
-  `OfferSync/`), pole/relacja modelu (`qutlet-core`), render widgetu (`qutlet-theme`).
-  Prawie na pewno **rozpad na kilka pod-punktów** przy realizacji (osobne PR-y per repo).
+### P-6.7 — Polityka GTIN: rozluźnienie unikalności `global_unique_id` (punkt wielorepowy → P-6.7a + P-6.7b)
+- **Repo:** WIELOREPOWY — kontrakt (`qutlet-meta`, rewizja §10.2) → filtr importu
+  (`qutlet-allegro`, slice `OfferSync/`). Kolejność jak P-6.5a→b/P-6.6a→b: kontrakt
+  NAJPIERW.
 - **Kontekst (sesja 2026-07-24, zgłoszenie użytkownika):** import P-6.1 zgłaszał masowo
   `Warning: … GTIN … odrzucony przez Woo: Invalid or duplicated GTIN…`. Przyczyna
   zmierzona w źródle Woo 10.9.4 (`is_existing_global_unique_id`,
@@ -1826,37 +1825,58 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
   (przydatne w feedach produktowych / Google Shopping dla używek, gdzie `condition=used`
   różnicuje sztuki), a unikalność rozluźniamy filtrem `wc_product_pre_has_global_unique_id`
   (Woo wystawia go dokładnie na takie przypadki), by egzemplarze tego samego modelu mogły
-  dzielić GTIN. Rewiduje kontrakt §10.2 (dziś: „native + first-wins + warning"). Odrzucony
-  wariant „a" (nie zapisywać natywnego pola, EAN tylko we własnej meta) — czystszy u
-  źródła, ale traci natywne pole pod feedy, których użytkownik chce.
-- **D-6.7.2 (widget „inne sztuki tego modelu") [USTALONE — decyzja użytkownika
-  2026-07-24]:** CHCEMY nieniszczący widget grupujący egzemplarze po GTIN (np. „ten
-  model masz w N sztukach, od X zł") — BEZ zwijania stron; każda sztuka zachowuje własną
-  stronę, zdjęcia i klasę stanu. Dane/relacja: core/allegro; render: theme (FAZA 8).
-- **D-6.7.3 (wyjątek od „1 produkt = 1 oferta") [USTALONE kierunkowo — decyzja
-  użytkownika 2026-07-24; mechanika OTWARTA]:** zasada „jeden produkt = jedna oferta"
-  (P-6.1) PRZESTAJE być bezwzględna. Dopuszczamy wyjątek: **ten sam model + ten sam stan
-  (`klasa_stanu`)** MOŻE być JEDNYM produktem agregującym wiele sztuk (`_stock` > 1,
-  wiele `offer_id`). Zjawisko rzadkie-ale-nie-superrzadkie. To zmienia model importu i
-  sync — patrz pod-decyzje.
-- **Pod-decyzje [OTWARTE — do rozstrzygnięcia przy realizacji]:**
-  - kryterium agregacji: sam GTIN, czy GTIN + `klasa_stanu` (a co gdy brak GTIN)? Różne
-    fizyczne sztuki mają RÓŻNE zdjęcia mimo tego samego modelu — czy agregować mimo to,
-    czy tylko przy zgodności także zdjęć/opisu? (zdjęcia to rdzeń wartości outletu);
-  - klucz idempotencji: `_qutlet_allegro_offer_id` staje się potencjalnie WIELOWARTOŚCIOWY
-    (lista offer_id na produkt) — jak przechowywać (rewizja kontraktu §10.1), jak import
-    decyduje „dołóż sztukę do istniejącego" vs „nowy produkt";
-  - stan magazynowy: przy agregacji `_stock` = liczba niesprzedanych sztuk; sprzedaż w
-    sklepie musi zdjąć KONKRETNĄ ofertę Allegro (którą?) — ripple na **P-6.2** (sync
-    stanów) i **P-6.5** (statusy zamówień);
-  - trash/wycofanie JEDNEJ z wielu sztuk agregatu (spójne z D-6.2.x „trash = wycofane");
-  - warstwa surowa przy wielu ofertach: `_qutlet_allegro_offer` verbatim per oferta
-    (lista?), opis/specyfikacja z której oferty;
-  - co jeszcze polega na unikalności `global_unique_id` (feedy, wyszukiwarka Woo) po
-    włączeniu filtra z D-6.7.1.
-- **Zależności:** P-6.1 (import, klucz `offer_id`, zapis GTIN), P-6.2 (sync stanów —
-  agregacja go dotyka), FAZA 5 (pola `AllegroLink`/warstwa surowa), FAZA 8 (render
-  widgetu). Rewizja kontraktu §10.2 (i ew. §10.1) to pierwszy pod-punkt (meta).
+  dzielić GTIN. Rewiduje kontrakt §10.2. Odrzucony wariant „a" (nie zapisywać natywnego
+  pola, EAN tylko we własnej meta) — czystszy u źródła, ale traci natywne pole pod
+  feedy, których użytkownik chce.
+- **Decyzja sesji 2026-07-25 (zawężenie zakresu):** liczba otwartych pod-decyzji modelu
+  agregacji (kryterium agregacji, kształt idempotencji, stan magazynowy, trash, warstwa
+  surowa — patrz niżej) jest za duża na jedną sesję obok pilnego odblokowania importu.
+  D-6.7.2/D-6.7.3 (widget „inne sztuki" + wyjątek od „1 produkt = 1 oferta") oraz ich
+  mechanika zostają ODŁOŻONE do nowego, osobnego punktu **P-6.10** (poniżej). TEN punkt
+  (P-6.7) realizuje WYŁĄCZNIE D-6.7.1: model importu zostaje 1 oferta = 1 produkt,
+  odblokowujemy tylko zapis GTIN.
+- **Decyzja sesji 2026-07-25 (kształt filtra):** `wc_product_pre_has_global_unique_id`
+  (Woo 10.9.4, `apply_filters('wc_product_pre_has_global_unique_id', null, $product_id,
+  $global_unique_id)`, `wc-product-functions.php:1054`) zwraca **`false`** (= „nie
+  istnieje", pozwala zapis) WYŁĄCZNIE w oknie wywołania `set_global_unique_id()`
+  wewnątrz `ProductWriter` (import z Allegro) — `add_filter`/`remove_filter` owinięte
+  ściśle wokół tego wywołania. NIE globalnie (zachowuje ochronę Woo dla produktów
+  tworzonych ręcznie w adminie) i NIE warunkowo po `klasa_stanu` (prostsze, zgodne z
+  D-6.7.1 — każdy egzemplarz tego samego modelu z Allegro może dzielić GTIN,
+  niezależnie od stanu).
+- **Ground-truth (potwierdzone w kodzie, sesja 2026-07-25):**
+  - `qutlet-allegro/src/OfferSync/ProductWriter.php:181-191` — dziś zapisuje GTIN przez
+    `set_global_unique_id()` w try/catch, demotes `WC_Data_Exception` do warninga
+    (`GTIN „%s" odrzucony przez Woo: %s`). Po wdrożeniu filtra ta gałąź catch nadal
+    łapie błędy FORMATU (`product_invalid_global_unique_id_format`,
+    `abstract-wc-product.php:896-902`, bez zmian), ale przestaje łapać duplikaty
+    (`product_invalid_global_unique_id`, `abstract-wc-product.php:904-915`) dla
+    produktów zapisywanych przez import — te są tłumione przez filtr.
+  - Filtr `wc_product_pre_has_global_unique_id` nigdzie dziś w repo nie jest
+    zarejestrowany/nadpisany (potwierdzone grepem po 4 pluginach) — implementacja
+    P-6.7b jest pierwszym miejscem.
+  - Brak dziś jakiejkolwiek agregacji/dedup po GTIN gdziekolwiek w repo (potwierdzone
+    grepem) — spójne z odłożeniem mechaniki agregacji do P-6.10.
+- **Zależności:** P-6.1 (import, klucz `offer_id`, zapis GTIN).
+
+#### 🟡 P-6.7a — Kontrakt: rewizja §10.2 (rozluźnienie unikalności GTIN) (`qutlet-meta`)
+- **Zakres:** dopisać do `kontrakt-danych.md` §10.2 notatkę o filtrze
+  `wc_product_pre_has_global_unique_id` (D-6.7.1): GTIN pozostaje natywnym polem Woo,
+  ale import świadomie zezwala wielu produktom z Allegro dzielić ten sam
+  `global_unique_id` (ten sam model, różne egzemplarze) — filtr aktywny WYŁĄCZNIE w
+  oknie zapisu przez `ProductWriter`. Format nadal walidowany przez Woo (bez zmian).
+- **Zależności:** brak (dokumentacyjny, poprzedza P-6.7b).
+
+#### P-6.7b — Implementacja filtra w imporcie (`qutlet-allegro`, slice `OfferSync/`)
+- **Zakres:** owinąć wywołanie `set_global_unique_id()` w `ProductWriter.php:181-191`
+  filtrem `wc_product_pre_has_global_unique_id` → `__return_false`, `add_filter`
+  bezpośrednio przed wywołaniem i `remove_filter` zaraz po (w `finally`, żeby
+  wyjątek formatu nie zostawił filtra podpiętego), tak by relaksacja unikalności
+  działała TYLKO na czas tego jednego zapisu. Zweryfikować (test jednostkowy + realny
+  re-import wcześniej odrzuconych 56 ofert w sandboxie), że GTIN zapisuje się bez
+  warninga „odrzucony przez Woo" przy duplikacie, a format nadal jest walidowany
+  (np. zbyt krótki/niepoprawny EAN nadal loguje warning).
+- **Zależności:** P-6.7a (kontrakt musi istnieć zanim kod go realizuje).
 
 ### P-6.8 — Raport liści kategorii + kuracja mapy `product_cat` (punkt wielorepowy → P-6.8a + P-6.8b)
 
@@ -1945,6 +1965,47 @@ P-6.8a — więc **P-6.8a → P-6.8b**.
 - **Zależności:** P-6.3b (import zamówień), P-6.5c (sync statusów — scheduler odpala
   jedną komendę robiącą import + tranzycje), wzorzec `StockSyncScheduler` (P-6.2b),
   systemowy tick crona (D-6.G1, handoff — już istnieje dla `sync-stock`).
+
+### P-6.10 — Agregacja sztuk (GTIN) + widget „inne sztuki tego modelu" (odłożone z P-6.7) — [OTWARTE, do rozpisania]
+- **Repo:** WIELOREPOWY (feature rozproszony) — prawdopodobnie kontrakt (`qutlet-meta`,
+  rewizja §10.1 kształtu `_qutlet_allegro_offer_id` i ew. §10.2), agregacja przy
+  imporcie + sync stanów (`qutlet-allegro`, slice `OfferSync/`), pole/relacja modelu
+  (`qutlet-core`), render widgetu (`qutlet-theme`, FAZA 8). Rozpad na pod-punkty do
+  ustalenia przy realizacji (patrz reguła punktów wielorepowych).
+- **Kontekst:** odłożone z **P-6.7** (sesja 2026-07-25) — zbyt wiele pod-decyzji modelu
+  danych/sprzedażowych do rozstrzygnięcia w jednej sesji obok pilnego odblokowania
+  importu (P-6.7a/P-6.7b, filtr GTIN). D-6.7.2/D-6.7.3 poniżej są USTALONE kierunkowo
+  (decyzja użytkownika 2026-07-24), ale mechanika w całości OTWARTA.
+- **D-6.7.2 (widget „inne sztuki tego modelu") [USTALONE — decyzja użytkownika
+  2026-07-24]:** CHCEMY nieniszczący widget grupujący egzemplarze po GTIN (np. „ten
+  model masz w N sztukach, od X zł") — BEZ zwijania stron; każda sztuka zachowuje własną
+  stronę, zdjęcia i klasę stanu. Dane/relacja: core/allegro; render: theme (FAZA 8).
+- **D-6.7.3 (wyjątek od „1 produkt = 1 oferta") [USTALONE kierunkowo — decyzja
+  użytkownika 2026-07-24; mechanika OTWARTA]:** zasada „jeden produkt = jedna oferta"
+  (P-6.1) PRZESTAJE być bezwzględna. Dopuszczamy wyjątek: **ten sam model + ten sam stan
+  (`klasa_stanu`)** MOŻE być JEDNYM produktem agregującym wiele sztuk (`_stock` > 1,
+  wiele `offer_id`). Zjawisko rzadkie-ale-nie-superrzadkie. To zmienia model importu i
+  sync — patrz pod-decyzje.
+- **Pod-decyzje [OTWARTE — do rozstrzygnięcia przy realizacji]:**
+  - kryterium agregacji: sam GTIN, czy GTIN + `klasa_stanu` (a co gdy brak GTIN)? Różne
+    fizyczne sztuki mają RÓŻNE zdjęcia mimo tego samego modelu — czy agregować mimo to,
+    czy tylko przy zgodności także zdjęć/opisu? (zdjęcia to rdzeń wartości outletu);
+  - klucz idempotencji: `_qutlet_allegro_offer_id` staje się potencjalnie WIELOWARTOŚCIOWY
+    (lista offer_id na produkt) — jak przechowywać (rewizja kontraktu §10.1: dziś
+    `single => true`, string opaque — `qutlet-core/src/AllegroLink/AllegroLinkMeta.php`),
+    jak import decyduje „dołóż sztukę do istniejącego" vs „nowy produkt";
+  - stan magazynowy: przy agregacji `_stock` = liczba niesprzedanych sztuk; sprzedaż w
+    sklepie musi zdjąć KONKRETNĄ ofertę Allegro (którą?) — ripple na **P-6.2** (sync
+    stanów) i **P-6.5** (statusy zamówień);
+  - trash/wycofanie JEDNEJ z wielu sztuk agregatu (spójne z D-6.2.x „trash = wycofane");
+  - warstwa surowa przy wielu ofertach: `_qutlet_allegro_offer` verbatim per oferta
+    (lista?), opis/specyfikacja z której oferty;
+  - co jeszcze polega na unikalności `global_unique_id` (feedy, wyszukiwarka Woo) po
+    włączeniu filtra z D-6.7.1 (P-6.7).
+- **Zależności:** P-6.7 (filtr GTIN musi istnieć najpierw — agregacja bazuje na tym, że
+  duplikat GTIN w ogóle może się zapisać), P-6.2 (sync stanów — agregacja go dotyka),
+  P-6.5 (statusy zamówień), FAZA 5 (pola `AllegroLink`/warstwa surowa), FAZA 8 (render
+  widgetu).
 
 ---
 
