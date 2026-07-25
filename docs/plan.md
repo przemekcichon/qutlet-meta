@@ -1835,15 +1835,22 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
   mechanika zostają ODŁOŻONE do nowego, osobnego punktu **P-6.10** (poniżej). TEN punkt
   (P-6.7) realizuje WYŁĄCZNIE D-6.7.1: model importu zostaje 1 oferta = 1 produkt,
   odblokowujemy tylko zapis GTIN.
-- **Decyzja sesji 2026-07-25 (kształt filtra):** `wc_product_pre_has_global_unique_id`
-  (Woo 10.9.4, `apply_filters('wc_product_pre_has_global_unique_id', null, $product_id,
-  $global_unique_id)`, `wc-product-functions.php:1054`) zwraca **`false`** (= „nie
-  istnieje", pozwala zapis) WYŁĄCZNIE w oknie wywołania `set_global_unique_id()`
-  wewnątrz `ProductWriter` (import z Allegro) — `add_filter`/`remove_filter` owinięte
-  ściśle wokół tego wywołania. NIE globalnie (zachowuje ochronę Woo dla produktów
-  tworzonych ręcznie w adminie) i NIE warunkowo po `klasa_stanu` (prostsze, zgodne z
-  D-6.7.1 — każdy egzemplarz tego samego modelu z Allegro może dzielić GTIN,
-  niezależnie od stanu).
+- **Decyzja sesji 2026-07-25 (kształt filtra), SKORYGOWANA w P-6.7b (sesja 2026-07-25,
+  ground-truth ponownie prześledzony przy implementacji + potwierdzony niezależną
+  recenzją):** `wc_product_pre_has_global_unique_id` (Woo 10.9.4,
+  `apply_filters('wc_product_pre_has_global_unique_id', null, $product_id,
+  $global_unique_id)`, `wc-product-functions.php:1044-1080`) zwraca **`true`**
+  (= „unikalne/OK", krótko spina `wc_product_has_global_unique_id()` do `true` PRZED
+  sprawdzeniem data store — wołający kod `! wc_product_has_global_unique_id(...)` w
+  `abstract-wc-product.php:904` wtedy NIE rzuca błędu duplikatu) WYŁĄCZNIE w oknie
+  wywołania `set_global_unique_id()` wewnątrz `ProductWriter` (import z Allegro) —
+  `add_filter`/`remove_filter` owinięte ściśle wokół tego wywołania. NIE globalnie
+  (zachowuje ochronę Woo dla produktów tworzonych ręcznie w adminie) i NIE warunkowo po
+  `klasa_stanu` (prostsze, zgodne z D-6.7.1 — każdy egzemplarz tego samego modelu z
+  Allegro może dzielić GTIN, niezależnie od stanu). Pierwsza wersja tej decyzji (ta sama
+  data) błędnie podawała `false` — `false` krótko spina funkcję do `false`, co wołający
+  kod traktuje jako „duplikat/nieważny" dla KAŻDEGO zapisu GTIN, nie tylko duplikatu
+  (zepsułoby import gorzej niż brak filtra: 0/524 zamiast 451/524).
 - **Ground-truth (potwierdzone w kodzie, sesja 2026-07-25):**
   - `qutlet-allegro/src/OfferSync/ProductWriter.php:181-191` — dziś zapisuje GTIN przez
     `set_global_unique_id()` w try/catch, demotes `WC_Data_Exception` do warninga
@@ -1869,13 +1876,16 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
 
 #### P-6.7b — Implementacja filtra w imporcie (`qutlet-allegro`, slice `OfferSync/`)
 - **Zakres:** owinąć wywołanie `set_global_unique_id()` w `ProductWriter.php:181-191`
-  filtrem `wc_product_pre_has_global_unique_id` → `__return_false`, `add_filter`
-  bezpośrednio przed wywołaniem i `remove_filter` zaraz po (w `finally`, żeby
-  wyjątek formatu nie zostawił filtra podpiętego), tak by relaksacja unikalności
-  działała TYLKO na czas tego jednego zapisu. Zweryfikować (test jednostkowy + realny
-  re-import wcześniej odrzuconych 56 ofert w sandboxie), że GTIN zapisuje się bez
-  warninga „odrzucony przez Woo" przy duplikacie, a format nadal jest walidowany
-  (np. zbyt krótki/niepoprawny EAN nadal loguje warning).
+  filtrem `wc_product_pre_has_global_unique_id` → `__return_true` (SKORYGOWANE przy
+  implementacji, sesja 2026-07-25 — pierwotny zapis tego punktu błędnie podawał
+  `__return_false`; zobacz korektę ground-truth przy D-6.7.1 wyżej i w
+  `kontrakt-danych.md` §10.2), `add_filter` bezpośrednio przed wywołaniem i
+  `remove_filter` zaraz po (w `finally`, żeby wyjątek formatu nie zostawił filtra
+  podpiętego), tak by relaksacja unikalności działała TYLKO na czas tego jednego
+  zapisu. Zweryfikować (test jednostkowy + realny re-import wcześniej odrzuconych 56
+  ofert w sandboxie), że GTIN zapisuje się bez warninga „odrzucony przez Woo" przy
+  duplikacie, a format nadal jest walidowany (np. zbyt krótki/niepoprawny EAN nadal
+  loguje warning).
 - **Zależności:** P-6.7a (kontrakt musi istnieć zanim kod go realizuje).
 
 ### P-6.8 — Raport liści kategorii + kuracja mapy `product_cat` (punkt wielorepowy → P-6.8a + P-6.8b)
