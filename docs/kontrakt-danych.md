@@ -651,6 +651,32 @@ tylko zamówienia z kluczem `_qutlet_allegro_checkout_form_id` (§12.1), pomija 
 
 ---
 
+## 13. AiRewrite — prompt per-produkt (FAZA 7 — P-7.2a)
+
+Pole granicy D-7.G6: rejestrację pól ACF/CPT robi wyłącznie `qutlet-core`, logika
+przeróbki AI (odczyt, wywołanie core AI Client) mieszka w `qutlet-ai` — feature
+rozproszony, ta sama nazwa slice'a `AiRewrite/` w obu repo. To pole jest
+**opcjonalnym override'em per-produkt** promptu wysyłanego do AI (D-7.G4); globalny
+prompt (ustawienie w `qutlet-ai`) rejestruje osobny punkt **P-7.2b** — to pole jest
+dla niego jedynym wejściem czytanym cross-plugin, więc literał poniżej jest
+**stabilny i VERBATIM**.
+
+| Pole (znaczenie)        | Literał ACF   | Miejsce | Typ                | Opcjonalne? | Uwagi |
+|--------------------------|---------------|---------|--------------------|-------------|-------|
+| Prompt AI (nadpisanie per produkt) | `prompt_ai` | ACF | textarea (plain text) | tak | Treść wysyłana do core AI Client (`using_system_instruction()` / dołączona do promptu, P-7.2b) ZAMIAST globalnego promptu z ustawienia `qutlet-ai`, gdy niepuste. Puste → `qutlet-ai` używa globalnego promptu. Wejściem do generacji jest surowy JSON pojedynczego produktu (D-7.G5/D-5.G4) — to pole tylko dostarcza instrukcję/styl, NIE dane produktu. |
+
+**D-7.2a.1 [USTALONE]:** mechanizm rejestracji = `acf_add_local_field_group()` (wzorzec
+`ProductConditionFields`/`AllegroChannelFields`/`RewrittenFields` — pole edytowalne
+ręcznie w adminie, NIE fakt z Allegro nadpisywany syncem, więc NIE `register_post_meta`
+prywatne jak warstwa surowa §9.1/§10.1). Typ `textarea` (nie WYSIWYG jak `opis` §9.2) —
+to zwykły tekst instrukcji dla modelu, bez potrzeby rich text/HTML.
+
+### Odnośniki (§13)
+- Plan: `docs/plan.md` → FAZA 7 (D-7.G1–G7), P-7.2a (ten kontrakt + rejestracja core),
+  P-7.2b (ustawienie globalne + odczyt override w `qutlet-ai`).
+
+---
+
 ## Log decyzji (P-1.0)
 
 | Decyzja  | Rozstrzygnięcie                                        | Podstawa |
@@ -709,3 +735,9 @@ tylko zamówienia z kluczem `_qutlet_allegro_checkout_form_id` (§12.1), pomija 
 | D-6.8.2  | klaster ≥2 liści → własny term; pojedynczy nieklastrowany liść poza elektroniką → `pozostale` (nie tworzymy termu dla 1 produktu) | decyzja użytkownika (sesja 2026-07-25) |
 | D-6.8.3  | `smartfony` zarezerwowany na przyszłość mimo 0 dzisiejszych ofert (gałąź „Telefony i Akcesoria” niesie wyłącznie akcesoria → nowy term `telefony-akcesoria`) | decyzja użytkownika (sesja 2026-07-25) |
 | D-6.8.4  | `laptopy` → `komputery` (zmiana nazwy sluga): poprzednia nazwa myliła z całą gałęzią PC, tak samo jak `smartfony` myliło z akcesoriami (D-6.8.3) — spójność nazw z realną zawartością | decyzja użytkownika (sesja 2026-07-25) |
+
+## Log decyzji (P-7.2a)
+
+| Decyzja  | Rozstrzygnięcie                                                                 | Podstawa |
+|----------|--------------------------------------------------------------------------------|----------|
+| D-7.2a.1 | pole override promptu = ACF textarea `prompt_ai` (wzorzec `ProductConditionFields`/`AllegroChannelFields` — edytowalne ręcznie, NIE fakt z Allegro nadpisywany syncem, więc NIE `register_post_meta` prywatne jak §9.1/§10.1); plain text (nie WYSIWYG jak `opis` §9.2) — to instrukcja dla modelu, nie treść user-facing | ground-truth `ProductInfo/RewrittenFields.php` (komentarz „wzorzec dla … AiRewrite"), sesja 2026-07-26 |
