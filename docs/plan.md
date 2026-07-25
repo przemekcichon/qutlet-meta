@@ -2097,7 +2097,7 @@ AI Client** zamiast budować własną abstrakcję dostawcy.
   jako root workspace.
 - **Zależności:** decyzja D-7.G1 (ta sesja). Niezależne od reszty — można zrobić wcześniej.
 
-### P-7.1 — Konfiguracja core AI Client + connector dostawcy
+### 🟢 P-7.1 — Konfiguracja core AI Client + connector dostawcy
 - **Repo:** qutlet-ai (slice `AiRewrite/`) — w większości **config/handoff**, kod cienki.
 - **Zakres:**
   - **config/handoff:** zdefiniować stałą `{PROVIDER}_API_KEY` w `wp-config.php`
