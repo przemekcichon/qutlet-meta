@@ -65,13 +65,51 @@ kontrakt musi być kompletny (co jest Woo-natywne, a co dokładamy w ACF).
 | Zdjęcie główne    | `get_the_post_thumbnail_url()`              | Woo     | url     | tak         | `data.js` `.img`            | brak → placeholder (w WP: brak miniatury) |
 | Galeria           | galeria produktu Woo                        | Woo     | url[]   | tak         | `produkt.html:25`           | miniatury `pd-thumbs` → natywna galeria Woo |
 | Liczba sztuk      | `$product->get_stock_quantity()` (`_stock`) | Woo     | int     | tak         | `data.js` `.qty`            | natura sklepu = pojedyncze egzemplarze; brak/1 → „Pojedyncza sztuka". Etykieta liczona (patrz §6) |
-| Kategoria         | taksonomia `product_cat` (slug)             | Woo tax | term    | nie         | `data.js` `.cat`            | slugi z prototypu: `smartfony`, `laptopy`, `audio`, `gaming` (przykładowe). Kafle kategorii + archiwum |
+| Kategoria         | taksonomia `product_cat` (slug)             | Woo tax | term    | nie         | `data.js` `.cat`            | zestaw ustabilizowany kuracją P-6.8b (patrz niżej) — nie 4 przykładowe z prototypu. Kafle kategorii + archiwum |
 | Wyróżniony        | flaga „featured" Woo (`product_visibility` term `featured`) | Woo | bool | tak | `index.html:84,93` (`data-featured-grid`) | pętla „Świeżo na wyprzedaży" = `WP_Query` po wyróżnionych |
 
 > **Uwaga o cenach:** cena sprzedaży (`.now`) to natywne pole Woo. Odniesienie
 > „Nowy w sklepach" (`.old`, patrz §2) to OSOBNE pole ACF `cena_rynkowa_nowego`,
 > **NIE** natywne `_regular_price` Woo. Rabat („-72%", „Oszczędzasz …") jest
 > liczony (patrz §6), nie przechowywany.
+
+### 1.1 Zestaw termów `product_cat` (kuracja P-6.8b)
+
+Ustabilizowany zestaw slugów `product_cat` — decyzja sprzedażowa użytkownika
+(sesja 2026-07-25) na podstawie realnego raportu 120 liści kategorii Allegro
+(`wp qutlet-allegro category-report`, patrz `mapping-allegro.md` §7e). Zastępuje
+4 przykładowe slugi prototypu (`smartfony`/`laptopy`/`audio`/`gaming`) jako
+**źródło prawdy dla literałów**. Pełna tabela reguł kolapsu (który liść/gałąź →
+który slug) mieszka w `qutlet-allegro/src/OfferSync/CategoryMapRules.php` — tu
+tylko ustabilizowana LISTA slugów + nazwa czytelna.
+
+| Slug                   | Nazwa czytelna       | Uwagi |
+|------------------------|----------------------|-------|
+| `smartfony`            | Smartfony            | zarezerwowany na przyszłość — dziś 0 ofert w katalogu (gałąź „Telefony i Akcesoria" niesie wyłącznie akcesoria, patrz `telefony-akcesoria`) |
+| `telefony-akcesoria`   | Akcesoria do telefonów | etui, folie/szkła, powerbanki, ładowarki, kable, uchwyty, smycze |
+| `komputery`            | Komputery            | realne laptopy + komputery stacjonarne (zmiana nazwy z `laptopy` — poprzednia nazwa myliła z całą gałęzią PC) |
+| `komputery-i-podzespoly` | Podzespoły komputerowe | obudowy, chłodzenie, RAM, płyty główne, procesory, zasilacze PC, dyski/kieszenie, kontrolery |
+| `monitory`             | Monitory             | monitory + uchwyty do monitorów |
+| `peryferia`            | Peryferia            | myszki, klawiatury, huby, mikrofony (nie słuchawki — te w `audio`), stacje dokujące, akcesoria tabletów, podstawki chłodzące |
+| `kable-i-adaptery`     | Kable i adaptery     | HDMI/DisplayPort/SATA/USB/video/patchcord/D-Sub/jack-cinch/DVI/optyczne (domena PC + RTV) |
+| `urzadzenia-sieciowe`  | Urządzenia sieciowe  | routery, karty sieciowe, kamery IP, huby USB |
+| `drukowanie`           | Drukowanie           | drukarki, tonery, tusze, bębny (oryginalne/zamienniki) |
+| `zasilanie`            | Zasilanie            | UPS, listwy zasilające, zasilacze |
+| `audio`                | Audio                | bez zmian względem prototypu + słuchawki/głośniki komputerowe (wyjątki per-liść) |
+| `gaming`               | Gaming                | bez zmian względem prototypu + gry na konsole, gogle VR, fotele gamingowe (wyjątki per-liść) |
+| `agd-drobne`           | AGD drobne           | czajniki, blendery, golarki, maszynki, lokówki, akcesoria odkurzaczy + fallback całej gałęzi „RTV i AGD” dla marginalnych liści bez własnego klastra (TV-uchwyty, car audio, akcesoria kamer sportowych) |
+| `oswietlenie`          | Oświetlenie          | taśmy LED, lampki, źródła światła |
+| `ogrod`                | Ogród                | baseny, dekoracje ogrodowe + fallback całej gałęzi „Dom i Ogród” |
+| `gps-i-lokalizacja`    | GPS i lokalizacja    | GPS |
+| `higiena-i-zdrowie`    | Higiena i zdrowie    | szczoteczki elektryczne, irygatory |
+| `pozostale`            | Pozostałe            | prawdziwy kosz fallback (D-6.1.2) — WYŁĄCZNIE pojedyncze, nieklastrowane liście poza domeną elektroniki (biuro, dziecko, przemysł) |
+
+> **Zasada doboru:** klaster ≥2 liści z wyraźną wspólną tożsamością dostaje własny
+> term; pojedynczy, semantycznie odosobniony liść zostaje w `pozostale` (nie
+> tworzymy termu dla 1 produktu bez przyszłościowego uzasadnienia). Wyjątek:
+> `smartfony` — zarezerwowany mimo 0 dzisiejszych ofert, bo to jedna z 2 osi
+> prototypu (kanał Qutlet/Allegro na stronie PRODUKTU telefonu jest scenariuszem
+> docelowym, nie dzisiejszym stanem katalogu).
 
 ---
 
@@ -634,3 +672,12 @@ tylko zamówienia z kluczem `_qutlet_allegro_checkout_form_id` (§12.1), pomija 
 | D-6.3.4  | meta zamówienia (§12) pisze `qutlet-allegro` przez natywne WC CRUD (`$order->update_meta_data()`), BEZ rejestracji w core — inaczej niż produktowe `post_meta`, meta `WC_Order` nie ma kolizji z UI edycji, a pod HPOS nie jest `post_meta`; punkt dwurepowy (meta + allegro), nie trzyrepowy | decyzja użytkownika (sesja 2026-07-24) |
 | D-6.3.5  | do `WC_Order` tylko zakres funkcjonalny (billing/shipping/telefon/email); `personalIdentity`/`login` NIE; BEZ verbatim blobu zamówienia; zamówienia gościnne (bez kont klientów — to warunkowy P-6.4) — potwierdza `mapping` D-4.3.4 | decyzja użytkownika (sesja 2026-07-24) |
 | D-6.3.6  | idempotencja upsert po `checkoutForm.id` (`_qutlet_allegro_checkout_form_id`); własny kursor `qutlet_allegro_order_sync_cursor_{środowisko}` (NIE współdzielony z P-6.2, §10.5) + lock `qutlet_allegro_order_sync_lock_{środowisko}` (§12.3) | plan P-6.3 (sesja 2026-07-24) |
+
+## Log decyzji (P-6.8b)
+
+| Decyzja  | Rozstrzygnięcie                                                                 | Podstawa |
+|----------|--------------------------------------------------------------------------------|----------|
+| D-6.8.1  | docelowy zestaw `product_cat` = 18 slugów (§1.1), oparty na realnym raporcie 120 liści (`category-report`), nie na 4 przykładowych z prototypu; granularność „funkcjonalna” (rozbicie `laptopy`/`smartfony` na węższe domeny + osobne termy tematyczne dla ogona poza czwórką prototypu) | decyzja użytkownika (sesja 2026-07-25) |
+| D-6.8.2  | klaster ≥2 liści → własny term; pojedynczy nieklastrowany liść poza elektroniką → `pozostale` (nie tworzymy termu dla 1 produktu) | decyzja użytkownika (sesja 2026-07-25) |
+| D-6.8.3  | `smartfony` zarezerwowany na przyszłość mimo 0 dzisiejszych ofert (gałąź „Telefony i Akcesoria” niesie wyłącznie akcesoria → nowy term `telefony-akcesoria`) | decyzja użytkownika (sesja 2026-07-25) |
+| D-6.8.4  | `laptopy` → `komputery` (zmiana nazwy sluga): poprzednia nazwa myliła z całą gałęzią PC, tak samo jak `smartfony` myliło z akcesoriami (D-6.8.3) — spójność nazw z realną zawartością | decyzja użytkownika (sesja 2026-07-25) |
