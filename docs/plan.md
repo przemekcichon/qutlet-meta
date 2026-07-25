@@ -1859,7 +1859,7 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
     grepem) — spójne z odłożeniem mechaniki agregacji do P-6.10.
 - **Zależności:** P-6.1 (import, klucz `offer_id`, zapis GTIN).
 
-#### 🟡 P-6.7a — Kontrakt: rewizja §10.2 (rozluźnienie unikalności GTIN) (`qutlet-meta`)
+#### 🟢 P-6.7a — Kontrakt: rewizja §10.2 (rozluźnienie unikalności GTIN) (`qutlet-meta`)
 - **Zakres:** dopisać do `kontrakt-danych.md` §10.2 notatkę o filtrze
   `wc_product_pre_has_global_unique_id` (D-6.7.1): GTIN pozostaje natywnym polem Woo,
   ale import świadomie zezwala wielu produktom z Allegro dzielić ten sam
