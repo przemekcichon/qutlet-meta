@@ -1729,22 +1729,79 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
     żywym/sandbox koncie) = potwierdzenie PO implementacji (D-6.5.4).
 - **Zależności:** P-6.5b (konsumuje status `wc-shipped`), P-6.3b (infrastruktura importu).
 
-### P-6.6 — Order attribution „Allegro" dla zaimportowanych zamówień — [OTWARTE, do rozpisania]
-- **Repo:** qutlet-allegro (slice `OrderSync/`; zapis meta przez natywne WC CRUD, wzorzec D-6.3.4).
+### 🟡 P-6.6 — Order attribution „Allegro" dla zaimportowanych zamówień — [ROZPISANY, dwurepowy]
+- **Feature dwurepowy (kontrakt + kod).** Ground-truth realnego kodu (sesja 2026-07-25)
+  ujawnił, że „Origin" to natywny mechanizm WooCommerce ZUPEŁNIE OSOBNY od
+  `created_via` (ten drugi już ustawiany poprawnie przez `OrderWriter::apply()` od
+  P-6.3b — zweryfikowane na realnym zamówieniu sandbox: `created_via = allegro` w
+  `wp_wc_order_operational_data`, ale ZERO meta `_wc_order_attribution_*` w
+  `wp_wc_orders_meta` pod HPOS). Rodzina meta `_wc_order_attribution_*` to WŁASNOŚĆ
+  WooCommerce core (nie nasz prefiks `_qutlet_allegro_`) — literał + wartości i tak
+  wchodzą NAJPIERW do kontraktu (wzorzec P-6.5a→b), stąd rozbicie na dwa pod-punkty z
+  jawną zależnością **P-6.6a → P-6.6b** (pełne zakresy w nagłówkach `####` niżej).
 - **Kontekst (sesja 2026-07-24, zgłoszenie użytkownika):** w sekcji „Order attribution"
-  na zamówieniu pole **Origin** jest PUSTE dla zamówień zaciągniętych z Allegro. Cel:
+  na zamówieniu pole **Origin** jest PUSTE dla zamówień zaciągniętych z Allegro — cel:
   oznaczać pochodzenie tych zamówień jako „Allegro", żeby atrybucja źródła sprzedaży była
-  czytelna w adminie i raportach Woo.
-- **Zakres (szkic — do rozpisania po ground-truth):** przy imporcie/upsercie `WC_Order`
-  (P-6.3b) ustawić atrybucję pochodzenia tak, by admin Woo pokazał „Allegro" jako Origin.
-  Konkretne meta klucze Woo (rodzina `_wc_order_attribution_*`) oraz sposób, w jaki Woo
-  WYLICZA etykietę „Origin" z tych meta — do ustalenia w ground-truth: czytać kod
-  WooCommerce (R/O, po ścieżce absolutnej), NIE brać literałów z pamięci.
-- **Pod-decyzje [OTWARTE]:** dokładny `source_type`/`utm_source` (lub inny zestaw meta)
-  dający czytelną etykietę „Allegro"; czy tylko dla nowo importowanych zamówień, czy też
-  wsteczna migracja już zaimportowanych.
-- **Zależności:** P-6.3b (import zamówień — miejsce zapisu meta), kod WooCommerce
-  (weryfikacja modelu Order attribution danej wersji Woo).
+  czytelna w adminie i raportach Woo. **Doprecyzowanie (ground-truth 2026-07-25):**
+  realnie WYŚWIETLANE Origin dla takich zamówień to „Unknown" (liczone z pustego
+  `source_type` — nie dosłowna pustka), ale funkcjonalnie to ten sam problem: brak
+  czytelnej atrybucji „Allegro".
+- **Ground-truth WooCommerce 10.9.4 (kod źródłowy, R/O, sesja 2026-07-25):** etykietę
+  liczy `OrderAttributionMeta::get_origin_label( $source_type, $utm_source )`
+  (`src/Internal/Traits/OrderAttributionMeta.php:276-370`). Dla `source_type` ∈
+  `{typein, admin, mobile_app, pos}` oraz nierozpoznanego (`default`) — słowo STAŁE
+  ignorujące `utm_source` („Direct"/„Web admin"/„Mobile app"/„Point of Sale"/„Unknown").
+  Dla `source_type` ∈ `{utm, organic, referral}` — szablon z `%s` wstawiający
+  `utm_source` WPROST (po `ucfirst()`+przycięciu nawiasów): „Source: %s" / „Organic: %s" /
+  „Referral: %s". Bez filtra `wc_order_attribution_origin_label` (nie niesie obiektu
+  zamówienia, więc nie da się warunkować per-zamówienie) NIE da się uzyskać gołego
+  „Allegro" bez prefiksu — tylko sprefiksowane. Meta pod natywnym prefiksem Woo
+  `_wc_order_attribution_` (helper `get_meta_prefixed_field_name()`,
+  `OrderAttributionMeta.php:176-178`); `source_type`+`utm_source` czytane w metaboxie i
+  kolumnie „Origin" (`OrderAttributionController.php:391-396`,
+  `OrderAttributionMeta.php:150-153`). Pełne literały i tabela: kontrakt §12.6.
+- **Decyzje [USTALONE — sesja 2026-07-25]:**
+  - **D-6.6.1 — `source_type = referral`.** Origin wyświetli się jako
+    „Referral: Allegro" (`utm_source = Allegro`, reużyty literał
+    `OrderMapper::payment_title()` — jedno źródło stringa, spójne z
+    `payment_method_title`). Odrzucone: `organic` („Organic: Allegro" — mylące, to nie
+    ruch z wyszukiwarki), `utm` („Source: Allegro" — sugeruje kampanię z parametrami UTM,
+    której tu nie ma). `referral` najlepiej oddaje sens: sprzedaż przyszła z zewnętrznego
+    serwisu (marketplace Allegro).
+  - **D-6.6.2 — backfill = TAK, jednorazowa komenda.** Oprócz zapisu przy KAŻDYM
+    imporcie/przebudowie treści (`OrderWriter::apply()` — nowe zamówienia i rebuild po
+    zmianie `revision`), osobna jednorazowa komenda WP-CLI `backfill-order-attribution`
+    (bez zależności od API Allegro — czysto lokalna operacja na już zaimportowanych
+    `WC_Order`) uzupełnia atrybucję na zamówieniach zaimportowanych PRZED tym punktem.
+    Iteruje zamówienia z kluczem `_qutlet_allegro_checkout_form_id` (dowolny status
+    OPRÓCZ kosza, D-6.2.1/D-6.3.4), pomija te, które JUŻ mają
+    `_wc_order_attribution_source_type` (nie nadpisuje istniejącej realnej atrybucji,
+    gdyby kiedyś powstała inną drogą).
+- **Zakres kodu P-6.6b (do implementacji, po ground-truth):**
+  - `OrderWriter::apply()` dokłada dwie natywne meta Woo (D-6.6.1) przez
+    `update_meta_data()` (D-6.3.4) — TYLKO gdy `_wc_order_attribution_source_type`
+    jeszcze nie istnieje na zamówieniu (idempotentne, nie nadpisuje);
+  - nowa komenda `BackfillOrderAttributionCommand` (D-6.6.2), z `--dry-run` (wzorzec
+    `SandboxSeedCommand`);
+  - **Testy:** czyste funkcje (jeśli się wyodrębnią) PHPUnitem, wzorzec istniejących
+    testów `OrderSync`; PHPStan level 5.
+- **Zależności:** P-6.3b (import zamówień — miejsce zapisu meta), ground-truth kodu
+  WooCommerce 10.9.4 (zweryfikowany w tej sesji, kontrakt §12.6).
+
+#### 🟡 P-6.6a — Kontrakt: literały atrybucji + decyzje (qutlet-meta)
+- **Repo/artefakt:** `qutlet-meta` (docs) — pierwszy w łańcuchu (wzorzec P-6.5a).
+- **Zakres:** dopisać §12.6 do `kontrakt-danych.md` (literały
+  `_wc_order_attribution_source_type`/`_wc_order_attribution_utm_source`, wartości
+  `referral`/`Allegro`, ground-truth Woo 10.9.4), zapisać D-6.6.1/D-6.6.2 i rozbicie w
+  `plan.md`. **To jest niniejsze rozpisanie.**
+- **Zależności:** brak. Odblokowuje P-6.6b (literały z kontraktu).
+
+#### P-6.6b — Zapis atrybucji przy imporcie + backfill (qutlet-allegro)
+- **Repo/artefakt:** `qutlet-allegro`, slice `OrderSync/` (rozszerzenie `OrderWriter`,
+  P-6.3b/D-6.3.4).
+- **Zakres:** patrz „Zakres kodu P-6.6b" wyżej — `OrderWriter::apply()` + komenda
+  `backfill-order-attribution`.
+- **Zależności:** P-6.6a (literały w kontrakcie), P-6.3b (infrastruktura importu).
 
 ### P-6.7 — Model egzemplarz↔produkt: polityka GTIN, agregacja sztuk, widget „inne sztuki" — [OTWARTE, do rozpisania]
 - **Repo:** WIELOREPOWY (feature rozproszony) — kontrakt (`qutlet-meta`, rewizja
