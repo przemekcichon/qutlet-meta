@@ -1884,7 +1884,7 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
 - **Zależności:** P-6.1 (import wypełnił ścieżki kategorii), P-4.2 (D-4.2.1/D-4.2.2 —
   strategia kolapsu N:1, hybryda gałąź+wyjątek).
 
-### P-6.9 — Scheduler auto-pollingu zamówień (`sync-orders`) — [OTWARTE, do rozpisania]
+### 🟢 P-6.9 — Scheduler auto-pollingu zamówień (`sync-orders`)
 - **Repo:** `qutlet-allegro` (slice `OrderSync/`; wzorzec `OfferSync/StockSyncScheduler`).
 - **Kontekst (sesja 2026-07-25, zgłoszenie użytkownika):** `sync-orders` jest komendą
   WYŁĄCZNIE ręczną — auto-polling zamówień świadomie ODŁOŻONO w **D-6.3.3** (POZA
