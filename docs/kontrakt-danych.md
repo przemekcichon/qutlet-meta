@@ -384,8 +384,29 @@ Uwagi do kształtu:
 
 | Pole Allegro | Znaczenie | Natywne miejsce Woo | Uwaga |
 |--------------|-----------|---------------------|-------|
-| param `EAN (GTIN)` (`id 225693`, `mapping` §4b) | kod EAN/GTIN | `global_unique_id` (`get/set_global_unique_id`) | **zweryfikowane w Woo 10.9.4** (`abstracts/abstract-wc-product.php`): getter/setter + walidacja formatu (cyfry/`X`/`-`). Import zapisuje pole natywne (FAZA 6) — core NIE rejestruje własnego. |
+| param `EAN (GTIN)` (`id 225693`, `mapping` §4b) | kod EAN/GTIN | `global_unique_id` (`get/set_global_unique_id`) | **zweryfikowane w Woo 10.9.4** (`abstracts/abstract-wc-product.php`): getter/setter + walidacja formatu (cyfry/`X`/`-`). Import zapisuje pole natywne (FAZA 6) — core NIE rejestruje własnego. **Unikalność rozluźniona (P-6.7, D-6.7.1)** — patrz uwaga niżej. |
 | `taxSettings.rates[].rate` (`mapping` §4d, 503/555) | stawka VAT | natywne ustawienia podatku produktu Woo | odwzorowanie stawki na natywny podatek Woo = zachowanie importu (FAZA 6); core NIE rejestruje pola. |
+
+**Rozluźnienie unikalności `global_unique_id` (D-6.7.1, P-6.7b — `qutlet-allegro`).**
+Woo domyślnie egzekwuje unikalność `global_unique_id` w obrębie `product` ORAZ
+`product_variation` (`is_existing_global_unique_id`,
+`class-wc-product-data-store-cpt.php:1310`) — założenie „1 GTIN = 1 sprzedawalny byt"
+jest sprzeczne z jednosztukowym outletem, gdzie ten sam MODEL (ten sam EAN) legalnie
+występuje w wielu niezależnych produktach (osobne egzemplarze, np. zwroty tych samych
+słuchawek). Import (`ProductWriter`) świadomie zezwala wielu produktom z Allegro dzielić
+ten sam `global_unique_id`: filtr Woo `wc_product_pre_has_global_unique_id`
+(`apply_filters(..., null, $product_id, $global_unique_id)`,
+`wc-product-functions.php:1054`) zwraca **`false`** (= „nieistniejący, zapis
+dozwolony") WYŁĄCZNIE w oknie wywołania `set_global_unique_id()` wewnątrz
+`ProductWriter` — `add_filter`/`remove_filter` owinięte ściśle wokół tego wywołania, NIE
+globalnie. Poza tym oknem (np. ręczne tworzenie produktu w adminie) unikalność Woo
+działa bez zmian. Walidacja FORMATU GTIN (cyfry/`X`/`-`,
+`abstract-wc-product.php:892-902`) jest niezależna od unikalności i pozostaje
+nienaruszona — nadal odrzuca (warning w imporcie) niepoprawnie sformatowany EAN, tylko
+przestaje odrzucać poprawnie sformatowany DUPLIKAT. Pełna agregacja wielu ofert w JEDEN
+produkt (`_stock` > 1, wielowartościowy `_qutlet_allegro_offer_id`) jest ODŁOŻONA do
+**P-6.10** — ten punkt (P-6.7) zmienia WYŁĄCZNIE politykę unikalności, model importu
+zostaje 1 oferta = 1 produkt.
 
 ### 10.3 Pola bez osobnego pola — zostają w verbatim JSON (`_qutlet_allegro_offer`)
 
