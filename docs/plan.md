@@ -2110,7 +2110,7 @@ AI Client** zamiast budować własną abstrakcję dostawcy.
     NIE budujemy interfejsu dostawcy (D-7.G3) — provider-agnostyczność daje core.
 - **Zależności:** P-7.0 (🟢) + WP 7.0 core (jest: 7.0.2).
 
-### P-7.2a — Pole „prompt per-produkt" (core)
+### 🟡 P-7.2a — Pole „prompt per-produkt" (core)
 - **Repo:** qutlet-core (slice `AiRewrite/`)
 - **Zakres:** rejestracja opcjonalnego pola override promptu na produkcie
   (granica D-7.G6 — pola rejestruje wyłącznie core).
