@@ -1884,6 +1884,38 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
 - **Zależności:** P-6.1 (import wypełnił ścieżki kategorii), P-4.2 (D-4.2.1/D-4.2.2 —
   strategia kolapsu N:1, hybryda gałąź+wyjątek).
 
+### P-6.9 — Scheduler auto-pollingu zamówień (`sync-orders`) — [OTWARTE, do rozpisania]
+- **Repo:** `qutlet-allegro` (slice `OrderSync/`; wzorzec `OfferSync/StockSyncScheduler`).
+- **Kontekst (sesja 2026-07-25, zgłoszenie użytkownika):** `sync-orders` jest komendą
+  WYŁĄCZNIE ręczną — auto-polling zamówień świadomie ODŁOŻONO w **D-6.3.3** (POZA
+  zakresem P-6.3b). Realny objaw: zamówienie nie weszło do Woo, dopóki nie odpalono
+  komendy ręcznie; „aktualizacja poprzednich" (sync statusów) też nie jeździ sama.
+  Stan magazynowy MA harmonogram (`StockSyncScheduler`: `sync-stock` co ~1 min +
+  `--full` co 30 min), zamówienia — nie. Po **P-6.5c** JEDNA komenda `sync-orders`
+  robi import (READY_FOR_PROCESSING) ORAZ synchronizację statusów (tor eventowy +
+  `--full`), więc jeden scheduler pokrywa oba. Ten punkt realizuje odłożone D-6.3.3.
+- **Zakres (szkic — do rozpisania po ground-truth):** harmonogram WP-Cron wzorca
+  `StockSyncScheduler` (D-6.G1): zdarzenie przyrostowe (`sync-orders`, kadencja do
+  ustalenia) + pełna rekoncyliacja (`sync-orders --full`, rzadziej), oba środowiska,
+  self-healing na `init` (planowanie + przeplanowanie przy zmianie interwału),
+  izolacja błędów per środowisko (`WP_CLI::runcommand` z `exit_error=>false` + łapanie
+  `\Throwable`), rejestracja pod guardem `WP_CLI`. Odpala się przez ten sam systemowy
+  tick `wp cron event run --due-now`, co `sync-stock` (D-6.G1) — bez nowej linii crona.
+- **Pod-decyzje [OTWARTE]:**
+  - kadencja przyrostowa (zamówienia mniej wrażliwe na czas niż stan magazynowy — ~1 min
+    jak stan, czy rzadziej?) i kadencja `--full`;
+  - **koszt `--full` zamówień ≠ koszt `--full` stanów:** rekoncyliacja zamówień iteruje
+    nieterminalne `WC_Order` i robi `GET /order/checkout-forms/{id}` PER zamówienie
+    (N żądań), inaczej niż tani `sync-stock --full` (jedna lista ofert) — kadencja i
+    limit muszą to uwzględnić (rate-limit Allegro `order/events` + checkout-forms);
+  - czy współdzielić stałą środowisk ze `sync-stock` (`QUTLET_ALLEGRO_SYNC_STOCK_ENVIRONMENTS`)
+    czy wprowadzić osobną `QUTLET_ALLEGRO_SYNC_ORDERS_ENVIRONMENTS` (P-6.2c);
+  - kolejność/nakładanie z `sync-stock` na tym samym ticku (osobne locki — `OrderSyncLock`
+    vs `StockSyncLock` — już to izolują, ale warto potwierdzić budżet czasu ticku).
+- **Zależności:** P-6.3b (import zamówień), P-6.5c (sync statusów — scheduler odpala
+  jedną komendę robiącą import + tranzycje), wzorzec `StockSyncScheduler` (P-6.2b),
+  systemowy tick crona (D-6.G1, handoff — już istnieje dla `sync-stock`).
+
 ---
 
 ## 🟨 FAZA 7 — Przeróbka opisów przez AI (nowy plugin `qutlet-ai`) — ROZPISANA
