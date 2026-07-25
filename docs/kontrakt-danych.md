@@ -396,11 +396,18 @@ występuje w wielu niezależnych produktach (osobne egzemplarze, np. zwroty tych
 słuchawek). Import (`ProductWriter`) świadomie zezwala wielu produktom z Allegro dzielić
 ten sam `global_unique_id`: filtr Woo `wc_product_pre_has_global_unique_id`
 (`apply_filters(..., null, $product_id, $global_unique_id)`,
-`wc-product-functions.php:1054`) zwraca **`false`** (= „nieistniejący, zapis
-dozwolony") WYŁĄCZNIE w oknie wywołania `set_global_unique_id()` wewnątrz
+`wc-product-functions.php:1044-1080`) zwraca **`true`** (= „unikalne/OK", krótko spina
+`wc_product_has_global_unique_id()` do `true` PRZED sprawdzeniem data store, więc wołający
+kod `! wc_product_has_global_unique_id(...)` w `abstract-wc-product.php:904` nie rzuca
+błędu duplikatu) WYŁĄCZNIE w oknie wywołania `set_global_unique_id()` wewnątrz
 `ProductWriter` — `add_filter`/`remove_filter` owinięte ściśle wokół tego wywołania, NIE
-globalnie. Poza tym oknem (np. ręczne tworzenie produktu w adminie) unikalność Woo
-działa bez zmian. Walidacja FORMATU GTIN (cyfry/`X`/`-`,
+globalnie. **Korekta ground-truth (sesja 2026-07-25, P-6.7b):** wcześniejsza wersja tego
+akapitu błędnie podawała `false` jako wartość zwracaną przez filtr. Prześledzenie źródła
+pokazuje, że `false` powodowałoby ODWROTNY efekt — `wc_product_has_global_unique_id()`
+krótko spięte do `false` sprawia, że wołający kod ZAWSZE rzuca błąd duplikatu (dla
+KAŻDEGO zapisu GTIN, nie tylko duplikatu), co zepsułoby import gorzej niż brak filtra.
+Poprawny callback to `__return_true`. Poza tym oknem (np. ręczne tworzenie produktu w
+adminie) unikalność Woo działa bez zmian. Walidacja FORMATU GTIN (cyfry/`X`/`-`,
 `abstract-wc-product.php:892-902`) jest niezależna od unikalności i pozostaje
 nienaruszona — nadal odrzuca (warning w imporcie) niepoprawnie sformatowany EAN, tylko
 przestaje odrzucać poprawnie sformatowany DUPLIKAT. Pełna agregacja wielu ofert w JEDEN
