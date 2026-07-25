@@ -1858,10 +1858,14 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
   agregacja go dotyka), FAZA 5 (pola `AllegroLink`/warstwa surowa), FAZA 8 (render
   widgetu). Rewizja kontraktu §10.2 (i ew. §10.1) to pierwszy pod-punkt (meta).
 
-### P-6.8 — Raport liści kategorii + kuracja mapy `product_cat` — [OTWARTE, do rozpisania]
-- **Repo:** `qutlet-allegro` (komenda raportu + reguły `OfferSync/CategoryMapRules`);
-  kuracja docelowych termów wraca do kontraktu §1 (`qutlet-meta`). Prawdopodobne rozbicie:
-  raport (allegro) → kuracja reguł + docelowe slugi do kontraktu (allegro + meta).
+### P-6.8 — Raport liści kategorii + kuracja mapy `product_cat` (punkt wielorepowy → P-6.8a + P-6.8b)
+
+Pierwotnie jeden punkt. Zakres rozpada się na komendę-narzędzie w `qutlet-allegro` i
+kuracyjną decyzję sprzedażową w `qutlet-meta` — zgodnie z regułą punktów wielorepowych.
+Kolejność jest ODWRÓCONA względem wzorca P-6.5a→b / P-6.6a→b (tam kontrakt szedł
+NAJPIERW): tu kuracji (P-6.8b) nie da się zrobić, dopóki nie istnieje realny raport z
+P-6.8a — więc **P-6.8a → P-6.8b**.
+
 - **Kontekst (sesja 2026-07-24, zgłoszenie użytkownika):** import 524 ofert ujawnił, że
   startowe (ilustracyjne, `mapping` §7d) reguły `CategoryMapRules` są ZA GRUBE — gałąź
   „Komputery" → `laptopy` złapała 247 produktów (w środku huby, obudowy, monitory,
@@ -1869,20 +1873,46 @@ producent danych surowych = allegro; pola = core (FAZA 5). Slice np. `OfferSync/
   powerbanki), a **34 gałęzie bez reguły** trafiły do kosza `pozostale`. Realny asortyment
   wychodzi daleko poza czwórkę prototypu (AGD drobne, higiena, oświetlenie, kable, ogród,
   dziecko, GPS…). Do porządnej mapy użytkownik potrzebuje WSZYSTKICH liści naraz.
-- **Zakres (szkic):** komenda WP-CLI raportująca każdy liść kategorii Allegro obecny w
-  imporcie: `id` liścia, nazwa, PEŁNA ścieżka do korzenia, liczba zaimportowanych
-  produktów, obecnie przypisany term `product_cat`, dopasowana reguła (leaf/branch) albo
-  „kosz — brak reguły". Czyta z zapisanych meta `_qutlet_allegro_category_path` (zero
-  żądań do Allegro dla znanych liści; `leaf` wynika z faktu, że oferty istnieją tylko na
-  liściach), z opcją dociągnięcia z API dla id spoza katalogu. Wyjście do pliku/CSV =
-  warsztat użytkownika do zaprojektowania docelowej mapy.
-- **Pod-decyzje [OTWARTE]:** format wyjścia (CSV pod arkusz?); komenda jako
-  read-only RAPORT (kuracja reguł ręczna) vs wsparcie edycji; docelowy zestaw termów
-  sklepu = **decyzja sprzedażowa użytkownika** (`mapping` §7e), potem ustabilizowane slugi
-  → kontrakt §1; czy rozbić zbyt grube reguły gałęzi na węższe równolegle z dopisaniem
-  brakujących 34.
+- **Decyzje sesji 2026-07-25 (rozbicie i zakres P-6.8a):**
+  - komenda jest **raport + wsparcie re-kategoryzacji** (nie czysty read-only): domyślnie
+    czyta i drukuje/zapisuje raport (zero zapisów); flaga `--apply` dodatkowo przelicza
+    regułę wg AKTUALNEGO `CategoryMapRules` dla każdego już zaimportowanego produktu i
+    nadpisuje `product_cat`, gdy wynik się różni od obecnego przypisania (tylko kategoria —
+    bez dotykania zdjęć/opisu/ceny, to rola `import-offers`);
+  - format wyjścia = **CSV** (`--out=<ścieżka>`), warsztat pod arkusz; bez `--out` komenda
+    drukuje tabelę na stdout;
+  - `--resolve-missing` (+ `--environment=`, slot `read`) jako jawny opt-in do żądań HTTP
+    dla liści, których `_qutlet_allegro_category_path` jest puste (nierozwiązane przy
+    imporcie) — domyślnie (bez flagi) komenda NIE odpytuje Allegro (zero żądań dla znanych
+    liści, zgodnie z zakresem);
+  - docelowy zestaw termów sklepu (decyzja sprzedażowa) i kuracja samych reguł
+    `CategoryMapRules` **NIE** wchodzą do P-6.8a — to zawartość P-6.8b, bo wymaga
+    patrzenia na realne dane z raportu, których przed P-6.8a nie ma.
 - **Zależności:** P-6.1 (import wypełnił ścieżki kategorii), P-4.2 (D-4.2.1/D-4.2.2 —
   strategia kolapsu N:1, hybryda gałąź+wyjątek).
+
+#### 🟡 P-6.8a — Komenda raportu liści kategorii + re-kategoryzacja (qutlet-allegro)
+- **Repo:** `qutlet-allegro`, slice `OfferSync/` (komenda `category-report` +
+  rozszerzenie `CategoryMapRules` o `resolve()` z typem dopasowania).
+- **Zakres:** komenda WP-CLI raportująca każdy liść kategorii Allegro obecny w imporcie:
+  `id` liścia, nazwa, PEŁNA ścieżka do korzenia, liczba zaimportowanych produktów
+  (non-trash), obecnie przypisany term `product_cat`, dopasowana reguła (leaf/branch) albo
+  kosz „brak reguły" (D-6.1.2). Czyta z zapisanych meta `_qutlet_allegro_category_id` /
+  `_qutlet_allegro_category_path` (zero żądań do Allegro domyślnie). `--apply` re-kategoryzuje
+  istniejące produkty wg aktualnych reguł. `--resolve-missing` dociąga z API nierozwiązane
+  ścieżki (opt-in, patrz decyzje wyżej). Wyjście CSV (`--out=`) albo tabela na stdout.
+- **Zależności:** P-6.1 (import wypełnił ścieżki kategorii), P-4.2.
+
+#### P-6.8b — Kuracja reguł + docelowy zestaw termów `product_cat` (qutlet-meta + qutlet-allegro)
+- **Repo:** `qutlet-meta` (decyzja sprzedażowa użytkownika → `mapping-allegro.md` §7e →
+  ustabilizowane slugi do `kontrakt-danych.md` §1) + `qutlet-allegro` (rozszerzenie
+  `CategoryMapRules::LEAF_RULES`/`BRANCH_RULES` o brakujące gałęzie i węższe reguły
+  zamiast dzisiejszych zbyt grubych `laptopy`/`smartfony`).
+- **Zakres:** na podstawie realnego CSV z P-6.8a — docelowy zestaw termów sklepu
+  (decyzja sprzedażowa użytkownika, `mapping` §7e), rozbicie zbyt grubych reguł gałęzi na
+  węższe, dopisanie brakujących ~34 gałęzi bez reguły, uruchomienie `category-report --apply`
+  na istniejącym katalogu.
+- **Zależności:** P-6.8a (dostarcza raport, na którym opiera się kuracja).
 
 ### 🟢 P-6.9 — Scheduler auto-pollingu zamówień (`sync-orders`)
 - **Repo:** `qutlet-allegro` (slice `OrderSync/`; wzorzec `OfferSync/StockSyncScheduler`).
