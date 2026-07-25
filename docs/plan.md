@@ -1891,7 +1891,7 @@ P-6.8a — więc **P-6.8a → P-6.8b**.
 - **Zależności:** P-6.1 (import wypełnił ścieżki kategorii), P-4.2 (D-4.2.1/D-4.2.2 —
   strategia kolapsu N:1, hybryda gałąź+wyjątek).
 
-#### 🟡 P-6.8a — Komenda raportu liści kategorii + re-kategoryzacja (qutlet-allegro)
+#### 🟢 P-6.8a — Komenda raportu liści kategorii + re-kategoryzacja (qutlet-allegro)
 - **Repo:** `qutlet-allegro`, slice `OfferSync/` (komenda `category-report` +
   rozszerzenie `CategoryMapRules` o `resolve()` z typem dopasowania).
 - **Zakres:** komenda WP-CLI raportująca każdy liść kategorii Allegro obecny w imporcie:
