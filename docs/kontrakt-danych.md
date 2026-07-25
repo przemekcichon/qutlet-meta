@@ -740,4 +740,4 @@ to zwykły tekst instrukcji dla modelu, bez potrzeby rich text/HTML.
 
 | Decyzja  | Rozstrzygnięcie                                                                 | Podstawa |
 |----------|--------------------------------------------------------------------------------|----------|
-| D-7.2a.1 | pole override promptu = ACF textarea `prompt_ai` (wzorzec `ProductConditionFields`/`AllegroChannelFields` — edytowalne ręcznie, NIE fakt z Allegro nadpisywany syncem, więc NIE `register_post_meta` prywatne jak §9.1/§10.1); plain text (nie WYSIWYG jak `opis` §9.2) — to instrukcja dla modelu, nie treść user-facing | ground-truth `ProductInfo/RewrittenFields.php` (komentarz „wzorzec dla … AiRewrite"), sesja 2026-07-26 |
+| D-7.2a.1 | pole override promptu = ACF textarea `prompt_ai` (wzorzec `ProductConditionFields`/`AllegroChannelFields` — edytowalne ręcznie, NIE fakt z Allegro nadpisywany syncem, więc NIE `register_post_meta` prywatne jak §9.1/§10.1); plain text (nie WYSIWYG jak `opis` §9.2) — to instrukcja dla modelu, nie treść user-facing | ground-truth `ProductCondition/ProductConditionFields.php:22` (komentarz „wzorzec dla … AiRewrite"), sesja 2026-07-26 |
