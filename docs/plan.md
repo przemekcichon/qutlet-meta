@@ -2179,9 +2179,13 @@ Punkty (wg obszarów prototypu; duże obszary pocięte na pod-punkty per sesja):
 ### 🟢 P-8.1 — Fundament renderu
 - Nagłówek/stopka/nawigacja (`partials/header.html`, `footer.html`), `theme.json`
   (kolory, typografia z prototypu), szablony bazowe. **Zależności:** F0 P-0.2.
-### P-8.2a — Produkt: szkielet + galeria + nagłówek
+### 🟡 P-8.2a — Produkt: szkielet + galeria + nagłówek
 - Układ strony produktu, galeria/hero, tytuł, klasa stanu, ceny (`now`/`old`,
-  rabat `savePct`), etykieta liczby sztuk. **Zależności:** F1 (P-1.2), P-8.1.
+  rabat `savePct`). **Zależności:** F1 (P-1.2), P-8.1.
+  **Korekta (sesja 2026-07-26):** „etykieta liczby sztuk" była tu błędnie
+  wymieniona — ground-truth `produkt.html` potwierdza, że QT.qtyLabel renderuje
+  się WYŁĄCZNIE na karcie produktu (`pcard-stock`, `templates.js:51`), nie na
+  stronie produktu. Przeniesiona do P-8.3a (patrz niżej).
 ### P-8.2b — Produkt: przełącznik kanału zakupu
 - Taby Qutlet/Allegro + buybar; pełna semantyka D-8.G1 (`[data-allegro-only]`,
   `[data-allegro-off-only]`, wariant `.info-3col`/`.info-2col`). **Zależności:**
@@ -2192,7 +2196,9 @@ Punkty (wg obszarów prototypu; duże obszary pocięte na pod-punkty per sesja):
   treść wypełnia F7/ręczna edycja — render nie zależy od tego, czy AI wygenerował).
   **Zależności:** F1 (P-1.2), F5, P-8.2a.
 ### P-8.3a — Karta produktu + szablon archiwum/kategorii
-- Karta produktu (pętla) + szablon listy dla `product_cat`. **Zależności:** F1, P-8.1.
+- Karta produktu (pętla) + szablon listy dla `product_cat` + etykieta liczby
+  sztuk (`pcard-stock`, przeniesiona z P-8.2a — patrz korekta tam). **Zależności:**
+  F1, P-8.1.
 ### P-8.3b — Filtry i sortowanie
 - Filtry marka / klasa stanu / cena + sortowanie. **Zależności:** F1, P-8.3a.
 ### P-8.3c — Strefa okazji
