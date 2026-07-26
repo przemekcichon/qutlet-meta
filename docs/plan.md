@@ -2116,7 +2116,7 @@ AI Client** zamiast budować własną abstrakcję dostawcy.
   (granica D-7.G6 — pola rejestruje wyłącznie core).
 - **Zależności:** FAZA 5 (istnienie modelu produktu), P-0.1.
 
-### 🟡 P-7.2b — Ustawienie globalne promptu (ai)
+### 🟢 P-7.2b — Ustawienie globalne promptu (ai)
 - **Repo:** qutlet-ai (slice `AiRewrite/`)
 - **Zakres:** globalny prompt jako ustawienie w `qutlet-ai`; odczyt override
   per-produkt (z pola P-7.2a) przy generacji. Prompt trafia do core AI Client jako
