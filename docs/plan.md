@@ -2019,7 +2019,7 @@ P-6.8a — więc **P-6.8a → P-6.8b**.
 
 ---
 
-## 🟨 FAZA 7 — Przeróbka opisów przez AI (nowy plugin `qutlet-ai`) — ROZPISANA
+## 🟩 FAZA 7 — Przeróbka opisów przez AI (nowy plugin `qutlet-ai`) — ROZPISANA
 
 Cel: automatycznie generować **przerobione** opisy (proza + specyfikacja) na
 podstawie **surowych** danych z Allegro (wypełnianych przez import z FAZY 6), przez
@@ -2126,7 +2126,7 @@ AI Client** zamiast budować własną abstrakcję dostawcy.
 *(P-7.2 rozbite na dwa punkty per repo — patrz nota o punktach wielorepowych w
 nagłówku planu.)*
 
-### P-7.3 — Generacja przeróbki (orkiestracja)
+### 🟢 P-7.3 — Generacja przeróbki (orkiestracja)
 - **Repo:** qutlet-ai (czyta/pisze pola z `qutlet-core` z FAZY 5)
 - **Zakres:** orkiestracja surowe→AI→przerobione wołająca **core AI Client**
   (`wp_ai_client_prompt()` z promptem z P-7.2), akcja w adminie
