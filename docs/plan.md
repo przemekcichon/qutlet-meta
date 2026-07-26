@@ -2148,7 +2148,7 @@ nagłówku planu.)*
 
 ---
 
-## 🟦 FAZA 8 — Render frontu z prototypu (qutlet-theme) — ROZPISANA
+## 🟨 FAZA 8 — Render frontu z prototypu (qutlet-theme) — ROZPISANA
 
 Cel: zaimplementować prototyp `design/vanilla` w motywie blokowym — to, co
 produkuje core, ubrać w szablony/bloki/patterny. Hybryda: powierzchnia
@@ -2176,7 +2176,7 @@ slice'y imperatywne w `inc/features/`.
   telemetria. Ewentualną własną analitykę wprowadzamy świadomie, osobno.
 
 Punkty (wg obszarów prototypu; duże obszary pocięte na pod-punkty per sesja):
-### P-8.1 — Fundament renderu
+### 🟢 P-8.1 — Fundament renderu
 - Nagłówek/stopka/nawigacja (`partials/header.html`, `footer.html`), `theme.json`
   (kolory, typografia z prototypu), szablony bazowe. **Zależności:** F0 P-0.2.
 ### P-8.2a — Produkt: szkielet + galeria + nagłówek
