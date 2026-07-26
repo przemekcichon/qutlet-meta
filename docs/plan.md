@@ -2179,7 +2179,7 @@ Punkty (wg obszarów prototypu; duże obszary pocięte na pod-punkty per sesja):
 ### 🟢 P-8.1 — Fundament renderu
 - Nagłówek/stopka/nawigacja (`partials/header.html`, `footer.html`), `theme.json`
   (kolory, typografia z prototypu), szablony bazowe. **Zależności:** F0 P-0.2.
-### 🟡 P-8.2a — Produkt: szkielet + galeria + nagłówek
+### 🟢 P-8.2a — Produkt: szkielet + galeria + nagłówek
 - Układ strony produktu, galeria/hero, tytuł, klasa stanu, ceny (`now`/`old`,
   rabat `savePct`). **Zależności:** F1 (P-1.2), P-8.1.
   **Korekta (sesja 2026-07-26):** „etykieta liczby sztuk" była tu błędnie
