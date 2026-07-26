@@ -651,29 +651,44 @@ tylko zamówienia z kluczem `_qutlet_allegro_checkout_form_id` (§12.1), pomija 
 
 ---
 
-## 13. AiRewrite — prompt per-produkt (FAZA 7 — P-7.2a)
+## 13. AiRewrite — prompt per-produkt + globalny (FAZA 7 — P-7.2a/P-7.2b)
 
 Pole granicy D-7.G6: rejestrację pól ACF/CPT robi wyłącznie `qutlet-core`, logika
 przeróbki AI (odczyt, wywołanie core AI Client) mieszka w `qutlet-ai` — feature
-rozproszony, ta sama nazwa slice'a `AiRewrite/` w obu repo. To pole jest
-**opcjonalnym override'em per-produkt** promptu wysyłanego do AI (D-7.G4); globalny
-prompt (ustawienie w `qutlet-ai`) rejestruje osobny punkt **P-7.2b** — to pole jest
-dla niego jedynym wejściem czytanym cross-plugin, więc literał poniżej jest
-**stabilny i VERBATIM**.
+rozproszony, ta sama nazwa slice'a `AiRewrite/` w obu repo. Prompt efektywny
+(D-7.G4) = override per-produkt (poniżej), a gdy ten jest pusty — globalna opcja
+`qutlet-ai`.
 
-| Pole (znaczenie)        | Literał ACF   | Miejsce | Typ                | Opcjonalne? | Uwagi |
-|--------------------------|---------------|---------|--------------------|-------------|-------|
-| Prompt AI (nadpisanie per produkt) | `prompt_ai` | ACF | textarea (plain text) | tak | Treść wysyłana do core AI Client (`using_system_instruction()` / dołączona do promptu, P-7.2b) ZAMIAST globalnego promptu z ustawienia `qutlet-ai`, gdy niepuste. Puste → `qutlet-ai` używa globalnego promptu. Wejściem do generacji jest surowy JSON pojedynczego produktu (D-7.G5/D-5.G4) — to pole tylko dostarcza instrukcję/styl, NIE dane produktu. |
+| Ustawienie (znaczenie)              | Literał       | Miejsce | Typ                    | Opcjonalne? | Uwagi |
+|--------------------------------------|---------------|---------|------------------------|-------------|-------|
+| Prompt AI (nadpisanie per produkt)   | `prompt_ai`   | ACF (meta na produkcie) | textarea (plain text) | tak | Rejestruje `qutlet-core` (P-7.2a). Treść wysyłana do core AI Client (`using_system_instruction()` / dołączona do promptu) ZAMIAST globalnego promptu, gdy niepuste. Puste → `qutlet-ai` używa globalnego promptu. Wejściem do generacji jest surowy JSON pojedynczego produktu (D-7.G5/D-5.G4) — to pole tylko dostarcza instrukcję/styl, NIE dane produktu. Odczyt cross-plugin: `get_post_meta( $product_id, 'prompt_ai', true )` (wzorzec §9.2 — `get_field()`/`get_post_meta()` równoważne dla prostych pól tekstowych ACF). |
+| Prompt AI (globalny)                | `qutlet_ai_prompt_global` | option (Settings API) | string (textarea, plain text) | tak (brak/puste → brak instrukcji systemowej — core AI Client generuje bez `using_system_instruction()`) | Rejestruje `qutlet-ai` (P-7.2b): strona ustawień pod menu WooCommerce (wzorzec `DiscountRateSettingsPage`, §11), sanityzacja `sanitize_textarea_field()`. Odczyt: `get_option( 'qutlet_ai_prompt_global', '' )`, ale wołający NIE czyta opcji bezpośrednio — używa `Qutlet\Ai\AiRewrite\PromptSettings::effective_prompt( $product_id )` (override per-produkt ?? opcja globalna ?? `null`), analogicznie do `DiscountRate::effective_percent()` (§11). |
 
-**D-7.2a.1 [USTALONE]:** mechanizm rejestracji = `acf_add_local_field_group()` (wzorzec
-`ProductConditionFields`/`AllegroChannelFields`/`RewrittenFields` — pole edytowalne
-ręcznie w adminie, NIE fakt z Allegro nadpisywany syncem, więc NIE `register_post_meta`
-prywatne jak warstwa surowa §9.1/§10.1). Typ `textarea` (nie WYSIWYG jak `opis` §9.2) —
-to zwykły tekst instrukcji dla modelu, bez potrzeby rich text/HTML.
+**D-7.2a.1 [USTALONE]:** mechanizm rejestracji pola per-produkt = `acf_add_local_field_group()`
+(wzorzec `ProductConditionFields`/`AllegroChannelFields`/`RewrittenFields` — pole
+edytowalne ręcznie w adminie, NIE fakt z Allegro nadpisywany syncem, więc NIE
+`register_post_meta` prywatne jak warstwa surowa §9.1/§10.1). Typ `textarea` (nie
+WYSIWYG jak `opis` §9.2) — to zwykły tekst instrukcji dla modelu, bez potrzeby rich
+text/HTML.
+
+**D-7.2b.1 [USTALONE]:** literał globalnej opcji = `qutlet_ai_prompt_global` (analogia
+do `qutlet_stawka_rabatu`, §11, ale z prefiksem pluginu `qutlet_ai_`, bo mieszka w
+`qutlet-ai`, nie w `qutlet-core` jak Pricing). Mechanizm = Settings API
+(`register_setting()`/`settings_fields()`), strona pod **menu WooCommerce**
+(`add_submenu_page( 'woocommerce', … )`), capability `manage_woocommerce` — wzorzec
+1:1 z `DiscountRateSettingsPage`/`OAuthController` (spójność UX: ustawienia sklepowe
+Qutlet mieszkają pod jednym menu, niezależnie od pluginu, który je rejestruje).
+Efektywny prompt = **czysta funkcja odczytu** (`PromptSettings::effective_prompt()`),
+bez cache'owania ani zapisu — analogicznie do `DiscountRate::effective_percent()`
+(§11): override per-produkt ma pierwszeństwo, potem opcja globalna, a gdy oba puste
+zwraca `null` (NIE pusty string) — wołający (P-7.3) ma wtedy jawny sygnał „brak
+promptu", żeby pominąć `using_system_instruction()` zamiast wysłać pustą instrukcję
+do core AI Client.
 
 ### Odnośniki (§13)
-- Plan: `docs/plan.md` → FAZA 7 (D-7.G1–G7), P-7.2a (ten kontrakt + rejestracja core),
-  P-7.2b (ustawienie globalne + odczyt override w `qutlet-ai`).
+- Plan: `docs/plan.md` → FAZA 7 (D-7.G1–G7), P-7.2a (pole per-produkt + rejestracja
+  core), P-7.2b (ten kontrakt: ustawienie globalne + odczyt efektywnego promptu w
+  `qutlet-ai`).
 
 ---
 
