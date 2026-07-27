@@ -2186,7 +2186,7 @@ Punkty (wg obszarów prototypu; duże obszary pocięte na pod-punkty per sesja):
   wymieniona — ground-truth `produkt.html` potwierdza, że QT.qtyLabel renderuje
   się WYŁĄCZNIE na karcie produktu (`pcard-stock`, `templates.js:51`), nie na
   stronie produktu. Przeniesiona do P-8.3a (patrz niżej).
-### P-8.2b — Produkt: przełącznik kanału zakupu
+### 🟢 P-8.2b — Produkt: przełącznik kanału zakupu
 - Taby Qutlet/Allegro + buybar; pełna semantyka D-8.G1 (`[data-allegro-only]`,
   `[data-allegro-off-only]`, wariant `.info-3col`/`.info-2col`). **Zależności:**
   F1 (P-1.3), P-8.2a.
