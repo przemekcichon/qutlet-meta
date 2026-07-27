@@ -132,7 +132,10 @@ tylko ustabilizowana LISTA slugów + nazwa czytelna.
 ```
 
 Sub-pola: `zdjecie` (image, opcjonalne — brak = wiersz nie zasila karuzeli, tylko checklistę), `etykieta`
-(text, wymagane — nazwa pozycji), `w_zestawie` (true_false, wymagane — steruje ikoną check/cross w checkliście).
+(text, wymagane — nazwa pozycji), `w_zestawie` (true_false, **ACF `required=0`** — pole boolowskie zawsze
+niesie wartość (domyślnie `true`), więc „wymagane" w sensie ACF byłoby tu mylące: wymuszałoby zaznaczenie
+przy zapisie i uniemożliwiało zapisanie wiersza jako „brakująca pozycja" (`false`). Doprecyzowane po
+recenzji qutlet-core PR #14, sesja 2026-07-27 — pierwotne sformułowanie „wymagane" mylone z ACF `required=1`).
 
 **D-1.2.1 [ROZSTRZYGNIĘTE — prototyp]:** klasa stanu to **pole ACF select**
 (`data.js:11` „pole ACF 'klasa_stanu' (select: A/B/C/D)"), NIE własna taksonomia.
