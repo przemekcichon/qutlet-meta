@@ -2231,6 +2231,125 @@ punkt, nie w PR-ze motywu (granica artefaktów).
 
 ---
 
+## 🟦 FAZA 9 — Poprawki (catch-all, poza planowanym build-outem)
+
+Cel: **osobny worek na poprawki** znajdywane w trakcie realnego używania sklepu
+(ręczna edycja produktów w adminie, obserwacje na Localu, zgłoszenia użytkownika),
+w odróżnieniu od FAZ 0–8, które budują zaplanowaną funkcjonalność. Każde
+zgłoszenie = nowy punkt (lub grupa pod-punktów, gdy problem rozpada się na
+logicznie osobne części — jak P-9.1 niżej). Faza nigdy nie „domyka się" w sensie
+FAZ 0–8 — rośnie, dopóki trwa eksploatacja.
+
+### P-9.1 — Własność pól przy sync ofert Allegro: ryzyko nadpisania ręcznych edycji
+
+**Zgłoszenie (2026-07-27):** edycja tytułu produktu w adminie może zostać
+nadpisana przy kolejnym pełnym sync/imporcie tej samej oferty z Allegro.
+Ground-truth `qutlet-allegro/src/OfferSync/ProductWriter.php` (docblock klasy,
+linie 27–35) ujawnia, że to nie jest odosobniony przypadek — cała klasa ma
+JAWNIE udokumentowany podział własności pól na trzy koszyki:
+- **nadpisywane każdym przebiegiem (sync-owned):** tytuł, stan magazynowy,
+  `_price`/`_regular_price`, `cena_allegro`, `allegro_url`, `allegro_wlaczone`
+  (patrz P-9.1b niżej), GTIN, VAT, warstwa surowa (JSON + pola parsowane —
+  zamierzone, D-6.G4), pola `AllegroLink`, **kategoria i marka** (P-9.1c),
+  **zdjęcia/galeria** (P-9.1d).
+- **ustawiane TYLKO gdy puste:** `klasa_stanu` (D-6.1.4) — już chronione,
+  wzorzec do naśladowania.
+- **NIGDY nie dotykane:** `opis`, atrybuty WC (specyfikacja przerobiona),
+  `cena_rynkowa_nowego`, `zawartosc_zestawu`, `_qutlet_stawka_rabatu`.
+
+Problem dotyczy WYŁĄCZNIE pierwszego koszyka i WYŁĄCZNIE pól, które są
+realnie edytowalne w adminie (pola `_qutlet_*`/`AllegroLink` mają
+`auth_callback` blokujący edycję — nie dotyczy ich, sync i tak jest jedynym
+autorem). Rozbite na cztery pod-punkty — różne pola, różne ryzyko biznesowe,
+prawdopodobnie różne rozwiązania; wspólny mianownik to sam mechanizm
+"koszyka własności" w `ProductWriter`.
+
+Zaraportowane, BEZ wybranego rozwiązania — cztery otwarte decyzje D-9.1a.1–
+D-9.1d.1 niżej, każda z sugestiami do rozważenia (nieprzesądzone, żadna nie
+jest rekomendacją; wybór i priorytet = decyzja użytkownika).
+
+#### P-9.1a — Tytuł produktu nadpisywany przy każdym sync
+- **Repo:** qutlet-allegro (`OfferSync/ProductWriter.php:150-154`)
+- **Problem:** `$product->set_name($name)` woła się bezwarunkowo (jedyny
+  warunek to niepusty tytuł W OFERCIE, nie „czy produkt jest nowy"), na
+  ścieżce create ORAZ update. Ręczna korekta tytułu w adminie ginie przy
+  najbliższym pełnym re-imporcie tej oferty.
+- **D-9.1a.1 (jak chronić `post_title`) [OTWARTE]:** patrz sugestie niżej —
+  żadna nierekomendowana, decyzja użytkownika.
+- **Sugestie (nieprzesądzone):**
+  1. „Ustawiane tylko gdy puste" wzorem `klasa_stanu` — tytuł nietykalny po
+     pierwszym zapisaniu. Prosto, spójnie z istniejącym precedensem w tym samym
+     pliku. Wada: uzasadniona korekta tytułu przez sprzedawcę na Allegro też
+     nigdy się nie propaguje — nie odróżnia „user edytował" od „nikt nie ruszał".
+  2. Zapamiętany ostatni zsynchronizowany tytuł (nowa meta, np.
+     `_qutlet_allegro_name_synced`) — sync nadpisuje `post_title` TYLKO, gdy
+     jego bieżąca wartość wciąż równa się zapamiętanej (czyli nikt ręcznie nie
+     edytował). Poprawnie odróżnia edycję ręczną od zmiany u źródła, kosztem
+     dodatkowego pola i porównania przy każdym sync.
+  3. Rozszerzenie wzorca „warstwa surowa/przerobiona" (D-5.G4, już użytego dla
+     `opis`/specyfikacji) na tytuł: nowa meta `_qutlet_allegro_name_raw`
+     (zawsze nadpisywana, ukryta) jako źródło dla AI/redakcji, `post_title`
+     NIGDY więcej nie dotykany przez sync po utworzeniu — architektonicznie
+     najbardziej spójne z resztą projektu, ale to świadoma zmiana semantyki
+     `post_title` (z „auto-sync" na „redakcyjne") wartą osobnej decyzji D-…
+
+#### P-9.1b — `allegro_wlaczone` wymuszane na `1` przy każdym pełnym sync
+- **Repo:** qutlet-allegro (`OfferSync/ProductWriter.php:231`)
+- **Problem:** `update_field(self::ACF_KEY_ALLEGRO_ENABLED, 1, $product_id)`
+  — BEZ ŻADNEGO warunku (nawet nie „gdy puste", jak przy `klasa_stanu"). Jeśli
+  kurator ręcznie wyłączy kanał Allegro dla konkretnego produktu (np. decyzja
+  biznesowa, spór, wycofana oferta), najbliższy pełny re-import CICHO włączy
+  go z powrotem. To ryzyko dotyka bezpośrednio klienta (widoczność kanału
+  zakupu) — potencjalnie poważniejsze niż kosmetyka tytułu.
+- **D-9.1b.1 (jak chronić `allegro_wlaczone`) [OTWARTE]:** patrz sugestie
+  niżej — żadna nierekomendowana, decyzja użytkownika.
+- **Sugestie (nieprzesądzone):**
+  1. Najprostsze: usunąć wymuszenie z pełnego importu, ustawiać `1` WYŁĄCZNIE
+     przy tworzeniu nowego produktu (`$action === 'created'`), nigdy przy
+     aktualizacji. Traci możliwość auto-włączenia, gdyby coś inne wcześniej
+     ręcznie wyłączyło pole z innego powodu — ale to skrajny edge case.
+  2. Marker override (np. `_qutlet_allegro_wlaczone_overridden`, ustawiany
+     przez hook przy ręcznej zmianie w adminie) — sync respektuje override i
+     nie nadpisuje. Bardziej elastyczne, wymaga nowego hooka po stronie admina.
+- **Uwaga:** rozstrzygnięcie tego punktu może wpłynąć na P-9.1a (spójność
+  podejścia „kiedy sync ma prawo nadpisać pole ACF ustawione ręcznie").
+
+#### P-9.1c — Kategoria i marka nadpisywane przy każdym sync
+- **Repo:** qutlet-allegro (`OfferSync/ProductWriter.php:255-278`)
+- **Problem:** `wp_set_object_terms()` dla `product_cat` i `product_brand`
+  wołane bezwarunkowo przy każdym przebiegu — ręczna rekategoryzacja produktu
+  w adminie (np. poprawka błędnego automatycznego mapowania) ginie przy
+  najbliższym re-imporcie.
+- **D-9.1c.1 (czy chronić kategorię/markę, i czy to realne ryzyko) [OTWARTE]:**
+  patrz sugestie niżej — decyzja użytkownika.
+- **Sugestie (nieprzesądzone):**
+  1. Ten sam wzorzec „dirty compare" co P-9.1a/2 — zapamiętać ostatni
+     auto-zmapowany slug kategorii/marki, nadpisywać TYLKO gdy bieżący term
+     wciąż się zgadza.
+  2. Do rozważenia, czy to w ogóle realne ryzyko w praktyce, czy teoretyczne:
+     P-6.8b opisuje kurację kategorii jako w większości jednorazowy zabieg
+     stabilizujący zestaw slugów, nie powtarzalną ręczną pracę per-produkt —
+     wymaga potwierdzenia z użytkownikiem, zanim zainwestujemy w mechanizm.
+
+#### P-9.1d — Zdjęcia/galeria nadpisywane przy każdym sync
+- **Repo:** qutlet-allegro (`OfferSync/ProductWriter.php:281-294`,
+  `ImageSideloader`)
+- **Problem:** `set_gallery_image_ids()` PODMIENIA całą galerię na listę
+  attachmentów wyprowadzonych WYŁĄCZNIE z URL-i zdjęć z bieżącej oferty
+  Allegro. Zdjęcie dodane ręcznie przez kuratora (np. własne zdjęcie
+  faktycznej rysy/wady egzemplarza) nie pochodzi z tych URL-i, więc zniknie z
+  galerii przy najbliższym pełnym re-imporcie.
+- **D-9.1d.1 (czy scalać galerię, i czy to realne ryzyko) [OTWARTE]:** patrz
+  sugestie niżej — decyzja użytkownika.
+- **Sugestie (nieprzesądzone):**
+  1. Scalanie zamiast podmiany: oznaczyć zsynchronizowane attachmenty osobną
+     meta („pochodzi z sync"), przy kolejnym sync usuwać/dodawać TYLKO
+     oznaczone, zachowując resztę galerii nietkniętą.
+  2. Jak w P-9.1c — do potwierdzenia, czy to realny scenariusz (czy kuratorzy
+     w ogóle ręcznie dokładają zdjęcia), zanim to się zaimplementuje.
+
+---
+
 ## Materiał referencyjny i kandydaci do dalszych faz
 
 ### Inwentarz endpointów Allegro (dostarczony przez użytkownika)
