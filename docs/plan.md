@@ -2192,9 +2192,16 @@ Punkty (wg obszarów prototypu; duże obszary pocięte na pod-punkty per sesja):
   F1 (P-1.3), P-8.2a.
 ### P-8.2c — Produkt: sekcja treści (opis + specyfikacja)
 - Taby „Co w przesyłce" / „Opis i specyfikacja", tabela specyfikacji
-  (etykieta→wartość), tabela klas stanu. Render warstwy przerobionej (pola z F5;
+  (etykieta→wartość — `spec-table`, `produkt.html:184-191`; jeden z wierszy to
+  „Klasa stanu", NIE osobna tabela). Render warstwy przerobionej (pola z F5;
   treść wypełnia F7/ręczna edycja — render nie zależy od tego, czy AI wygenerował).
   **Zależności:** F1 (P-1.2), F5, P-8.2a.
+  **Korekta (sesja 2026-07-27):** „tabela klas stanu" była tu błędnie wymieniona
+  jako osobny element — ground-truth `produkt.html` potwierdza, że jedyna PEŁNA
+  tabela klasyfikacji A/B/C/D (`.class-table`, `produkt.html:204`) żyje w
+  akordeonie „Klasyfikacja produktów" (`#jak-to-dziala`) i została już
+  zaimplementowana w P-8.2b. W P-8.2c „klasa stanu" pojawia się WYŁĄCZNIE jako
+  jeden wiersz `spec-row` w tabeli specyfikacji — nic więcej do zbudowania.
 ### P-8.3a — Karta produktu + szablon archiwum/kategorii
 - Karta produktu (pętla) + szablon listy dla `product_cat` + etykieta liczby
   sztuk (`pcard-stock`, przeniesiona z P-8.2a — patrz korekta tam). **Zależności:**
