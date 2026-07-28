@@ -2397,6 +2397,107 @@ rozszerzamy model.
 - **Blokuje:** P-8.2c (FAZA 8) — render taba „Co w przesyłce" czyta już nowy
   kształt, nie stare WYSIWYG.
 
+### P-9.3 — Klasy stanu: rozszerzalny byt + tekst „dlaczego taniej" per klasa + edytowalne mapowanie Allegro (punkt wielorepowy → P-9.3a + P-9.3b + P-9.3c)
+
+**Zgłoszenie (2026-07-28):** dziś „klasa stanu" to zamknięty czterowartościowy
+enum A/B/C/D, zduplikowany w TRZECH niezależnych, hardkodowanych miejscach:
+- `qutlet-core/src/ProductCondition/ProductConditionFields.php` — `choices`
+  pola ACF `klasa_stanu` (literał + etykieta per klasa, na sztywno w kodzie).
+- `qutlet-theme/inc/features/ProductPage/ProductPage.php` →
+  `condition_label()` — TA SAMA etykieta, zduplikowana drugi raz w PHP motywu.
+- `qutlet-theme/woocommerce/content-single-product.php` → tablica
+  `$classification_rows` (kolumny „Stan wizualny"/„Charakterystyka" per klasa
+  w tabeli `.class-table`, akordeon „Klasyfikacja produktów" z P-8.2b) oraz
+  kolory kropek `.dot-a`…`.dot-d` w `style.css:520-523`.
+
+Dodatkowo tekst „Skąd niższa cena?" (`.eco-note`, ten sam plik) jest JEDEN,
+wspólny dla WSZYSTKICH klas — nie ma wariantu per klasę, mimo że uzasadnienie
+niższej ceny („nie dopłacasz za nieotwierane opakowanie", „ograniczasz
+e-waste") nie pasuje jednakowo np. do klasy D („Na części").
+
+Mapowanie Allegro „Stan" → `klasa_stanu` (7 wartości Allegro → 4 nasze klasy,
+`docs/mapping-allegro.md` D-4.1.1) jest RÓWNIEŻ hardkodowane — stała PHP
+`CONDITION_MAP` w `qutlet-allegro/src/OfferSync/OfferMapper.php:32-40`.
+
+Efekt: dodanie JEDNEJ nowej klasy dziś wymaga edycji kodu w czterech miejscach
+w trzech repo, żeby całość pozostała spójna — a to tylko przypadek dodania
+klasy; sama zmiana treści (np. innego tekstu „dlaczego taniej" dla klasy B)
+też wymaga deploya kodu, nie edycji w adminie.
+
+**Żądanie użytkownika:** klasa stanu ma nosić kolor, nazwę, krótki opis na
+chipsie (np. „Klasa A · Jak nowy"), stan wizualny, charakterystykę oraz
+WŁASNY, edytowalny tekst „dlaczego taniej" (dziś wspólny — ma być per klasa).
+Musi być możliwość DODAWANIA nowych klas (nie tylko A-D) oraz edytowalna
+tabelka mapująca wartości Allegro „Stan" na klasy.
+
+Rozbite na trzy pod-punkty per repo (reguła punktów wielorepowych) — zależność
+P-9.3b/P-9.3c → P-9.3a (model musi powstać, zanim konsumenci będą mieli co
+czytać).
+
+#### P-9.3a — Core: byt „klasa stanu" jako rozszerzalny model + admin UI
+- **Repo:** qutlet-core (slice `ProductCondition/` — rozbudowa istniejącego
+  slice'a, nie nowy)
+- **Zakres:** zastąpić zamknięty ACF select (`klasa_stanu`, `choices` A-D na
+  sztywno w kodzie) rozszerzalnym bytem niosącym PER KLASĘ: literał/kod,
+  kolor, nazwę, krótki opis na chipsie, stan wizualny, charakterystykę, tekst
+  „dlaczego taniej". Musi dać się dodać NOWĄ klasę bez zmiany kodu (przez
+  admina WP).
+- **D-9.3a.1 (mechanizm bytu — jak modelować rozszerzalność) [OTWARTE]:** kilka
+  opcji, żadna nierekomendowana — decyzja użytkownika:
+  1. **Własna taksonomia** (np. `klasa_stanu`) z **term meta** na
+     kolor/opisy — admin UI „za darmo" (ekran Tags), rozszerzalność przez
+     dodanie termu. Wymaga jawnego odwrócenia D-1.2.1 (świadomie odrzuciła
+     taksonomię na rzecz ACF select) — nie ciche nadpisanie, tylko udokumentowana
+     rewizja z uzasadnieniem „czemu inaczej niż wtedy".
+  2. **CPT** (np. `klasa_produktu`) + relacja z produktem (post object/ID) —
+     pełna elastyczność pól (repeater-like przez ACF na CPT), ale własny ekran
+     admina do zbudowania (nie „za darmo" jak taksonomia).
+  3. **Opcja WP z repeaterem ACF (options page)** — jedna globalna lista klas,
+     wzorzec zbliżony do `qutlet_stawka_rabatu` z P-6.1, ale repeater zamiast
+     jednej liczby; produkt trzyma tylko literał/klucz wskazujący wiersz.
+     Prostsze niż CPT, ale repeater w jednej opcji nie ma natywnego
+     admin-listing jak CPT/taksonomia (edycja w jednym długim formularzu).
+  Wybór wpływa wprost na P-9.3b (jak motyw czyta/referencjonuje klasę) i
+  P-9.3c (gdzie żyje mapowanie Allegro → klasa).
+- **D-9.3a.2 (migracja istniejących wartości) [OTWARTE]:** produkty już
+  zsynchronizowane z Allegro mają zapisany literał `klasa_stanu` (A/B/C/D) —
+  czy nowy byt WSPÓŁISTNIEJE z tym literałem (produkt trzyma FK/klucz bez
+  zmian, zmienia się tylko SKĄD biorą się opisy/kolor), czy potrzebna migracja
+  danych? Wpływa na to, czy P-9.3c (mapowanie sync) w ogóle rusza istniejące
+  produkty.
+- **Zależności:** brak nowych — rewizja P-1.2 (już 🟢), punkt korygujący w
+  FAZIE 9 jak reszta tej fazy (patrz też P-9.2 — ten sam wzorzec rewizji).
+
+#### P-9.3b — Theme: render czyta z nowego bytu zamiast trzech kopii
+- **Repo:** qutlet-theme (slice `ProductPage/`)
+- **Zakres:** `ProductPage::condition_label()` (hardkodowany słownik),
+  `class-pill` (chip „Klasa {X} · {nazwa}"), `.eco-note` (tekst „dlaczego
+  taniej" — MA być per klasa, nie wspólny jak dziś), `$classification_rows`
+  w `content-single-product.php` (`.class-table`, akordeon „Klasyfikacja
+  produktów" z P-8.2b) i kolory `.dot-a`…`.dot-d` w `style.css` — wszystko
+  czyta z bytu ustalonego w P-9.3a zamiast z trzech niezależnych, zduplikowanych
+  słowników/tablic w kodzie motywu. Kolor klasy prawdopodobnie jako inline
+  `style="--dot-color: …"` albo klasa CSS generowana z literału — dokładny
+  mechanizm do rozstrzygnięcia przy realizacji (zależny od D-9.3a.1).
+- **Zależności:** P-9.3a.
+
+#### P-9.3c — Allegro: edytowalne mapowanie „Stan" → klasa
+- **Repo:** qutlet-allegro (`OfferSync/OfferMapper.php`)
+- **Zakres:** zastąpić stałą PHP `CONDITION_MAP` (7 wartości Allegro → 4 klasy,
+  `mapping-allegro.md` D-4.1.1) źródłem edytowalnym przez admina — tabelka
+  „wartość Allegro «Stan» → nasza klasa", rozszerzalna razem z nowymi klasami
+  z P-9.3a (dziś każda nowa klasa wymaga też ręcznej zmiany tej stałej — po
+  tym punkcie: zmiana w adminie, bez deploya). Zachować override sprzedawcy
+  (D-4.1.1/D-6.1.4 — auto-mapa ustawia `klasa_stanu` TYLKO gdy pole puste, nie
+  nadpisuje ręcznej edycji przy kolejnym sync — analogiczny problem do P-9.1a
+  dla tytułu, tu już rozwiązany i do zachowania, nie do powtórnego psucia).
+- **D-9.3c.1 (gdzie żyje ta tabelka) [OTWARTE]:** razem z bytem klas z P-9.3a
+  (np. term/post meta „mapowane wartości Allegro" na tym samym bycie) czy
+  osobna, niezależna tabelka (opcja WP, key-value) w `qutlet-allegro`?
+  Pierwsze trzyma wszystko o klasie w jednym miejscu; drugie zachowuje granicę
+  core=dane/model, allegro=sync (core nie musi nic wiedzieć o Allegro).
+- **Zależności:** P-9.3a (potrzebuje zbioru klas do zmapowania).
+
 ---
 
 ## Materiał referencyjny i kandydaci do dalszych faz
