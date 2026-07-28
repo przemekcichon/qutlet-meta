@@ -2190,7 +2190,7 @@ Punkty (wg obszarów prototypu; duże obszary pocięte na pod-punkty per sesja):
 - Taby Qutlet/Allegro + buybar; pełna semantyka D-8.G1 (`[data-allegro-only]`,
   `[data-allegro-off-only]`, wariant `.info-3col`/`.info-2col`). **Zależności:**
   F1 (P-1.3), P-8.2a.
-### 🟡 P-8.2c — Produkt: sekcja treści (opis + specyfikacja)
+### 🟢 P-8.2c — Produkt: sekcja treści (opis + specyfikacja)
 - Taby „Co w przesyłce" / „Opis i specyfikacja", tabela specyfikacji
   (etykieta→wartość — `spec-table`, `produkt.html:184-191`; jeden z wierszy to
   „Klasa stanu", NIE osobna tabela). Render warstwy przerobionej (pola z F5;
@@ -2364,7 +2364,7 @@ jest rekomendacją; wybór i priorytet = decyzja użytkownika).
   2. Jak w P-9.1c — do potwierdzenia, czy to realny scenariusz (czy kuratorzy
      w ogóle ręcznie dokładają zdjęcia), zanim to się zaimplementuje.
 
-### 🟡 P-9.2 — Model „Co w przesyłce": WYSIWYG → repeater (zdjęcia + checklista)
+### 🟢 P-9.2 — Model „Co w przesyłce": WYSIWYG → repeater (zdjęcia + checklista)
 
 **Zgłoszenie (2026-07-27, ground-truth P-8.2c):** zakładka „Co w przesyłce"
 prototypu (`.ship-grid`, `produkt.html:142-173`) to karuzela zdjęć zawartości
