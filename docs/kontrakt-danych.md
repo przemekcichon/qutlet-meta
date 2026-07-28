@@ -119,17 +119,36 @@ tylko ustabilizowana LISTA slugów + nazwa czytelna.
 |--------------------|------------------------|---------|-------------------------|-------------|--------------------------------|--------------------|
 | Klasa stanu        | `klasa_stanu`          | ACF     | select (single)         | nie         | `data.js` `.cls`; `produkt.html:13,46` | wartości (literały): `A`, `B`, `C`, `D`. Etykiety w wyborze pola: A=„Jak nowy", B=„Dobry", C=„Mocne ślady", D=„Na części" (`data.js` `QT.COND`) |
 | Cena rynkowa nowego| `cena_rynkowa_nowego`  | ACF     | number (PLN)            | tak         | `data.js` `.old`; `produkt.html:13` | odniesienie „nowy w sklepach / średnia rynkowa". Brak → motyw ukrywa linię „nowy" i rabat |
-| Co w przesyłce     | `zawartosc_zestawu`    | ACF     | WYSIWYG (rich text)     | tak         | `produkt.html:13,162-171`      | ręcznie spisywana zawartość zestawu per egzemplarz (lista „co otrzymasz", pozycje obecne/brakujące). Brak → motyw nie renderuje treści zakładki „Co w przesyłce". Patrz nota §7 (struktura pola) |
+| Co w przesyłce (pozycje) | `zawartosc_zestawu_pozycje` | ACF | repeater          | tak         | `produkt.html:13,142-173`      | **Zastępuje wcześniejsze pole WYSIWYG `zawartosc_zestawu` (D-9.2.1)** — patrz uzasadnienie niżej. Wiersz repeatera = jedna pozycja zestawu; kształt niżej. Pusty repeater → motyw nie renderuje zakładki „Co w przesyłce" (ani karuzeli, ani checklisty) |
+
+**Kształt `zawartosc_zestawu_pozycje`** (wiersz ACF repeatera — sub-pola):
+
+```jsonc
+[
+  { "zdjecie": 123, "etykieta": "Mikrofon Thronmax MDrill One PRO", "w_zestawie": true },  // zdjecie = ID załącznika (ACF image, return_format=id); zasila karuzelę .ship-grid
+  { "zdjecie": 124, "etykieta": "Kabel USB-C → USB-A (1,5 m)",       "w_zestawie": true },
+  { "zdjecie": null, "etykieta": "Oryginalne opakowanie",             "w_zestawie": false } // brak zdjęcia → pozycja NIE trafia do karuzeli, tylko do checklisty
+]
+```
+
+Sub-pola: `zdjecie` (image, opcjonalne — brak = wiersz nie zasila karuzeli, tylko checklistę), `etykieta`
+(text, wymagane — nazwa pozycji), `w_zestawie` (true_false, **ACF `required=0`** — pole boolowskie zawsze
+niesie wartość (domyślnie `true`), więc „wymagane" w sensie ACF byłoby tu mylące: wymuszałoby zaznaczenie
+przy zapisie i uniemożliwiało zapisanie wiersza jako „brakująca pozycja" (`false`). Doprecyzowane po
+recenzji qutlet-core PR #14, sesja 2026-07-27 — pierwotne sformułowanie „wymagane" mylone z ACF `required=1`).
 
 **D-1.2.1 [ROZSTRZYGNIĘTE — prototyp]:** klasa stanu to **pole ACF select**
 (`data.js:11` „pole ACF 'klasa_stanu' (select: A/B/C/D)"), NIE własna taksonomia.
 
-**D-1.2.2 [ROZSTRZYGNIĘTE — prototyp]:** `zawartosc_zestawu` należy do **FAZY 1**
-(pole front-driven z prototypu). Uzasadnienie: `produkt.html:13` wymienia je jako
-pole ACF produktu na równi z `klasa_stanu`/`cena_rynkowa_nowego`; treść jest
-spisywana ręcznie per egzemplarz (`produkt.html:170`), więc NIE pochodzi z
-mappingu Allegro — a FAZA 5 przyjmuje wyłącznie pola ujawnione mappingiem
-(D-4.G2 / D-5.G1). Pole nie „wisi w próżni": rejestruje je P-1.2.
+**D-1.2.2 [ROZSTRZYGNIĘTE — prototyp, podtyp SUPERSEDED przez D-9.2.1]:**
+`zawartosc_zestawu` należy do **FAZY 1** (pole front-driven z prototypu).
+Uzasadnienie: `produkt.html:13` wymienia je jako pole ACF produktu na równi z
+`klasa_stanu`/`cena_rynkowa_nowego`; treść jest spisywana ręcznie per egzemplarz
+(`produkt.html:170`), więc NIE pochodzi z mappingu Allegro — a FAZA 5 przyjmuje
+wyłącznie pola ujawnione mappingiem (D-4.G2 / D-5.G1). Pole nie „wisi w
+próżni": rejestruje je P-1.2. **Podtyp** rozstrzygnięty wtedy jako WYSIWYG
+(§7, poniższa nota) okazał się niewystarczający przy ground-truth P-8.2c —
+patrz D-9.2.1 i `docs/plan.md` → FAZA 9 → P-9.2.
 
 ---
 
@@ -232,11 +251,13 @@ by nikt przez pomyłkę nie dodał pola.
 
 ## 7. Otwarte pod-decyzje (do rozstrzygnięcia w implementacji, NIE blokują P-1.0)
 
-- **Struktura pola `zawartosc_zestawu`:** kontrakt ustala literał, miejsce (ACF)
-  i przynależność do FAZY 1. Dokładny podtyp — WYSIWYG (rich text, jak przyjęto
-  wyżej) vs repeater (pozycja + flaga „w zestawie / brak") — to decyzja
-  implementacyjna P-1.2. Domyślnie WYSIWYG, bo treść w prototypie jest swobodną,
-  ręcznie redagowaną listą (`produkt.html:162-171`). Do potwierdzenia przy P-1.2.
+- ~~**Struktura pola `zawartosc_zestawu`**~~ — **ROZSTRZYGNIĘTE (D-9.2.1),
+  patrz §2.** Podtyp WYSIWYG przyjęty w P-1.2 nie udźwignął karuzeli zdjęć +
+  checklisty check/cross z prototypu (`.ship-grid`, `produkt.html:142-173`) —
+  ground-truth P-8.2c ujawnił, że pole WYSIWYG (`media_upload=0`, `toolbar=basic`,
+  `ProductConditionFields.php:91-99`) nie ma ani obrazków, ani struktury
+  pozycja+flaga. Zastąpione repeaterem `zawartosc_zestawu_pozycje` — patrz
+  `docs/plan.md` → FAZA 9 → P-9.2.
 
 ---
 
@@ -698,7 +719,7 @@ do core AI Client.
 |----------|--------------------------------------------------------|----------|
 | D-1.1.1  | marka = natywna `product_brand` (WC_Brands)            | decyzja użytkownika (Woo 10.9.4 ma natywne marki) |
 | D-1.2.1  | klasa stanu = ACF select `A/B/C/D` (`klasa_stanu`)     | prototyp (`data.js:11`) |
-| D-1.2.2  | `zawartosc_zestawu` → FAZA 1 (front-driven), ACF       | prototyp (`produkt.html:13,170`) |
+| D-1.2.2  | `zawartosc_zestawu` → FAZA 1 (front-driven), ACF (podtyp WYSIWYG SUPERSEDED, patrz D-9.2.1) | prototyp (`produkt.html:13,170`) |
 | D-1.3.1  | cena Allegro = osobne pole ACF `cena_allegro`; nota „~X%" liczona | decyzja użytkownika |
 | P-1.4    | `meta_key` czasu czytania = `_qutlet_reading_time`     | decyzja użytkownika |
 | P-1.4    | czas czytania = meta **opcjonalna**; motyw obsługuje brak (fallback / ukrycie) — bez backfillu | decyzja użytkownika (realizacja P-1.4) |
@@ -756,3 +777,9 @@ do core AI Client.
 | Decyzja  | Rozstrzygnięcie                                                                 | Podstawa |
 |----------|--------------------------------------------------------------------------------|----------|
 | D-7.2a.1 | pole override promptu = ACF textarea `prompt_ai` (wzorzec `ProductConditionFields`/`AllegroChannelFields` — edytowalne ręcznie, NIE fakt z Allegro nadpisywany syncem, więc NIE `register_post_meta` prywatne jak §9.1/§10.1); plain text (nie WYSIWYG jak `opis` §9.2) — to instrukcja dla modelu, nie treść user-facing | ground-truth `ProductCondition/ProductConditionFields.php:22` (komentarz „wzorzec dla … AiRewrite"), sesja 2026-07-26 |
+
+## Log decyzji (P-9.2)
+
+| Decyzja  | Rozstrzygnięcie                                                                 | Podstawa |
+|----------|--------------------------------------------------------------------------------|----------|
+| D-9.2.1  | `zawartosc_zestawu` (ACF WYSIWYG, P-1.2) zastąpione repeaterem `zawartosc_zestawu_pozycje` (sub-pola `zdjecie` image / `etykieta` text / `w_zestawie` true_false) — jeden repeater niesie zarówno zdjęcia karuzeli, jak i checklistę check/cross z `.ship-grid` (`produkt.html:142-173`); WYSIWYG (`media_upload=0`) nie mógł unieść żadnego z tych dwóch | ground-truth P-8.2c (`ProductConditionFields.php:91-99`), decyzja użytkownika (sesja 2026-07-27) |

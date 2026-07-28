@@ -2190,18 +2190,27 @@ Punkty (wg obszarów prototypu; duże obszary pocięte na pod-punkty per sesja):
 - Taby Qutlet/Allegro + buybar; pełna semantyka D-8.G1 (`[data-allegro-only]`,
   `[data-allegro-off-only]`, wariant `.info-3col`/`.info-2col`). **Zależności:**
   F1 (P-1.3), P-8.2a.
-### P-8.2c — Produkt: sekcja treści (opis + specyfikacja)
+### 🟡 P-8.2c — Produkt: sekcja treści (opis + specyfikacja)
 - Taby „Co w przesyłce" / „Opis i specyfikacja", tabela specyfikacji
   (etykieta→wartość — `spec-table`, `produkt.html:184-191`; jeden z wierszy to
   „Klasa stanu", NIE osobna tabela). Render warstwy przerobionej (pola z F5;
   treść wypełnia F7/ręczna edycja — render nie zależy od tego, czy AI wygenerował).
-  **Zależności:** F1 (P-1.2), F5, P-8.2a.
+  **Zależności:** F1 (P-1.2), **P-9.2**, F5, P-8.2a.
   **Korekta (sesja 2026-07-27):** „tabela klas stanu" była tu błędnie wymieniona
   jako osobny element — ground-truth `produkt.html` potwierdza, że jedyna PEŁNA
   tabela klasyfikacji A/B/C/D (`.class-table`, `produkt.html:204`) żyje w
   akordeonie „Klasyfikacja produktów" (`#jak-to-dziala`) i została już
   zaimplementowana w P-8.2b. W P-8.2c „klasa stanu" pojawia się WYŁĄCZNIE jako
   jeden wiersz `spec-row` w tabeli specyfikacji — nic więcej do zbudowania.
+  **Korekta #2 (sesja 2026-07-27, dodaje zależność P-9.2):** ground-truth taba
+  „Co w przesyłce" (`.ship-grid` — karuzela zdjęć + `.included-card` z
+  checklistą check/cross, `produkt.html:142-173`) ujawnił, że jedyne dostępne
+  pole (`zawartosc_zestawu`, ACF WYSIWYG z P-1.2, `media_upload=0`) nie ma ani
+  obrazków, ani struktury pozycja+flaga — nie da się z niego odtworzyć tego
+  layoutu. Zamiast ciszej upraszczać render, rozbito o osobny punkt **P-9.2**
+  (qutlet-core, FAZA 9) zastępujący pole repeaterem — patrz tam i
+  `docs/kontrakt-danych.md` §2 (D-9.2.1). P-8.2c renderuje TERAZ z nowego
+  kształtu (`zawartosc_zestawu_pozycje`), nie ze starego WYSIWYG.
 ### P-8.3a — Karta produktu + szablon archiwum/kategorii
 - Karta produktu (pętla) + szablon listy dla `product_cat` + etykieta liczby
   sztuk (`pcard-stock`, przeniesiona z P-8.2a — patrz korekta tam). **Zależności:**
@@ -2238,7 +2247,7 @@ punkt, nie w PR-ze motywu (granica artefaktów).
 
 ---
 
-## 🟦 FAZA 9 — Poprawki (catch-all, poza planowanym build-outem)
+## 🟨 FAZA 9 — Poprawki (catch-all, poza planowanym build-outem)
 
 Cel: **osobny worek na poprawki** znajdywane w trakcie realnego używania sklepu
 (ręczna edycja produktów w adminie, obserwacje na Localu, zgłoszenia użytkownika),
@@ -2354,6 +2363,39 @@ jest rekomendacją; wybór i priorytet = decyzja użytkownika).
      oznaczone, zachowując resztę galerii nietkniętą.
   2. Jak w P-9.1c — do potwierdzenia, czy to realny scenariusz (czy kuratorzy
      w ogóle ręcznie dokładają zdjęcia), zanim to się zaimplementuje.
+
+### 🟡 P-9.2 — Model „Co w przesyłce": WYSIWYG → repeater (zdjęcia + checklista)
+
+**Zgłoszenie (2026-07-27, ground-truth P-8.2c):** zakładka „Co w przesyłce"
+prototypu (`.ship-grid`, `produkt.html:142-173`) to karuzela zdjęć zawartości
+zestawu + `.included-card` — checklista pozycji z ikoną check/cross (obecne /
+brakujące). Jedyne zarejestrowane pole pod tę treść, `zawartosc_zestawu` (ACF
+WYSIWYG, P-1.2), NIE udźwignie żadnej z tych dwóch rzeczy: rejestracja
+(`ProductConditionFields.php:91-99`) ma `media_upload => 0` (brak obrazków w
+polu) i `toolbar => 'basic'` (wolny tekst, bez struktury pozycja+flaga). To nie
+jest błąd kodu względem kontraktu — to sam kontrakt (podtyp WYSIWYG, D-1.2.2)
+okazał się za ubogi wobec prototypu przy realnym ground-truth. Decyzja
+użytkownika (sesja 2026-07-27): zamiast upraszczać render pod istniejące pole,
+rozszerzamy model.
+- **Repo:** qutlet-core (slice `ProductCondition/` — to samo miejsce co
+  pierwotne pole, `ProductConditionFields.php`)
+- **Zakres:** zastąpić pole ACF WYSIWYG `zawartosc_zestawu` polem ACF
+  **repeater** `zawartosc_zestawu_pozycje` (sub-pola: `zdjecie` — image,
+  opcjonalne, zasila karuzelę; `etykieta` — text, nazwa pozycji; `w_zestawie`
+  — true_false, steruje ikoną check/cross). Kształt i uzasadnienie:
+  `docs/kontrakt-danych.md` §2 (D-9.2.1). Stare pole `zawartosc_zestawu` nigdy
+  nie miało realnych danych (produkt nie wystawiony) — migracja niepotrzebna,
+  można podmienić rejestrację wprost.
+- **D-9.2.1 [ROZSTRZYGNIĘTE — decyzja użytkownika, sesja 2026-07-27]:** jeden
+  repeater (nie dwa osobne pola „galeria" + „lista") — wiersz repeatera niesie
+  jednocześnie zdjęcie (opcjonalne, do karuzeli) i pozycję checklisty, więc
+  kolejność/treść obu widoków w motywie pochodzi z jednego, spójnego źródła
+  zamiast dwóch niezależnie edytowanych pól, które mogłyby się rozjechać
+  (np. zdjęcie osierocone bez odpowiadającej pozycji na liście).
+- **Zależności:** brak nowych — rewizja P-1.2 (już 🟢, FAZA 1 nie wraca do
+  „w trakcie"; to punkt korygujący w FAZIE 9, jak reszta tej fazy).
+- **Blokuje:** P-8.2c (FAZA 8) — render taba „Co w przesyłce" czyta już nowy
+  kształt, nie stare WYSIWYG.
 
 ---
 
