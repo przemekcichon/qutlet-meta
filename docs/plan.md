@@ -2407,7 +2407,18 @@ rozpada się na dwa pod-punkty / dwa PR-y z jawną zależnością (`P-8.3c-theme
   `strefa-okazji` (zgodnie z prototypem) — zmiana TREŚCI/konfiguracji WP (`wp
   post update`), nie kodu; `wc_get_page_permalink('shop')` w theme rozwiązuje
   adres dynamicznie po ID (`woocommerce_shop_page_id`), więc zmiana slugu
-  niczego nie łamie.
+  niczego nie łamie. **Uzupełnienie (runtime, sesja 2026-07-30):** sama zmiana
+  `post_name` NIE wystarcza — CPT `product` ma `has_archive` ustawiony na
+  slug strony Shop w momencie REJESTRACJI reguł przepisywania (`rewrite_rules`,
+  cache w opcji), więc bez `wp rewrite flush` nowy adres (`/strefa-okazji/`)
+  rozwiązywał się jako zwykła strona (`is_page()`, `page page-id-7`), NIE jako
+  `is_shop()`/`is_post_type_archive('product')` — brak `.grid-3`/facetów,
+  zmierzone w przeglądarce. Po `wp rewrite flush`: poprawne
+  `is_post_type_archive('product')`, wszystkie 4 facety, 524 produkty (zgodnie
+  z `wp post list --post_type=product --post_status=publish --format=count`
+  minus wykluczenia widoczności). Stary adres `/shop/` daje 404 (brak
+  przekierowania — brak wtyczki redirect, akceptowalne dla środowiska
+  lokalnego/przed produkcją).
 
 #### 🟡 P-8.3c-core — Facet kategorii (qutlet-core)
 - **Repo:** qutlet-core (slice `ProductFilters/`)
