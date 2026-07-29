@@ -2215,10 +2215,168 @@ Punkty (wg obszarów prototypu; duże obszary pocięte na pod-punkty per sesja):
 - Karta produktu (pętla) + szablon listy dla `product_cat` + etykieta liczby
   sztuk (`pcard-stock`, przeniesiona z P-8.2a — patrz korekta tam). **Zależności:**
   F1, P-8.1.
-### P-8.3b — Filtry i sortowanie
-- Filtry marka / klasa stanu / cena + sortowanie. **Zależności:** F1, P-8.3a.
+### P-8.3b — Filtry i sortowanie (punkt wielorepowy → P-8.3b-core + P-8.3b-theme)
+
+Pierwotnie jeden punkt (repo: qutlet-theme). W realizacji (sesja 2026-07-29) —
+niezależna recenzja (`docs/review.md`) oznaczyła jako 🔴 blokujące, że logika
+modyfikująca GŁÓWNE zapytanie WooCommerce (co i w jakiej kolejności trafia do
+wyniku) żyła w `qutlet-theme`, podczas gdy CLAUDE.md przypisuje „glue do Woo"
+(hooki integrujące się z Woo) do `qutlet-core`. Zgodnie z regułą punktów
+wielorepowych P-8.3b rozpada się na dwa pod-punkty / dwa PR-y z jawną
+zależnością (`P-8.3b-theme` → `P-8.3b-core`).
+
+- **D-8.3b.1 (mechanizm: klasyczny GET + WP_Query, NIE AJAX/REST) [USTALONE —
+  sesja 2026-07-29, częściowo SKORYGOWANE testem runtime — patrz D-8.3b.3]:**
+  filtrowanie/sortowanie na archiwum `product_cat` (szablon z P-8.3a) idzie
+  przez zwykły `<form method="get">` + przeładowanie strony — zero własnego
+  REST endpointu. Ground-truth wskazywał, że marka (`product_brand`,
+  taksonomia natywna Woo z `query_var`) i cena (`min_price`/`max_price`)
+  filtrują się SAME przez mechanizmy WP_Query/`WC_Query` — dla CENY
+  potwierdzone testem runtime (`WC_Query::price_filter_post_clauses()`
+  działa bez własnego kodu); dla MARKI okazało się to BŁĘDNE — patrz
+  D-8.3b.3 (własny hook, jak klasa stanu, pod innym parametrem GET). Klasa
+  stanu (pole ACF, własny `meta_query`) i sortowanie „Największy rabat"
+  (wartość liczona, własny `posts_clauses`) — oba zaimplementowane tym samym
+  wzorcem, jakim samo Woo dokłada sortowanie po cenie/popularności/ocenie.
+  Rozważono płatną wtyczkę **FacetWP**
+  (sugerowana komentarzem w prototypie, `strefa-okazji.html:13`) — odrzucona:
+  koszt licencji + niepewna zgodność z już nietypowym setupem archiwum
+  (WooCommerce Blocks hardkoduje nagłówek, P-8.3a) przy skromnym realnym
+  zakresie facetów (2 natywne + 2 własne, bez potrzeby generycznego silnika
+  faceted search). **Odrzucona alternatywa:** JS/AJAX z własnym REST
+  endpointem — bliżej UX prototypu, ale to nowa powierzchnia kodu bez
+  wykorzystania gotowych mechanizmów Woo; przesunięta do **P-8.3d** jako
+  progressive enhancement nad tym fundamentem, nie blokuje P-8.3b.
+- **D-8.3b.2 (granica core↔theme: query-shaping → core, render → theme)
+  [USTALONE — sesja 2026-07-29, po niezależnej recenzji]:** modyfikacja
+  głównego zapytania (`meta_query` klasy stanu, własny `posts_clauses` dla
+  sortowania „Największy rabat") oraz SQL liczące facety marki/klasy stanu i
+  granice ceny (wzorzec `WC_Widget_Price_Filter::get_filtered_price()`) żyją w
+  `qutlet-core` (`Qutlet\Core\ProductFilters\ProductFilterQuery`) — to „glue do
+  Woo" w rozumieniu CLAUDE.md, nawet gdy nic nie zapisuje. `qutlet-theme`
+  (ta sama nazwa slice'a `ProductFilters/`) dostaje z core WYŁĄCZNIE gotowe
+  dane (tablice facetów z licznikami, granice ceny, stan z GET) do
+  wyrenderowania formularza — nie zna SQL-a ani struktury zapytania. Etykieta
+  klasy stanu (`ProductPage::condition_label()`) zostaje w theme (treść
+  prezentacyjna, nie fakt o danych). **Odrzucona alternatywa:** zostawić w
+  theme jako udokumentowany wyjątek od D-8.G1 — odrzucona, bo tworzyłaby
+  precedens rozmywający granicę artefaktów przy pierwszej okazji, gdy była
+  choć trochę dyskusyjna.
+
+- **D-8.3b.3 (dwa błędy ujawnione dopiero testem runtime, po odzyskaniu MCP
+  `local-wp`) [USTALONE — sesja 2026-07-29]:** obie niezależne recenzje
+  (`docs/review.md`) jawnie zgłosiły „zero weryfikacji runtime" jako
+  pozostałą lukę — po odzyskaniu połączenia MCP i teście w przeglądarce na
+  realnym katalogu (`wp-cli` jako niezależne źródło prawdy liczbowej)
+  ujawniły się DWA realne błędy, których PHPStan i recenzja kodu nie mogły
+  wykryć:
+  1. **Liczniki facetów/granice ceny liczone dla CAŁEGO sklepu, nie
+     kategorii.** `ProductFilterQuery::main_query_parts()` czytał
+     `$wp_query->query_vars['tax_query']` — ten klucz jest ZAWSZE pusty dla
+     archiwów taksonomii, bo `WP_Query::parse_tax_query()` zapisuje
+     rozwiązany tax_query WYŁĄCZNIE do `$this->tax_query` (obiekt
+     `WP_Tax_Query`), nigdy z powrotem do `query_vars`
+     (`wp-includes/class-wp-query.php:1401`, zweryfikowane brakiem
+     jakiegokolwiek przypisania). Zmierzone na kategorii
+     „Akcesoria do telefonów" (148 produktów): licznik marki „3mk" pokazywał
+     29 (cały sklep) zamiast 25 (w tej kategorii); granica ceny 3599 zł
+     zamiast 269,10 zł; klasa B pokazywała 434 zamiast 128. Poprawka: odczyt
+     z `$main->tax_query->queries` (publiczna właściwość obiektu), NIE z
+     `query_vars`. Przy okazji usunięto błędne `array_values()` na
+     przefiltrowanym tax_query/meta_query (gubiło string-owy klucz
+     `relation` AND/OR przy przenumerowaniu).
+  2. **Marka jako GET o nazwie identycznej z `query_var` taksonomii
+     przełączała CAŁY kontekst zapytania na archiwum marki**, gubiąc
+     kategorię — zmierzone: `?product_brand[]=3mk` na archiwum kategorii
+     dawało `body class="tax-product_brand term-3mk"` (nie `product_cat`),
+     `is_product_category()` przestawał być `true`, licznik/siatka znikały
+     (brak szablonu `taxonomy-product_brand.html`). WordPress w
+     `WP::parse_request()`/pierwszym `WP_Query::parse_query()` (PRZED
+     `pre_get_posts`) ustala „główną" taksonomię zapytania, gdy dwie różne
+     taksonomie mają jednocześnie query_var w żądaniu — obalając część
+     D-8.3b.1 („marka filtruje się sama"). Poprawka: marka dostaje WŁASNY
+     hook (`ProductFilterQuery::apply_brand_filter()`, analogiczny do
+     `apply_condition_filter()`) pod parametrem GET `qutlet_brand`
+     (celowo INNYM niż `product_brand`, żeby nie kolidować z automatycznym
+     rozpoznawaniem taksonomii-archiwum), dokładającym `tax_query` przez
+     `$q->set('tax_query', …)` na hooku `woocommerce_product_query` —
+     działa poprawnie, bo `WP_Query::get_posts()` woła `parse_tax_query()`
+     PONOWNIE już PO `pre_get_posts` (`class-wp-query.php:2292`, inaczej niż
+     pierwsze wywołanie w `parse_query()`).
+  3. **Karty produktów/toolbar rozlewały się na całą szerokość ekranu**
+     (zgłoszone przez użytkownika ze zrzutem ekranu) — `theme.json` nie
+     definiuje `settings.layout.contentSize`, więc blokowy layout
+     „constrained" (`<main class="wp-block-group is-layout-constrained">`,
+     `taxonomy-product_cat.html` z P-8.3a) nic realnie nie ogranicza;
+     niezauważalne wszędzie indziej, bo każda inna strona ma WŁASNY, jawny
+     `.wrap` w markupie. Poprawka (qutlet-theme): `.grid-3`
+     (`loop-start.php`/`loop-end.php`) owinięte w realny `<div class="wrap">`
+     (zgodnie z prototypem, gdzie `.grid-3` sam z siebie NIE niesie
+     kontenacji); formularz filtrów dostał klasę `wrap` wprost; nagłówek
+     archiwum (`.woocommerce-products-header`, hardkodowany przez
+     WooCommerce Blocks — brak punktu nadpisania markupu) dostał tę samą
+     kontenację przez współdzieloną regułę CSS.
+  Wszystkie trzy poprawki zweryfikowane bezpośrednio w przeglądarce +
+  `wp-cli`/SQL jako niezależne źródło prawdy (nie tylko „strona się
+  wczytuje bez błędu") — patrz PR-y `qutlet-core`/`qutlet-theme`.
+  **Uzupełnienie (3. runda niezależnej recenzji):** poprawka #2 (marka)
+  wprowadziła REGRES — `brand_facets()` w trzech miejscach nadal używał
+  `BRAND_PARAM` (po zmianie znaczenia na nazwę GET param, `qutlet_brand`)
+  zamiast nowej stałej `BRAND_TAXONOMY` (`product_brand`) tam, gdzie kod
+  naprawdę potrzebował nazwy taksonomii (SQL JOIN, `get_terms()`,
+  wykluczenie własnego wymiaru z tax_query) — `get_terms(['taxonomy' =>
+  'qutlet_brand'])` zwraca `WP_Error` (taksonomia nie istnieje), co przez
+  `is_wp_error()` cicho zwracało PUSTĄ tablicę zawsze — cała sekcja
+  „Marka" w szufladzie nigdy się nie renderowała, z filtrem czy bez.
+  Wykryte przez recenzenta metodą identyczną do zalecanej w tym samym
+  commicie (`wp term list qutlet_brand` → `Error: Taxonomy ... doesn't
+  exist`), nie przez PHPStan (błąd czysto semantyczny — zła wartość
+  string, nie zły typ). Przy okazji znaleziono DRUGI, powiązany błąd
+  (samodzielnie, nie przez recenzenta): szablon `filters-and-sort.php`
+  nadal hardkodował `name="product_brand[]"` na checkboxie marki — czyli
+  REALNY submit formularza nadal wywoływałby oryginalny błąd #2 (przejęcie
+  kontekstu zapytania), mimo że hook w core był już naprawiony; własny
+  test autora sprawdzał tylko ręcznie wpisany `?qutlet_brand[]=…` w URL-u,
+  nie faktyczne renderowanie/submit formularza. Poprawka:
+  `ProductFilters::render()` (theme) przekazuje `brand_param`/
+  `condition_param` (z publicznych stałych `ProductFilterQuery`) do
+  szablonu zamiast hardkodowanych literałów. Po poprawce zweryfikowano:
+  sekcja „Marka" renderuje się z poprawnymi licznikami (zgodnymi z
+  `wp post list --product_cat=... --product_brand=...`); zaznaczenie
+  jednej marki NIE zeruje liczników pozostałych (cross-filtering);
+  sortowanie „Największy rabat" i „Cena" dają poprawną kolejność
+  (zweryfikowane względem SQL). Lekcja procesowa (nazwana wprost przez
+  recenzenta): test runtime musi obejmować CAŁĄ powierzchnię dotkniętą
+  zmianą (wszystkie trzy grupy facetów), nie tylko objaw naprawianego
+  błędu.
+
+#### P-8.3b-core — Modyfikacja zapytania + facety (qutlet-core)
+- **Repo:** qutlet-core (slice `ProductFilters/`)
+- **Zakres:** hooki `woocommerce_product_query`/`posts_clauses` filtrujące/
+  sortujące główne zapytanie archiwum (marka, klasa stanu, „Największy
+  rabat" — D-8.3b.3 dołożyło własny hook marki obok klasy stanu) +
+  publiczne metody dostarczające dane theme'owi: `price_bounds()`,
+  `selected_price_range()`, `brand_facets()`, `condition_facets()`,
+  `selected_brand_slugs()`, `selected_conditions()`, `current_sort()`.
+- **Zależności:** F1, P-8.3a.
+
+#### P-8.3b-theme — Render formularza filtrów (qutlet-theme)
+- **Repo:** qutlet-theme (slice `ProductFilters/` — ta sama nazwa co w core)
+- **Zakres:** toolbar (filtr/licznik/sortowanie) + chipy + szuflada
+  (`woocommerce/loop/filters-and-sort.php`), port `.toolbar`/`.drawer` z
+  `strefa-okazji.html`; woła WYŁĄCZNIE publiczne metody `ProductFilterQuery`
+  z core, zero własnej logiki zapytania.
+- **Zależności:** P-8.3b-core.
 ### P-8.3c — Strefa okazji
 - Dedykowany widok wyprzedaży (`strefa-okazji.html`). **Zależności:** P-8.3a.
+### P-8.3d — Filtr AJAX (progressive enhancement)
+- Podmiana klasycznego przeładowania strony (P-8.3b, D-8.3b.1) na JS/fetch:
+  formularz filtrów wysyła żądanie do tego samego URL-a (lub dedykowanego
+  REST endpointu), podmienia fragment siatki + toolbar bez przeładowania,
+  aktualizuje URL przez `pushState`. Bliżej płynności UX prototypu
+  (`design/vanilla/js/app.js` `initDeals()`). Someday maybe — dopisane na
+  wyraźną prośbę użytkownika (sesja 2026-07-29) jako kolejny etap NAD
+  fundamentem z P-8.3b, nie jego zamiennik. **Zależności:** P-8.3b.
 ### P-8.4 — Blog
 - Lista/artykuł/kategoria/tag + czas czytania (meta z P-1.4). **Zależności:** F1 (P-1.4).
 ### P-8.5 — Strony pomocy + formularze
