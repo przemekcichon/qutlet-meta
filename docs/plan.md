@@ -2319,6 +2319,36 @@ zależnością (`P-8.3b-theme` → `P-8.3b-core`).
   Wszystkie trzy poprawki zweryfikowane bezpośrednio w przeglądarce +
   `wp-cli`/SQL jako niezależne źródło prawdy (nie tylko „strona się
   wczytuje bez błędu") — patrz PR-y `qutlet-core`/`qutlet-theme`.
+  **Uzupełnienie (3. runda niezależnej recenzji):** poprawka #2 (marka)
+  wprowadziła REGRES — `brand_facets()` w trzech miejscach nadal używał
+  `BRAND_PARAM` (po zmianie znaczenia na nazwę GET param, `qutlet_brand`)
+  zamiast nowej stałej `BRAND_TAXONOMY` (`product_brand`) tam, gdzie kod
+  naprawdę potrzebował nazwy taksonomii (SQL JOIN, `get_terms()`,
+  wykluczenie własnego wymiaru z tax_query) — `get_terms(['taxonomy' =>
+  'qutlet_brand'])` zwraca `WP_Error` (taksonomia nie istnieje), co przez
+  `is_wp_error()` cicho zwracało PUSTĄ tablicę zawsze — cała sekcja
+  „Marka" w szufladzie nigdy się nie renderowała, z filtrem czy bez.
+  Wykryte przez recenzenta metodą identyczną do zalecanej w tym samym
+  commicie (`wp term list qutlet_brand` → `Error: Taxonomy ... doesn't
+  exist`), nie przez PHPStan (błąd czysto semantyczny — zła wartość
+  string, nie zły typ). Przy okazji znaleziono DRUGI, powiązany błąd
+  (samodzielnie, nie przez recenzenta): szablon `filters-and-sort.php`
+  nadal hardkodował `name="product_brand[]"` na checkboxie marki — czyli
+  REALNY submit formularza nadal wywoływałby oryginalny błąd #2 (przejęcie
+  kontekstu zapytania), mimo że hook w core był już naprawiony; własny
+  test autora sprawdzał tylko ręcznie wpisany `?qutlet_brand[]=…` w URL-u,
+  nie faktyczne renderowanie/submit formularza. Poprawka:
+  `ProductFilters::render()` (theme) przekazuje `brand_param`/
+  `condition_param` (z publicznych stałych `ProductFilterQuery`) do
+  szablonu zamiast hardkodowanych literałów. Po poprawce zweryfikowano:
+  sekcja „Marka" renderuje się z poprawnymi licznikami (zgodnymi z
+  `wp post list --product_cat=... --product_brand=...`); zaznaczenie
+  jednej marki NIE zeruje liczników pozostałych (cross-filtering);
+  sortowanie „Największy rabat" i „Cena" dają poprawną kolejność
+  (zweryfikowane względem SQL). Lekcja procesowa (nazwana wprost przez
+  recenzenta): test runtime musi obejmować CAŁĄ powierzchnię dotkniętą
+  zmianą (wszystkie trzy grupy facetów), nie tylko objaw naprawianego
+  błędu.
 
 #### P-8.3b-core — Modyfikacja zapytania + facety (qutlet-core)
 - **Repo:** qutlet-core (slice `ProductFilters/`)
