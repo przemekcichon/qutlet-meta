@@ -2217,8 +2217,38 @@ Punkty (wg obszarów prototypu; duże obszary pocięte na pod-punkty per sesja):
   F1, P-8.1.
 ### P-8.3b — Filtry i sortowanie
 - Filtry marka / klasa stanu / cena + sortowanie. **Zależności:** F1, P-8.3a.
+- **D-8.3b.1 (mechanizm: klasyczny GET + WP_Query, NIE AJAX/REST) [USTALONE —
+  sesja 2026-07-29]:** filtrowanie/sortowanie na archiwum `product_cat`
+  (szablon z P-8.3a) idzie przez zwykły `<form method="get">` +
+  przeładowanie strony — zero własnego REST endpointu. Ground-truth ujawnił,
+  że marka (`product_brand`, taksonomia natywna Woo z `query_var`) i cena
+  (`min_price`/`max_price`) filtrują się SAME przez mechanizmy WP_Query/
+  `WC_Query` (zero własnego zapytania — zweryfikowane w
+  `wp-includes/class-wp-query.php::parse_tax_query()` i
+  `WC_Query::price_filter_post_clauses()`); jedyne elementy bez natywnego
+  wsparcia to klasa stanu (pole ACF, własny `meta_query`) i sortowanie
+  „Największy rabat" (wartość liczona, własny `posts_clauses`) — oba
+  zaimplementowane tym samym wzorcem, jakim samo Woo dokłada sortowanie
+  po cenie/popularności/ocenie. Rozważono płatną wtyczkę **FacetWP**
+  (sugerowana komentarzem w prototypie, `strefa-okazji.html:13`) — odrzucona:
+  koszt licencji + niepewna zgodność z już nietypowym setupem archiwum
+  (WooCommerce Blocks hardkoduje nagłówek, P-8.3a) przy skromnym realnym
+  zakresie facetów (2 natywne + 2 własne, bez potrzeby generycznego silnika
+  faceted search). Kod: slice `ProductFilters/` w `qutlet-theme`.
+  **Odrzucona alternatywa:** JS/AJAX z własnym REST endpointem — bliżej UX
+  prototypu, ale to nowa powierzchnia kodu bez wykorzystania gotowych
+  mechanizmów Woo; przesunięta do **P-8.3d** jako progressive enhancement
+  nad tym fundamentem, nie blokuje P-8.3b.
 ### P-8.3c — Strefa okazji
 - Dedykowany widok wyprzedaży (`strefa-okazji.html`). **Zależności:** P-8.3a.
+### P-8.3d — Filtr AJAX (progressive enhancement)
+- Podmiana klasycznego przeładowania strony (P-8.3b, D-8.3b.1) na JS/fetch:
+  formularz filtrów wysyła żądanie do tego samego URL-a (lub dedykowanego
+  REST endpointu), podmienia fragment siatki + toolbar bez przeładowania,
+  aktualizuje URL przez `pushState`. Bliżej płynności UX prototypu
+  (`design/vanilla/js/app.js` `initDeals()`). Someday maybe — dopisane na
+  wyraźną prośbę użytkownika (sesja 2026-07-29) jako kolejny etap NAD
+  fundamentem z P-8.3b, nie jego zamiennik. **Zależności:** P-8.3b.
 ### P-8.4 — Blog
 - Lista/artykuł/kategoria/tag + czas czytania (meta z P-1.4). **Zależności:** F1 (P-1.4).
 ### P-8.5 — Strony pomocy + formularze
