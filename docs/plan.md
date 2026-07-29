@@ -2215,7 +2215,7 @@ Punkty (wg obszarów prototypu; duże obszary pocięte na pod-punkty per sesja):
 - Karta produktu (pętla) + szablon listy dla `product_cat` + etykieta liczby
   sztuk (`pcard-stock`, przeniesiona z P-8.2a — patrz korekta tam). **Zależności:**
   F1, P-8.1.
-### P-8.3b — Filtry i sortowanie (punkt wielorepowy → P-8.3b-core + P-8.3b-theme)
+### 🟢 P-8.3b — Filtry i sortowanie (punkt wielorepowy → P-8.3b-core + P-8.3b-theme)
 
 Pierwotnie jeden punkt (repo: qutlet-theme). W realizacji (sesja 2026-07-29) —
 niezależna recenzja (`docs/review.md`) oznaczyła jako 🔴 blokujące, że logika
@@ -2350,7 +2350,7 @@ zależnością (`P-8.3b-theme` → `P-8.3b-core`).
   zmianą (wszystkie trzy grupy facetów), nie tylko objaw naprawianego
   błędu.
 
-#### P-8.3b-core — Modyfikacja zapytania + facety (qutlet-core)
+#### 🟢 P-8.3b-core — Modyfikacja zapytania + facety (qutlet-core)
 - **Repo:** qutlet-core (slice `ProductFilters/`)
 - **Zakres:** hooki `woocommerce_product_query`/`posts_clauses` filtrujące/
   sortujące główne zapytanie archiwum (marka, klasa stanu, „Największy
@@ -2360,7 +2360,7 @@ zależnością (`P-8.3b-theme` → `P-8.3b-core`).
   `selected_brand_slugs()`, `selected_conditions()`, `current_sort()`.
 - **Zależności:** F1, P-8.3a.
 
-#### P-8.3b-theme — Render formularza filtrów (qutlet-theme)
+#### 🟢 P-8.3b-theme — Render formularza filtrów (qutlet-theme)
 - **Repo:** qutlet-theme (slice `ProductFilters/` — ta sama nazwa co w core)
 - **Zakres:** toolbar (filtr/licznik/sortowanie) + chipy + szuflada
   (`woocommerce/loop/filters-and-sort.php`), port `.toolbar`/`.drawer` z
