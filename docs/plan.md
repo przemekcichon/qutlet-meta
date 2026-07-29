@@ -2367,8 +2367,64 @@ zależnością (`P-8.3b-theme` → `P-8.3b-core`).
   `strefa-okazji.html`; woła WYŁĄCZNIE publiczne metody `ProductFilterQuery`
   z core, zero własnej logiki zapytania.
 - **Zależności:** P-8.3b-core.
-### P-8.3c — Strefa okazji
-- Dedykowany widok wyprzedaży (`strefa-okazji.html`). **Zależności:** P-8.3a.
+### 🟡 P-8.3c — Strefa okazji (punkt wielorepowy → P-8.3c-core + P-8.3c-theme)
+
+Pierwotnie jeden punkt (repo: qutlet-theme). Ground-truth (sesja 2026-07-30)
+potwierdził hipotezę z otwarcia punktu: `strefa-okazji.html` to widok „wszystkie
+kategorie naraz" — czyli WooCommerce **Shop** (CPT `product` ma `has_archive`
+ustawiony na slug strony Sklep, więc `/shop/` to naturalne
+`is_post_type_archive('product')`, NIE strona treści; `show_on_front = posts`
+na tej instalacji, więc edge case „shop jako front page" — `WC_Query::parse_request()`
+— nie dotyczy). Facet „Kategoria" (jedyny nowy względem P-8.3b, nieobecny na
+archiwum jednej kategorii) to modyfikacja GŁÓWNEGO zapytania (własny tax_query +
+liczniki w bieżącym kontekście filtrów) — ta sama „glue do Woo" kategoria co
+marka/klasa stanu (D-8.3b.2). Zgodnie z regułą punktów wielorepowych P-8.3c
+rozpada się na dwa pod-punkty / dwa PR-y z jawną zależnością (`P-8.3c-theme` →
+`P-8.3c-core`).
+
+- **D-8.3c.1 (facet „Kategoria" = własny hook, jak marka) [USTALONE — sesja
+  2026-07-30]:** analogicznie do marki (D-8.3b.3 pkt 2), `product_cat` ma
+  zarejestrowany `query_var` — użycie go WPROST jako nazwy GET param na Shopie
+  przełączałoby kontekst zapytania (z `is_shop()` na `is_product_category()`),
+  gubiąc fakt „to jest strona wszystkich kategorii z facetem". Facet dostaje
+  więc WŁASNY GET param `qutlet_category` (analogicznie do `qutlet_brand`) +
+  własny hook `apply_category_filter()`, dokładnie tym samym wzorcem co
+  `apply_brand_filter()`. Liczniki (`category_facets()`) liczone w bieżącym
+  kontekście (uwzględniają marka/klasa stanu/cena, wykluczają WŁASNY wymiar) —
+  ten sam wzorzec co `brand_facets()`/`condition_facets()` (D-8.3b.2/D-8.3b.3),
+  żeby uniknąć tej samej klasy błędu (liczniki całego katalogu zamiast
+  bieżącego kontekstu).
+- **D-8.3c.2 (facet „Kategoria" TYLKO na Shopie, nie na archiwum kategorii)
+  [USTALONE]:** na `taxonomy-product_cat.html` (P-8.3b) kategoria jest już
+  ustalona przez URL — facet byłby zbędny (prototyp `kategoria-smartfony.html`
+  to zresztą inny, nie-jeszcze-budowany layout landingowy z rzędami
+  kuratorskimi, nie ten sam toolbar/drawer — źródłem toolbara/drawera dla OBU
+  archiwów jest `strefa-okazji.html`, ustalone już w P-8.3b). `ProductFilters::render()`
+  pobiera `category_facets()` WYŁĄCZNIE gdy `! is_product_category()`.
+- **D-8.3c.3 (strona Shop = „Strefa okazji", zmiana treści, nie kodu)
+  [USTALONE]:** istniejąca strona WooCommerce Shop (domyślna instalacja: ID 7,
+  slug `shop`, tytuł „Shop") przemianowana na tytuł „Strefa okazji" / slug
+  `strefa-okazji` (zgodnie z prototypem) — zmiana TREŚCI/konfiguracji WP (`wp
+  post update`), nie kodu; `wc_get_page_permalink('shop')` w theme rozwiązuje
+  adres dynamicznie po ID (`woocommerce_shop_page_id`), więc zmiana slugu
+  niczego nie łamie.
+
+#### 🟡 P-8.3c-core — Facet kategorii (qutlet-core)
+- **Repo:** qutlet-core (slice `ProductFilters/`)
+- **Zakres:** własny hook `apply_category_filter()` (GET `qutlet_category`,
+  tax_query `product_cat`) + `category_facets()` (liczniki w bieżącym
+  kontekście, wykluczające własny wymiar) — patrz D-8.3c.1.
+- **Zależności:** P-8.3b-core.
+
+#### 🟡 P-8.3c-theme — Szablon Shopu + facet kategorii (qutlet-theme)
+- **Repo:** qutlet-theme (slice `ProductFilters/` — ta sama nazwa co w core)
+- **Zakres:** `templates/archive-product.html` (Shop = wszystkie kategorie
+  naraz, ten sam wzorzec co `taxonomy-product_cat.html` z P-8.3a);
+  `ProductFilters::is_supported_archive()` dokłada `is_shop()`; grupa facetu
+  „Kategoria" w szufladzie (`filters-and-sort.php`, TYLKO gdy
+  `! is_product_category()` — D-8.3c.2); chip/licznik aktywnych filtrów
+  uwzględnia kategorię.
+- **Zależności:** P-8.3c-core, P-8.3a.
 ### P-8.3d — Filtr AJAX (progressive enhancement)
 - Podmiana klasycznego przeładowania strony (P-8.3b, D-8.3b.1) na JS/fetch:
   formularz filtrów wysyła żądanie do tego samego URL-a (lub dedykowanego
