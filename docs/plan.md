@@ -2215,8 +2215,16 @@ Punkty (wg obszarów prototypu; duże obszary pocięte na pod-punkty per sesja):
 - Karta produktu (pętla) + szablon listy dla `product_cat` + etykieta liczby
   sztuk (`pcard-stock`, przeniesiona z P-8.2a — patrz korekta tam). **Zależności:**
   F1, P-8.1.
-### P-8.3b — Filtry i sortowanie
-- Filtry marka / klasa stanu / cena + sortowanie. **Zależności:** F1, P-8.3a.
+### P-8.3b — Filtry i sortowanie (punkt wielorepowy → P-8.3b-core + P-8.3b-theme)
+
+Pierwotnie jeden punkt (repo: qutlet-theme). W realizacji (sesja 2026-07-29) —
+niezależna recenzja (`docs/review.md`) oznaczyła jako 🔴 blokujące, że logika
+modyfikująca GŁÓWNE zapytanie WooCommerce (co i w jakiej kolejności trafia do
+wyniku) żyła w `qutlet-theme`, podczas gdy CLAUDE.md przypisuje „glue do Woo"
+(hooki integrujące się z Woo) do `qutlet-core`. Zgodnie z regułą punktów
+wielorepowych P-8.3b rozpada się na dwa pod-punkty / dwa PR-y z jawną
+zależnością (`P-8.3b-theme` → `P-8.3b-core`).
+
 - **D-8.3b.1 (mechanizm: klasyczny GET + WP_Query, NIE AJAX/REST) [USTALONE —
   sesja 2026-07-29]:** filtrowanie/sortowanie na archiwum `product_cat`
   (szablon z P-8.3a) idzie przez zwykły `<form method="get">` +
@@ -2234,11 +2242,42 @@ Punkty (wg obszarów prototypu; duże obszary pocięte na pod-punkty per sesja):
   koszt licencji + niepewna zgodność z już nietypowym setupem archiwum
   (WooCommerce Blocks hardkoduje nagłówek, P-8.3a) przy skromnym realnym
   zakresie facetów (2 natywne + 2 własne, bez potrzeby generycznego silnika
-  faceted search). Kod: slice `ProductFilters/` w `qutlet-theme`.
-  **Odrzucona alternatywa:** JS/AJAX z własnym REST endpointem — bliżej UX
-  prototypu, ale to nowa powierzchnia kodu bez wykorzystania gotowych
-  mechanizmów Woo; przesunięta do **P-8.3d** jako progressive enhancement
-  nad tym fundamentem, nie blokuje P-8.3b.
+  faceted search). **Odrzucona alternatywa:** JS/AJAX z własnym REST
+  endpointem — bliżej UX prototypu, ale to nowa powierzchnia kodu bez
+  wykorzystania gotowych mechanizmów Woo; przesunięta do **P-8.3d** jako
+  progressive enhancement nad tym fundamentem, nie blokuje P-8.3b.
+- **D-8.3b.2 (granica core↔theme: query-shaping → core, render → theme)
+  [USTALONE — sesja 2026-07-29, po niezależnej recenzji]:** modyfikacja
+  głównego zapytania (`meta_query` klasy stanu, własny `posts_clauses` dla
+  sortowania „Największy rabat") oraz SQL liczące facety marki/klasy stanu i
+  granice ceny (wzorzec `WC_Widget_Price_Filter::get_filtered_price()`) żyją w
+  `qutlet-core` (`Qutlet\Core\ProductFilters\ProductFilterQuery`) — to „glue do
+  Woo" w rozumieniu CLAUDE.md, nawet gdy nic nie zapisuje. `qutlet-theme`
+  (ta sama nazwa slice'a `ProductFilters/`) dostaje z core WYŁĄCZNIE gotowe
+  dane (tablice facetów z licznikami, granice ceny, stan z GET) do
+  wyrenderowania formularza — nie zna SQL-a ani struktury zapytania. Etykieta
+  klasy stanu (`ProductPage::condition_label()`) zostaje w theme (treść
+  prezentacyjna, nie fakt o danych). **Odrzucona alternatywa:** zostawić w
+  theme jako udokumentowany wyjątek od D-8.G1 — odrzucona, bo tworzyłaby
+  precedens rozmywający granicę artefaktów przy pierwszej okazji, gdy była
+  choć trochę dyskusyjna.
+
+#### P-8.3b-core — Modyfikacja zapytania + facety (qutlet-core)
+- **Repo:** qutlet-core (slice `ProductFilters/`)
+- **Zakres:** hooki `woocommerce_product_query`/`posts_clauses` filtrujące/
+  sortujące główne zapytanie archiwum (klasa stanu, „Największy rabat") +
+  publiczne metody dostarczające dane theme'owi: `price_bounds()`,
+  `selected_price_range()`, `brand_facets()`, `condition_facets()`,
+  `selected_brand_slugs()`, `selected_conditions()`, `current_sort()`.
+- **Zależności:** F1, P-8.3a.
+
+#### P-8.3b-theme — Render formularza filtrów (qutlet-theme)
+- **Repo:** qutlet-theme (slice `ProductFilters/` — ta sama nazwa co w core)
+- **Zakres:** toolbar (filtr/licznik/sortowanie) + chipy + szuflada
+  (`woocommerce/loop/filters-and-sort.php`), port `.toolbar`/`.drawer` z
+  `strefa-okazji.html`; woła WYŁĄCZNIE publiczne metody `ProductFilterQuery`
+  z core, zero własnej logiki zapytania.
+- **Zależności:** P-8.3b-core.
 ### P-8.3c — Strefa okazji
 - Dedykowany widok wyprzedaży (`strefa-okazji.html`). **Zależności:** P-8.3a.
 ### P-8.3d — Filtr AJAX (progressive enhancement)
