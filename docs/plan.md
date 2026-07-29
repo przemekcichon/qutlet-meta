@@ -2211,7 +2211,7 @@ Punkty (wg obszarów prototypu; duże obszary pocięte na pod-punkty per sesja):
   (qutlet-core, FAZA 9) zastępujący pole repeaterem — patrz tam i
   `docs/kontrakt-danych.md` §2 (D-9.2.1). P-8.2c renderuje TERAZ z nowego
   kształtu (`zawartosc_zestawu_pozycje`), nie ze starego WYSIWYG.
-### P-8.3a — Karta produktu + szablon archiwum/kategorii
+### 🟢 P-8.3a — Karta produktu + szablon archiwum/kategorii
 - Karta produktu (pętla) + szablon listy dla `product_cat` + etykieta liczby
   sztuk (`pcard-stock`, przeniesiona z P-8.2a — patrz korekta tam). **Zależności:**
   F1, P-8.1.
