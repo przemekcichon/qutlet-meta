@@ -2444,8 +2444,57 @@ rozpada się na dwa pod-punkty / dwa PR-y z jawną zależnością (`P-8.3c-theme
   (`design/vanilla/js/app.js` `initDeals()`). Someday maybe — dopisane na
   wyraźną prośbę użytkownika (sesja 2026-07-29) jako kolejny etap NAD
   fundamentem z P-8.3b, nie jego zamiennik. **Zależności:** P-8.3b.
-### P-8.4 — Blog
+### 🟡 P-8.4 — Blog
 - Lista/artykuł/kategoria/tag + czas czytania (meta z P-1.4). **Zależności:** F1 (P-1.4).
+  Realizacja: `qutlet-theme` PR #11 (`feature/faza-8-4-blog`).
+- **D-8.4.1 (renderer: klasyczna hierarchia szablonów, NIE `templates/*.html`)
+  [USTALONE — sesja 2026-07-30, doprecyzowanie otwartego D-8.G2 na tym
+  punkcie]:** `home.php`/`single.php`/`category.php`/`tag.php` (+ klasyczne
+  `header.php`/`footer.php` renderujące `parts/header.html`/`footer.html`
+  przez `block_header_area()`/`block_footer_area()`) zamiast blokowych
+  szablonów. Uzasadnienie: layout bloga (wyróżniony/sticky wpis wykluczony z
+  siatki, spis treści z kotwicami, powiązane wpisy, nawigacja prev/next w tej
+  samej kategorii, karta pozioma na archiwum tagu) wymaga precyzyjnego
+  markupu 1:1 z prototypem, którego natywne bloki (Query Loop/Post Template)
+  nie odwzorują bez dużej liczby własnych bloków dynamicznych. WP 7.0.2
+  wspiera klasyczne pliki PHP jako fallback w motywach blokowych, gdy dla
+  danego typu NIE istnieje żaden plik w `templates/`
+  (`wp-includes/block-template.php` `locate_block_template()`) — ten sam
+  mechanizm, z którego już korzysta `woocommerce/content-product.php`
+  (WooCommerce ma własny odpowiednik przez `wp:woocommerce/legacy-template`).
+  **Odrzucona alternatywa:** blokowe `templates/home.html` itd. z zestawem
+  własnych dynamicznych bloków (post-card, featured-post, TOC, related-posts,
+  blog-categories) — poprawne architektonicznie, ale nieproporcjonalnie
+  większy nakład na jedną sesję bez dodatkowej wartości nad klasycznym
+  fallbackiem, który WP oficjalnie wspiera.
+- **D-8.4.2 (Ustawienia Czytania: strona „Blog" jako `page_for_posts`)
+  [USTALONE — decyzja użytkownika, sesja 2026-07-30]:** ground-truth ujawnił
+  `show_on_front = posts` na tej instalacji (brak statycznej strony głównej —
+  P-8.7 jeszcze nierozpisane w kodzie), co kolidowałoby z blogiem: bez zmiany
+  Drugi obieg zająłby ROOT strony do czasu P-8.7. Rozwiązanie: utworzona
+  natywna Strona „Blog" (`page_for_posts`, URL `/blog/`) + placeholder Strona
+  „Strona główna" (`page_on_front`, treść pusta — czeka na P-8.7),
+  `show_on_front` przestawione na `page`. Root pokazuje dziś pustą
+  placeholder-stronę (generyczny fallback `templates/index.html`) do czasu,
+  aż P-8.7 podepnie właściwy `front-page.php`. **Odrzucona alternatywa:**
+  zostawić `show_on_front = posts` i renderować blog jako `home.php` na
+  ROOT — zero dodatkowej konfiguracji, ale „Drugi obieg” zajmowałby stronę
+  główną aż do P-8.7, kolidując z docelowym designem (`index.html`).
+- **D-8.4.3 (locale `pl_PL`) [USTALONE — decyzja użytkownika, sesja
+  2026-07-30]:** instalacja miała aktywny WYŁĄCZNIE `en_US` (`WPLANG` puste),
+  więc daty (`get_the_date()`/`get_the_modified_date()` przez `date_i18n()`)
+  renderowały się po angielsku („30 July 2026”), niezgodnie z prototypem
+  („30 lipca 2026”). Zainstalowano i aktywowano `pl_PL`
+  (`wp language core install pl_PL --activate`) — zmiana globalna instalacji
+  (obejmuje też panel admina), uzasadniona tym, że cała strona jest z
+  założenia polskojęzyczna (treść/design). **Uwaga wdrożeniowa:** to stan
+  bazy danych tej instalacji Local, NIE kod — nowe środowisko (staging/
+  produkcja/świeża maszyna) wystartuje bez `pl_PL` i z
+  `show_on_front = posts` (D-8.4.2) domyślnie; obie konfiguracje trzeba
+  odtworzyć ręcznie przy stawianiu kolejnego środowiska (brak migracji/
+  automatyzacji w tym punkcie — `Blog::blog_url()` ma bezpieczny fallback na
+  `home_url('/')`, więc kod się nie wywali, ale routing/daty będą inne niż
+  tu ustalone).
 ### P-8.5 — Strony pomocy + formularze
 - Render natywnych Pages + nawigacja pomocy (menu); osadzenie formularzy newsletter
   i kontakt z wtyczki 3rd-party (D-8.G3) — bez własnego backendu. **Zależności:**
