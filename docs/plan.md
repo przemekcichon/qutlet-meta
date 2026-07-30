@@ -2658,6 +2658,68 @@ czytać).
 
 ---
 
+## 🟦 FAZA 10 — Dodatki (poza pierwotnym zakresem prototypu/build-outu)
+
+Cel: **funkcje dodatkowe**, których NIE ma w pierwotnym zakresie odwzorowania
+prototypu 1:1 (FAZY 0–8) ani w poprawkach znajdywanych podczas eksploatacji
+(FAZA 9) — świadomie DOŁOŻONE rozszerzenia, zamówione przez użytkownika jako
+nowa wartość biznesowa (np. pod kampanie marketingowe). W odróżnieniu od FAZY 9
+(poprawki błędów/luk w już zbudowanym zakresie), FAZA 10 rośnie nowymi,
+zaakceptowanymi pomysłami — nigdy się nie „domyka" w sensie FAZ 0–8.
+
+### P-10.1 — Landing page kategorii (kuratorski, pod kampanie reklamowe)
+
+**Zgłoszenie (2026-07-30):** prototyp `design/vanilla/kategoria-smartfony.html`
+zawiera kuratorski landing kategorii — hero (nazwa kategorii, opis, licznik
+sztuk w ofercie, `data-phone-count`), sekcja „Wybierz markę" (kafle marek z
+liczbą modeli) oraz kuratorskie rzędy poziome („Najczęściej wybierane",
+„iPhone w outlecie", „Android w Klasie A", „Budżetowo — do X zł"). Ground-truth
+P-8.3c (sesja 2026-07-30) ustalił, że to widok INNY niż generyczne archiwum
+kategorii zbudowane w P-8.3a/P-8.3b (`taxonomy-product_cat.html` — toolbar +
+filtry + siatka): brak toolbara/drawera filtrów, za to hero + rzędy kuratorskie
+— dotąd świadomie NIEBUDOWANY, odnotowany w D-8.3c.2 jako „inny,
+nie-jeszcze-budowany layout landingowy z rzędami kuratorskimi". Użytkownik chce
+go jako DODATKOWY widok — landing pod ruch z reklam, NIE zamiennik generycznego
+archiwum kategorii.
+
+- **Otwarte pytanie nadrzędne — osobny szablon/URL czy wariant archiwum
+  [OTWARTE]:** landing pod reklamy zwykle potrzebuje WŁASNEGO, stabilnego
+  adresu (do wklejenia w kampanię), niekoniecznie tożsamego z adresem
+  generycznego archiwum kategorii z P-8.3a. Rozstrzygnąć przy realizacji: nowy
+  typ strony/routing, dodatkowy wariant nad `taxonomy-product_cat.html`
+  (przełącznik widoku), czy coś trzeciego — wpływa na WSZYSTKIE decyzje niżej.
+- **D-10.1.1 (skąd dane do rzędów kuratorskich) [OTWARTE]:** rzędy typu
+  „Najczęściej wybierane"/„iPhone w outlecie"/„Android w Klasie A"/„Budżetowo"
+  to NIE surowe dane (kontrakt nie ma pola „bestseller" ani gotowej
+  segmentacji marka+cena). Opcje, żadna nierekomendowana:
+  1. Rzędy jako `WP_Query` z kryteriami zaszytymi w kodzie per-rząd (np.
+     „Budżetowo" = zapytanie z `max_price` w bieżącej kategorii) — zero
+     nowego modelu danych, ale treść rzędu nieedytowalna bez deploya.
+  2. Rzędy jako edytowalna konfiguracja (ACF na termie kategorii lub osobna
+     opcja) — marketing zmienia kryteria/kolejność bez deploya, kosztem
+     nowego modelu w core.
+  3. „Najczęściej wybierane" ewentualnie z realnych danych sprzedażowych Woo
+     (raporty zamówień) zamiast kuratorsko — do potwierdzenia, czy w ogóle
+     chcemy (inna natura niż reszta rzędów, które są jawnie kuratorskie).
+- **D-10.1.2 (licznik sztuk w hero) [OTWARTE]:** prawdopodobnie prosty
+  `WP_Query`/`wp_count_posts` po kategorii (dane już dostępne, bez nowego
+  modelu) — do potwierdzenia przy realizacji.
+- **D-10.1.3 (sekcja „Wybierz markę") [OTWARTE]:** kafle marek z liczbą modeli
+  W BIEŻĄCEJ kategorii — prawdopodobnie reużywalne z
+  `ProductFilterQuery::brand_facets()` (P-8.3b-core, liczniki marki w
+  kontekście kategorii już istnieją) albo nowa, prostsza metoda (to lista
+  kafli-linków, nie facet filtrowania — nie potrzebuje stanu z GET). Do
+  ground-truth przy realizacji.
+- **Zakres (wstępny, do doprecyzowania przy realizacji):** prawdopodobnie
+  punkt wielorepowy (core — jeśli D-10.1.1 wymaga nowego modelu danych; theme
+  — render hero/kafli/rzędów, nowy szablon/wariant) — rozbić na pod-punkty
+  zgodnie z regułą punktów wielorepowych, PO ground-truth i rozstrzygnięciu
+  otwartych decyzji powyżej.
+- **Zależności:** P-8.3a (karta produktu, reużywana w rzędach), P-8.3b-core
+  (facety marki, jeśli D-10.1.3 je reużyje).
+
+---
+
 ## Materiał referencyjny i kandydaci do dalszych faz
 
 ### Inwentarz endpointów Allegro (dostarczony przez użytkownika)
