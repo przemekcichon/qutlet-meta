@@ -2444,7 +2444,7 @@ rozpada się na dwa pod-punkty / dwa PR-y z jawną zależnością (`P-8.3c-theme
   (`design/vanilla/js/app.js` `initDeals()`). Someday maybe — dopisane na
   wyraźną prośbę użytkownika (sesja 2026-07-29) jako kolejny etap NAD
   fundamentem z P-8.3b, nie jego zamiennik. **Zależności:** P-8.3b.
-### 🟡 P-8.4 — Blog
+### 🟢 P-8.4 — Blog
 - Lista/artykuł/kategoria/tag + czas czytania (meta z P-1.4). **Zależności:** F1 (P-1.4).
   Realizacja: `qutlet-theme` PR #11 (`feature/faza-8-4-blog`).
 - **D-8.4.1 (renderer: klasyczna hierarchia szablonów, NIE `templates/*.html`)
