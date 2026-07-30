@@ -2367,7 +2367,7 @@ zależnością (`P-8.3b-theme` → `P-8.3b-core`).
   `strefa-okazji.html`; woła WYŁĄCZNIE publiczne metody `ProductFilterQuery`
   z core, zero własnej logiki zapytania.
 - **Zależności:** P-8.3b-core.
-### 🟡 P-8.3c — Strefa okazji (punkt wielorepowy → P-8.3c-core + P-8.3c-theme)
+### 🟢 P-8.3c — Strefa okazji (punkt wielorepowy → P-8.3c-core + P-8.3c-theme)
 
 Pierwotnie jeden punkt (repo: qutlet-theme). Ground-truth (sesja 2026-07-30)
 potwierdził hipotezę z otwarcia punktu: `strefa-okazji.html` to widok „wszystkie
@@ -2420,14 +2420,14 @@ rozpada się na dwa pod-punkty / dwa PR-y z jawną zależnością (`P-8.3c-theme
   przekierowania — brak wtyczki redirect, akceptowalne dla środowiska
   lokalnego/przed produkcją).
 
-#### 🟡 P-8.3c-core — Facet kategorii (qutlet-core)
+#### 🟢 P-8.3c-core — Facet kategorii (qutlet-core)
 - **Repo:** qutlet-core (slice `ProductFilters/`)
 - **Zakres:** własny hook `apply_category_filter()` (GET `qutlet_category`,
   tax_query `product_cat`) + `category_facets()` (liczniki w bieżącym
   kontekście, wykluczające własny wymiar) — patrz D-8.3c.1.
 - **Zależności:** P-8.3b-core.
 
-#### 🟡 P-8.3c-theme — Szablon Shopu + facet kategorii (qutlet-theme)
+#### 🟢 P-8.3c-theme — Szablon Shopu + facet kategorii (qutlet-theme)
 - **Repo:** qutlet-theme (slice `ProductFilters/` — ta sama nazwa co w core)
 - **Zakres:** `templates/archive-product.html` (Shop = wszystkie kategorie
   naraz, ten sam wzorzec co `taxonomy-product_cat.html` z P-8.3a);
@@ -2622,7 +2622,7 @@ rozszerzamy model.
 - **Blokuje:** P-8.2c (FAZA 8) — render taba „Co w przesyłce" czyta już nowy
   kształt, nie stare WYSIWYG.
 
-### 🟡 P-9.4 — Paginacja archiwum: dopasowanie do prototypu
+### 🟢 P-9.4 — Paginacja archiwum: dopasowanie do prototypu
 
 **Zgłoszenie (2026-07-30, zrzut ekranu użytkownika):** paginacja archiwum
 produktów (`taxonomy-product_cat.html`/`archive-product.html`, P-8.3a/b/c)
