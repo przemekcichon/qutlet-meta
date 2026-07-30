@@ -2555,6 +2555,30 @@ rozszerzamy model.
 - **Blokuje:** P-8.2c (FAZA 8) — render taba „Co w przesyłce" czyta już nowy
   kształt, nie stare WYSIWYG.
 
+### 🟡 P-9.4 — Paginacja archiwum: dopasowanie do prototypu
+
+**Zgłoszenie (2026-07-30, zrzut ekranu użytkownika):** paginacja archiwum
+produktów (`taxonomy-product_cat.html`/`archive-product.html`, P-8.3a/b/c)
+renderuje się jako domyślny szablon WooCommerce (`woocommerce/templates/loop/pagination.php`,
+NIEZNADPisany w motywie) — lewostronnie wyrównane, niestylowane linki
+`.page-numbers`, strzałka „next" jako literalny znak `→`, aktywna strona bez
+charakterystycznego wyglądu prototypu. Prototyp (`design/vanilla/css/style.css`
+`.pager`/`.page-btn` + `js/app.js` linie ~337-347) pokazuje wyśrodkowany rząd
+zaokrąglonych „pigułek" (`.page-btn`, promień 11px, obramowanie), aktywną stronę
+wypełnioną kolorem akcentu, oraz strzałki prev/next jako ikony chevron (SVG),
+nie tekst.
+- **Repo:** qutlet-theme (slice `ProductArchive`/współdzielony z P-8.3a —
+  render, D-8.G1; ŻADNA logika zapytania/danych, więc BEZ core).
+- **Zakres:** `woocommerce/loop/pagination.php` (nowy override) — reużywa
+  natywny `paginate_links()` (numeracja/ellipsis/URL-e z query args, ten sam
+  mechanizm GET+WP_Query co P-8.3b, D-8.3b.1), podmienia WYŁĄCZNIE
+  markup/klasy (`.pager`/`.page-btn`/`.pager-dots`) i tekst prev/next (ikony
+  chevron zamiast `&larr;`/`&rarr;`) na wzór prototypu. CSS: `.pager`/
+  `.page-btn` w `style.css`, port z prototypu.
+- **Zależności:** P-8.3a (archiwum musi już istnieć, żeby paginacja miała co
+  paginować).
+- **Blokuje:** nic — czysto kosmetyczna poprawka nad już zbudowanym zakresem.
+
 ### P-9.3 — Klasy stanu: rozszerzalny byt + tekst „dlaczego taniej" per klasa + edytowalne mapowanie Allegro (punkt wielorepowy → P-9.3a + P-9.3b + P-9.3c)
 
 **Zgłoszenie (2026-07-28):** dziś „klasa stanu" to zamknięty czterowartościowy
