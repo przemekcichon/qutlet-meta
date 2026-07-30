@@ -2495,10 +2495,68 @@ rozpada się na dwa pod-punkty / dwa PR-y z jawną zależnością (`P-8.3c-theme
   automatyzacji w tym punkcie — `Blog::blog_url()` ma bezpieczny fallback na
   `home_url('/')`, więc kod się nie wywali, ale routing/daty będą inne niż
   tu ustalone).
-### P-8.5 — Strony pomocy + formularze
+### 🟡 P-8.5 — Strony pomocy + formularze
 - Render natywnych Pages + nawigacja pomocy (menu); osadzenie formularzy newsletter
   i kontakt z wtyczki 3rd-party (D-8.G3) — bez własnego backendu. **Zależności:**
   F1 (P-1.5); wtyczka formularzy (opcjonalna, config/handoff).
+  Realizacja: `qutlet-theme` PR #12 (`feature/faza-8-5-help-pages`).
+- **D-8.5.1 (renderer: `page-{slug}.php`, hierarchia plików WP, nie „Template
+  Name") [USTALONE — sesja 2026-07-31, kontynuacja D-8.4.1]:** siedem stron
+  dostało własne klasyczne pliki (`page-pomoc.php`, `page-jak-to-dziala.php`,
+  `page-kontakt.php`, `page-newsletter.php`, `page-regulamin.php`,
+  `page-polityka-prywatnosci.php`, `page-polityka-cookies.php`) dobierane
+  automatycznie przez `page_template_hierarchy()` po slugu Strony — zero
+  konfiguracji w adminie (inaczej niż `Template Name` wybierany ręcznie w
+  Atrybutach strony). `pomoc`/`jak-to-dziala`/`newsletter` renderują treść
+  jako CHROME szablonu (marketingowa proza zakodowana wprost w PHP, TEN SAM
+  wzorzec co hero bloga w `home.php`, P-8.4) — to strony
+  nawigacyjne/landing/manifestu, nie proza do swobodnej edycji w edytorze
+  blokowym; ich Page `post_content` zostaje nieużywany (podmieniony na
+  jawną notę redakcyjną „ta strona renderuje się przez szablon motywu",
+  żeby edycja w kokpicie nie była cichą pułapką). `regulamin`/`polityka-*`
+  renderują realny `the_content()` (dokument prawny, który się
+  aktualizuje) + spis treści z `Help::extract_legal_headings()` — CZYTA
+  gotowe kotwice `<section id="sN"><h2>…</h2>`, w odróżnieniu od
+  `Blog\ArticleHeadings`, który je DOGENEROWUJE (treść prawna jest
+  wypełniana verbatim z prototypu z ID już ustawionymi, nie edytowana
+  swobodnie przez redaktora bez ich zachowania). `kontakt`/`newsletter`
+  osadzają `the_content()` WEWNĄTRZ oryginalnej karty formularza
+  (`.contact-form-card`/`.nl-form-card`) — jedyny punkt wpięcia wtyczki
+  3rd-party (D-8.G3).
+- **D-8.5.2 (`body[data-page]` z prototypu → `body_class` filter)
+  [USTALONE — sesja 2026-07-31]:** prototyp kluczuje podświetlenie
+  aktywnej pozycji `.help-nav` oraz ukrycie banera `.nlband` na stronie
+  newslettera atrybutem statycznym `<body data-page="…">`. Block template
+  canvas (`wp-includes/template-canvas.php`) nie ma punktu, żeby przyjąć
+  dowolny atrybut `<body>` — ma tylko `body_class()`. Aktywna pozycja menu:
+  `Help::render_help_nav()` porównuje `object_id` pozycji menu z
+  `get_queried_object_id()` i dokłada klasę `is-active` bezpośrednio w
+  pętli (nie przez filtr body_class). Ukrycie banera:
+  `Help::filter_body_class()` dokłada klasę `qt-hide-nlband` na
+  `is_page('newsletter')`, style.css chowa `.nlband` pod
+  `body.qt-hide-nlband`.
+- **D-8.5.3 (treść 3 stron prawnych + placeholdery kontakt/newsletter
+  zasiane przez wp-cli — stan bazy, NIE migracja) [USTALONE — sesja
+  2026-07-31, wzorzec D-8.4.3]:** P-1.5 utworzyło siedem Stron jako
+  `draft` z treścią placeholder „Treść do uzupełnienia". Bez realnej
+  treści szablony (zwłaszcza TOC z `<section id="sN">` i tabele cookies)
+  nie dały się przetestować end-to-end, więc ten punkt zasiał: pełny tekst
+  verbatim z prototypu na `regulamin`/`polityka-prywatnosci`/
+  `polityka-cookies` (sekcje `s1..sN`, treść-przykład z makiety — DO
+  PODMIANY na docelowy tekst prawny przed produkcją); jawny placeholder
+  „zainstaluj wtyczkę, wklej shortcode/blok" na `kontakt`/`newsletter`
+  (D-8.G3); redakcyjną notę „ta strona renderuje szablon" na
+  `pomoc`/`jak-to-dziala` (D-8.5.1); publikację (`publish`) wszystkich
+  siedmiu; przypisanie menu `pomoc` do nowo zarejestrowanej lokalizacji
+  motywu `pomoc` (`wp menu location assign pomoc pomoc`). **Uwaga
+  wdrożeniowa (jak D-8.4.3):** to stan bazy danych TEJ instalacji Local,
+  NIE kod/migracja — nowe środowisko (staging/produkcja/świeża maszyna)
+  wystartuje z pustą treścią prawną (TOC pusty, kotwice `#s4..#s7` z
+  `page-pomoc.php` martwe), draft zamiast publish i menu bez przypisanej
+  lokalizacji; wszystkie trzy trzeba odtworzyć ręcznie przy stawianiu
+  kolejnego środowiska (brak automatyzacji w tym punkcie — kod się nie
+  wywali, `render_help_nav()`/`extract_legal_headings()` mają bezpieczne
+  fallbacki na pustkę, ale strony będą wyglądać na niedokończone).
 ### P-8.6a — Koszyk
 - Nadpisanie szablonów koszyka Woo (`koszyk.html` → `woocommerce/cart/`).
   **Zależności:** P-8.1 (+ Woo).
