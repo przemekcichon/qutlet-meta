@@ -40,6 +40,14 @@ Windows** (m.in. krytyczny patch win32→win64 w add-onie, bez którego `wp_cli`
 dobija do bazy) są w `docs/localwp-mcp-setup.md` — czytaj przy stawianiu mostu MCP
 na nowej maszynie lub po aktualizacji add-onu.
 
+**Playwright MCP (realna przeglądarka do testów wizualnych):** osobny serwer MCP
+(`@playwright/mcp`, Microsoft), dopisany do TEGO SAMEGO `.mcp.json` obok `local-wp`
+— daje agentowi sterowalną przeglądarkę (nawigacja, kliknięcia, zrzuty ekranu), nie
+tylko odczyt HTML przez `curl`. Dostępność zależy od maszyny/sesji (jak `local-wp`,
+per `.gitignore`) — jeśli serwer nie jest wpięty, agent NIE ma dostępu do realnej
+przeglądarki i musi przyznać to wprost zamiast zgadywać wygląd. Instalacja i pełny
+opis w `docs/playwright-mcp-setup.md`.
+
 Adresy: lokalny (Local) `loc.qutlet.pl`, produkcyjny `www.qutlet.pl`. Istotne przy
 konfiguracji OAuth Allegro (redirect URI) — sekrety (client ID/secret Allegro,
 klucze API dostawców AI) trzymamy w `wp-config.php`, nigdy w repo.
