@@ -2918,6 +2918,115 @@ archiwum kategorii.
 
 ---
 
+## 🟦 FAZA 11 — Treść stron jako bloki edytora (block patterns zamiast PHP/HTML)
+
+Cel: przenieść treść, która dziś jest zakodowana na sztywno w plikach PHP
+motywu (chrome szablonów P-8.5) albo wstawiona jako surowy HTML przez wp-cli
+(P-8.5, strony prawne), do PRAWDZIWEJ treści edytowalnej w edytorze blokowym —
+natywne bloki (heading/paragraph/table/list) dla prozy, a WŁASNE **block
+patterns** (rejestrowane przez motyw, 1:1 z prototypem) dla złożonych,
+brandowanych sekcji (hero band, siatki kart, quote-band itp.) — żeby redaktor
+mógł zmieniać treść bez deploya i bez znajomości PHP. Zgłoszenie użytkownika
+(sesja 2026-08-02) po ground-truth P-8.5: strony pomocy trafiły do PHP zamiast
+do edytora, co jest niezgodne z intencją „treść ma być redagowalna". Obejmuje
+świadomie WSZYSTKIE strony treściowe: pomoc (P-8.5), stronę główną (P-8.7,
+jeszcze niezbudowaną — budujemy OD RAZU w tym modelu) i bloga (P-8.4, już
+zbudowanego na klasycznych szablonach PHP — świadoma rewizja D-8.4.1).
+
+**Zależności fazy:** P-8.5 (🟢 — dostarcza treść/layout do migracji), P-8.4
+(🟢 — do rewizji), P-8.1 (fundament renderu). P-8.7 (🟦, FAZA 8, jeszcze
+niezrealizowany) zostaje w praktyce PRZEJĘTY przez P-11.4 — przy starcie tego
+punktu rozstrzygnąć formalnie, czy P-8.7 zamyka się jako „supersedowany", czy
+to ten sam punkt realizowany wg mechanizmu z D-11.G1.
+
+### Decyzje globalne fazy
+- **D-11.G1 (mechanizm: własne block patterns, nie tylko bloki core)
+  [USTALONE — decyzja użytkownika, sesja 2026-08-02]:** złożone sekcje
+  wizualne (hero bandy, siatki kart, quote-band itp.) odtwarzamy jako WŁASNE,
+  rejestrowane przez motyw block patterns (`patterns/*.php`, nagłówek wg
+  konwencji WP: Title/Slug/Categories — auto-discovery przez rdzeń, bez
+  ręcznego `register_block_pattern()`), NIE wyłącznie natywnymi blokami core —
+  same bloki core nie odwzorują niestandardowego layoutu prototypu (grid,
+  gradientowe tła, karty). Redaktor wstawia pattern z biblioteki wzorców i
+  edytuje TREŚĆ w miejscu (tekst, obrazki, linki), zachowując dokładny wygląd.
+  **Odrzucona alternatywa:** wyłącznie natywne bloki core — prostsze, ale
+  traci niestandardowy layout na rzecz generycznego wyglądu edytora.
+- **D-11.G2 (zakres: wszystkie strony, nie tylko treściowe) [USTALONE —
+  decyzja użytkownika]:** obejmuje wszystkie 7 stron pomocy (pomoc,
+  jak-to-dziala, kontakt, newsletter, regulamin, polityka-prywatności,
+  polityka-cookies), stronę główną (P-8.7) ORAZ bloga (P-8.4) — nie tylko
+  „czystą prozę" (regulamin/polityka-*), ale też strony z bogatym layoutem
+  marketingowym (hero, karty, cytaty).
+- **D-11.G3 (granica artefaktów niezmieniona) [USTALONE]:** rejestracja
+  patterns to WYŁĄCZNIE deklaratywna powierzchnia motywu (D-8.G1 bez zmian) —
+  zero pól ACF/CPT w core, patterns nie stają się „modelem danych", tylko
+  szablonami startowymi dla edytora. Dynamiczne fragmenty (licznik produktów,
+  ostatnie wpisy bloga, pętla „Świeżo na wyprzedaży") zostają w kodzie
+  (dynamiczne bloki/block bindings) — reszta to statyczna treść blokowa.
+- **D-11.G4 (kontakt/newsletter: osadzenie formularza bez zmian) [USTALONE]:**
+  D-8.G3 (formularz = wtyczka 3rd-party, theme tylko osadza) się NIE zmienia —
+  migracja na bloki dotyczy chrome WOKÓŁ formularza (nagłówek, opis, karta),
+  nie samego mechanizmu osadzenia ani wyboru wtyczki.
+
+### 🟦 P-11.1 — Fundament: biblioteka block patterns motywu
+- **Zakres:** mechanizm patterns w `qutlet-theme` (katalog `patterns/`,
+  auto-discovery WP), pierwsza porcja wzorców odtwarzających NAJBARDZIEJ
+  reużywalne sekcje z `design/vanilla` (hero band typu `.how-hero`/`.nlband`,
+  siatka kart typu `.help-cards`/`.eko-grid`, `.quote-band`), zarejestrowane
+  we własnej kategorii patternów widocznej w edytorze. BEZ podpinania jeszcze
+  do konkretnej strony — fundament pod P-11.2+.
+- **Zależności:** P-8.1 (fundament renderu), P-8.5 (źródło layoutów CSS do
+  przeniesienia na patterns).
+- **Otwarte przy realizacji [OTWARTE]:** czy `theme.json` wymaga rozszerzenia
+  (paleta kolorów/spacing dostępna blokom, żeby patterny korzystały z
+  tokenów projektu zamiast custom CSS wklejanego w każdy pattern) —
+  ground-truth przy starcie punktu.
+
+### 🟦 P-11.2 — Migracja stron pomocy (P-8.5) na treść blokową
+- **Zakres:** `pomoc.html`, `jak-to-dziala.html`, `kontakt.html` (chrome),
+  `newsletter.html` (chrome), `regulamin`/`polityka-prywatności`/
+  `polityka-cookies` (dziś surowy HTML wstawiony przez wp-cli) → realna treść
+  blokowa (patterns z P-11.1 + heading/paragraph/table/list core).
+  `page-{slug}.php` upraszcza się do renderu `the_content()` — help-nav i
+  breadcrumb ZOSTAJĄ chrome szablonu (to nawigacja, nie treść do redakcji,
+  zgodnie z duchem D-8.5.1 dla elementów nawigacyjnych).
+- **Otwarte przy realizacji [OTWARTE]:** mechanizm TOC stron prawnych (dziś
+  `Help::extract_legal_headings()` czyta literalne `<section id="sN">`
+  wpisane z góry) — do rozstrzygnięcia, czy kotwice ustawia redaktor ręcznie
+  (blok Heading ma pole „HTML anchor") czy dogenerowuje kod (wzorzec
+  `Blog\ArticleHeadings`, P-8.4).
+- **Zależności:** P-11.1.
+
+### 🟦 P-11.3 — Rewizja bloga (P-8.4): klasyczne szablony → bloki + dynamiczne bloki/patterns
+- **Zakres:** rewizja D-8.4.1 — `home.php`/`single.php`/`category.php`/
+  `tag.php` (dziś klasyczne PHP z zakodowaną treścią marketingową i pętlami)
+  → blokowe `templates/*.html` + własne bloki dynamiczne (post-card,
+  featured-post, TOC artykułu, related-posts, nawigacja prev/next,
+  blog-categories) tam, gdzie dziś jest PHP-loop, + patterns z P-11.1 tam,
+  gdzie dziś jest statyczny marketing copy (hero opisowy, sekcje statyczne).
+- **Uwaga:** to bezpośrednio ODRZUCONA ALTERNATYWA z D-8.4.1 („nieproporcjonalnie
+  większy nakład na jedną sesję bez dodatkowej wartości nad klasycznym
+  fallbackiem") — realizacja tego punktu jest ŚWIADOMĄ zmianą decyzji, nie
+  przeoczeniem; potwierdzone przez użytkownika przy otwieraniu FAZY 11
+  (sesja 2026-08-02), więc nie wymaga ponownego potwierdzenia przy starcie.
+- **Zależności:** P-11.1.
+
+### 🟦 P-11.4 — Strona główna (P-8.7) budowana od razu jako bloki + patterns
+- **Zakres:** `index.html` → blokowy `templates/front-page.html`, budowany OD
+  RAZU w modelu z P-11.1 (hero, siatka USP, kafle kategorii jako patterns;
+  pętla „Świeżo na wyprzedaży" jako dynamiczny blok/`WP_Query`). Zastępuje
+  pierwotny mechanizm P-8.7 z FAZY 8 — ten sam zakres treściowy
+  (`design/vanilla/index.html`), inny mechanizm renderu. Bez obcego trackera
+  (D-8.G4 — bez zmian).
+- **Decyzja do potwierdzenia przy starcie [OTWARTE]:** czy P-8.7 (FAZA 8)
+  zostaje formalnie zamknięty jako „supersedowany" przez P-11.4 (i wykreślony
+  z FAZY 8), czy P-11.4 to po prostu doprecyzowanie mechanizmu tego samego
+  punktu — kosmetyczna decyzja porządkowa w planie, bez wpływu na kod.
+- **Zależności:** P-11.1, F1 (dane produktowe — hero/USP/kafle kategorii
+  czytają gotowe dane, render tylko renderuje).
+
+---
+
 ## Materiał referencyjny i kandydaci do dalszych faz
 
 ### Inwentarz endpointów Allegro (dostarczony przez użytkownika)
