@@ -3072,18 +3072,64 @@ to ten sam punkt realizowany wg mechanizmu z D-11.G1.
   jeden latentny błąd w `.eko-kicker` obecny od P-11.1, niewidoczny do tej
   pory bo P-11.1 nigdy nie wstawiło realnej treści na realną Stronę.
 
-### 🟦 P-11.3 — Rewizja bloga (P-8.4): klasyczne szablony → bloki + dynamiczne bloki/patterns
+### 🟡 P-11.3 — Rewizja bloga (P-8.4): klasyczne szablony → bloki + dynamiczne bloki/patterns
 - **Zakres:** rewizja D-8.4.1 — `home.php`/`single.php`/`category.php`/
   `tag.php` (dziś klasyczne PHP z zakodowaną treścią marketingową i pętlami)
   → blokowe `templates/*.html` + własne bloki dynamiczne (post-card,
   featured-post, TOC artykułu, related-posts, nawigacja prev/next,
   blog-categories) tam, gdzie dziś jest PHP-loop, + patterns z P-11.1 tam,
   gdzie dziś jest statyczny marketing copy (hero opisowy, sekcje statyczne).
+  Realizacja: `qutlet-theme` PR #18 (`feature/faza-11-3-blog-blocks`).
 - **Uwaga:** to bezpośrednio ODRZUCONA ALTERNATYWA z D-8.4.1 („nieproporcjonalnie
   większy nakład na jedną sesję bez dodatkowej wartości nad klasycznym
   fallbackiem") — realizacja tego punktu jest ŚWIADOMĄ zmianą decyzji, nie
   przeoczeniem; potwierdzone przez użytkownika przy otwieraniu FAZY 11
   (sesja 2026-08-02), więc nie wymaga ponownego potwierdzenia przy starcie.
+- **D-11.3.1 (mechanizm bloków: bez build-stepu, PHP-only + JS bez JSX)
+  [USTALONE — realizacja P-11.3]:** pierwszy w tym repo precedens WŁASNYCH
+  bloków dynamicznych (P-11.1/P-11.2 dotyczyły wyłącznie statycznych
+  patternów) — a repo nie ma npm/wp-scripts. Każdy blok to `block.json` +
+  `render.php` (konwencja `"render": "file:./render.php"`, WP 6.4+), a strona
+  edytora to JEDEN wspólny, zwykły JS (`assets/js/blog-blocks-editor.js`, bez
+  JSX, `wp.element.createElement` + `wp.serverSideRender`) rejestrujący
+  wszystkie 15 bloków generycznie — metadane (title/category/attributes)
+  bootstrapuje klientowi rdzeń WP z `block.json`, JS dostarcza tylko
+  `edit`/`save`. Lista nazw bloków w JS jest synchronizowana RĘCZNIE z
+  katalogami `inc/features/Blog/blocks/*` (brak auto-discovery po stronie
+  klienta).
+- **D-11.3.2 (zakres blokow szerszy niż literalne 6 z opisu punktu)
+  [USTALONE — realizacja P-11.3]:** poza sześcioma nazwanymi wyżej, dopisano:
+  `breadcrumbs` (reużywany we wszystkich 4 widokach, brak odpowiednika w
+  core), `term-hero`/`popular-tags` (nagłówek archiwum kategorii + tagi na
+  dole), `tag-hero`/`tag-related` (nagłówek archiwum tagu + powiązane),
+  `article-header`/`post-tags`/`author-box` (chrome artykułu). Wszystkie są
+  danymi bieżącego posta/terminu (nie statycznym marketing copy), więc NIE
+  kwalifikują się do patternów (D-11.G3) — musiały zostać kodem. Łącznie 15
+  bloków `qutlet/*` w `inc/features/Blog/blocks/`.
+- **D-11.3.3 (wykluczenie wyróżnionego wpisu: `pre_get_posts` zamiast
+  `continue`) [USTALONE — realizacja P-11.3]:** usunięty `home.php` pomijał
+  wyróżniony (sticky) wpis w siatce przez `continue` wewnątrz pętli PHP —
+  blokowy `wp:query`/`wp:post-template` nie ma odpowiednika. Zastąpione
+  filtrem `Blog::exclude_featured_from_main_query()` na `pre_get_posts`
+  (wyłącznie GŁÓWNE zapytanie `is_home()`, pierwsza strona) — jedyna
+  modyfikacja zapytania w tym slice (inaczej niż `ProductFilters` na
+  archiwum produktowym, ale tu nieuniknione).
+- **Playwright (weryfikacja frontendu, ta sesja):** wszystkie 4 widoki
+  (`/blog/`, artykuł, archiwum kategorii, archiwum tagu) sprawdzone realną
+  przeglądarką — dwa realne błędy znalezione i naprawione w tym samym PR-ze,
+  niewidoczne przy samym czytaniu kodu: (1) dwa pliki `block.json`
+  (`blog-categories`, `related-posts`) miały niepoprawny JSON — prosty
+  cudzysłów `"` zamykający typograficzny `„…"` w polu `description` po cichu
+  łamał `register_block_type()` TYLKO dla tych dwóch bloków (blok po prostu
+  nic nie renderował, bez błędu w logu); (2) filtr `the_content` zbierający
+  nagłówki artykułu (`ArticleHeadings::capture_and_anchor()`) był
+  przygotowany pod globalne podpięcie, ale REALNIE nigdy nie trafił do
+  `Blog::boot()` — spis treści artykułu nie renderował się wcale. **Brak
+  weryfikacji edytora blokowego** (Site Editor / podgląd `ServerSideRender`)
+  — utworzenie tymczasowego użytkownika-admina do logowania Playwright
+  zostało zablokowane przez klasyfikator uprawnień środowiska, a reset hasła
+  realnego admina świadomie odrzucony jako zbyt ryzykowny bez pytania
+  użytkownika. Do zrobienia przy najbliższej okazji z dostępem do wp-admin.
 - **Zależności:** P-11.1.
 
 ### 🟦 P-11.4 — Strona główna (P-8.7) budowana od razu jako bloki + patterns
