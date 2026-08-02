@@ -26,3 +26,11 @@ Desktop.ini
 # Zależności i artefakty build (gdyby doszły w design/ lub narzędziach)
 node_modules/
 vendor/
+
+# Artefakty Playwright MCP (docs/playwright-mcp-setup.md) — zrzuty ekranu i
+# logi konsoli lądują domyślnie w cwd sesji (korzeń workspace), per zadanie.
+# Zakres TYLKO korzeń (`/`) — nie blokuje realnych obrazów w podkatalogach
+# (np. przyszłe assety w docs/ czy design/).
+/.playwright-mcp/
+/*.png
+/*.jpeg
