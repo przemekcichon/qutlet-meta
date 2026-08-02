@@ -2918,7 +2918,7 @@ archiwum kategorii.
 
 ---
 
-## 🟦 FAZA 11 — Treść stron jako bloki edytora (block patterns zamiast PHP/HTML)
+## 🟨 FAZA 11 — Treść stron jako bloki edytora (block patterns zamiast PHP/HTML)
 
 Cel: przenieść treść, która dziś jest zakodowana na sztywno w plikach PHP
 motywu (chrome szablonów P-8.5) albo wstawiona jako surowy HTML przez wp-cli
@@ -2968,7 +2968,7 @@ to ten sam punkt realizowany wg mechanizmu z D-11.G1.
   migracja na bloki dotyczy chrome WOKÓŁ formularza (nagłówek, opis, karta),
   nie samego mechanizmu osadzenia ani wyboru wtyczki.
 
-### 🟦 P-11.1 — Fundament: biblioteka block patterns motywu
+### 🟢 P-11.1 — Fundament: biblioteka block patterns motywu
 - **Zakres:** mechanizm patterns w `qutlet-theme` (katalog `patterns/`,
   auto-discovery WP), pierwsza porcja wzorców odtwarzających NAJBARDZIEJ
   reużywalne sekcje z `design/vanilla` (hero band typu `.how-hero`/`.nlband`,
@@ -2977,10 +2977,21 @@ to ten sam punkt realizowany wg mechanizmu z D-11.G1.
   do konkretnej strony — fundament pod P-11.2+.
 - **Zależności:** P-8.1 (fundament renderu), P-8.5 (źródło layoutów CSS do
   przeniesienia na patterns).
-- **Otwarte przy realizacji [OTWARTE]:** czy `theme.json` wymaga rozszerzenia
-  (paleta kolorów/spacing dostępna blokom, żeby patterny korzystały z
-  tokenów projektu zamiast custom CSS wklejanego w każdy pattern) —
-  ground-truth przy starcie punktu.
+- **Otwarte przy realizacji [ROZSTRZYGNIĘTE — ground-truth, sesja 2026-08-02]:**
+  czy `theme.json` wymaga rozszerzenia — NIE. Paleta kolorów
+  (`lime`/`accent`/`plum`/`ink`/...) potrzebna patternom już tam jest (m.in.
+  dla `<span class="lime">` w treści bloków). Niestandardowe
+  paddingi/layouty sekcji (np. `.how-hero`, `.eko-grid`) pochodzą z
+  istniejących klas CSS przeniesionych w P-8.5, nie z ustawień spacing
+  bloków, więc nie było czego dodawać.
+- **Zrealizowane:** qutlet-theme PR #15 (zmergowany 2026-08-02) —
+  `inc/features/Patterns/Patterns.php` + `patterns/{hero-idea,
+  hero-newsletter-band, card-grid-links, card-grid-eko, quote-band}.php`.
+  Niezależna recenzja: 🟡 bez pozycji 🔴 (dwie realne usterki wizualne
+  znalezione i naprawione runtime — zdublowany `.wrap` w
+  hero-newsletter-band, brakujący mostek CSS dla opisu karty w
+  card-grid-links). Brak dostępu do Playwright w tej sesji — weryfikacja
+  wizualna w edytorze WP przeniesiona do P-11.1b.
 
 ### 🟦 P-11.1b — Style edytora dla block patterns (parytet z frontendem)
 - **Zakres:** zgłoszenie użytkownika po weryfikacji P-11.1 (sesja
