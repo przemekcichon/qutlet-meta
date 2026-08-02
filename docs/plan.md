@@ -2495,7 +2495,7 @@ rozpada się na dwa pod-punkty / dwa PR-y z jawną zależnością (`P-8.3c-theme
   automatyzacji w tym punkcie — `Blog::blog_url()` ma bezpieczny fallback na
   `home_url('/')`, więc kod się nie wywali, ale routing/daty będą inne niż
   tu ustalone).
-### 🟡 P-8.5 — Strony pomocy + formularze
+### 🟢 P-8.5 — Strony pomocy + formularze
 - Render natywnych Pages + nawigacja pomocy (menu); osadzenie formularzy newsletter
   i kontakt z wtyczki 3rd-party (D-8.G3) — bez własnego backendu. **Zależności:**
   F1 (P-1.5); wtyczka formularzy (opcjonalna, config/handoff).
