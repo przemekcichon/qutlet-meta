@@ -3034,7 +3034,7 @@ to ten sam punkt realizowany wg mechanizmu z D-11.G1.
   Niezależna recenzja: 🟡 bez pozycji 🔴 (błąd atrybucji w docblocku
   naprawiony).
 
-### 🟦 P-11.2 — Migracja stron pomocy (P-8.5) na treść blokową
+### 🟢 P-11.2 — Migracja stron pomocy (P-8.5) na treść blokową
 - **Zakres:** `pomoc.html`, `jak-to-dziala.html`, `kontakt.html` (chrome),
   `newsletter.html` (chrome), `regulamin`/`polityka-prywatności`/
   `polityka-cookies` (dziś surowy HTML wstawiony przez wp-cli) → realna treść
@@ -3042,12 +3042,35 @@ to ten sam punkt realizowany wg mechanizmu z D-11.G1.
   `page-{slug}.php` upraszcza się do renderu `the_content()` — help-nav i
   breadcrumb ZOSTAJĄ chrome szablonu (to nawigacja, nie treść do redakcji,
   zgodnie z duchem D-8.5.1 dla elementów nawigacyjnych).
-- **Otwarte przy realizacji [OTWARTE]:** mechanizm TOC stron prawnych (dziś
-  `Help::extract_legal_headings()` czyta literalne `<section id="sN">`
-  wpisane z góry) — do rozstrzygnięcia, czy kotwice ustawia redaktor ręcznie
-  (blok Heading ma pole „HTML anchor") czy dogenerowuje kod (wzorzec
-  `Blog\ArticleHeadings`, P-8.4).
+- **D-11.2.1 (kotwice TOC: ręczne, nie dogenerowywane) [ROZSTRZYGNIĘTE —
+  decyzja użytkownika, sesja 2026-08-02]:** `Help::extract_legal_headings()`
+  czyta `<h2 id="…">` (pole „HTML anchor" bloku Heading, ustawiane ręcznie
+  przez redaktora), NIE dogeneruje ich jak `Blog\ArticleHeadings`.
+  Uzasadnienie: `page-pomoc.php` hardkoduje linki do konkretnych kotwic
+  (`#s4`–`#s7` do regulaminu, `#klasy`/`#2eko` do jak-to-dziala) — auto-
+  generowanie ze slugu tekstu nagłówka zerwałoby je przy samej edycji treści.
+  **Odrzucona alternatywa:** wzorzec `Blog\ArticleHeadings` (dogenerowanie) —
+  spójny z blogiem, ale niebezpieczny tu właśnie z powodu zewnętrznych
+  odnośników do konkretnych kotwic.
 - **Zależności:** P-11.1.
+- **Zrealizowane:** qutlet-theme PR #17 (zmergowany 2026-08-02) — 9 nowych
+  patternów (`help-quick-links`, `how-steps`, `class-table`, `how-why`,
+  `how-cta`, `contact-intro`, `newsletter-intro`, `eko-grid-newsletter`,
+  `perks3`), przepisany `Help::extract_legal_headings()`, 4 szablony
+  uproszczone do `the_content()`, treść 7 Stron wgrana przez wp-cli.
+  Niezależna recenzja: 🟡 bez pozycji 🔴 (nieaktualny docblock
+  `page-regulamin.php` naprawiony). **Pierwsza sesja z realnym dostępem do
+  przeglądarki** (Playwright MCP, dopięty w trakcie tej sesji,
+  `docs/playwright-mcp-setup.md`) — ujawniła i naprawiła w tym samym PR-ze
+  cztery usterki niewidoczne przez sam odczyt HTML/CSS: (1) brak
+  `templates/page.html` blokował podgląd treści KAŻDEJ Strony w edytorze
+  wizualnym (dodany, bezpieczny dla frontendu — zweryfikowane czytaniem
+  `wp-includes/block-template.php` i runtime), (2)-(4) trzy niezależne
+  kolizje specyficzności CSS (`core/table` defaults, WP-owy domyślny
+  `margin-block-start:24px` na `is-layout-flow`, i własna reguła
+  `.how-step p`/`.eko-card p` łapiąca sąsiedni akapit-etykietę) — w tym
+  jeden latentny błąd w `.eko-kicker` obecny od P-11.1, niewidoczny do tej
+  pory bo P-11.1 nigdy nie wstawiło realnej treści na realną Stronę.
 
 ### 🟦 P-11.3 — Rewizja bloga (P-8.4): klasyczne szablony → bloki + dynamiczne bloki/patterns
 - **Zakres:** rewizja D-8.4.1 — `home.php`/`single.php`/`category.php`/
