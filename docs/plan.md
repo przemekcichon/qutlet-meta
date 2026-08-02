@@ -2993,7 +2993,7 @@ to ten sam punkt realizowany wg mechanizmu z D-11.G1.
   card-grid-links). Brak dostępu do Playwright w tej sesji — weryfikacja
   wizualna w edytorze WP przeniesiona do P-11.1b.
 
-### 🟦 P-11.1b — Style edytora dla block patterns (parytet z frontendem)
+### 🟢 P-11.1b — Style edytora dla block patterns (parytet z frontendem)
 - **Zakres:** zgłoszenie użytkownika po weryfikacji P-11.1 (sesja
   2026-08-02): patterny z biblioteki „Qutlet" widać poprawnie w liście
   wzorców edytora (nazwy, kategoria), ale po wstawieniu na stronę/wpis
@@ -3009,20 +3009,30 @@ to ten sam punkt realizowany wg mechanizmu z D-11.G1.
   w drugim pliku — tak żeby redaktor od razu widział 1:1, czy wstawiony
   pattern wygląda poprawnie, bez potrzeby podglądu na froncie.
 - **Zależności:** P-11.1 (patterny, których dotyczy problem widoczności).
-- **Otwarte przy realizacji [OTWARTE]:**
-  - Czy da się załadować `style.css` do edytora BEZ ZMIAN, czy trzeba go
-    zróżnicować (np. reguły zależne od `body[data-page="…"]`/klas
-    dogrywanych tylko na froncie przez `Help::filter_body_class()` — czy
-    ich brak w edytorze coś psuje, czy jest neutralny) — ground-truth przy
-    starcie punktu, nie zgadywać.
-  - Editor jest renderowany w iframe (WP 5.9+), więc ryzyko „wycieku" CSS
-    motywu do chrome wp-adminu powinno być niskie — potwierdzić to
-    założenie faktycznym testem w Site Editorze, nie tylko teorią.
-  - Zakres testu odbiorczego: wszystkich 5 patternów z P-11.1 (hero-idea,
-    hero-newsletter-band, card-grid-links, card-grid-eko, quote-band)
-    wstawionych w edytorze i porównanych 1:1 z frontem — to jest ZALEGŁA
-    weryfikacja wizualna z P-11.1 (tam niemożliwa bez dostępu do
-    Playwright/przeglądarki), więc ten punkt ją domyka.
+- **Otwarte przy realizacji [ROZSTRZYGNIĘTE — ground-truth + realny test w
+  Site Editorze, sesja 2026-08-02]:**
+  - `style.css` ładuje się do edytora BEZ ZMIAN — `:root` w pliku jest
+    samowystarczalny, niezależny od zmiennych `--wp--preset--*` z
+    `theme.json`. Reguły kluczowane klasami `<body>` dogrywanymi tylko na
+    froncie (`body.allegro-off` — `ProductPage::body_class()`,
+    `body.qt-hide-nlband` — `Help::filter_body_class()`) dotyczą kontekstu
+    strony/produktu, nie stylu patternów — ich brak w edytorze jest
+    neutralny.
+  - Brak wycieku CSS motywu do chrome wp-adminu — potwierdzone realnym
+    testem użytkownika w Site Editorze (edytor w iframe od WP 5.9+).
+  - Test odbiorczy 5 patternów z P-11.1 wykonany przez użytkownika: 4/5
+    zgodne 1:1 z frontem od razu. `card-grid-eko` — znaleziona i naprawiona
+    realna usterka (nie regresja tego punktu, obecna od P-8.5/P-11.1):
+    `.eko-card` rozciągały się do wspólnej wysokości wiersza (domyślny
+    `align-items: stretch` CSS Grid), zostawiając pustą przestrzeń pod
+    krótszym tekstem na froncie (układ 2-kolumnowy), niewidoczne w
+    edytorze (węższy canvas zwija grid do 1 kolumny poniżej breakpointu
+    1020px). Naprawione `align-items: self-end` na `.eko-grid`.
+- **Zrealizowane:** qutlet-theme PR #16 (zmergowany 2026-08-02) —
+  `add_theme_support( 'editor-styles' )` + `add_editor_style( 'style.css' )`
+  w `functions.php`, plus poprawka `.eko-grid` w `style.css` (patrz wyżej).
+  Niezależna recenzja: 🟡 bez pozycji 🔴 (błąd atrybucji w docblocku
+  naprawiony).
 
 ### 🟦 P-11.2 — Migracja stron pomocy (P-8.5) na treść blokową
 - **Zakres:** `pomoc.html`, `jak-to-dziala.html`, `kontakt.html` (chrome),
