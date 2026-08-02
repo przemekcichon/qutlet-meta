@@ -2982,6 +2982,37 @@ to ten sam punkt realizowany wg mechanizmu z D-11.G1.
   tokenów projektu zamiast custom CSS wklejanego w każdy pattern) —
   ground-truth przy starcie punktu.
 
+### 🟦 P-11.1b — Style edytora dla block patterns (parytet z frontendem)
+- **Zakres:** zgłoszenie użytkownika po weryfikacji P-11.1 (sesja
+  2026-08-02): patterny z biblioteki „Qutlet" widać poprawnie w liście
+  wzorców edytora (nazwy, kategoria), ale po wstawieniu na stronę/wpis
+  wyglądają w PODGLĄDZIE EDYTORA inaczej niż na froncie — motyw NIE ładuje
+  własnego arkusza (`style.css`) do canvasu edytora blokowego (brak
+  `add_theme_support( 'editor-styles' )` + `add_editor_style()` w
+  `functions.php`/ewentualnie `theme.json`), więc klasy patternów
+  (`.how-hero`, `.eko-card`, `.help-card`, `.quote-band`, `.nlband*` itd.)
+  nie mają tam żadnego stylu — widoczne są tylko wartości z palety
+  `theme.json` (kolory/typografia), nie custom CSS z P-8.5. Punkt dodaje
+  wsparcie editor-styles, żeby canvas edytora (Site Editor i edytor
+  Strony/wpisu) ładował TEN SAM arkusz co produkcja — bez duplikowania CSS
+  w drugim pliku — tak żeby redaktor od razu widział 1:1, czy wstawiony
+  pattern wygląda poprawnie, bez potrzeby podglądu na froncie.
+- **Zależności:** P-11.1 (patterny, których dotyczy problem widoczności).
+- **Otwarte przy realizacji [OTWARTE]:**
+  - Czy da się załadować `style.css` do edytora BEZ ZMIAN, czy trzeba go
+    zróżnicować (np. reguły zależne od `body[data-page="…"]`/klas
+    dogrywanych tylko na froncie przez `Help::filter_body_class()` — czy
+    ich brak w edytorze coś psuje, czy jest neutralny) — ground-truth przy
+    starcie punktu, nie zgadywać.
+  - Editor jest renderowany w iframe (WP 5.9+), więc ryzyko „wycieku" CSS
+    motywu do chrome wp-adminu powinno być niskie — potwierdzić to
+    założenie faktycznym testem w Site Editorze, nie tylko teorią.
+  - Zakres testu odbiorczego: wszystkich 5 patternów z P-11.1 (hero-idea,
+    hero-newsletter-band, card-grid-links, card-grid-eko, quote-band)
+    wstawionych w edytorze i porównanych 1:1 z frontem — to jest ZALEGŁA
+    weryfikacja wizualna z P-11.1 (tam niemożliwa bez dostępu do
+    Playwright/przeglądarki), więc ten punkt ją domyka.
+
 ### 🟦 P-11.2 — Migracja stron pomocy (P-8.5) na treść blokową
 - **Zakres:** `pomoc.html`, `jak-to-dziala.html`, `kontakt.html` (chrome),
   `newsletter.html` (chrome), `regulamin`/`polityka-prywatności`/
