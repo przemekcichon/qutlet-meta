@@ -3098,7 +3098,7 @@ to ten sam punkt realizowany wg mechanizmu z D-11.G1.
   jeden latentny błąd w `.eko-kicker` obecny od P-11.1, niewidoczny do tej
   pory bo P-11.1 nigdy nie wstawiło realnej treści na realną Stronę.
 
-### 🟡 P-11.3 — Rewizja bloga (P-8.4): klasyczne szablony → bloki + dynamiczne bloki/patterns
+### 🟢 P-11.3 — Rewizja bloga (P-8.4): klasyczne szablony → bloki + dynamiczne bloki/patterns
 - **Zakres:** rewizja D-8.4.1 — `home.php`/`single.php`/`category.php`/
   `tag.php` (dziś klasyczne PHP z zakodowaną treścią marketingową i pętlami)
   → blokowe `templates/*.html` + własne bloki dynamiczne (post-card,
@@ -3150,12 +3150,40 @@ to ten sam punkt realizowany wg mechanizmu z D-11.G1.
   nic nie renderował, bez błędu w logu); (2) filtr `the_content` zbierający
   nagłówki artykułu (`ArticleHeadings::capture_and_anchor()`) był
   przygotowany pod globalne podpięcie, ale REALNIE nigdy nie trafił do
-  `Blog::boot()` — spis treści artykułu nie renderował się wcale. **Brak
-  weryfikacji edytora blokowego** (Site Editor / podgląd `ServerSideRender`)
-  — utworzenie tymczasowego użytkownika-admina do logowania Playwright
-  zostało zablokowane przez klasyfikator uprawnień środowiska, a reset hasła
-  realnego admina świadomie odrzucony jako zbyt ryzykowny bez pytania
-  użytkownika. Do zrobienia przy najbliższej okazji z dostępem do wp-admin.
+  `Blog::boot()` — spis treści artykułu nie renderował się wcale.
+- **D-11.3.4 (bloki niewidoczne dla insertera edytora) [USTALONE — realizacja
+  P-11.3, zgłoszenie użytkownika po merge'u recenzji]:** wszystkie 15 bloków
+  `qutlet/*` żyje WYŁĄCZNIE w `templates/*.html` — użytkownik odtworzył
+  realny problem, wstawiając je ręcznie do treści wpisu przez inserter
+  (np. `qutlet/related-posts` wewnątrz ciała artykułu, którego dotyczy) i
+  zapisując zepsuty/niepasujący markup do prawdziwego, opublikowanego
+  wpisu. Naprawione `"inserter": false` na wszystkich 15 `block.json` —
+  bloki zostają wstawialne WYŁĄCZNIE programowo (tak jak robią to
+  `templates/*.html`), znikają z wyszukiwania/przeglądania insertera.
+- **D-11.3.5 (`layout:constrained` na `<main>` łamał `.art-layout` na
+  froncie) [USTALONE — realizacja P-11.3, ujawnione przy łączeniu z
+  theme.json z `qutlet-theme` PR #19]:** `layout:{"type":"constrained"}`
+  na zewnętrznym `<main>` każdego szablonu bloga (dodane dla centrowania
+  kolumny treści w edytorze) generuje CSS wymuszające `max-width:
+  contentSize` na KAŻDYM bezpośrednim dziecku kontenera — po dodaniu
+  `contentSize`/`wideSize` w `theme.json` (PR #19) złamało to na froncie
+  dwukolumnowy grid `.art-layout` na `single.html` (sidebar zapadał się do
+  720px) i uderzyłoby analogicznie w siatkę wpisów na home/category/tag.html.
+  Naprawione: home/category/tag.html straciły atrybut `layout` w ogóle (nic
+  tam z niego nie korzysta); `single.html` przeniósł go z `<main>` na
+  wewnętrzną grupę `<article class="art-body">` bezpośrednio opasującą
+  `wp:post-content` — jej własna szerokość na froncie i tak wynosi ~720px
+  (kolumna grida `.art-layout`), więc wygenerowane ograniczenie jest tam
+  no-opem, a edytor treści wpisu nadal poprawnie centruje kolumnę.
+- **Weryfikacja edytora blokowego (dokończona przez użytkownika, sesja
+  2026-08-03):** po naprawie D-11.3.4/D-11.3.5 użytkownik zalogował się
+  realnie do wp-adminu (tymczasowe hasło ustawione przez agenta na
+  wyraźną prośbę, `wp user update`) i potwierdził w Site Editorze oraz w
+  edytorze wpisu: bloki `qutlet/*` rejestrują się poprawnie (bez
+  placeholderów „nierozpoznany blok"), kolumna treści artykułu jest
+  wycentrowana na ~720px zgodnie z frontem. Zrealizowane w parze z
+  `qutlet-theme` PR #19 (`fix/editor-content-layout-width` —
+  `theme.json` `contentSize`/`wideSize`, zmergowany razem z tym punktem).
 - **Zależności:** P-11.1.
 
 ### 🟦 P-11.4 — Strona główna (P-8.7) budowana od razu jako bloki + patterns
