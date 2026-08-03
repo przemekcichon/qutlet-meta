@@ -3200,6 +3200,40 @@ to ten sam punkt realizowany wg mechanizmu z D-11.G1.
 - **Zależności:** P-11.1, F1 (dane produktowe — hero/USP/kafle kategorii
   czytają gotowe dane, render tylko renderuje).
 
+### P-11.5 — Biblioteka patternów/bloków dla treści artykułu bloga (rozszerzenie z przykładowych wpisów prototypu)
+
+**Zgłoszenie (2026-08-03, sesja P-11.3):** P-11.3 zbudowała CHROME artykułu
+(nagłówek, TOC, tagi, author-box, related-posts, prev/next) jako bloki
+dynamiczne — ale sama TREŚĆ artykułu (`wp:post-content`) dziś ma do
+dyspozycji wyłącznie natywne bloki core (heading/paragraph/list/image).
+Przykładowe wpisy prototypu (`design/vanilla/blog-artykul.html` i
+analogiczne w tym samym katalogu) używają bogatszego słownika sekcji
+bez dzisiejszego odpowiednika blokowego — redaktor piszący NOWY, realny
+artykuł nie ma dziś jak ich odtworzyć w edytorze:
+- `.art-tools` — ramka „Czego potrzebujesz" (nagłówek + lista checklist
+  z drobnym opisem ceny per pozycja).
+- `.warn-note` — dymek ostrzeżenia z ikoną (np. „Uwaga na gwarancję").
+- `.art-step`/`.art-step-num` — numerowany krok instrukcji (używane
+  wielokrotnie pod rząd dla wariantów krok-po-kroku).
+- `.art-figure`/`.art-img` + `figcaption` — zdjęcie w treści z podpisem
+  (INNE niż hero na górze artykułu, już pokryte przez `article-header`
+  z P-11.3 — to zdjęcie WEWNĄTRZ prozy).
+- `.art-stat-band`/`.art-stat` — rząd 2–3 liczb-highlightów obok siebie
+  (np. „339 zł / ~32 zł / 250 g").
+- `.art-product` — wstawka produktowa w treści artykułu, w prototypie
+  oznaczona komentarzem `→ shortcode / blok produktu Woo`; w
+  odróżnieniu od reszty listy to kandydat na DYNAMICZNY blok (czyta
+  realny produkt WooCommerce — cena/nazwa/link), nie statyczny pattern
+  (D-11.G3).
+- **Zakres:** przegląd WSZYSTKICH przykładowych wpisów w
+  `design/vanilla/blog-*.html` (nie tylko `blog-artykul.html`) pod kątem
+  sekcji z powtarzalną strukturą CSS bez dzisiejszego odpowiednika
+  blokowego; dla każdej — decyzja pattern (statyczna, D-11.G1) vs blok
+  dynamiczny (czyta realne dane, D-11.G3), analogicznie do rozstrzygnięć
+  z P-11.3.
+- **Zależności:** P-11.1 (biblioteka patternów), P-11.3 (blog na treści
+  blokowej — bez tego punkt nie miałby gdzie żyć).
+
 ---
 
 ## Materiał referencyjny i kandydaci do dalszych faz
