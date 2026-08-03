@@ -2753,6 +2753,32 @@ nie tekst.
   paginować).
 - **Blokuje:** nic — czysto kosmetyczna poprawka nad już zbudowanym zakresem.
 
+### P-9.5 — Nagłówek strony nie zawsze wraca przy scrollu w górę
+
+**Zgłoszenie (2026-08-03, sesja P-11.3):** `.site-header` ma być `position:
+sticky` z chowaniem przy scrollu w dół i powrotem przy scrollu w górę
+(`assets/js/header-nav.js` → `initHideOnScroll()`, port
+`design/vanilla/js/app.js` `initHideOnScroll`). Zaobserwowane na realnej
+stronie artykułu bloga: po przescrollowaniu w dół i z powrotem w górę nagłówek
+czasem ZOSTAJE ukryty (`translateY(-100%)`, klasa `.header-hidden` nie
+znika) zamiast wrócić.
+- **Repo:** qutlet-theme (`assets/js/header-nav.js`) — globalne zachowanie
+  nagłówka, NIE specyficzne dla bloga; punkt trafił do zgłoszeń przy okazji
+  sesji P-11.3, ale dotyczy całej witryny.
+- **Częściowa diagnoza (Playwright, ta sama sesja):** zrealizowany, spaced-out
+  scroll kółkiem myszy (`page.mouse.wheel()`, kroki co 50 ms) odtwarza
+  POPRAWNE zachowanie (chowa się w dół, wraca w górę). Szybki/ciągły scroll
+  (albo natywny skok pozycji, np. klik w kotwicę spisu treści artykułu —
+  `art-toc`, P-11.3) odtwarza ZEPSUTE zachowanie — nagłówek zostaje ukryty.
+  Podejrzenie: `initHideOnScroll()` liczy `delta` między KOLEJNYMI
+  wywołaniami `update()` (throttled przez `requestAnimationFrame`+flaga
+  `ticking`), a przy wielu zdarzeniach `scroll` w jednej klatce lub
+  pojedynczym dużym skoku pozycji (`scrollIntoView`, kotwica) porównanie
+  `lastY`/`y` może dać błędny znak delty. Do potwierdzenia dokładnej
+  przyczyny i naprawy — poza zakresem tej sesji (P-11.3 dotyczyła bloga, nie
+  header-nav.js).
+- **Zależności:** brak — niezależne od reszty FAZY 9.
+
 ### P-9.3 — Klasy stanu: rozszerzalny byt + tekst „dlaczego taniej" per klasa + edytowalne mapowanie Allegro (punkt wielorepowy → P-9.3a + P-9.3b + P-9.3c)
 
 **Zgłoszenie (2026-07-28):** dziś „klasa stanu" to zamknięty czterowartościowy
