@@ -2557,9 +2557,59 @@ rozpada się na dwa pod-punkty / dwa PR-y z jawną zależnością (`P-8.3c-theme
   kolejnego środowiska (brak automatyzacji w tym punkcie — kod się nie
   wywali, `render_help_nav()`/`extract_legal_headings()` mają bezpieczne
   fallbacki na pustkę, ale strony będą wyglądać na niedokończone).
-### P-8.6a — Koszyk
+### 🟡 P-8.6a — Koszyk
 - Nadpisanie szablonów koszyka Woo (`koszyk.html` → `woocommerce/cart/`).
   **Zależności:** P-8.1 (+ Woo).
+- **D-8.6a.1 (renderer: Cart Block + WooCommerce Blocks Integration, NIE classic
+  shortcode/`woocommerce/cart/*.php`) [USTALONE — decyzja użytkownika, sesja
+  2026-08-04]:** ground-truth ujawnił, że Strona „Cart" (ID 8,
+  `woocommerce_cart_page_id`) na tej instalacji (WC 10.9.4) domyślnie zawiera
+  blok `wp:woocommerce/cart`, NIE shortcode `[woocommerce_cart]` — mimo że
+  `koszyk.html` (komentarz `<!-- → woocommerce/cart/cart.php -->`) i
+  `design/vanilla/js/templates.js` (`cartRow() → woocommerce/cart/cart.php`)
+  sugerują override klasycznych szablonów PHP, wzorem D-8.4.1/D-8.5.1.
+  Override klasycznych szablonów NIE zadziała na stronie renderowanej blokiem.
+  Dodatkowo per-wiersz dane wymagane przez prototyp (odznaka klasy stanu
+  `klasa_stanu`, pill „Gwarancja 1 rok", stara cena/suma oszczędności z
+  `cena_rynkowa_nowego` — kontrakt §2/§6) nie istnieją na standardowym cart
+  item Woo ani nie są eksponowane przez Cart Block bez integracji. Zrealizowane
+  przez WooCommerce Blocks Integration: PHP
+  `Automattic\WooCommerce\Blocks\Integrations\IntegrationInterface`,
+  zarejestrowana na `woocommerce_blocks_cart_block_registration`, + Store API
+  `woocommerce_store_api_register_endpoint_data()` (endpointy `cart-item` i
+  `cart`, namespace `qutlet-klasa`: `klasa_stanu`, cena rynkowa/starsza cena i
+  suma oszczędności — wartości sformatowane `wc_price()` po stronie PHP, żeby
+  JS nie liczył walut) + JS `registerCheckoutFilters()` (global
+  `window.wc.blocksCheckout`, **bez build stepu** — plain JS, dependency
+  script handle `wc-blocks-checkout`; ten install WooCommerce nie wystawia
+  źródeł `@wordpress/scripts`/npm do budowania, tylko gotowy runtime bundle)
+  na filtrach `itemName` (odznaka klasy + pill gwarancji), `cartItemPrice`
+  (stara cena), `subtotalPriceFormat` (suma oszczędności — podpięta pod wiersz
+  „Wartość produktów", odpowiednik `data-cart-savings-row` z prototypu).
+  **Odrzucona alternatywa:** przełączenie Strony na classic shortcode +
+  override `woocommerce/cart/*.php` — najniższy nakład, literalna zgodność z
+  komentarzami w prototypie, spójna z resztą motywu (100% classic Woo, zero
+  bloków/Store API gdzie indziej) — odrzucona świadomie przez użytkownika na
+  rzecz nowoczesnej ścieżki blokowej mimo większego nakładu (pierwsze użycie
+  bloków/Store API w całym projekcie).
+- **D-8.6a.2 (slug Strony Cart: `cart` → `koszyk`) [USTALONE — sesja
+  2026-08-04]:** ground-truth ujawnił nieprzetłumaczony slug domyślnej Strony
+  WooCommerce „Cart" (`/cart/`), niespójny z resztą polskich URLi
+  (`/pomoc/`, `/blog/`, `/jak-to-dziala/`) i z prototypem (`koszyk.html`,
+  breadcrumb „Koszyk"). Zmieniony na `koszyk` przez wp-cli. **Uwaga
+  wdrożeniowa (wzorzec D-8.4.3/D-8.5.3):** to stan bazy tej instalacji Local,
+  NIE migracja/kod — nowe środowisko wystartuje z domyślnym `cart` do czasu
+  ręcznego powtórzenia.
+- **D-8.6a.3 (header: mini-koszyk przez `woocommerce_add_to_cart_fragments`)
+  [USTALONE — sesja 2026-08-04]:** potwierdza mechanizm już przewidziany w
+  prototypie (`design/vanilla/js/templates.js:7` — „cartMenuItem() → fragment
+  mini-koszyka (Woo cart fragments)"). `.cart-badge`/`.cart-menu` w
+  `parts/header.html` (P-8.1) zostają statycznym placeholderem w
+  deklaratywnym parcie — ich zawartość podmienia classic filter
+  `woocommerce_add_to_cart_fragments` (server-rendered PHP; natywny WC-owy
+  skrypt `wc-cart-fragments` odświeża je automatycznie po zmianach koszyka).
+  Niezależne od D-8.6a.1 — fragments API działa niezależnie od tego, czy sama
+  strona `/koszyk/` jest blokowa czy classic.
 ### P-8.6b — Kasa + potwierdzenie
 - Kasa (`kasa.html` → `woocommerce/checkout/`) + potwierdzenie zamówienia
   (`potwierdzenie.html` → `woocommerce/checkout/thankyou.php`, potwierdzone
