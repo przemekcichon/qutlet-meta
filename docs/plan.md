@@ -2571,11 +2571,16 @@ rozpada się na dwa pod-punkty / dwa PR-y z jawną zależnością (`P-8.3c-theme
 **Uwaga (P-8.6):** ewentualny glue logiki (nie szablon) → **core** jako OSOBNY
 punkt, nie w PR-ze motywu (granica artefaktów).
 
-### P-8.7 — Strona główna (front-page)
-- **Zakres:** `index.html` → `front-page.php` (potwierdzone `index.html:13`,
-  `data-page="home"`): hero, siatka USP, pętla „Świeżo na wyprzedaży"
-  (`data-featured-grid` → WP_Query po wyróżnionych), kafle kategorii. **BEZ**
-  obcego trackera (D-8.G4). **Zależności:** F1 (produkty), P-8.1 (fundament renderu).
+### P-8.7 — Strona główna (front-page) — SUPERSEDOWANY przez P-11.4
+- **Zakres pierwotny (dla historii):** `index.html` → `front-page.php`
+  (potwierdzone `index.html:13`, `data-page="home"`): hero, siatka USP, pętla
+  „Świeżo na wyprzedaży" (`data-featured-grid` → WP_Query po wyróżnionych),
+  kafle kategorii. **BEZ** obcego trackera (D-8.G4). **Zależności:** F1
+  (produkty), P-8.1 (fundament renderu).
+- **Status:** NIE realizowany w tej formie. Ten sam zakres treściowy zbudowany
+  w innym mechanizmie (bloki + patterns zamiast klasycznego `front-page.php`)
+  przez **P-11.4** (FAZA 11) — decyzja porządkowa użytkownika przy starcie
+  P-11.4 (sesja 2026-08-03). Patrz P-11.4 po szczegóły realizacji.
 
 ---
 
@@ -2960,10 +2965,9 @@ jeszcze niezbudowaną — budujemy OD RAZU w tym modelu) i bloga (P-8.4, już
 zbudowanego na klasycznych szablonach PHP — świadoma rewizja D-8.4.1).
 
 **Zależności fazy:** P-8.5 (🟢 — dostarcza treść/layout do migracji), P-8.4
-(🟢 — do rewizji), P-8.1 (fundament renderu). P-8.7 (🟦, FAZA 8, jeszcze
-niezrealizowany) zostaje w praktyce PRZEJĘTY przez P-11.4 — przy starcie tego
-punktu rozstrzygnąć formalnie, czy P-8.7 zamyka się jako „supersedowany", czy
-to ten sam punkt realizowany wg mechanizmu z D-11.G1.
+(🟢 — do rewizji), P-8.1 (fundament renderu). P-8.7 (FAZA 8) formalnie
+zamknięty jako „supersedowany" przez P-11.4 (🟢, zrealizowany 2026-08-03) —
+patrz dopisek przy P-8.7.
 
 ### Decyzje globalne fazy
 - **D-11.G1 (mechanizm: własne block patterns, nie tylko bloki core)
@@ -3186,19 +3190,94 @@ to ten sam punkt realizowany wg mechanizmu z D-11.G1.
   `theme.json` `contentSize`/`wideSize`, zmergowany razem z tym punktem).
 - **Zależności:** P-11.1.
 
-### 🟦 P-11.4 — Strona główna (P-8.7) budowana od razu jako bloki + patterns
+### 🟢 P-11.4 — Strona główna (P-8.7) budowana od razu jako bloki + patterns
 - **Zakres:** `index.html` → blokowy `templates/front-page.html`, budowany OD
   RAZU w modelu z P-11.1 (hero, siatka USP, kafle kategorii jako patterns;
   pętla „Świeżo na wyprzedaży" jako dynamiczny blok/`WP_Query`). Zastępuje
   pierwotny mechanizm P-8.7 z FAZY 8 — ten sam zakres treściowy
   (`design/vanilla/index.html`), inny mechanizm renderu. Bez obcego trackera
   (D-8.G4 — bez zmian).
-- **Decyzja do potwierdzenia przy starcie [OTWARTE]:** czy P-8.7 (FAZA 8)
-  zostaje formalnie zamknięty jako „supersedowany" przez P-11.4 (i wykreślony
-  z FAZY 8), czy P-11.4 to po prostu doprecyzowanie mechanizmu tego samego
-  punktu — kosmetyczna decyzja porządkowa w planie, bez wpływu na kod.
+- **Decyzja przy starcie [ROZSTRZYGNIĘTE — użytkownik, sesja 2026-08-03]:**
+  P-8.7 (FAZA 8) formalnie zamknięty jako „supersedowany" przez P-11.4 —
+  patrz dopisek przy P-8.7.
 - **Zależności:** P-11.1, F1 (dane produktowe — hero/USP/kafle kategorii
   czytają gotowe dane, render tylko renderuje).
+- **D-11.4.1 (kafle kategorii: top 8 realnych termów, nie 8 kafli prototypu)
+  [USTALONE — decyzja użytkownika, sesja 2026-08-03]:** prototyp pokazywał 8
+  statycznych kafli (smartfony/laptopy/audio/gaming + 4 nieistniejące:
+  tablety/smartwatche/foto/konsole) — połowa nie odpowiadała żadnemu realnemu
+  slugowi `product_cat` (kontrakt danych §1.1 ustabilizował inny, 18-elementowy
+  zestaw już PO powstaniu prototypu, kuracja P-6.8b). Wybrano top 8 realnych,
+  niepustych termów wg liczby produktów: `telefony-akcesoria`(148),
+  `peryferia`(124), `komputery-i-podzespoly`(50), `kable-i-adaptery`(39),
+  `audio`(34), `monitory`(26), `urzadzenia-sieciowe`(20), `agd-drobne`(18).
+  Linki liczone przez `get_term_link()` (nie hardkodowane), reszta patternu —
+  sluga/etykiety — statyczna, edytowalna ręcznie przez redaktora (D-11.G1).
+- **D-11.4.2 (blok „Świeżo na wyprzedaży": osobny slice `Home`, nie
+  rozszerzenie `Blog\Blocks`) [USTALONE — realizacja P-11.4]:** mechanizm
+  bloków dynamicznych bez build-stepu z P-11.3 (D-11.3.1: `block.json` +
+  `render.php` + jeden wspólny JS edytora przez `wp.serverSideRender`) jest
+  generyczny, ale świadomie NIE reużyto `blog-blocks-editor.js`/`Blog\Blocks` —
+  nowy slice `inc/features/Home/` (własny `Blocks.php`, własna kategoria
+  bloków `qutlet-home`, własny `assets/js/home-blocks-editor.js`), żeby nie
+  tworzyć zależności między slice'ami Home/Blog tylko po to, by uniknąć
+  duplikacji ~60 linii generycznego kodu (vertical slice, CLAUDE.md).
+- **D-11.4.3 (wyróżnione produkty: `wc_get_products()`, nie ręczny
+  `WP_Query`) [USTALONE — realizacja P-11.4]:** blok `qutlet/featured-products`
+  czyta natywną flagę Woo „featured" (`product_visibility`, kontrakt §1) przez
+  `wc_get_products(['featured'=>true, 'stock_status'=>'instock', 'limit'=>4])`
+  — canonical WooCommerce CRUD query zamiast ręcznego `tax_query`, poprawnie
+  obsługuje widoczność katalogu. Karty reużywają `woocommerce/content-product.php`
+  (ten sam partial co archiwum, P-8.3a) przez podstawienie `global $product` w
+  pętli (bez `WP_Query`/`setup_postdata` — partial nie dotyka `global $post`),
+  z przywróceniem poprzedniej wartości przez `try/finally`. Pusty wynik (dziś:
+  0 produktów „featured") chowa całą sekcję, wzorem `qutlet/related-posts`.
+- **D-11.4.4 (zdjęcia kafli kategorii: natywny Woo term thumbnail, poza
+  zakresem prototypu) [USTALONE — zgłoszenie użytkownika po review, sesja
+  2026-08-03]:** prototyp nie ma zdjęć na `.cat-tile` (tylko limonkowe tło +
+  tekst) — świadome rozszerzenie POZA parytet ze źródłem, potwierdzone z
+  użytkownikiem przed implementacją. Czyta natywne pole WooCommerce
+  „Miniaturka" (term meta `thumbnail_id` na `product_cat`, ustawiane w
+  Produkty → Kategorie w wp-adminie — zweryfikowane w `WC_Admin_Taxonomies`,
+  nie zgadywane) — zero rejestracji w `qutlet-core`. Kafel bez ustawionej
+  miniaturki wygląda jak w prototypie; z miniaturką dostaje `object-fit:cover`,
+  gradientową scrim i biały tekst etykiety. **Handoff:** zdjęcia trzeba wgrać
+  ręcznie per kategoria w adminie — decyzja redakcyjna, nie zautomatyzowana.
+- **D-11.4.5 (poprawki spoza deklarowanego zakresu punktu, znalezione przy
+  realnym testowaniu) [USTALONE — realizacja P-11.4]:** trzy poprawki wyszły
+  poza samą stronę główną, bo dotyczyły stron dotkniętych tą samą zmianą albo
+  ujawnionych przez nią, zgłoszone przez użytkownika przy realnym testowaniu
+  zmergowanego PR-a (nie znalezione proaktywnie):
+  1. Cache-busting: `Qutlet\Theme\VERSION` (stała PHP sterująca `?ver=` na
+     enqueue'owanych assetach) nigdy nie była bumpowana — tylko nagłówek
+     `Version:` w `style.css` (który steruje WYŁĄCZNIE cache'em patternów,
+     `Patterns.php`), więc przeglądarki serwowały stary CSS z cache mimo
+     realnych zmian na dysku. Obie wartości trzeba bumpować razem (komentarz
+     dodany przy stałej w `functions.php`).
+  2. `layout:{"inherit":true,"type":"constrained"}` na `<main>` w
+     `single-product.html`/`archive-product.html`/`taxonomy-product_cat.html`
+     wciskało te strony do `contentSize:720px` z `theme.json` — TEN SAM
+     problem co D-11.3.5 (P-11.3), ale na trzech plikach zbudowanych w
+     P-8.2a/P-8.3a (przed `theme.json`'s `contentSize`, PR #19), których tamta
+     poprawka nie objęła. Naprawione tym samym sposobem: usunięcie atrybutu
+     `layout`. Przedistniejący bug, niezwiązany z P-11.4 — ujawniony dopiero
+     tą sesją, bo nikt nie przetestował wizualnie stron produktowych po PR #19.
+  3. `.class-table th` (tabela klas stanu na stronie produktu, surowy PHP,
+     P-8.2b) nie miało ŻADNEGO stylu (tło/obramowanie/padding/wyrównanie) —
+     `.wp-block-table.class-table` (P-11.2) stylizuje tylko wariant przez
+     `core/table` (klasa na opakowującym `<figure>`), którego ten markup nigdy
+     nie ma. Dodany równoległy `table.class-table` (element+klasa, NIE bare
+     `.class-table` — złapałoby też wariant blokowy jako selektor potomków i
+     dodało drugie, zagnieżdżone obramowanie na `<figure>` stron pomocy).
+     Przedistniejący gap z P-11.2, niewidoczny przy wąskiej (720px) kolumnie
+     sprzed poprawki #2 wyżej.
+- **Weryfikacja:** PHPStan poziom 5 (0 błędów, sprawdzone po każdym commicie).
+  Playwright: front-page (desktop+mobile), `/blog/`, `/pomoc/`, strona
+  produktu, archiwum kategorii — `getComputedStyle`/`getBoundingClientRect`,
+  nie tylko wizualnie. Niezależna recenzja (`docs/review.md`): 🟡 WARUNKOWO,
+  zero ustaleń 🔴 (jedna uwaga — `global $product` przez `try/finally` —
+  naprawiona). Zrealizowane: `qutlet-theme` PR #20
+  (`feature/faza-11-4-front-page`, zmergowany 2026-08-03).
 
 ### P-11.5 — Biblioteka patternów/bloków dla treści artykułu bloga (rozszerzenie z przykładowych wpisów prototypu)
 
