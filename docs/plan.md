@@ -2949,7 +2949,7 @@ archiwum kategorii.
 
 ---
 
-## 🟨 FAZA 11 — Treść stron jako bloki edytora (block patterns zamiast PHP/HTML)
+## 🟩 FAZA 11 — Treść stron jako bloki edytora (block patterns zamiast PHP/HTML)
 
 Cel: przenieść treść, która dziś jest zakodowana na sztywno w plikach PHP
 motywu (chrome szablonów P-8.5) albo wstawiona jako surowy HTML przez wp-cli
@@ -3279,7 +3279,7 @@ patrz dopisek przy P-8.7.
   naprawiona). Zrealizowane: `qutlet-theme` PR #20
   (`feature/faza-11-4-front-page`, zmergowany 2026-08-03).
 
-### P-11.5 — Biblioteka patternów/bloków dla treści artykułu bloga (rozszerzenie z przykładowych wpisów prototypu)
+### 🟢 P-11.5 — Biblioteka patternów/bloków dla treści artykułu bloga (rozszerzenie z przykładowych wpisów prototypu)
 
 **Zgłoszenie (2026-08-03, sesja P-11.3):** P-11.3 zbudowała CHROME artykułu
 (nagłówek, TOC, tagi, author-box, related-posts, prev/next) jako bloki
