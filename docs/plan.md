@@ -2577,21 +2577,39 @@ rozpada się na dwa pod-punkty / dwa PR-y z jawną zależnością (`P-8.3c-theme
   `Automattic\WooCommerce\Blocks\Integrations\IntegrationInterface`,
   zarejestrowana na `woocommerce_blocks_cart_block_registration`, + Store API
   `woocommerce_store_api_register_endpoint_data()` (endpointy `cart-item` i
-  `cart`, namespace `qutlet-klasa`: `klasa_stanu`, cena rynkowa/starsza cena i
-  suma oszczędności — wartości sformatowane `wc_price()` po stronie PHP, żeby
-  JS nie liczył walut) + JS `registerCheckoutFilters()` (global
-  `window.wc.blocksCheckout`, **bez build stepu** — plain JS, dependency
-  script handle `wc-blocks-checkout`; ten install WooCommerce nie wystawia
-  źródeł `@wordpress/scripts`/npm do budowania, tylko gotowy runtime bundle)
-  na filtrach `itemName` (odznaka klasy + pill gwarancji), `cartItemPrice`
-  (stara cena), `subtotalPriceFormat` (suma oszczędności — podpięta pod wiersz
-  „Wartość produktów", odpowiednik `data-cart-savings-row` z prototypu).
-  **Odrzucona alternatywa:** przełączenie Strony na classic shortcode +
+  `cart`, namespace `qutlet-klasa`: `klasa_stanu`, stara cena, wartość
+  produktów i suma oszczędności — wartości sformatowane `wc_price()` po
+  stronie PHP, żeby JS nie liczył walut). Po stronie JS **`registerCheckoutFilters`
+  (global `window.wc.blocksCheckout`) okazał się (zweryfikowane runtime)
+  zanieczyszczać aria-label przycisków ilości/usuwania surowym HTML — filtr
+  `itemName` zasila NIE TYLKO widoczną nazwę, ale i te atrybuty — więc został
+  CAŁKOWICIE porzucony** na rzecz wstrzykiwania węzłów DOM osobno
+  (`wp.data.select('wc/store/cart')` + `wp.data.subscribe()`, bez build stepu,
+  dependency script handles `wc-blocks-data-store`/`wp-data`; ten install
+  WooCommerce nie wystawia źródeł `@wordpress/scripts`/npm do budowania,
+  tylko gotowy runtime bundle) — odznaka klasy/gwarancja obok nazwy, stara
+  cena wewnątrz kolumny ceny, własny wiersz „Wartość produktów" (natywny
+  Subtotal-block bloku Cart nie renderuje się, gdy równa się sumie — co przy
+  darmowej dostawie/braku kuponu jest zawsze prawdą) i zielony box
+  „Oszczędzasz vs. nowe" (odpowiednik `data-cart-savings-row` z prototypu) w
+  podsumowaniu — wszystkie aktualizowane na żywo przy każdej zmianie koszyka,
+  nie tylko przy pierwszym renderze.
+  **Odrzucone alternatywy:** (1) przełączenie Strony na classic shortcode +
   override `woocommerce/cart/*.php` — najniższy nakład, literalna zgodność z
   komentarzami w prototypie, spójna z resztą motywu (100% classic Woo, zero
   bloków/Store API gdzie indziej) — odrzucona świadomie przez użytkownika na
   rzecz nowoczesnej ścieżki blokowej mimo większego nakładu (pierwsze użycie
-  bloków/Store API w całym projekcie).
+  bloków/Store API w całym projekcie); (2) zostać przy bloku, ale świadomie
+  uciąć zakres (bez odznaki klasy/gwarancji/starej ceny/oszczędności, sam
+  reskin CSS) — odrzucona po ustaleniu, że blok faktycznie nie ma na nie
+  slotu bez integracji, na rzecz pełnej integracji Blocks/Store API (opcja
+  wybrana ostatecznie).
+  **Uwaga do D-8.G1 (granica core↔theme):** Store API Blocks Integration w
+  motywie (rejestracja skryptu + rozszerzenie schematu) to **rendering**, nie
+  „glue do Woo" w rozumieniu D-8.G1 — to jedyny kanał, którym PHP przekazuje
+  dane do React-owego bloku (funkcjonalny odpowiednik `render.php` dla bloku
+  dynamicznego), nie modyfikacja głównego zapytania/zapisu jak w D-8.3b.2.
+  Doprecyzowanie na przyszłość — P-8.6b (Kasa) powtórzy ten sam wzorzec.
 - **D-8.6a.2 (slug Strony Cart: `cart` → `koszyk`) [USTALONE — sesja
   2026-08-04]:** ground-truth ujawnił nieprzetłumaczony slug domyślnej Strony
   WooCommerce „Cart" (`/cart/`), niespójny z resztą polskich URLi
