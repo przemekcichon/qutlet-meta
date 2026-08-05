@@ -2628,6 +2628,44 @@ rozpada się na dwa pod-punkty / dwa PR-y z jawną zależnością (`P-8.3c-theme
   skrypt `wc-cart-fragments` odświeża je automatycznie po zmianach koszyka).
   Niezależne od D-8.6a.1 — fragments API działa niezależnie od tego, czy sama
   strona `/koszyk/` jest blokowa czy classic.
+### P-8.6a.2 — Koszyk, runda 2: minimalny nagłówek + poprawki mobile
+- **Kontynuacja P-8.6a na TYM SAMYM branchu/PR** (`feature/faza-8-6a-koszyk`,
+  qutlet-theme, PR #22 — nadal otwarty/draft) — NIE nowy branch. Zakres
+  znaleziony przez realne klikanie po już zbudowanej stronie koszyka (nie z
+  przeglądu `design/vanilla`), sesja 2026-08-05.
+- **Minimalny nagłówek strony koszyka** — WYŁĄCZNIE logo + strzałka powrotu
+  do frontu sklepu (bez szukajki, nawigacji, ikon koszyka/konta). Poza
+  prototypem: `design/vanilla/koszyk.html:15` ładuje TEN SAM globalny
+  `partials/header.html` co każda inna strona — w źródle prawdy nie istnieje
+  wariant minimalny, to nowa decyzja na wyraźną prośbę użytkownika. Ground-truth
+  do zrobienia na starcie sesji: czy to nowy template part (np.
+  `parts/header-cart.html`) podpięty w `templates/page-cart.html` (już
+  nadpisany przez P-8.6a — patrz D-8.6a.1), czy inny mechanizm.
+- **Usunięcie boksu newslettera** na tej stronie. Mechanizm analogiczny już
+  istnieje: `body.qt-hide-nlband` (`Help::filter_body_class()`, `style.css`)
+  chowa `.nlband` na `/newsletter/` — do rozważenia dopisanie reguły dla
+  `body.woocommerce-cart` (WC-owa klasa body, już potwierdzona na tej
+  stronie) albo osobna klasa, konsekwentnie z istniejącym wzorcem.
+- **Mobile — kontrolka usuwania produktu: tylko ikonka**, bez etykiety
+  „Usuń" (`.wc-block-cart-item__remove-link::after{content:"Usuń"}`,
+  `style.css`, P-8.6a) — schować tekst w mobilnej media query, SVG zostaje.
+- **Mobile — usunięcie formy liczby egzemplarzy** (`.wc-block-components-quantity-selector`).
+  **Uwaga:** to jedyny mechanizm zmiany ilości w koszyku (Cart Block) — do
+  potwierdzenia z użytkownikiem na starcie realizacji, czy brak możliwości
+  zmiany ilości na mobile jest zamierzony, czy potrzebny jakiś zastępczy
+  sposób.
+- **Mobile — mniejsza czcionka nazwy produktu i ceny**
+  (`.wc-block-components-product-name` /
+  `.wc-block-cart-item__prices .wc-block-components-product-price__value`,
+  `style.css`, P-8.6a) — dopisać wartości w istniejącej mobilnej media query
+  (`max-width:560px`).
+- **Mobile — bez elipsy, zawijanie nazwy.** Runda z sesji 2026-08-05
+  wprowadziła na nazwie produktu `max-width:80%` +
+  `text-overflow:ellipsis`/`white-space:nowrap` + ikonkę „?" z pełną nazwą w
+  tooltipie — na mobile ma wrócić zawijanie (`white-space:normal`), ikonka
+  „?" chowa się razem z mechanizmem przycinania (nie osobno).
+- **Uwaga:** wszystkie punkty czysto CSS/markup w `qutlet-theme` — bez
+  dotykania core/allegro/ai (D-8.G1 bez zmian).
 ### P-8.6b — Kasa + potwierdzenie
 - Kasa (`kasa.html` → `woocommerce/checkout/`) + potwierdzenie zamówienia
   (`potwierdzenie.html` → `woocommerce/checkout/thankyou.php`, potwierdzone
