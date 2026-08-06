@@ -3630,25 +3630,37 @@ czytać).
   dostaje te dane „za darmo", gdy powstanie, nie osobną pracę.
 - **Zależności:** P-12.1a.
 
-#### P-12.1c — Allegro: edytowalne mapowanie „Stan" → klasa
+#### P-12.1c — Allegro: strona informacyjna mapowania „Stan" → klasa (read-only)
 - **Repo:** qutlet-allegro (`OfferSync/OfferMapper.php`)
-- **Zakres:** zastąpić stałą PHP `CONDITION_MAP` (7 wartości Allegro → 4 klasy,
-  `mapping-allegro.md` D-4.1.1) źródłem edytowalnym przez admina — tabelka
-  „wartość Allegro «Stan» → nasza klasa", rozszerzalna razem z nowymi klasami
-  z P-12.1a (dziś każda nowa klasa wymaga też ręcznej zmiany tej stałej — po
-  tym punkcie: zmiana w adminie, bez deploya). Rozstrzygnąć D-12.1a.3 (czy
-  „Nowe" ma jakiekolwiek mapowanie z Allegro, czy zostaje poza tabelką).
-  Zachować override sprzedawcy (D-4.1.1/D-6.1.4 — auto-mapa ustawia
-  `klasa_stanu` TYLKO gdy pole puste, nie nadpisuje ręcznej edycji przy
-  kolejnym sync — analogiczny problem do P-9.1a dla tytułu, tu już
-  rozwiązany i do zachowania, nie do powtórnego psucia).
-- **D-12.1c.1 (gdzie żyje ta tabelka) [OTWARTE]:** (przeniesione z
-  pierwotnego D-9.3c.1, bez zmian) razem z bytem klas z P-12.1a (np.
-  term/post meta „mapowane wartości Allegro" na tym samym bycie) czy osobna,
-  niezależna tabelka (opcja WP, key-value) w `qutlet-allegro`? Pierwsze
-  trzyma wszystko o klasie w jednym miejscu; drugie zachowuje granicę
-  core=dane/model, allegro=sync (core nie musi nic wiedzieć o Allegro).
-- **Zależności:** P-12.1a (potrzebuje zbioru klas do zmapowania).
+- **D-12.1c.2 (zakres zwężony do READ-ONLY, bez edycji w adminie) [USTALONE
+  — decyzja użytkownika, sesja 2026-08-06, ZWĘŻA pierwotny zakres tego
+  punktu]:** pierwotnie ten punkt (i jego poprzednik `D-9.3c.1`) planował
+  EDYTOWALNĄ tabelkę mapowania w adminie. Użytkownik zdecydował: na razie
+  WYSTARCZY strona **informacyjna** (tylko do odczytu) pod WooCommerce,
+  pokazująca bieżącą treść stałej PHP `CONDITION_MAP` (7 wartości Allegro
+  → nasze klasy, `mapping-allegro.md` D-4.1.1) — bez formularza, bez
+  zapisu, bez `register_setting()`/przetwarzania POST. Realne zmiany
+  mapowania NADAL wymagają edycji kodu (deploya) — ten punkt daje tylko
+  WIDOCZNOŚĆ bieżącego stanu w adminie, nie mechanizm zmiany go. Wzorzec do
+  podglądu (nie kopiowania 1:1, bo tu nie ma zapisu): `RawLayerMetaBox`
+  (`qutlet-core\src\ProductInfo\RawLayerMetaBox.php`) — read-only
+  `add_meta_box()`/strona bez żadnej logiki `save`.
+- **Zakres:** nowa strona ustawień pod WooCommerce (analogicznie do
+  `PromptSettingsPage` z `qutlet-ai` co do MIEJSCA w menu, ale bez
+  Settings API/zapisu — czysty odczyt i wyświetlenie), renderująca
+  aktualną zawartość `CONDITION_MAP` jako tabelkę „wartość Allegro «Stan»
+  → nasza klasa" (z opisami klas z bytu P-12.1a, jeśli już gotowy —
+  inaczej gołymi literałami A-D). Rozszerzalność razem z nowymi klasami z
+  P-12.1a NIE wymaga już mechanizmu admina — to i tak zmiana w kodzie
+  (stała PHP), strona tylko odzwierciedli nowy stan po deployu.
+  Rozstrzygnąć D-12.1a.3 (czy „Nowe" ma jakiekolwiek mapowanie z Allegro,
+  czy zostaje poza tabelką/stroną). Override sprzedawcy (D-4.1.1/D-6.1.4 —
+  auto-mapa ustawia `klasa_stanu` TYLKO gdy pole puste) jest logiką
+  `OfferMapper`/`ProductWriter`, NIE dotyczy tej strony (czysty podgląd) —
+  bez zmian.
+- **Zależności:** P-12.1a (potrzebuje zbioru klas z opisami, żeby pokazać
+  coś więcej niż goły literał A-D — degradowalne do literałów, jeśli
+  P-12.1a jeszcze nie gotowe przy realizacji tego punktu).
 
 ---
 
