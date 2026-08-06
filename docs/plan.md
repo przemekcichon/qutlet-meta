@@ -2666,7 +2666,7 @@ rozpada się na dwa pod-punkty / dwa PR-y z jawną zależnością (`P-8.3c-theme
   „?" chowa się razem z mechanizmem przycinania (nie osobno).
 - **Uwaga:** wszystkie punkty czysto CSS/markup w `qutlet-theme` — bez
   dotykania core/allegro/ai (D-8.G1 bez zmian).
-### P-8.6a.3 — Koszyk, runda 3+4: miniaturka mobile, usuń obok steppera, „Oszczędzasz" per wiersz
+### P-8.6a.3 — Koszyk, runda 3+4+5: miniaturka mobile, usuń obok steppera, „Oszczędzasz" per wiersz, dropdown ilości
 - **Kontynuacja P-8.6a na TYM SAMYM branchu/PR** (`feature/faza-8-6a-koszyk`,
   qutlet-theme, PR #22 — nadal otwarty/draft) — NIE nowy branch. Zakres
   znaleziony przez realne klikanie po już zbudowanej stronie koszyka, sesje
@@ -2730,12 +2730,50 @@ rozpada się na dwa pod-punkty / dwa PR-y z jawną zależnością (`P-8.3c-theme
   analogicznie do `old_price_formatted`: czysta pochodna wartość (odjęcie
   + `wc_price()`) na już czytanym polu ACF, zero nowej logiki
   biznesowej/nowego źródła danych.
+- **Runda 5 — dropdown ilości zamiast steppera.** Inspiracja koszykiem
+  Back Market (zrzuty ekranu użytkownika) — „idea sklepu jest taka, że
+  najwięcej będzie pojedynczych sztuk", więc wybór z listy pasuje lepiej
+  niż klikanie +/-. Natywny stepper Cart Blocka chowany CSS-em
+  (`display:none`, NIE usuwany z DOM — zostaje jedynym źródłem `min`/
+  `max`/`aria-label` do budowy opcji), nowy `<select>` (osobny węzeł DOM,
+  ten sam wzorzec DOM-injection co reszta pliku) wybiera ilość przez
+  `wp.data.dispatch('wc/store/cart').changeCartItemQuantity(key, qty)`
+  (zweryfikowane runtime — ta sama akcja, którą wywołuje natywny stepper
+  WC). Nowa etykieta „Pojedyncza sztuka"/„2 sztuki"/„5 sztuk" — port 1:1
+  `QT.qtyLabel`/`QT.plural` (design/vanilla/js/data.js:66-78, kontrakt §6).
+  Desktop: etykieta→dropdown→usuń spakowane po lewej (na wyraźną prośbę
+  użytkownika: „nie jak na screenshocie z innego sklepu", gdzie dropdown
+  jest po lewej a etykieta+usuń rozjechane na prawo). Mobile: ODWROTNA
+  kolejność i pozycja — dropdown→etykieta razem po lewej, „Usuń" osobno
+  na prawym krańcu (`margin-left:auto`, wzorowane na Back Market mobile).
+  Świadome zróżnicowanie per breakpoint (różne wzorce wizualne), nie
+  przeoczenie.
+  **D-8.6a.4 (dropdown ilości = pierwszy WRITE dispatch z motywu, nadal
+  „rendering" wg D-8.G1) [USTALONE — sesja 2026-08-06, niezależna
+  recenzja]:** `changeCartItemQuantity()` to natywna akcja Store API,
+  TA SAMA którą wywołuje wbudowany stepper WC (zweryfikowane w bundlu
+  `wc-cart-checkout-base-frontend.js`) — motyw nie dodaje własnej logiki
+  biznesowej ani nowego hooka PHP, tylko podłącza ISTNIEJĄCĄ interakcję
+  do własnego kontrolki UI (analogicznie do tego, że `<button>` w
+  natywnym steperze też tylko wywołuje tę akcję). Odróżnia się to od
+  D-8.3b.2 (modyfikacja zapytania/zapisu w core) tym, że nie ma tu ŻADNEJ
+  nowej reguły biznesowej — czysto UI-owy wybór wartości z zamkniętej
+  listy opcji. Doprecyzowanie D-8.G1 na przyszłość — P-8.6b (Kasa)
+  prawdopodobnie powtórzy ten wzorzec (np. zmiana metody dostawy/płatności
+  z UI motywu wywołująca natywną akcję Store API).
 - **Niezależna recenzja (docs/review.md):** runda 3 — 🟡 WARUNKOWO (drobne,
   luka is-medium/is-small opisana wyżej, brak 🔴). Runda 4 — 🟢 CZYSTE,
-  zero ustaleń blokujących, PHPStan (`inc/features/Cart`) czysto.
+  zero ustaleń blokujących, PHPStan (`inc/features/Cart`) czysto. Runda 5
+  — 🟡 WARUNKOWO (drobne, brak 🔴): brak capu na liczbę opcji dla
+  hipotetycznego produktu bez zarządzanego stanu magazynowego (Store API
+  domyślnie `max=9999`) i teoretyczne „osierocenie" wartości `<select>`,
+  gdy ilość w koszyku wypadnie poza przeliczony zakres — oba naprawione
+  (`Math.min(...,50)` + rozszerzenie zakresu o bieżącą ilość).
 - **Uwaga:** wszystkie punkty poza nowym polem Store API w rundzie 4 to
-  czysty CSS/markup w `qutlet-theme`; pole `item_savings_formatted` to
-  rendering (D-8.G1), nie glue do Woo — bez dotykania core/allegro/ai.
+  czysty CSS/markup/JS-DOM-injection w `qutlet-theme` (runda 5 dispatchuje
+  istniejącą akcję Store API z JS, patrz D-8.6a.4 — bez nowego hooka PHP);
+  pole `item_savings_formatted` to rendering (D-8.G1), nie glue do Woo —
+  bez dotykania core/allegro/ai.
 ### P-8.6b — Kasa + potwierdzenie
 - Kasa (`kasa.html` → `woocommerce/checkout/`) + potwierdzenie zamówienia
   (`potwierdzenie.html` → `woocommerce/checkout/thankyou.php`, potwierdzone
