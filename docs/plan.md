@@ -2557,7 +2557,7 @@ rozpada się na dwa pod-punkty / dwa PR-y z jawną zależnością (`P-8.3c-theme
   kolejnego środowiska (brak automatyzacji w tym punkcie — kod się nie
   wywali, `render_help_nav()`/`extract_legal_headings()` mają bezpieczne
   fallbacki na pustkę, ale strony będą wyglądać na niedokończone).
-### 🟡 P-8.6a — Koszyk
+### 🟢 P-8.6a — Koszyk
 - Nadpisanie szablonów koszyka Woo (`koszyk.html` → `woocommerce/cart/`).
   **Zależności:** P-8.1 (+ Woo).
 - **D-8.6a.1 (renderer: Cart Block + WooCommerce Blocks Integration, NIE classic
