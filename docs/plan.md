@@ -3664,6 +3664,366 @@ czytać).
 
 ---
 
+## 🟦 FAZA 13 — Strona produktu: edytor admina i to, co ściągamy z Allegro
+
+Cel: zgłoszenie użytkownika (sesja 2026-08-06) po realnym używaniu ekranu
+edycji produktu — siedem poprawek do tego, JAK dane z Allegro trafiają do
+WooCommerce i JAK wygląda edytor produktu w adminie. Dotyka trzech repo:
+`qutlet-allegro` (co i jak zapisuje sync), `qutlet-core` (pola ACF/metaboxy
+na ekranie edycji produktu), `qutlet-ai` (generowanie AI — opis, teraz też
+tytuł/podnazwa). W przeciwieństwie do FAZY 9 (poprawki błędów) to ŚWIADOMA
+przebudowa established mechanizmów — część punktów ODWRACA wcześniejsze
+decyzje (patrz D-13.G1) na wyraźną prośbę użytkownika.
+
+**Ground-truth bieżącego stanu (sesja 2026-08-06, przed realizacją
+jakiegokolwiek punktu tej fazy — do zweryfikowania PONOWNIE przy starcie
+każdego punktu, per `docs/ground-truth.md`):**
+- **Status importu:** `qutlet-allegro\src\OfferSync\ImportOffersCommand.php`
+  — flaga `--status`, domyślnie `publish` (linie ok. 118-125, 150),
+  akceptuje wyłącznie `publish`|`draft` (walidacja, linie ok. 152-154).
+  `ProductWriter::upsert()` ustawia `$status` TYLKO na nowo tworzonych
+  produktach (istniejące nie są dotykane).
+- **Nazwa produktu:** `ProductWriter::upsert()` ustawia `post_title`
+  WPROST z `$offer['name']`, na sztywno, każdy przebieg sync (pole
+  „sync-owned" per docblock klasy). Brak JAKIEGOKOLWIEK pola trzymającego
+  oryginalną nazwę Allegro osobno — sprawdzone grep-em (`nazwa_allegro`,
+  `original_title`, `allegro_title` — zero wyników).
+  Brak jakiejkolwiek logiki AI dotykającej tytułu/nazwy (sprawdzone —
+  `RewriteGenerator`/`RewriteWriter` w `qutlet-ai` nie mają w schemacie
+  JSON żadnego pola tytułowego, tylko `opis`+`specyfikacja`).
+- **Opis produktu:** natywne WP `post_content` jest DZIŚ NIEUŻYWANE przez
+  motyw. Miejsce docelowe opisu przerobionego to ACF WYSIWYG `opis`
+  (`qutlet-core\src\ProductInfo\RewrittenFields.php`, pole
+  `field_qutlet_opis`), własny metabox „Qutlet — opis produktu (warstwa
+  przerobiona)" osadzony w kontekście `normal`/`default` — czyli PONIŻEJ
+  natywnego edytora treści i natywnego Product Data (obu `high`), na
+  samym dole kolumny głównej. `RewriteWriter::accept()`
+  (`qutlet-ai\src\AiRewrite\RewriteWriter.php`) pisze do tego pola przez
+  `update_field()` (ACF), nigdy do `post_content`.
+- **Generator AI (opis):** metabox „Qutlet — generacja AI (przeróbka)"
+  (`qutlet-ai\src\AiRewrite\GenerationMetaBox.php`, `normal`/`default` —
+  też na dole kolumny). Przycisk „Generuj" ŚWIADOMIE NIE jest AJAX-em —
+  `admin-post.php` + osobny `<form>` w stopce (`render_footer_forms()`),
+  konkretnie po to, żeby AI (płatne wywołanie) nie odpaliło się przez
+  przypadek/prefetch. Flow: Generuj → podgląd w transiencie (30 min) →
+  Zaakceptuj/Odrzuć.
+- **Atrybuty:** `qutlet-allegro` NIGDY nie pisze natywnych atrybutów WC
+  (`_product_attributes`) — sprawdzone grep-em, zero wyników, i explicite
+  wypisane w docblocku `ProductWriter` jako „NIGDY nie dotykane". Jedyna
+  ścieżka, którą atrybuty WC W OGÓLE się wypełniają, to
+  `RewriteWriter::build_attributes()` — z pola `specyfikacja` w JSON-owej
+  odpowiedzi AI (czyli PRZEZ AI, nie 1:1 z surowych parametrów Allegro).
+  To jest REALIZACJA decyzji `D-5.1.1`/`D-5.1.2` (dwuwarstwowość: surowa
+  specyfikacja = prywatne meta, przerobiona = atrybuty WC PRZEZ AI, bo
+  „atrybuty front-facing nie utrzymają rozdzielenia surowa↔przerobiona").
+  **Ten punkt (P-13.4) tę decyzję ODWRACA — patrz D-13.G1.**
+- **Cena rynkowa nowego:** ACF `cena_rynkowa_nowego`
+  (`qutlet-core\src\ProductCondition\ProductConditionFields.php`) — WŁASNY
+  metabox „Qutlet — stan i zawartość produktu" (razem z `klasa_stanu`,
+  `zawartosc_zestawu_pozycje`), NIE w natywnym Product Data. Istnieje już
+  DOKŁADNY wzorzec tego, co P-13.5 chce zrobić: `qutlet_stawka_rabatu`
+  (`_qutlet_stawka_rabatu`, `qutlet-core\src\Pricing\
+  ProductDiscountRateField.php`) JEST wstrzyknięte w natywny Product Data
+  przez `add_action('woocommerce_product_options_general_product_data', …)`
+  — ten sam mechanizm, do skopiowania dla `cena_rynkowa_nowego`.
+- **Prompt AI:** DWA miejsca dziś: (1) globalny — strona ustawień
+  „Qutlet — prompt AI" pod WooCommerce (`qutlet-ai\src\AiRewrite\
+  PromptSettingsPage.php`, Settings API, opcja `qutlet_ai_prompt_global`);
+  (2) per-produkt override — ACF textarea `prompt_ai`
+  (`qutlet-core\src\AiRewrite\PromptOverrideField.php`), WŁASNY metabox
+  „Qutlet — prompt AI (nadpisanie per produkt)", `normal`/`default`.
+  `PromptSettings::effective_prompt()` łączy je: override (gdy niepusty) >
+  globalny > `null`. Oba miejsca fizycznie osobne od metaboxu generacji.
+- **Stan na Allegro:** surowa wartość parametru „Stan" jest już dostępna
+  (czytana przez `OfferMapper::condition_class()` z
+  `parameter_value(offer_parameters($offer), 'Stan')`, źródło = pełny JSON
+  w `_qutlet_allegro_offer` / rozłożona specyfikacja w
+  `_qutlet_allegro_specification_raw`) — P-13.7 NIE potrzebuje nowego
+  zapisu, tylko odczytu istniejących danych raw layer.
+
+### Decyzje globalne fazy
+
+- **D-13.G1 (atrybuty 1:1 z Allegro, BEZ AI — REWIZJA D-5.1.1/D-5.1.2)
+  [USTALONE — decyzja użytkownika, sesja 2026-08-06]:** dotychczasowa
+  decyzja (`D-5.1.1`/`D-5.1.2`, sesja 2026-07-23) świadomie kierowała
+  specyfikację PRZEZ AI do natywnych atrybutów WC, uzasadniając to tak, że
+  „atrybuty front-facing nie utrzymają rozdzielenia surowa↔przerobiona".
+  Użytkownik teraz odwraca to jawnie: atrybuty mają być tłumaczone
+  „jeden do jednego bez udziału AI" — surowe parametry Allegro → natywne
+  atrybuty WC BEZPOŚREDNIO (P-13.4a, `qutlet-allegro`), a AI PRZESTAJE
+  pisać atrybuty w ogóle (P-13.4b, `qutlet-ai` — `RewriteWriter`/
+  `RewriteGenerator` tracą pole `specyfikacja`/`build_attributes()`).
+  To jawna, udokumentowana rewizja (nie ciche nadpisanie) — powód „czemu
+  inaczej niż wtedy": doświadczenie użytkownika z realnym korzystaniem z
+  edytora pokazało, że atrybuty PRZEZ AI wprowadzają niepotrzebne ryzyko
+  (koszt/czas wywołania AI, możliwość zniekształcenia wartości) tam, gdzie
+  prosta transformacja 1:1 wystarcza — opis/tytuł zostają jedynymi
+  kandydatami do AI, atrybuty nie.
+- **D-13.G2 (AJAX dla generatora nazwy — ŚWIADOMA niekonsystencja z
+  generatorem opisu) [USTALONE — decyzja użytkownika, sesja 2026-08-06]:**
+  generator opisu (`GenerationMetaBox`) jest DZIŚ świadomie NIE-AJAX-owy
+  (`admin-post.php`), właśnie żeby uniknąć przypadkowego/prefetchowanego
+  wywołania płatnego AI. Użytkownik chce generator NAZWY (P-13.2c) jako
+  AJAX — DWA różne mechanizmy wywołania AI na tym samym ekranie edycji.
+  Świadomie odnotowane jako niekonsystencja (nie przeoczenie) — przy
+  realizacji P-13.2c trzeba ODTWORZYĆ zabezpieczenie przed przypadkowym
+  odpaleniem inaczej niż „brak AJAX-u" (np. explicit confirm w JS, nie
+  tylko `onclick`), żeby nie stracić tej ochrony przy zmianie mechanizmu.
+- **D-13.G3 (migracja istniejących wartości `opis`→`post_content`)
+  [OTWARTE]:** P-13.3 przełącza CEL zapisu nowych generacji z ACF `opis`
+  na natywne `post_content`, ale produkty już mające wypełnione pole
+  `opis` (z poprzednich generacji/edycji) nie migrują się same — czy
+  P-13.3a robi jednorazowy skrypt/WP-CLI migrujący istniejące `opis` →
+  `post_content` dla już zsynchronizowanych produktów, czy `opis` po
+  prostu zostaje nieużywanym śmieciem (starym polem) dla starych
+  produktów, a nowe/kolejne generacje idą już do `post_content`? Wpływa na
+  to, czy motyw (`qutlet-theme`) potrzebuje fallbacku `post_content ??
+  get_field('opis')` na przejściowy czas, czy nie.
+- **D-13.G4 (mechanizm współdzielenia pola `prompt_ai` między core i ai)
+  [OTWARTE]:** P-13.6 chce pole `prompt_ai` (rejestrowane w `qutlet-core`
+  per granicę artefaktów — core rejestruje ACF, ai NIE rejestruje pól)
+  wyrenderowane WEWNĄTRZ metaboxu „Qutlet — generacja AI" (`qutlet-ai`),
+  nie w swoim własnym metaboxie jak dziś. Mechanizm do rozstrzygnięcia
+  przy realizacji: (a) `qutlet-core` przestaje renderować WŁASNY metabox
+  dla tego pola i wystawia hook/filtr, który `qutlet-ai` wykorzystuje do
+  wyrenderowania pola (`acf_render_field()` z tablicą pola pobraną przez
+  `acf_get_field()`) wewnątrz swojego metaboxu; (b) coś inne. Granica
+  artefaktów (core rejestruje ACF, ai nie) MA zostać nienaruszona — pytanie
+  dotyczy TYLKO renderu/pozycji, nie własności pola.
+
+### P-13.1 — Import: nowe produkty w statusie „Oczekuje na przegląd", nie „Opublikowany"
+- **Repo:** qutlet-allegro (`OfferSync/ImportOffersCommand.php`,
+  `OfferSync/ProductWriter.php`)
+- **Zakres:** zmienić DOMYŚLNĄ wartość flagi `--status` z `publish` na
+  `pending` (natywny status WP „Oczekuje na przegląd" — istnieje już w
+  rdzeniu, żadna rejestracja nowego statusu nie jest potrzebna) w
+  `ImportOffersCommand`, i dopisać `pending` do dozwolonych wartości
+  walidacji (dziś tylko `publish`|`draft`). `ProductWriter::upsert()` już
+  przyjmuje `$status` jako parametr — zero zmian w tej klasie, jeśli
+  walidacja/domyślna wartość żyje wyłącznie w komendzie. Dotyczy TYLKO
+  nowo tworzonych produktów (istniejące, już opublikowane, nie wracają do
+  „pending" — sync i tak nigdy nie dotyka statusu istniejących produktów).
+- **Do zweryfikowania przy realizacji:** czy `ImportOffersCommand`
+  (WP-CLI) to JEDYNA ścieżka tworzenia nowych produktów z Allegro, czy
+  istnieje osobny mechanizm cron/webhook (FAZA 6) z WŁASNYM hardkodowanym
+  `publish` gdzie indziej — ground-truth tej sesji sprawdził tylko
+  `ImportOffersCommand`.
+- **Zależności:** brak.
+
+### P-13.2 — Nazwa produktu: oryginał z Allegro + AI (tytuł oczyszczony + podnazwa)
+
+**Żądanie użytkownika:** oryginalna nazwa Allegro ma być PRZECHOWANA
+(osobne pole), a DOMYŚLNIE (bez ingerencji AI) to ona ląduje w natywnym
+polu nazwy produktu WooCommerce (`post_title`) — jak dziś. AI ma umieć
+PRZEROBIĆ nazwę: zdjąć KAPITALIKI, i — gdy nazwa jest zbyt długa — rozbić
+ją na główny tytuł + nowe pole „podnazwa" (AI decyduje GDZIE dzielić). AI
+ma też wyrzucać fragmenty niezwiązane z samym produktem (np. „brak
+opakowania"). Przycisk „Generuj" ma działać AJAX-em (BEZ przeładowania
+strony — patrz D-13.G2 o świadomej niekonsystencji z generatorem opisu),
+plus przycisk „Reset" przywracający oryginalną nazwę Allegro.
+
+Rozbite na trzy pod-punkty per repo — zależność P-13.2b/P-13.2c → P-13.2a.
+
+#### P-13.2a — Core: pole oryginalnej nazwy Allegro + pole „podnazwa"
+- **Repo:** qutlet-core
+- **Zakres:** nowa stała `META_NAME_RAW` (np. `_qutlet_allegro_nazwa_raw`)
+  w `src\ProductInfo\RawLayerMeta.php` — NATURALNE miejsce, klasa już
+  trzyma dokładnie taki „verbatim z Allegro, nieedytowalny" typ pola
+  (`META_OFFER`/`META_DESCRIPTION_RAW`/`META_SPECIFICATION_RAW`, ten sam
+  wzorzec `register_post_meta` prywatne). Nowe pole ACF `podnazwa` (text,
+  nie WYSIWYG — to krótka linia) w `src\ProductInfo\RewrittenFields.php`
+  (grupa „Qutlet — opis produktu (warstwa przerobiona)" — TA SAMA grupa,
+  która po P-13.3a traci `opis`; nazwa grupy prawdopodobnie do zmiany, bo
+  „opis produktu" nie opisuje już zawartości, jeśli zostaje tylko
+  `podnazwa` — do rozstrzygnięcia przy realizacji, razem z P-13.3a).
+- **Zależności:** brak nowych.
+
+#### P-13.2b — Allegro: zapis oryginalnej nazwy przy sync
+- **Repo:** qutlet-allegro (`OfferSync/ProductWriter.php`)
+- **Zakres:** `upsert()` dopisuje `$offer['name']` do
+  `RawLayerMeta::META_NAME_RAW` (P-13.2a) RÓWNOLEGLE z istniejącym
+  `set_name()` na `post_title` (zachowanie domyślne — bez AI, oryginał
+  ląduje w obu miejscach, jak dziś, tylko teraz też zapamiętany osobno).
+  Domyślne zachowanie (`post_title` = nazwa Allegro) NIE zmienia się —
+  ten punkt tylko DOPISUJE zapis do nowego pola, nie zmienia istniejącej
+  ścieżki.
+- **Zależności:** P-13.2a (pole musi istnieć, żeby coś do niego zapisać).
+
+#### P-13.2c — AI: generator tytułu/podnazwy (AJAX) + reset
+- **Repo:** qutlet-ai
+- **Zakres:** nowa akcja AI (prompt osobny od opisu — czyszczenie
+  kapitalików, usuwanie fragmentów niezwiązanych z produktem typu „brak
+  opakowania", rozbicie na tytuł+podnazwę gdy zbyt długie) wywoływana
+  PRZEZ AJAX (`wp_ajax_qutlet_ai_generate_title` czy podobnie) — NOWY
+  mechanizm wywołania w tym pluginie, inny niż `admin-post.php` generatora
+  opisu (patrz D-13.G2, świadoma niekonsystencja + wymagane zabezpieczenie
+  zastępcze przed przypadkowym kliknięciem). Wynik nadpisuje `post_title`
+  + `podnazwa` (P-13.2a) — prawdopodobnie z tym samym mechanizmem
+  podglądu przed zapisem, co generator opisu (transient), do
+  potwierdzenia przy realizacji czy podgląd jest tu też potrzebny, czy
+  bezpośredni zapis (bo AJAX bez przeładowania i tak daje szybki „undo"
+  przez przycisk Reset). Przycisk „Reset" (osobna akcja AJAX albo prościej
+  JS, jeśli `nazwa_allegro` już jest w DOM-ie strony) przywraca
+  `post_title` = `RawLayerMeta::META_NAME_RAW` i czyści `podnazwa`.
+- **Zależności:** P-13.2a (pola), P-13.2b (żeby reset miał do czego
+  wracać — choć technicznie reset mógłby czytać `META_NAME_RAW` nawet bez
+  P-13.2b na produktach zsynchronizowanych PO P-13.2a).
+
+### P-13.3 — Opis produktu: natywne pole WP zamiast ACF, generator zaraz pod nim
+
+**Żądanie użytkownika:** natywne pole „Opis produktu" (`post_content`),
+dziś nieużywane przez motyw, MA być tym, co wypełnia AI (zamiast ACF
+`opis`). Generator AI ma siedzieć w metaboxie POD natywnym edytorem
+opisu, nie na dole strony jak dziś.
+
+#### P-13.3a — Core: `opis` (ACF) przestaje być celem, decyzja o migracji
+- **Repo:** qutlet-core (`src\ProductInfo\RewrittenFields.php`)
+- **Zakres:** usunąć/wycofać pole ACF `opis` z grupy „Qutlet — opis
+  produktu (warstwa przerobiona)" (grupa być może zmienia nazwę/zakres —
+  patrz P-13.2a, zostaje w niej `podnazwa`). Motyw (`qutlet-theme`,
+  `ProductPage`) MUSI przejść z `get_field('opis')` na natywne
+  `the_content()`/`$post->post_content` — punkt osobny, wielorepowy
+  (motyw), NIE część tego punktu (core), ale ZALEŻNY od niego — do
+  dopisania jako P-13.3c, gdy ten punkt trafi do realizacji.
+- **D-13.G3** (migracja istniejących wartości) rozstrzyga zakres tego
+  punktu — patrz decyzje globalne fazy.
+- **Zależności:** brak nowych.
+
+#### P-13.3b — AI: cel zapisu = `post_content`, metabox pod natywnym edytorem
+- **Repo:** qutlet-ai (`RewriteWriter.php`, `GenerationMetaBox.php`)
+- **Zakres:** `RewriteWriter::accept()` przestaje pisać przez
+  `update_field()` do `opis` — pisze `wp_update_post(['ID' => $id,
+  'post_content' => $opis])` (albo `$product->set_description()` — Woo
+  owija `post_content` tym setterem, do wyboru przy realizacji, efekt
+  identyczny). `GenerationMetaBox` zmienia kontekst/priorytet
+  rejestracji, żeby renderować się BEZPOŚREDNIO pod natywnym edytorem
+  treści — WP renderuje: tytuł → edytor → metaboxy `normal`/`high` →
+  `normal`/`default` → `normal`/`low`; natywny Product Data Woo jest
+  `normal`/`high`, więc żeby wylądować MIĘDZY edytorem a Product Data
+  (czyli faktycznie NAJWYŻEJ), ten metabox potrzebuje priorytetu WYŻSZEGO
+  niż `high` — WP nie ma takiej wartości natywnie (`high`/`core`/
+  `default`/`low`, w tej kolejności) — do rozstrzygnięcia przy
+  realizacji: albo `core` (nieoficjalnie wyższy niż `high` w niektórych
+  wersjach WP — do zweryfikowania w kodzie rdzenia), albo przesunięcie
+  natywnego Product Data niżej przez `remove_meta_box()`+
+  `add_meta_box()` ponownie (bardziej inwazyjne, ryzyko konfliktu z
+  przyszłymi update'ami WooCommerce). Ten sam metabox NIESIE TEŻ P-13.6b
+  (pole promptu + podgląd globalnego promptu) — realizować razem, jedna
+  sesja/PR, jeśli to praktyczne (dwa punkty planu, jedna zmiana kodu).
+- **Zależności:** P-13.3a (core przestaje być właścicielem `opis`).
+
+### P-13.4 — Atrybuty: tłumaczenie 1:1 z Allegro, bez udziału AI (REWIZJA D-5.1.1/D-5.1.2 — patrz D-13.G1)
+
+#### P-13.4a — Allegro: zapis natywnych atrybutów WC z surowych parametrów
+- **Repo:** qutlet-allegro (`OfferSync/ProductWriter.php` albo nowa klasa
+  w `OfferSync/`)
+- **Zakres:** przy `upsert()`, po zapisie warstwy surowej — zbudować
+  `WC_Product_Attribute[]` z `OfferMapper::specification()` (para
+  etykieta/wartość, ten sam kształt co dziś czyta AI) i wywołać
+  `$product->set_attributes()`/`save()`. Lokalne (niestaksonomiczne)
+  atrybuty, jak dziś robi `RewriteWriter::build_attributes()` (kod do
+  przeniesienia/portu z `qutlet-ai`, nie do wymyślania na nowo — ten sam
+  kształt wejścia). Czy nadpisywać PRZY KAŻDYM sync (jak tytuł) czy tylko
+  gdy puste (jak `klasa_stanu`) — do rozstrzygnięcia: prawdopodobnie
+  sync-owned (nadpisywane), bo to dane WPROST z Allegro bez ręcznej
+  edycji w grze (w przeciwieństwie do `klasa_stanu`, gdzie kurator może
+  poprawić automat).
+- **Zależności:** brak nowych.
+
+#### P-13.4b — AI: opis przestaje generować atrybuty
+- **Repo:** qutlet-ai (`RewriteGenerator.php`, `RewriteWriter.php`)
+- **Zakres:** usunąć `specyfikacja` ze schematu JSON odpowiedzi AI
+  (`RewriteGenerator::response_schema()`) i `build_attributes()`/wywołanie
+  `set_attributes()` z `RewriteWriter::accept()` — generator AI odtąd
+  PISZE WYŁĄCZNIE opis (P-13.3b), atrybutów nie dotyka wcale.
+  `GenerationMetaBox::render_current_column()` traci sekcję porównania
+  atrybutów (nieaktualna, atrybuty już nie są częścią tego flow).
+- **Zależności:** P-13.4a (żeby atrybuty miały SKĄD się brać, gdy AI
+  przestanie je pisać — inaczej regresja: produkty bez atrybutów wcale).
+  Realizować w TEJ kolejności (4a przed 4b) albo w jednej sesji, żeby nie
+  było okna, w którym ŻADEN mechanizm nie pisze atrybutów.
+
+### P-13.5 — Cena rynkowa nowego: przenosiny do natywnego Product Data (Ogólne)
+- **Repo:** qutlet-core (`src\ProductCondition\ProductConditionFields.php`,
+  `src\Pricing\ProductDiscountRateField.php` jako wzorzec)
+- **Zakres:** `cena_rynkowa_nowego` przestaje być polem ACF w metaboxie
+  „Qutlet — stan i zawartość produktu" — ląduje w natywnej zakładce
+  „Ogólne" Product Data, DOKŁADNIE tym samym mechanizmem co
+  `qutlet_stawka_rabatu` (`ProductDiscountRateField`):
+  `add_action('woocommerce_product_options_general_product_data', …)` +
+  `woocommerce_wp_text_input()`/`_price` styl pola, zapis na
+  `woocommerce_admin_process_product_object` (natywny nonce/capability
+  Woo, nie własny). Życzenie użytkownika co do POZYCJI: między ceną
+  (`_regular_price`) a ceną promocyjną (`_sale_price`), o ile hook
+  `woocommerce_product_options_general_product_data` pozwala na
+  wstrzyknięcie MIĘDZY dwa natywne pola (kolejność w DOM-ie zależy od
+  KOLEJNOŚCI WYWOŁANIA callbacków na tym samym hooku — WooCommerce
+  wywołuje własne pola cenowe NA TYM SAMYM hooku, więc trzeba
+  zweryfikować priorytet `add_action` potrzebny, żeby wstrzyknięcie
+  wypadło we właściwym miejscu, nie na końcu). Jeśli niemożliwe bez
+  hacków — najbliższe rozsądne miejsce (np. bezpośrednio PO cenie
+  promocyjnej) jest akceptowalnym fallbackiem, do potwierdzenia z
+  użytkownikiem przy realizacji, jeśli się okaże niewykonalne 1:1.
+  Migracja pola ACF → nowe miejsce: dane istniejące (`cena_rynkowa_nowego`
+  jako meta) NIE zmieniają meta key, tylko PRZESTAJĄ być rejestrowane
+  jako ACF i zaczynają być czytane/zapisywane jak `_qutlet_stawka_rabatu`
+  (plain `get_post_meta`/`update_post_meta`, nie ACF) — do potwierdzenia,
+  czy meta key zostaje `cena_rynkowa_nowego` (bez podkreślnika, jak dziś,
+  publiczne) czy zamienia się na prywatny `_cena_rynkowa_nowego` (wzorem
+  `_qutlet_stawka_rabatu`) — WPŁYWA na `docs/kontrakt-danych.md` (dziś
+  dokumentuje `cena_rynkowa_nowego` jako ACF, będzie wymagało aktualizacji
+  kontraktu niezależnie od wyboru).
+- **Zależności:** brak nowych.
+
+### P-13.6 — Prompt AI: konsolidacja w metaboxie generacji + podgląd globalnego
+
+#### P-13.6a — Core: pole `prompt_ai` bez własnego metaboxu
+- **Repo:** qutlet-core (`src\AiRewrite\PromptOverrideField.php`)
+- **Zakres:** pole ACF `prompt_ai` PRZESTAJE mieć własny metabox „Qutlet —
+  prompt AI (nadpisanie per produkt)" — rejestracja pola (ACF) zostaje w
+  core (granica artefaktów, core=dane/model), ale renderowanie
+  przenosi się do metaboxu `qutlet-ai` (P-13.6b). Mechanizm do
+  rozstrzygnięcia — patrz D-13.G4.
+- **Zależności:** brak nowych.
+
+#### P-13.6b — AI: pole promptu + podgląd globalnego promptu w metaboxie generacji
+- **Repo:** qutlet-ai (`GenerationMetaBox.php`)
+- **Zakres:** metabox „Qutlet — generacja AI" (już przesuwany w P-13.3b —
+  realizować razem) zyskuje: (1) pole `prompt_ai` (per-produkt override,
+  P-13.6a) wyrenderowane w tym metaboxie; (2) READ-ONLY podgląd
+  GLOBALNEGO promptu (`PromptSettings::OPTION_NAME`/
+  `qutlet_ai_prompt_global`, dziś tylko na stronie ustawień) — sam odczyt
+  `get_option()`, bez linku edycji (link do strony ustawień jako
+  osobny, wystarczający sposób na edycję — nie duplikować formularza w
+  dwóch miejscach). Kontekst: kurator widzi NA RAZ „co się faktycznie
+  użyje" (`PromptSettings::effective_prompt()` — override gdy niepusty,
+  inaczej globalny) bez przeskakiwania między ekranami.
+- **Zależności:** P-13.6a, P-13.3b (współdzielony metabox — jedna sesja).
+
+### P-13.7 — Metabox stanu: surowy „Stan" Allegro (read-only) + gwarancja/reklamacja
+- **Repo:** qutlet-core (`src\ProductCondition\ProductConditionFields.php`
+  albo nowa read-only sekcja w tym samym metaboxie, wzorem
+  `RawLayerMetaBox`)
+- **Zakres:** metabox „Qutlet — stan i zawartość produktu" zyskuje DWIE
+  nowe, NIEEDYTOWALNE informacje: (1) surowa wartość parametru „Stan" z
+  Allegro (odczyt istniejących danych raw layer —
+  `parameter_value(offer_parameters($offer), 'Stan')` na
+  `_qutlet_allegro_offer`, ten sam odczyt co `OfferMapper::
+  condition_class()` już robi do ustawienia `klasa_stanu` — TU tylko
+  wyświetlana, nie zapisywana ponownie); (2) długość gwarancji i
+  reklamacji USTAWOWEJ dla WYBRANEJ (edytowalnej) `klasa_stanu` — odczyt z
+  bytu klas z **FAZY 12** (`P-12.1a` — pola `okres_gwarancji`/
+  `okres_reklamacji`), wyświetlone jako informacja przy polu `klasa_stanu`
+  (np. „Klasa B → gwarancja 1 rok, reklamacja 1 rok"), żeby kurator widział
+  konsekwencję wyboru klasy bez przechodzenia do ekranu zarządzania
+  klasami.
+- **Zależności:** **P-12.1a (FAZA 12)** — pola gwarancji/reklamacji na
+  bycie klasy muszą istnieć, zanim ten punkt będzie miał co wyświetlić.
+  Bez P-12.1a punkt (2) nie da się zrealizować — punkt (1) (surowy „Stan")
+  jest niezależny i może wejść wcześniej.
+
+---
+
 ## Materiał referencyjny i kandydaci do dalszych faz
 
 ### Inwentarz endpointów Allegro (dostarczony przez użytkownika)
