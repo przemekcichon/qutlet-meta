@@ -2557,9 +2557,223 @@ rozpada się na dwa pod-punkty / dwa PR-y z jawną zależnością (`P-8.3c-theme
   kolejnego środowiska (brak automatyzacji w tym punkcie — kod się nie
   wywali, `render_help_nav()`/`extract_legal_headings()` mają bezpieczne
   fallbacki na pustkę, ale strony będą wyglądać na niedokończone).
-### P-8.6a — Koszyk
+### 🟡 P-8.6a — Koszyk
 - Nadpisanie szablonów koszyka Woo (`koszyk.html` → `woocommerce/cart/`).
   **Zależności:** P-8.1 (+ Woo).
+- **D-8.6a.1 (renderer: Cart Block + WooCommerce Blocks Integration, NIE classic
+  shortcode/`woocommerce/cart/*.php`) [USTALONE — decyzja użytkownika, sesja
+  2026-08-04]:** ground-truth ujawnił, że Strona „Cart" (ID 8,
+  `woocommerce_cart_page_id`) na tej instalacji (WC 10.9.4) domyślnie zawiera
+  blok `wp:woocommerce/cart`, NIE shortcode `[woocommerce_cart]` — mimo że
+  `koszyk.html` (komentarz `<!-- → woocommerce/cart/cart.php -->`) i
+  `design/vanilla/js/templates.js` (`cartRow() → woocommerce/cart/cart.php`)
+  sugerują override klasycznych szablonów PHP, wzorem D-8.4.1/D-8.5.1.
+  Override klasycznych szablonów NIE zadziała na stronie renderowanej blokiem.
+  Dodatkowo per-wiersz dane wymagane przez prototyp (odznaka klasy stanu
+  `klasa_stanu`, pill „Gwarancja 1 rok", stara cena/suma oszczędności z
+  `cena_rynkowa_nowego` — kontrakt §2/§6) nie istnieją na standardowym cart
+  item Woo ani nie są eksponowane przez Cart Block bez integracji. Zrealizowane
+  przez WooCommerce Blocks Integration: PHP
+  `Automattic\WooCommerce\Blocks\Integrations\IntegrationInterface`,
+  zarejestrowana na `woocommerce_blocks_cart_block_registration`, + Store API
+  `woocommerce_store_api_register_endpoint_data()` (endpointy `cart-item` i
+  `cart`, namespace `qutlet-klasa`: `klasa_stanu`, stara cena, wartość
+  produktów i suma oszczędności — wartości sformatowane `wc_price()` po
+  stronie PHP, żeby JS nie liczył walut). Po stronie JS **`registerCheckoutFilters`
+  (global `window.wc.blocksCheckout`) okazał się (zweryfikowane runtime)
+  zanieczyszczać aria-label przycisków ilości/usuwania surowym HTML — filtr
+  `itemName` zasila NIE TYLKO widoczną nazwę, ale i te atrybuty — więc został
+  CAŁKOWICIE porzucony** na rzecz wstrzykiwania węzłów DOM osobno
+  (`wp.data.select('wc/store/cart')` + `wp.data.subscribe()`, bez build stepu,
+  dependency script handles `wc-blocks-data-store`/`wp-data`; ten install
+  WooCommerce nie wystawia źródeł `@wordpress/scripts`/npm do budowania,
+  tylko gotowy runtime bundle) — odznaka klasy/gwarancja obok nazwy, stara
+  cena wewnątrz kolumny ceny, własny wiersz „Wartość produktów" (natywny
+  Subtotal-block bloku Cart nie renderuje się, gdy równa się sumie — co przy
+  darmowej dostawie/braku kuponu jest zawsze prawdą) i zielony box
+  „Oszczędzasz vs. nowe" (odpowiednik `data-cart-savings-row` z prototypu) w
+  podsumowaniu — wszystkie aktualizowane na żywo przy każdej zmianie koszyka,
+  nie tylko przy pierwszym renderze.
+  **Odrzucone alternatywy:** (1) przełączenie Strony na classic shortcode +
+  override `woocommerce/cart/*.php` — najniższy nakład, literalna zgodność z
+  komentarzami w prototypie, spójna z resztą motywu (100% classic Woo, zero
+  bloków/Store API gdzie indziej) — odrzucona świadomie przez użytkownika na
+  rzecz nowoczesnej ścieżki blokowej mimo większego nakładu (pierwsze użycie
+  bloków/Store API w całym projekcie); (2) zostać przy bloku, ale świadomie
+  uciąć zakres (bez odznaki klasy/gwarancji/starej ceny/oszczędności, sam
+  reskin CSS) — odrzucona po ustaleniu, że blok faktycznie nie ma na nie
+  slotu bez integracji, na rzecz pełnej integracji Blocks/Store API (opcja
+  wybrana ostatecznie).
+  **Uwaga do D-8.G1 (granica core↔theme):** Store API Blocks Integration w
+  motywie (rejestracja skryptu + rozszerzenie schematu) to **rendering**, nie
+  „glue do Woo" w rozumieniu D-8.G1 — to jedyny kanał, którym PHP przekazuje
+  dane do React-owego bloku (funkcjonalny odpowiednik `render.php` dla bloku
+  dynamicznego), nie modyfikacja głównego zapytania/zapisu jak w D-8.3b.2.
+  Doprecyzowanie na przyszłość — P-8.6b (Kasa) powtórzy ten sam wzorzec.
+- **D-8.6a.2 (slug Strony Cart: `cart` → `koszyk`) [USTALONE — sesja
+  2026-08-04]:** ground-truth ujawnił nieprzetłumaczony slug domyślnej Strony
+  WooCommerce „Cart" (`/cart/`), niespójny z resztą polskich URLi
+  (`/pomoc/`, `/blog/`, `/jak-to-dziala/`) i z prototypem (`koszyk.html`,
+  breadcrumb „Koszyk"). Zmieniony na `koszyk` przez wp-cli. **Uwaga
+  wdrożeniowa (wzorzec D-8.4.3/D-8.5.3):** to stan bazy tej instalacji Local,
+  NIE migracja/kod — nowe środowisko wystartuje z domyślnym `cart` do czasu
+  ręcznego powtórzenia.
+- **D-8.6a.3 (header: mini-koszyk przez `woocommerce_add_to_cart_fragments`)
+  [USTALONE — sesja 2026-08-04]:** potwierdza mechanizm już przewidziany w
+  prototypie (`design/vanilla/js/templates.js:7` — „cartMenuItem() → fragment
+  mini-koszyka (Woo cart fragments)"). `.cart-badge`/`.cart-menu` w
+  `parts/header.html` (P-8.1) zostają statycznym placeholderem w
+  deklaratywnym parcie — ich zawartość podmienia classic filter
+  `woocommerce_add_to_cart_fragments` (server-rendered PHP; natywny WC-owy
+  skrypt `wc-cart-fragments` odświeża je automatycznie po zmianach koszyka).
+  Niezależne od D-8.6a.1 — fragments API działa niezależnie od tego, czy sama
+  strona `/koszyk/` jest blokowa czy classic.
+### P-8.6a.2 — Koszyk, runda 2: minimalny nagłówek + poprawki mobile
+- **Kontynuacja P-8.6a na TYM SAMYM branchu/PR** (`feature/faza-8-6a-koszyk`,
+  qutlet-theme, PR #22 — nadal otwarty/draft) — NIE nowy branch. Zakres
+  znaleziony przez realne klikanie po już zbudowanej stronie koszyka (nie z
+  przeglądu `design/vanilla`), sesja 2026-08-05.
+- **Minimalny nagłówek strony koszyka** — WYŁĄCZNIE logo + strzałka powrotu
+  do frontu sklepu (bez szukajki, nawigacji, ikon koszyka/konta). Poza
+  prototypem: `design/vanilla/koszyk.html:15` ładuje TEN SAM globalny
+  `partials/header.html` co każda inna strona — w źródle prawdy nie istnieje
+  wariant minimalny, to nowa decyzja na wyraźną prośbę użytkownika. Ground-truth
+  do zrobienia na starcie sesji: czy to nowy template part (np.
+  `parts/header-cart.html`) podpięty w `templates/page-cart.html` (już
+  nadpisany przez P-8.6a — patrz D-8.6a.1), czy inny mechanizm.
+- **Usunięcie boksu newslettera** na tej stronie. Mechanizm analogiczny już
+  istnieje: `body.qt-hide-nlband` (`Help::filter_body_class()`, `style.css`)
+  chowa `.nlband` na `/newsletter/` — do rozważenia dopisanie reguły dla
+  `body.woocommerce-cart` (WC-owa klasa body, już potwierdzona na tej
+  stronie) albo osobna klasa, konsekwentnie z istniejącym wzorcem.
+- **Mobile — kontrolka usuwania produktu: tylko ikonka**, bez etykiety
+  „Usuń" (`.wc-block-cart-item__remove-link::after{content:"Usuń"}`,
+  `style.css`, P-8.6a) — schować tekst w mobilnej media query, SVG zostaje.
+- **Mobile — usunięcie formy liczby egzemplarzy** (`.wc-block-components-quantity-selector`).
+  **Uwaga:** to jedyny mechanizm zmiany ilości w koszyku (Cart Block) — do
+  potwierdzenia z użytkownikiem na starcie realizacji, czy brak możliwości
+  zmiany ilości na mobile jest zamierzony, czy potrzebny jakiś zastępczy
+  sposób.
+- **Mobile — mniejsza czcionka nazwy produktu i ceny**
+  (`.wc-block-components-product-name` /
+  `.wc-block-cart-item__prices .wc-block-components-product-price__value`,
+  `style.css`, P-8.6a) — dopisać wartości w istniejącej mobilnej media query
+  (`max-width:560px`).
+- **Mobile — bez elipsy, zawijanie nazwy.** Runda z sesji 2026-08-05
+  wprowadziła na nazwie produktu `max-width:80%` +
+  `text-overflow:ellipsis`/`white-space:nowrap` + ikonkę „?" z pełną nazwą w
+  tooltipie — na mobile ma wrócić zawijanie (`white-space:normal`), ikonka
+  „?" chowa się razem z mechanizmem przycinania (nie osobno).
+- **Uwaga:** wszystkie punkty czysto CSS/markup w `qutlet-theme` — bez
+  dotykania core/allegro/ai (D-8.G1 bez zmian).
+### P-8.6a.3 — Koszyk, runda 3+4+5: miniaturka mobile, usuń obok steppera, „Oszczędzasz" per wiersz, dropdown ilości
+- **Kontynuacja P-8.6a na TYM SAMYM branchu/PR** (`feature/faza-8-6a-koszyk`,
+  qutlet-theme, PR #22 — nadal otwarty/draft) — NIE nowy branch. Zakres
+  znaleziony przez realne klikanie po już zbudowanej stronie koszyka, sesje
+  2026-08-05/2026-08-06. Dopisane do planu RETROSPEKTYWNIE, po fakcie (na
+  wyraźną prośbę użytkownika: „możesz to wcześniej wpisać do planu ale od
+  razu zróbmy") — implementacja i niezależna recenzja poprzedzają ten wpis.
+- **Runda 3 — mobile: miniaturka obok nazwy, pełnoszerokie wiersze.**
+  Miniaturka opuszcza własną kolumnę tabeli i siada obok (zawijającej się w
+  razie potrzeby) nazwy, na jej wysokości — wiersz najwyższego poziomu.
+  Cena (główna + „Nowy za"), odznaki (klasa+gwarancja) i wiersz ilość+usuń
+  schodzą pod spód na PEŁNĄ szerokość ekranu (nie tylko szerokość kolumny
+  nazwy). Mechanizm: DOM bloku Cart to `<tr>` z DWOMA `<td>` (miniaturka
+  osobno, reszta razem w jednym `<div class="wc-block-cart-item__wrap">`)
+  — `display:contents` na obu `<td>`/`.wrap` promuje ich dzieci na
+  bezpośrednie dzieci wiersza (zero przenoszenia węzłów DOM przez JS,
+  świadomie omija crash Reacta naprawiony wcześniej na tym branchu —
+  patrz P-8.6a wyżej), które wiersz (teraz `display:grid`, 2 kolumny)
+  rozmieszcza przez `grid-column`/`grid-row`. Złapany i naprawiony w
+  trakcie (zweryfikowane `document.styleSheets`/`getComputedStyle`, nie
+  tylko zrzut ekranu): WooCommerce Blocks ma WŁASNY, równoległy layout
+  tego samego wiersza pod klasami `.is-mobile`/`.is-small`/`.is-medium`
+  (dogrywanymi przez WŁASNE container queries bloku wg szerokości
+  KONTENERA, niezależnie od naszej viewportowej media query) —
+  konkurencyjny `grid-template-columns`/`padding-right`/`width:100%` na
+  miniaturce psuł szerokość kolumn i kwadratowość obrazka (64×88 zamiast
+  88×88). Naprawione `!important`.
+  **Na wyraźną prośbę użytkownika ODWRACA DWA zawężenia z rundy 2:**
+  stepper ilości wraca w pełni funkcjonalny (był zamieniony na goły
+  odczyt „Ilość: N szt."), kontrolka usuń wraca z ikonką I etykietą
+  „Usuń" (była tylko ikonką) — na mobile identycznie jak desktop.
+  **Znana, świadomie NIE naprawiona w tej rundzie luka:** kontener
+  koszyka dostaje od WC klasy `is-mobile`/`is-small`/`is-medium` wg
+  SZEROKOŚCI SAMEGO KONTENERA (zbadane w `cart.js`: ≤400→is-mobile,
+  400–520→is-small, 520–700→is-medium, >700→is-large), nie viewportu —
+  przy realnym oknie ok. 561–730px kontener wraca do `is-medium` i
+  miniaturka znów wychodzi niekwadratowa, bo nasz fix (`!important`) żyje
+  wyłącznie pod `@media(max-width:560px)`. Bug PRZEDISTNIEJĄCY (od P-8.6a
+  rundy 1, nie regresja tej rundy), złapany przez niezależną recenzję —
+  wymaga osobnej decyzji (pełna restrukturyzacja mobilna w tym zakresie
+  vs. punktowa naprawa kwadratowości na istniejącym 2-kolumnowym
+  układzie) przed naprawą, do zaadresowania jako osobny fast-follow.
+- **Runda 4 — usuń obok steppera, pigułka „Oszczędzasz X" per wiersz.**
+  Kontrolka usuń przenosi się na lewo, obok steppera ilości (były
+  rozpychane na przeciwne krańce wiersza `justify-content:space-between`
+  — teraz `flex-start`+`gap`, spakowane po lewej). W miejscu, gdzie
+  wcześniej siedział „Usuń" (prawy kraniec wiersza akcji), nowa pigułka
+  „Oszczędzasz X" w tym samym limonkowym kolorze co
+  `.qutlet-cart-savings-note` w podsumowaniu (`--green-bg`/`--green-ink`)
+  — oszczędność PER SZTUKĘ (`cena_rynkowa_nowego` minus cena sprzedaży),
+  konsekwentnie z tym, że cena/stara cena w wierszu też są jednostkowe, nie
+  linią razem. Brak `cena_rynkowa_nowego` → nic się nie wstawia. Mobile:
+  reorganizacja wierszy pod miniaturką+nazwą (NIETKNIĘTĄ, na wyraźną
+  prośbę użytkownika) — cena główna dostaje własny wiersz, „Nowy za"/
+  „Oszczędzasz" schodzą razem na następny (para justify-self:start/end w
+  jednej komórce), odznaki i akcje (ilość+usuń) o wiersz niżej.
+  **Nowe pole Store API `item_savings_formatted`** (`Cart::cart_item_data()`,
+  namespace `qutlet-klasa`, ten sam mechanizm/warunek co już istniejący
+  `old_price_formatted`) — PIERWSZY dotyk PHP w tej serii ad-hoc rund
+  (poprzednie były czysto CSS/JS-DOM-injection). Uznane za „rendering" w
+  rozumieniu D-8.G1 (patrz uwaga do D-8.G1 przy P-8.6a wyżej) —
+  analogicznie do `old_price_formatted`: czysta pochodna wartość (odjęcie
+  + `wc_price()`) na już czytanym polu ACF, zero nowej logiki
+  biznesowej/nowego źródła danych.
+- **Runda 5 — dropdown ilości zamiast steppera.** Inspiracja koszykiem
+  Back Market (zrzuty ekranu użytkownika) — „idea sklepu jest taka, że
+  najwięcej będzie pojedynczych sztuk", więc wybór z listy pasuje lepiej
+  niż klikanie +/-. Natywny stepper Cart Blocka chowany CSS-em
+  (`display:none`, NIE usuwany z DOM — zostaje jedynym źródłem `min`/
+  `max`/`aria-label` do budowy opcji), nowy `<select>` (osobny węzeł DOM,
+  ten sam wzorzec DOM-injection co reszta pliku) wybiera ilość przez
+  `wp.data.dispatch('wc/store/cart').changeCartItemQuantity(key, qty)`
+  (zweryfikowane runtime — ta sama akcja, którą wywołuje natywny stepper
+  WC). Nowa etykieta „Pojedyncza sztuka"/„2 sztuki"/„5 sztuk" — port 1:1
+  `QT.qtyLabel`/`QT.plural` (design/vanilla/js/data.js:66-78, kontrakt §6).
+  Desktop: etykieta→dropdown→usuń spakowane po lewej (na wyraźną prośbę
+  użytkownika: „nie jak na screenshocie z innego sklepu", gdzie dropdown
+  jest po lewej a etykieta+usuń rozjechane na prawo). Mobile: ODWROTNA
+  kolejność i pozycja — dropdown→etykieta razem po lewej, „Usuń" osobno
+  na prawym krańcu (`margin-left:auto`, wzorowane na Back Market mobile).
+  Świadome zróżnicowanie per breakpoint (różne wzorce wizualne), nie
+  przeoczenie.
+  **D-8.6a.4 (dropdown ilości = pierwszy WRITE dispatch z motywu, nadal
+  „rendering" wg D-8.G1) [USTALONE — sesja 2026-08-06, niezależna
+  recenzja]:** `changeCartItemQuantity()` to natywna akcja Store API,
+  TA SAMA którą wywołuje wbudowany stepper WC (zweryfikowane w bundlu
+  `wc-cart-checkout-base-frontend.js`) — motyw nie dodaje własnej logiki
+  biznesowej ani nowego hooka PHP, tylko podłącza ISTNIEJĄCĄ interakcję
+  do własnego kontrolki UI (analogicznie do tego, że `<button>` w
+  natywnym steperze też tylko wywołuje tę akcję). Odróżnia się to od
+  D-8.3b.2 (modyfikacja zapytania/zapisu w core) tym, że nie ma tu ŻADNEJ
+  nowej reguły biznesowej — czysto UI-owy wybór wartości z zamkniętej
+  listy opcji. Doprecyzowanie D-8.G1 na przyszłość — P-8.6b (Kasa)
+  prawdopodobnie powtórzy ten wzorzec (np. zmiana metody dostawy/płatności
+  z UI motywu wywołująca natywną akcję Store API).
+- **Niezależna recenzja (docs/review.md):** runda 3 — 🟡 WARUNKOWO (drobne,
+  luka is-medium/is-small opisana wyżej, brak 🔴). Runda 4 — 🟢 CZYSTE,
+  zero ustaleń blokujących, PHPStan (`inc/features/Cart`) czysto. Runda 5
+  — 🟡 WARUNKOWO (drobne, brak 🔴): brak capu na liczbę opcji dla
+  hipotetycznego produktu bez zarządzanego stanu magazynowego (Store API
+  domyślnie `max=9999`) i teoretyczne „osierocenie" wartości `<select>`,
+  gdy ilość w koszyku wypadnie poza przeliczony zakres — oba naprawione
+  (`Math.min(...,50)` + rozszerzenie zakresu o bieżącą ilość).
+- **Uwaga:** wszystkie punkty poza nowym polem Store API w rundzie 4 to
+  czysty CSS/markup/JS-DOM-injection w `qutlet-theme` (runda 5 dispatchuje
+  istniejącą akcję Store API z JS, patrz D-8.6a.4 — bez nowego hooka PHP);
+  pole `item_savings_formatted` to rendering (D-8.G1), nie glue do Woo —
+  bez dotykania core/allegro/ai.
 ### P-8.6b — Kasa + potwierdzenie
 - Kasa (`kasa.html` → `woocommerce/checkout/`) + potwierdzenie zamówienia
   (`potwierdzenie.html` → `woocommerce/checkout/thankyou.php`, potwierdzone
