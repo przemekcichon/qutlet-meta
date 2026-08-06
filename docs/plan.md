@@ -2666,6 +2666,76 @@ rozpada się na dwa pod-punkty / dwa PR-y z jawną zależnością (`P-8.3c-theme
   „?" chowa się razem z mechanizmem przycinania (nie osobno).
 - **Uwaga:** wszystkie punkty czysto CSS/markup w `qutlet-theme` — bez
   dotykania core/allegro/ai (D-8.G1 bez zmian).
+### P-8.6a.3 — Koszyk, runda 3+4: miniaturka mobile, usuń obok steppera, „Oszczędzasz" per wiersz
+- **Kontynuacja P-8.6a na TYM SAMYM branchu/PR** (`feature/faza-8-6a-koszyk`,
+  qutlet-theme, PR #22 — nadal otwarty/draft) — NIE nowy branch. Zakres
+  znaleziony przez realne klikanie po już zbudowanej stronie koszyka, sesje
+  2026-08-05/2026-08-06. Dopisane do planu RETROSPEKTYWNIE, po fakcie (na
+  wyraźną prośbę użytkownika: „możesz to wcześniej wpisać do planu ale od
+  razu zróbmy") — implementacja i niezależna recenzja poprzedzają ten wpis.
+- **Runda 3 — mobile: miniaturka obok nazwy, pełnoszerokie wiersze.**
+  Miniaturka opuszcza własną kolumnę tabeli i siada obok (zawijającej się w
+  razie potrzeby) nazwy, na jej wysokości — wiersz najwyższego poziomu.
+  Cena (główna + „Nowy za"), odznaki (klasa+gwarancja) i wiersz ilość+usuń
+  schodzą pod spód na PEŁNĄ szerokość ekranu (nie tylko szerokość kolumny
+  nazwy). Mechanizm: DOM bloku Cart to `<tr>` z DWOMA `<td>` (miniaturka
+  osobno, reszta razem w jednym `<div class="wc-block-cart-item__wrap">`)
+  — `display:contents` na obu `<td>`/`.wrap` promuje ich dzieci na
+  bezpośrednie dzieci wiersza (zero przenoszenia węzłów DOM przez JS,
+  świadomie omija crash Reacta naprawiony wcześniej na tym branchu —
+  patrz P-8.6a wyżej), które wiersz (teraz `display:grid`, 2 kolumny)
+  rozmieszcza przez `grid-column`/`grid-row`. Złapany i naprawiony w
+  trakcie (zweryfikowane `document.styleSheets`/`getComputedStyle`, nie
+  tylko zrzut ekranu): WooCommerce Blocks ma WŁASNY, równoległy layout
+  tego samego wiersza pod klasami `.is-mobile`/`.is-small`/`.is-medium`
+  (dogrywanymi przez WŁASNE container queries bloku wg szerokości
+  KONTENERA, niezależnie od naszej viewportowej media query) —
+  konkurencyjny `grid-template-columns`/`padding-right`/`width:100%` na
+  miniaturce psuł szerokość kolumn i kwadratowość obrazka (64×88 zamiast
+  88×88). Naprawione `!important`.
+  **Na wyraźną prośbę użytkownika ODWRACA DWA zawężenia z rundy 2:**
+  stepper ilości wraca w pełni funkcjonalny (był zamieniony na goły
+  odczyt „Ilość: N szt."), kontrolka usuń wraca z ikonką I etykietą
+  „Usuń" (była tylko ikonką) — na mobile identycznie jak desktop.
+  **Znana, świadomie NIE naprawiona w tej rundzie luka:** kontener
+  koszyka dostaje od WC klasy `is-mobile`/`is-small`/`is-medium` wg
+  SZEROKOŚCI SAMEGO KONTENERA (zbadane w `cart.js`: ≤400→is-mobile,
+  400–520→is-small, 520–700→is-medium, >700→is-large), nie viewportu —
+  przy realnym oknie ok. 561–730px kontener wraca do `is-medium` i
+  miniaturka znów wychodzi niekwadratowa, bo nasz fix (`!important`) żyje
+  wyłącznie pod `@media(max-width:560px)`. Bug PRZEDISTNIEJĄCY (od P-8.6a
+  rundy 1, nie regresja tej rundy), złapany przez niezależną recenzję —
+  wymaga osobnej decyzji (pełna restrukturyzacja mobilna w tym zakresie
+  vs. punktowa naprawa kwadratowości na istniejącym 2-kolumnowym
+  układzie) przed naprawą, do zaadresowania jako osobny fast-follow.
+- **Runda 4 — usuń obok steppera, pigułka „Oszczędzasz X" per wiersz.**
+  Kontrolka usuń przenosi się na lewo, obok steppera ilości (były
+  rozpychane na przeciwne krańce wiersza `justify-content:space-between`
+  — teraz `flex-start`+`gap`, spakowane po lewej). W miejscu, gdzie
+  wcześniej siedział „Usuń" (prawy kraniec wiersza akcji), nowa pigułka
+  „Oszczędzasz X" w tym samym limonkowym kolorze co
+  `.qutlet-cart-savings-note` w podsumowaniu (`--green-bg`/`--green-ink`)
+  — oszczędność PER SZTUKĘ (`cena_rynkowa_nowego` minus cena sprzedaży),
+  konsekwentnie z tym, że cena/stara cena w wierszu też są jednostkowe, nie
+  linią razem. Brak `cena_rynkowa_nowego` → nic się nie wstawia. Mobile:
+  reorganizacja wierszy pod miniaturką+nazwą (NIETKNIĘTĄ, na wyraźną
+  prośbę użytkownika) — cena główna dostaje własny wiersz, „Nowy za"/
+  „Oszczędzasz" schodzą razem na następny (para justify-self:start/end w
+  jednej komórce), odznaki i akcje (ilość+usuń) o wiersz niżej.
+  **Nowe pole Store API `item_savings_formatted`** (`Cart::cart_item_data()`,
+  namespace `qutlet-klasa`, ten sam mechanizm/warunek co już istniejący
+  `old_price_formatted`) — PIERWSZY dotyk PHP w tej serii ad-hoc rund
+  (poprzednie były czysto CSS/JS-DOM-injection). Uznane za „rendering" w
+  rozumieniu D-8.G1 (patrz uwaga do D-8.G1 przy P-8.6a wyżej) —
+  analogicznie do `old_price_formatted`: czysta pochodna wartość (odjęcie
+  + `wc_price()`) na już czytanym polu ACF, zero nowej logiki
+  biznesowej/nowego źródła danych.
+- **Niezależna recenzja (docs/review.md):** runda 3 — 🟡 WARUNKOWO (drobne,
+  luka is-medium/is-small opisana wyżej, brak 🔴). Runda 4 — 🟢 CZYSTE,
+  zero ustaleń blokujących, PHPStan (`inc/features/Cart`) czysto.
+- **Uwaga:** wszystkie punkty poza nowym polem Store API w rundzie 4 to
+  czysty CSS/markup w `qutlet-theme`; pole `item_savings_formatted` to
+  rendering (D-8.G1), nie glue do Woo — bez dotykania core/allegro/ai.
 ### P-8.6b — Kasa + potwierdzenie
 - Kasa (`kasa.html` → `woocommerce/checkout/`) + potwierdzenie zamówienia
   (`potwierdzenie.html` → `woocommerce/checkout/thankyou.php`, potwierdzone
