@@ -2998,107 +2998,6 @@ znika) zamiast wrócić.
   header-nav.js).
 - **Zależności:** brak — niezależne od reszty FAZY 9.
 
-### P-9.3 — Klasy stanu: rozszerzalny byt + tekst „dlaczego taniej" per klasa + edytowalne mapowanie Allegro (punkt wielorepowy → P-9.3a + P-9.3b + P-9.3c)
-
-**Zgłoszenie (2026-07-28):** dziś „klasa stanu" to zamknięty czterowartościowy
-enum A/B/C/D, zduplikowany w TRZECH niezależnych, hardkodowanych miejscach:
-- `qutlet-core/src/ProductCondition/ProductConditionFields.php` — `choices`
-  pola ACF `klasa_stanu` (literał + etykieta per klasa, na sztywno w kodzie).
-- `qutlet-theme/inc/features/ProductPage/ProductPage.php` →
-  `condition_label()` — TA SAMA etykieta, zduplikowana drugi raz w PHP motywu.
-- `qutlet-theme/woocommerce/content-single-product.php` → tablica
-  `$classification_rows` (kolumny „Stan wizualny"/„Charakterystyka" per klasa
-  w tabeli `.class-table`, akordeon „Klasyfikacja produktów" z P-8.2b) oraz
-  kolory kropek `.dot-a`…`.dot-d` w `style.css:520-523`.
-
-Dodatkowo tekst „Skąd niższa cena?" (`.eco-note`, ten sam plik) jest JEDEN,
-wspólny dla WSZYSTKICH klas — nie ma wariantu per klasę, mimo że uzasadnienie
-niższej ceny („nie dopłacasz za nieotwierane opakowanie", „ograniczasz
-e-waste") nie pasuje jednakowo np. do klasy D („Na części").
-
-Mapowanie Allegro „Stan" → `klasa_stanu` (7 wartości Allegro → 4 nasze klasy,
-`docs/mapping-allegro.md` D-4.1.1) jest RÓWNIEŻ hardkodowane — stała PHP
-`CONDITION_MAP` w `qutlet-allegro/src/OfferSync/OfferMapper.php:32-40`.
-
-Efekt: dodanie JEDNEJ nowej klasy dziś wymaga edycji kodu w czterech miejscach
-w trzech repo, żeby całość pozostała spójna — a to tylko przypadek dodania
-klasy; sama zmiana treści (np. innego tekstu „dlaczego taniej" dla klasy B)
-też wymaga deploya kodu, nie edycji w adminie.
-
-**Żądanie użytkownika:** klasa stanu ma nosić kolor, nazwę, krótki opis na
-chipsie (np. „Klasa A · Jak nowy"), stan wizualny, charakterystykę oraz
-WŁASNY, edytowalny tekst „dlaczego taniej" (dziś wspólny — ma być per klasa).
-Musi być możliwość DODAWANIA nowych klas (nie tylko A-D) oraz edytowalna
-tabelka mapująca wartości Allegro „Stan" na klasy.
-
-Rozbite na trzy pod-punkty per repo (reguła punktów wielorepowych) — zależność
-P-9.3b/P-9.3c → P-9.3a (model musi powstać, zanim konsumenci będą mieli co
-czytać).
-
-#### P-9.3a — Core: byt „klasa stanu" jako rozszerzalny model + admin UI
-- **Repo:** qutlet-core (slice `ProductCondition/` — rozbudowa istniejącego
-  slice'a, nie nowy)
-- **Zakres:** zastąpić zamknięty ACF select (`klasa_stanu`, `choices` A-D na
-  sztywno w kodzie) rozszerzalnym bytem niosącym PER KLASĘ: literał/kod,
-  kolor, nazwę, krótki opis na chipsie, stan wizualny, charakterystykę, tekst
-  „dlaczego taniej". Musi dać się dodać NOWĄ klasę bez zmiany kodu (przez
-  admina WP).
-- **D-9.3a.1 (mechanizm bytu — jak modelować rozszerzalność) [OTWARTE]:** kilka
-  opcji, żadna nierekomendowana — decyzja użytkownika:
-  1. **Własna taksonomia** (np. `klasa_stanu`) z **term meta** na
-     kolor/opisy — admin UI „za darmo" (ekran Tags), rozszerzalność przez
-     dodanie termu. Wymaga jawnego odwrócenia D-1.2.1 (świadomie odrzuciła
-     taksonomię na rzecz ACF select) — nie ciche nadpisanie, tylko udokumentowana
-     rewizja z uzasadnieniem „czemu inaczej niż wtedy".
-  2. **CPT** (np. `klasa_produktu`) + relacja z produktem (post object/ID) —
-     pełna elastyczność pól (repeater-like przez ACF na CPT), ale własny ekran
-     admina do zbudowania (nie „za darmo" jak taksonomia).
-  3. **Opcja WP z repeaterem ACF (options page)** — jedna globalna lista klas,
-     wzorzec zbliżony do `qutlet_stawka_rabatu` z P-6.1, ale repeater zamiast
-     jednej liczby; produkt trzyma tylko literał/klucz wskazujący wiersz.
-     Prostsze niż CPT, ale repeater w jednej opcji nie ma natywnego
-     admin-listing jak CPT/taksonomia (edycja w jednym długim formularzu).
-  Wybór wpływa wprost na P-9.3b (jak motyw czyta/referencjonuje klasę) i
-  P-9.3c (gdzie żyje mapowanie Allegro → klasa).
-- **D-9.3a.2 (migracja istniejących wartości) [OTWARTE]:** produkty już
-  zsynchronizowane z Allegro mają zapisany literał `klasa_stanu` (A/B/C/D) —
-  czy nowy byt WSPÓŁISTNIEJE z tym literałem (produkt trzyma FK/klucz bez
-  zmian, zmienia się tylko SKĄD biorą się opisy/kolor), czy potrzebna migracja
-  danych? Wpływa na to, czy P-9.3c (mapowanie sync) w ogóle rusza istniejące
-  produkty.
-- **Zależności:** brak nowych — rewizja P-1.2 (już 🟢), punkt korygujący w
-  FAZIE 9 jak reszta tej fazy (patrz też P-9.2 — ten sam wzorzec rewizji).
-
-#### P-9.3b — Theme: render czyta z nowego bytu zamiast trzech kopii
-- **Repo:** qutlet-theme (slice `ProductPage/`)
-- **Zakres:** `ProductPage::condition_label()` (hardkodowany słownik),
-  `class-pill` (chip „Klasa {X} · {nazwa}"), `.eco-note` (tekst „dlaczego
-  taniej" — MA być per klasa, nie wspólny jak dziś), `$classification_rows`
-  w `content-single-product.php` (`.class-table`, akordeon „Klasyfikacja
-  produktów" z P-8.2b) i kolory `.dot-a`…`.dot-d` w `style.css` — wszystko
-  czyta z bytu ustalonego w P-9.3a zamiast z trzech niezależnych, zduplikowanych
-  słowników/tablic w kodzie motywu. Kolor klasy prawdopodobnie jako inline
-  `style="--dot-color: …"` albo klasa CSS generowana z literału — dokładny
-  mechanizm do rozstrzygnięcia przy realizacji (zależny od D-9.3a.1).
-- **Zależności:** P-9.3a.
-
-#### P-9.3c — Allegro: edytowalne mapowanie „Stan" → klasa
-- **Repo:** qutlet-allegro (`OfferSync/OfferMapper.php`)
-- **Zakres:** zastąpić stałą PHP `CONDITION_MAP` (7 wartości Allegro → 4 klasy,
-  `mapping-allegro.md` D-4.1.1) źródłem edytowalnym przez admina — tabelka
-  „wartość Allegro «Stan» → nasza klasa", rozszerzalna razem z nowymi klasami
-  z P-9.3a (dziś każda nowa klasa wymaga też ręcznej zmiany tej stałej — po
-  tym punkcie: zmiana w adminie, bez deploya). Zachować override sprzedawcy
-  (D-4.1.1/D-6.1.4 — auto-mapa ustawia `klasa_stanu` TYLKO gdy pole puste, nie
-  nadpisuje ręcznej edycji przy kolejnym sync — analogiczny problem do P-9.1a
-  dla tytułu, tu już rozwiązany i do zachowania, nie do powtórnego psucia).
-- **D-9.3c.1 (gdzie żyje ta tabelka) [OTWARTE]:** razem z bytem klas z P-9.3a
-  (np. term/post meta „mapowane wartości Allegro" na tym samym bycie) czy
-  osobna, niezależna tabelka (opcja WP, key-value) w `qutlet-allegro`?
-  Pierwsze trzyma wszystko o klasie w jednym miejscu; drugie zachowuje granicę
-  core=dane/model, allegro=sync (core nie musi nic wiedzieć o Allegro).
-- **Zależności:** P-9.3a (potrzebuje zbioru klas do zmapowania).
-
 ---
 
 ## 🟦 FAZA 10 — Dodatki (poza pierwotnym zakresem prototypu/build-outu)
@@ -3526,6 +3425,230 @@ artykuł nie ma dziś jak ich odtworzyć w edytorze:
   z P-11.3.
 - **Zależności:** P-11.1 (biblioteka patternów), P-11.3 (blog na treści
   blokowej — bez tego punkt nie miałby gdzie żyć).
+
+---
+
+## 🟦 FAZA 12 — Klasy stanu: rozszerzalny byt + gwarancja/reklamacja + widoczność w koszyku i kasie
+
+Cel: wyniesiony z FAZY 9 (był `P-9.3`) i ROZSZERZONY na wyraźną prośbę
+użytkownika (sesja 2026-08-06): zamiast zamkniętego, hardkodowanego enum
+A/B/C/D, klasa stanu staje się rozszerzalnym bytem, który niesie PER KLASĘ nie
+tylko nazwę/opis/tekst „dlaczego taniej", ale też **okres gwarancji** i
+**okres reklamacji ustawowej** — dziś oba WSZĘDZIE hardkodowane jako stały
+tekst „1 rok"/„12 miesięcy", identyczny dla każdej klasy (patrz ground-truth
+niżej). Otwiera to drzwi do klasy **„Nowe"** (gwarancja/reklamacja 2 lata,
+zamiast 1 roku jak dla dzisiejszych klas „używane" A-D) — BEZ nowej logiki w
+kodzie, bo to tylko kolejny wiersz rozszerzalnego bytu z innymi wartościami
+(patrz D-12.G1). Dodatkowo: te trzy fakty — klasa, gwarancja, reklamacja —
+muszą być widoczne nie tylko na stronie produktu, ale też w koszyku (P-8.6a,
+🟡 w trakcie — już renderuje „Klasa X"/„Gwarancja 1 rok" jako pigułki, ale
+gwarancja jest DZIŚ hardkodowanym stringiem w `assets/js/cart-block-filters.js`,
+bez reklamacji wcale) i w kasie (P-8.6b, jeszcze niezbudowana).
+
+**Ground-truth duplikacji (sesja 2026-08-06, `qutlet-theme`) — tekst
+„1 rok"/„12 miesięcy" jest hardkodowany w PIĘCIU miejscach jednego pliku,
+identyczny dla każdej klasy:**
+- `woocommerce/content-single-product.php:224,276` — „Gwarancja i prawo do
+  reklamacji: 1 rok" (dwa wystąpienia, dwa różne layouty tej samej informacji).
+- `woocommerce/content-single-product.php:248,250` — „Produkt sprzedawany
+  jako używany (Klasa {X}) • Reklamacja: 1 rok" / wariant bez klasy.
+- `woocommerce/content-single-product.php:472-473,477-478` — akordeon
+  „Gwarancja i reklamacje": „12 miesięcy gwarancji…” oraz „1 rok (zamiast
+  ustawowych 2 lat — dopuszczalne dla towarów używanych, gdy kupujący
+  zostanie wyraźnie poinformowany)." — TEN tekst już dziś NAZYWA mechanizm
+  prawny (rękojmia 2 lata skrócona do 1 roku dla używanych), więc klasa
+  „Nowe" z 2-letnim okresem wraca do ustawowego terminu, nie wymyśla nowego.
+- `woocommerce/content-single-product.php:484` — „Gwarancja i prawo do
+  reklamacji są identyczne dla każdego egzemplarza."
+- `inc/features/Cart/Cart.php`/`assets/js/cart-block-filters.js` (P-8.6a) —
+  pigułka „Gwarancja 1 rok" w koszyku, wstrzykiwana jako STATYCZNY literał
+  (`'<span class="pill">Gwarancja 1 rok</span>'`), bez odniesienia do
+  jakiegokolwiek pola — nawet nie duplikat wartości z innego miejsca, tylko
+  goły string. Reklamacja w koszyku dziś NIE jest pokazywana wcale.
+
+**Zależności fazy:** P-1.2 (🟢 — ACF `klasa_stanu`, do rewizji jak w
+pierwotnym `P-9.3`), P-8.2b (🟢 — tabela klasyfikacji na stronie produktu),
+P-8.6a (🟡 w trakcie — koszyk, pigułki „Klasa"/„Gwarancja" już renderowane,
+do przepisania na dane z bytu), P-8.6b (🟦 — kasa, jeszcze niezbudowana;
+gdy powstanie, MUSI pokazywać te same trzy fakty, patrz D-12.G2).
+
+### Decyzje globalne fazy
+
+- **D-12.G1 (klasa „Nowe" to WYŁĄCZNIE dane, nie nowa logika) [USTALONE —
+  wynika z modelu rozszerzalnego bytu, sesja 2026-08-06]:** dodanie klasy
+  „Nowe" (gwarancja/reklamacja 2 lata) NIE wymaga żadnego nowego kodu/case'a
+  — to kolejny wiersz tego samego bytu co A-D, tylko z innymi wartościami
+  liczbowymi na polach gwarancji/reklamacji. Jeśli realizacja punktu
+  P-12.1a kiedykolwiek wymagałaby specjalnego `if (klasa === 'Nowe')` gdzie
+  indziej w kodzie (core/theme/allegro) — to sygnał, że model bytu jest
+  źle zaprojektowany, nie że taki `if` jest w porządku.
+- **D-12.G2 (kasa pokazuje te same trzy fakty co koszyk, gdy powstanie)
+  [USTALONE]:** P-8.6b (Kasa) nie ma jeszcze własnego punktu realizacji w
+  planie (wciąż 🟦 w FAZIE 8), ale klasa/gwarancja/reklamacja per pozycja
+  MUSZĄ tam być widoczne identycznie jak w koszyku — renderowanie
+  ustalone w P-12.1b (theme) ma być zbudowane w sposób reużywalny między
+  koszykiem i kasą (ten sam Store API extension `qutlet-klasa` obsługuje
+  oba bloki Woo Blocks — Cart i Checkout — bez dodatkowej pracy po stronie
+  PHP), nie zduplikowane osobno dla kasy przy P-8.6b.
+- **D-12.G3 (gwarancja i reklamacja to DWA osobne pola bytu, nie jedno)
+  [USTALONE — sesja 2026-08-06]:** użytkownik wymienił „gwarancję ORAZ
+  reklamację ustawową" jako dwa fakty prawne (gwarancja = dobrowolne
+  zobowiązanie sprzedawcy, rękojmia/reklamacja = prawo ustawowe — różne
+  podstawy prawne, patrz istniejący tekst akordeonu w
+  `content-single-product.php:472-478`), dziś na stronie zrównane do tej
+  samej wartości „1 rok" wyłącznie przez przypadek treści, nie z powodu,
+  że muszą być równe. Byt niesie DWA pola (`okres_gwarancji`,
+  `okres_reklamacji`), żeby móc je w przyszłości rozdzielić bez zmiany
+  modelu — nawet jeśli dziś (i dla klasy „Nowe") są sobie równe per klasa.
+
+### P-12.1 — Klasy stanu: rozszerzalny byt + gwarancja/reklamacja + edytowalne mapowanie Allegro (punkt wielorepowy → P-12.1a + P-12.1b + P-12.1c)
+
+Treść przeniesiona i rozszerzona z `P-9.3` (usunięty z FAZY 9 — ten punkt go
+zastępuje w całości, patrz też ground-truth duplikacji wyżej).
+
+**Pierwotne zgłoszenie (2026-07-28):** dziś „klasa stanu" to zamknięty
+czterowartościowy enum A/B/C/D, zduplikowany w TRZECH niezależnych,
+hardkodowanych miejscach:
+- `qutlet-core/src/ProductCondition/ProductConditionFields.php` — `choices`
+  pola ACF `klasa_stanu` (literał + etykieta per klasa, na sztywno w kodzie).
+- `qutlet-theme/inc/features/ProductPage/ProductPage.php` →
+  `condition_label()` — TA SAMA etykieta, zduplikowana drugi raz w PHP motywu.
+- `qutlet-theme/woocommerce/content-single-product.php` → tablica
+  `$classification_rows` (kolumny „Stan wizualny"/„Charakterystyka" per klasa
+  w tabeli `.class-table`, akordeon „Klasyfikacja produktów" z P-8.2b) oraz
+  kolory kropek `.dot-a`…`.dot-d` w `style.css:520-523`.
+
+Dodatkowo tekst „Skąd niższa cena?" (`.eco-note`, ten sam plik) jest JEDEN,
+wspólny dla WSZYSTKICH klas — nie ma wariantu per klasę, mimo że uzasadnienie
+niższej ceny („nie dopłacasz za nieotwierane opakowanie", „ograniczasz
+e-waste") nie pasuje jednakowo np. do klasy D („Na części") — i tym bardziej
+nie pasuje do nowej klasy „Nowe" (nie ma czego tłumaczyć „taniej", jeśli
+egzemplarz jest nowy — tekst per klasa musi umieć być PUSTY/inny wariant, nie
+tylko inną treścią tej samej frazy).
+
+Mapowanie Allegro „Stan" → `klasa_stanu` (7 wartości Allegro → 4 nasze klasy,
+`docs/mapping-allegro.md` D-4.1.1) jest RÓWNIEŻ hardkodowane — stała PHP
+`CONDITION_MAP` w `qutlet-allegro/src/OfferSync/OfferMapper.php:32-40`. Klasa
+„Nowe" prawdopodobnie NIE mapuje się z żadnej wartości Allegro „Stan"
+używanych ofert — do rozstrzygnięcia przy P-12.1c, czy to w ogóle wpisuje się
+w automatyczny sync, czy jest ustawiana wyłącznie ręcznie (produkty własne,
+nowe, poza Allegro).
+
+Efekt: dodanie JEDNEJ nowej klasy dziś wymaga edycji kodu w PIĘCIU miejscach w
+trzech repo (cztery z pierwotnego zgłoszenia + pigułka w koszyku znaleziona
+przy P-8.6a), żeby całość pozostała spójna — a to tylko przypadek dodania
+klasy; sama zmiana treści (np. innego tekstu „dlaczego taniej" dla klasy B,
+albo skrócenia reklamacji dla nowej klasy) też wymaga deploya kodu, nie
+edycji w adminie.
+
+**Żądanie użytkownika (pierwotne + rozszerzenie 2026-08-06):** klasa stanu ma
+nosić kolor, nazwę, krótki opis na chipsie (np. „Klasa A · Jak nowy"), stan
+wizualny, charakterystykę, WŁASNY edytowalny tekst „dlaczego taniej" (dziś
+wspólny — ma być per klasa) ORAZ **okres gwarancji** i **okres reklamacji
+ustawowej** (dla A-D: 1 rok; dla nowej klasy „Nowe": 2 lata — patrz D-12.G3).
+Musi być możliwość DODAWANIA nowych klas (nie tylko A-D, patrz „Nowe") oraz
+edytowalna tabelka mapująca wartości Allegro „Stan" na klasy. Klasa,
+gwarancja i reklamacja MUSZĄ być widoczne przy produkcie, w koszyku i w
+kasie — nie tylko na stronie produktu jak dotąd.
+
+Rozbite na trzy pod-punkty per repo (reguła punktów wielorepowych) — zależność
+P-12.1b/P-12.1c → P-12.1a (model musi powstać, zanim konsumenci będą mieli co
+czytać).
+
+#### P-12.1a — Core: byt „klasa stanu" jako rozszerzalny model + gwarancja/reklamacja + admin UI
+- **Repo:** qutlet-core (slice `ProductCondition/` — rozbudowa istniejącego
+  slice'a, nie nowy)
+- **Zakres:** zastąpić zamknięty ACF select (`klasa_stanu`, `choices` A-D na
+  sztywno w kodzie) rozszerzalnym bytem niosącym PER KLASĘ: literał/kod,
+  kolor, nazwę, krótki opis na chipsie, stan wizualny, charakterystykę, tekst
+  „dlaczego taniej" (może być pusty — patrz wyżej, klasa „Nowe" go nie
+  potrzebuje), **okres gwarancji** i **okres reklamacji ustawowej** (dwa
+  osobne pola, D-12.G3; jednostka do rozstrzygnięcia przy realizacji —
+  miesiące jako liczba całkowita, z formatowaniem „X rok/lata/lat" po polskiej
+  odmianie liczebników przy renderze, prawdopodobnie WSPÓLNY mechanizm z
+  odmianą „sztuka/sztuki/sztuk" już portowaną do JS w P-8.6a — `plPlural()`
+  w `cart-block-filters.js` — do rozważenia, czy da się reużyć/przenieść, czy
+  to inny wzorzec odmiany, bo „rok/lata/lat" ma NIEREGULARNY trzeci wariant,
+  inny niż „sztuka/sztuki/sztuk"). Musi dać się dodać NOWĄ klasę (włącznie z
+  „Nowe") bez zmiany kodu (przez admina WP) — patrz D-12.G1.
+- **D-12.1a.1 (mechanizm bytu — jak modelować rozszerzalność) [OTWARTE]:**
+  (przeniesione z pierwotnego D-9.3a.1, bez zmian — nadal nierozstrzygnięte)
+  kilka opcji, żadna nierekomendowana — decyzja użytkownika:
+  1. **Własna taksonomia** (np. `klasa_stanu`) z **term meta** na
+     kolor/opisy/gwarancję/reklamację — admin UI „za darmo" (ekran Tags),
+     rozszerzalność przez dodanie termu. Wymaga jawnego odwrócenia D-1.2.1
+     (świadomie odrzuciła taksonomię na rzecz ACF select) — nie ciche
+     nadpisanie, tylko udokumentowana rewizja z uzasadnieniem „czemu inaczej
+     niż wtedy".
+  2. **CPT** (np. `klasa_produktu`) + relacja z produktem (post object/ID) —
+     pełna elastyczność pól (repeater-like przez ACF na CPT), ale własny ekran
+     admina do zbudowania (nie „za darmo" jak taksonomia).
+  3. **Opcja WP z repeaterem ACF (options page)** — jedna globalna lista klas,
+     wzorzec zbliżony do `qutlet_stawka_rabatu` z P-6.1, ale repeater zamiast
+     jednej liczby; produkt trzyma tylko literał/klucz wskazujący wiersz.
+     Prostsze niż CPT, ale repeater w jednej opcji nie ma natywnego
+     admin-listing jak CPT/taksonomia (edycja w jednym długim formularzu).
+  Wybór wpływa wprost na P-12.1b (jak motyw czyta/referencjonuje klasę) i
+  P-12.1c (gdzie żyje mapowanie Allegro → klasa).
+- **D-12.1a.2 (migracja istniejących wartości) [OTWARTE]:** (przeniesione z
+  pierwotnego D-9.3a.2, bez zmian) produkty już zsynchronizowane z Allegro
+  mają zapisany literał `klasa_stanu` (A/B/C/D) — czy nowy byt WSPÓŁISTNIEJE
+  z tym literałem (produkt trzyma FK/klucz bez zmian, zmienia się tylko SKĄD
+  biorą się opisy/kolor/gwarancja/reklamacja), czy potrzebna migracja danych?
+  Wpływa na to, czy P-12.1c (mapowanie sync) w ogóle rusza istniejące produkty.
+- **D-12.1a.3 (skąd bierze się klasa „Nowe" — sync Allegro czy tylko ręcznie)
+  [OTWARTE]:** patrz akapit o mapowaniu wyżej — do rozstrzygnięcia razem z
+  P-12.1c, czy jakakolwiek wartość Allegro „Stan" mapuje się na „Nowe", czy
+  ta klasa istnieje WYŁĄCZNIE dla produktów wprowadzanych poza automatycznym
+  sync (ręcznie w adminie).
+- **Zależności:** brak nowych — rewizja P-1.2 (już 🟢), analogicznie do
+  pierwotnego umiejscowienia tego punktu w FAZIE 9 (P-9.2 — ten sam wzorzec
+  rewizji), tylko wyniesiona do własnej fazy ze względu na rozmiar/wagę
+  zmiany (dotyka trzech repo i dwóch już zbudowanych powierzchni renderu).
+
+#### P-12.1b — Theme: render czyta z nowego bytu (produkt, koszyk, kasa) zamiast hardkodowanych stringów
+- **Repo:** qutlet-theme (slice `ProductPage/` + `Cart/`)
+- **Zakres:** WSZYSTKIE pięć miejsc z ground-truth duplikacji wyżej —
+  `ProductPage::condition_label()` (hardkodowany słownik), `class-pill` (chip
+  „Klasa {X} · {nazwa}"), `.eco-note` (tekst „dlaczego taniej" — per klasa,
+  może być pusty), `$classification_rows` w `content-single-product.php`
+  (`.class-table`), kolory `.dot-a`…`.dot-d` w `style.css`, DWA wystąpienia
+  „Gwarancja i prawo do reklamacji: 1 rok" (linie 224, 276), „Reklamacja: 1
+  rok" (linie 248, 250), akordeon „Gwarancja i reklamacje" (linie 472-478) —
+  wszystko czyta z bytu ustalonego w P-12.1a zamiast z hardkodowanych
+  literałów w kodzie motywu. DODATKOWO (nowy zakres vs.
+  pierwotny P-9.3b): pigułka „Gwarancja 1 rok" w koszyku
+  (`Cart::cart_item_data()`/`cart-block-filters.js`, P-8.6a) przechodzi z
+  gołego stringu na realną wartość z bytu PER KLASA tego konkretnego
+  produktu w koszyku, plus DOPISANIE pigułki reklamacji (dziś nieobecnej w
+  koszyku wcale). Kolor klasy prawdopodobnie jako inline
+  `style="--dot-color: …"` albo klasa CSS generowana z literału — dokładny
+  mechanizm do rozstrzygnięcia przy realizacji (zależny od D-12.1a.1).
+- **Uwaga (D-12.G2):** render koszyka/kasy ma być JEDNYM mechanizmem
+  reużywalnym między blokiem Cart i Checkout (Store API extension
+  `qutlet-klasa` już działa na obu endpointach w WC Blocks) — kasa (P-8.6b)
+  dostaje te dane „za darmo", gdy powstanie, nie osobną pracę.
+- **Zależności:** P-12.1a.
+
+#### P-12.1c — Allegro: edytowalne mapowanie „Stan" → klasa
+- **Repo:** qutlet-allegro (`OfferSync/OfferMapper.php`)
+- **Zakres:** zastąpić stałą PHP `CONDITION_MAP` (7 wartości Allegro → 4 klasy,
+  `mapping-allegro.md` D-4.1.1) źródłem edytowalnym przez admina — tabelka
+  „wartość Allegro «Stan» → nasza klasa", rozszerzalna razem z nowymi klasami
+  z P-12.1a (dziś każda nowa klasa wymaga też ręcznej zmiany tej stałej — po
+  tym punkcie: zmiana w adminie, bez deploya). Rozstrzygnąć D-12.1a.3 (czy
+  „Nowe" ma jakiekolwiek mapowanie z Allegro, czy zostaje poza tabelką).
+  Zachować override sprzedawcy (D-4.1.1/D-6.1.4 — auto-mapa ustawia
+  `klasa_stanu` TYLKO gdy pole puste, nie nadpisuje ręcznej edycji przy
+  kolejnym sync — analogiczny problem do P-9.1a dla tytułu, tu już
+  rozwiązany i do zachowania, nie do powtórnego psucia).
+- **D-12.1c.1 (gdzie żyje ta tabelka) [OTWARTE]:** (przeniesione z
+  pierwotnego D-9.3c.1, bez zmian) razem z bytem klas z P-12.1a (np.
+  term/post meta „mapowane wartości Allegro" na tym samym bycie) czy osobna,
+  niezależna tabelka (opcja WP, key-value) w `qutlet-allegro`? Pierwsze
+  trzyma wszystko o klasie w jednym miejscu; drugie zachowuje granicę
+  core=dane/model, allegro=sync (core nie musi nic wiedzieć o Allegro).
+- **Zależności:** P-12.1a (potrzebuje zbioru klas do zmapowania).
 
 ---
 
