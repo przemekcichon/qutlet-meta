@@ -2861,7 +2861,7 @@ rozpada się na dwa pod-punkty / dwa PR-y z jawną zależnością (`P-8.3c-theme
   blok Status pokazuje taką treść WYŁĄCZNIE przy braku uprawnień do
   podglądu, nie przy świeżo złożonym zamówieniu z poprawnym kluczem) —
   wymagałoby dopisania własnego bloku/markupu obok Summary.
-### 🟡 P-8.6c — Konto + logowanie
+### 🟢 P-8.6c — Konto + logowanie
 - Moje konto (`moje-konto.html`) + logowanie (`logowanie.html`) →
   `woocommerce/myaccount/`. **Zależności:** P-8.1 (+ Woo).
   Realizacja: `qutlet-theme`, branch `feature/faza-8-6c-konto`,
