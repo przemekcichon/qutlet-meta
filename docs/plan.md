@@ -2935,12 +2935,36 @@ rozpada się na dwa pod-punkty / dwa PR-y z jawną zależnością (`P-8.3c-theme
   zweryfikowany WYŁĄCZNIE statycznie (kod/PHPStan) — Local nie ma
   przechwytywacza poczty w tej sesji, więc pełny cykl e-mail→link nie był
   klikany.
-- **Metody płatności (`payment-methods` endpoint) świadomie POMINIĘTE** — WC
-  chowa je natywnie (`wc_get_account_menu_items()`, sprawdza
+- **Metody płatności (`payment-methods` endpoint) świadomie POMINIĘTE
+  [POTWIERDZONE PRZEZ UŻYTKOWNIKA — sesja 2026-08-07, po porównaniu
+  zrzutów ekranu prototyp vs. WordPress]** — WC chowa je natywnie
+  (`wc_get_account_menu_items()`, sprawdza
   `PaymentGatewayFeature::ADD_PAYMENT_METHOD`/`TOKENIZATION`), bo żadna
   aktywna bramka (bacs/cheque/cod) nie wspiera tokenizacji kart. Panel
   „Metody płatności" z prototypu to UI dla realnej tokenizacji, której ta
-  instalacja nie ma — budowanie fasady bez danych byłoby fikcją.
+  instalacja nie ma — budowanie fasady bez danych byłoby fikcją. Użytkownik
+  zapytany wprost (trzy opcje: zostaw/dodaj bramkę z tokenizacją/dodaj
+  nieaktywny placeholder) wybrał „zostaw jak jest" — rewizyta, gdy dojdzie
+  realna bramka z tokenizacją.
+- **D-8.6c.5 (dwa błędy layoutu z natywnych arkuszy WC, złapane przez
+  użytkownika na zrzutach ekranu) [USTALONE — sesja 2026-08-07]:** pierwsza
+  strona z classic shortcode'em WC w projekcie ujawniła dwa konflikty ze
+  współistniejącymi arkuszami WC, auto-ładowanymi dla KAŻDEGO motywu
+  blokowego niezależnie od własnego layoutu motywu:
+  1. `woocommerce-blocktheme.css` (`WC_Frontend_Scripts::enqueue_block_assets()`)
+     dokłada `max-width:1000px` na `.woocommerce-account main .woocommerce`
+     BEZ marginesów auto — cała treść konta była przyklejona do lewej
+     krawędzi zamiast wyśrodkowana. Naprawione:
+     `.woocommerce-account main .woocommerce { margin-left: auto; margin-right: auto; }`.
+  2. `woocommerce-layout.css` (klasyczny 2-kolumnowy layout WC, ładowany
+     RÓWNOLEGLE z blocktheme.css, nie zamiast) dokłada
+     `.woocommerce-MyAccount-navigation{float:left;width:30%}` — cała
+     nawigacja konta była ściśnięta do ~70px, etykiety zawijały się na dwie
+     linie. Naprawione: `float:none; width:100%` (specyficzność 0,2,0 bije
+     WC-owe 0,1,0). Ten sam `woocommerce-blocktheme.css` co pkt 1 dokładał
+     też `padding:1em 0` na każdy `<li>` nawigacji (~32px zbędnego odstępu)
+     — naprawione z `!important` (specyficzność WC 0,2,1 wyższa niż nasze
+     0,1,2, sama kolejność źródeł nie rozstrzygnęłaby tego przewidywalnie).
 - **Znane braki, świadomie POZA zakresem tej rundy (fast-follow, wzorem
   P-8.6a.2/.3, P-8.6b):** (1) pola Imię/Nazwisko przy rejestracji z
   prototypu (`logowanie.html:38-39`) NIE mają odpowiednika — WC ich nie
