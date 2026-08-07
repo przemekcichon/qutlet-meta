@@ -2861,12 +2861,82 @@ rozpada się na dwa pod-punkty / dwa PR-y z jawną zależnością (`P-8.3c-theme
   blok Status pokazuje taką treść WYŁĄCZNIE przy braku uprawnień do
   podglądu, nie przy świeżo złożonym zamówieniu z poprawnym kluczem) —
   wymagałoby dopisania własnego bloku/markupu obok Summary.
-### P-8.6c — Konto + logowanie
+### 🟡 P-8.6c — Konto + logowanie
 - Moje konto (`moje-konto.html`) + logowanie (`logowanie.html`) →
   `woocommerce/myaccount/`. **Zależności:** P-8.1 (+ Woo).
+  Realizacja: `qutlet-theme`, branch `feature/faza-8-6c-konto`,
+  [PR #24](https://github.com/przemekcichon/qutlet-theme/pull/24).
+- **D-8.6c.1 (renderer: CLASSIC shortcode `[woocommerce_my_account]` +
+  nadpisania `woocommerce/myaccount/*.php`, NIE WooCommerce Blocks)
+  [USTALONE — ground-truth, sesja 2026-08-07]:** odwrotnie niż Koszyk/Kasa
+  (D-8.6a.1/D-8.6b.1 — bloki mimo klasycznego komentarza w prototypie), tu
+  ground-truth potwierdził komentarz prototypu (`moje-konto.html:13` →
+  `woocommerce/myaccount/my-account.php`) jako TRAFNY: Strona „My account"
+  (ID 10, `woocommerce_myaccount_page_id`) na tej instalacji ma
+  `post_content` dosłownie `[woocommerce_my_account]`, nie blok. Realizacja
+  więc klasycznymi nadpisaniami PHP (`my-account.php`/`navigation.php`/
+  `dashboard.php`/`orders.php`/`form-edit-account.php`/
+  `form-edit-address.php`/`my-address.php`/`form-login.php`), restylowanymi
+  na istniejące klasy design-systemu (`.form-card`/`.field`) + nowo
+  portowane (`.acct-*`/`.auth-*`/`.order-card`/`.tile*`).
+- **D-8.6c.2 (brak osobnej strony/URL-a dla `logowanie.html`)
+  [USTALONE — fakt architektury WC, sesja 2026-08-07]:**
+  `WC_Shortcode_My_Account::output()` (WooCommerce core) sam sprawdza
+  `is_user_logged_in()` PRZED wywołaniem `my-account.php` — gdy false,
+  renderuje WYŁĄCZNIE `form-login.php` i wraca (`my-account.php`/
+  `navigation.php` w ogóle się nie ładują). Jeden URL (`/moje-konto/`)
+  obsługuje więc oba stany prototypu; zakładki Logowanie/Rejestracja w
+  `form-login.php` to czysty JS-owy DOM-toggle (`assets/js/account-auth-tabs.js`,
+  ten sam wzorzec co `product-buy-tabs.js`) — oba formularze WC renderują
+  się zawsze po stronie serwera.
+- **D-8.6c.3 (stan bazy tej instalacji dopasowany do prototypu — WZOREM
+  D-8.6a.2/D-8.6b.3) [USTALONE — sesja 2026-08-07]:** cztery zmiany opcji
+  WooCommerce przez wp-cli, nie kod:
+  1. Slug/tytuł Strony „My account" → `moje-konto`/„Moje konto" (jak Cart →
+     `koszyk`, Checkout → `kasa`).
+  2. `woocommerce_enable_myaccount_registration`: `no` → `yes` — świeża
+     instalacja WC ma rejestrację wyłączoną domyślnie, to nie była świadoma
+     decyzja biznesowa; sklep bez możliwości rejestracji odwiedzających
+     byłby niezgodny z prototypem (`logowanie.html`, zakładka „Rejestracja").
+  3. `woocommerce_registration_generate_password`: `yes` → `no` — przy `yes`
+     WC NIE pokazuje pola hasła przy rejestracji (wysyła mailem link do
+     jego ustawienia), niezgodnie z prototypem (`logowanie.html:42`, pole
+     „Hasło" zawsze widoczne). Znaleziono dopiero w niezależnej recenzji
+     PR #24 — pierwsza wersja kodu błędnie zakładała, że opcja już ma
+     wartość `no`.
+  4. `woocommerce_registration_privacy_policy_text`: domyślny angielski
+     tekst WC → przetłumaczony na polski (ten sam typ literału co
+     `woocommerce_registration_privacy_policy_text` treści prawnych gdzie
+     indziej — nie kod, treść ustawień).
+
+  **Uwaga wdrożeniowa (wzorzec D-8.4.3/D-8.5.3/D-8.6a.2/D-8.6b.3):** to stan
+  bazy TEJ instalacji Local, NIE migracja/kod — nowe środowisko wystartuje
+  ze świeżymi domyślnymi wartościami WooCommerce do czasu ręcznego
+  powtórzenia tych czterech zmian.
+- **Metody płatności (`payment-methods` endpoint) świadomie POMINIĘTE** — WC
+  chowa je natywnie (`wc_get_account_menu_items()`, sprawdza
+  `PaymentGatewayFeature::ADD_PAYMENT_METHOD`/`TOKENIZATION`), bo żadna
+  aktywna bramka (bacs/cheque/cod) nie wspiera tokenizacji kart. Panel
+  „Metody płatności" z prototypu to UI dla realnej tokenizacji, której ta
+  instalacja nie ma — budowanie fasady bez danych byłoby fikcją.
+- **Znane braki, świadomie POZA zakresem tej rundy (fast-follow, wzorem
+  P-8.6a.2/.3, P-8.6b):** (1) pola Imię/Nazwisko przy rejestracji z
+  prototypu (`logowanie.html:38-39`) NIE mają odpowiednika — WC ich nie
+  zbiera przy rejestracji, dopisanie + zapis do usermeta to GLUE (nie
+  szablon, patrz „Uwaga" niżej) → OSOBNY punkt w `qutlet-core`; (2)
+  `/moje-konto/edytuj-adres/` (index adresu rozliczeniowego+wysyłkowego,
+  `my-address.php`) bez odpowiednika w prototypie (jedna karta „Adres
+  dostawy") — lekki restyling bez próby dopasowania 1:1, bo
+  `woocommerce_ship_to_destination` na tej instalacji (`billing`, nie
+  `billing_only`) sprawia, że WC natywnie rozróżnia oba adresy; (3)
+  `form-lost-password.php`/`form-reset-password.php`/`lost-password-confirmation.php`
+  zostają na natywnym, nierestylowanym markupie WC (poza plikami
+  wymienionymi w D-8.6c.1).
 
 **Uwaga (P-8.6):** ewentualny glue logiki (nie szablon) → **core** jako OSOBNY
-punkt, nie w PR-ze motywu (granica artefaktów).
+punkt, nie w PR-ze motywu (granica artefaktów). Dla P-8.6c dotyczy to
+pól Imię/Nazwisko przy rejestracji (patrz „Znane braki" wyżej) — poza
+zakresem tego punktu.
 
 ### P-8.7 — Strona główna (front-page) — SUPERSEDOWANY przez P-11.4
 - **Zakres pierwotny (dla historii):** `index.html` → `front-page.php`
