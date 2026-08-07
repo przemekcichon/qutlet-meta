@@ -2774,7 +2774,7 @@ rozpada się na dwa pod-punkty / dwa PR-y z jawną zależnością (`P-8.3c-theme
   istniejącą akcję Store API z JS, patrz D-8.6a.4 — bez nowego hooka PHP);
   pole `item_savings_formatted` to rendering (D-8.G1), nie glue do Woo —
   bez dotykania core/allegro/ai.
-### 🟡 P-8.6b — Kasa + potwierdzenie
+### 🟢 P-8.6b — Kasa + potwierdzenie
 - Kasa (`kasa.html` → `woocommerce/checkout/`) + potwierdzenie zamówienia
   (`potwierdzenie.html` → `woocommerce/checkout/thankyou.php`, potwierdzone
   `potwierdzenie.html:13`). **Zależności:** P-8.1 (+ Woo).
