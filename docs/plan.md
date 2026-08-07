@@ -3904,7 +3904,7 @@ czytać).
 
 ---
 
-## 🟦 FAZA 13 — Strona produktu: edytor admina i to, co ściągamy z Allegro
+## 🟨 FAZA 13 — Strona produktu: edytor admina i to, co ściągamy z Allegro
 
 Cel: zgłoszenie użytkownika (sesja 2026-08-06) po realnym używaniu ekranu
 edycji produktu — siedem poprawek do tego, JAK dane z Allegro trafiają do
@@ -4031,7 +4031,7 @@ każdego punktu, per `docs/ground-truth.md`):**
   artefaktów (core rejestruje ACF, ai nie) MA zostać nienaruszona — pytanie
   dotyczy TYLKO renderu/pozycji, nie własności pola.
 
-### P-13.1 — Import: nowe produkty w statusie „Oczekuje na przegląd", nie „Opublikowany"
+### 🟢 P-13.1 — Import: nowe produkty w statusie „Oczekuje na przegląd", nie „Opublikowany"
 - **Repo:** qutlet-allegro (`OfferSync/ImportOffersCommand.php`,
   `OfferSync/ProductWriter.php`)
 - **Zakres:** zmienić DOMYŚLNĄ wartość flagi `--status` z `publish` na
