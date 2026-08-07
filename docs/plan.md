@@ -3196,6 +3196,10 @@ znika) zamiast wrócić.
 
 ### P-9.6 — Motyw nie powinien ładować domyślnego CSS WooCommerce
 
+**✅ Zrealizowane, zmergowane** — [qutlet-theme PR #25](https://github.com/przemekcichon/qutlet-theme/pull/25) (2026-08-07). Nieformalny
+znacznik dla czytelności — FAZA 9 nie używa ikon 🟡/🟢 na punktach (patrz
+`### P-9.1`/`### P-9.5`, ta sama konwencja), sama faza zostaje 🟨 na stałe.
+
 **Zgłoszenie (2026-08-07, sesja P-8.6c):** użytkownik porównał zrzuty
 ekranu prototypu i realnej strony „Moje konto" i złapał dwa błędy
 layoutu — oba z natywnych arkuszy WooCommerce (`.woocommerce{max-width:1000px}`
