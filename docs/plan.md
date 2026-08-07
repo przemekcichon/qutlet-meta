@@ -2876,9 +2876,11 @@ rozpada się na dwa pod-punkty / dwa PR-y z jawną zależnością (`P-8.3c-theme
   `post_content` dosłownie `[woocommerce_my_account]`, nie blok. Realizacja
   więc klasycznymi nadpisaniami PHP (`my-account.php`/`navigation.php`/
   `dashboard.php`/`orders.php`/`form-edit-account.php`/
-  `form-edit-address.php`/`my-address.php`/`form-login.php`), restylowanymi
-  na istniejące klasy design-systemu (`.form-card`/`.field`) + nowo
-  portowane (`.acct-*`/`.auth-*`/`.order-card`/`.tile*`).
+  `form-edit-address.php`/`my-address.php`/`form-login.php`/
+  `form-lost-password.php`/`form-reset-password.php`/
+  `lost-password-confirmation.php`), restylowanymi na istniejące klasy
+  design-systemu (`.form-card`/`.field`) + nowo portowane
+  (`.acct-*`/`.auth-*`/`.order-card`/`.tile*`).
 - **D-8.6c.2 (brak osobnej strony/URL-a dla `logowanie.html`)
   [USTALONE — fakt architektury WC, sesja 2026-08-07]:**
   `WC_Shortcode_My_Account::output()` (WooCommerce core) sam sprawdza
@@ -2913,6 +2915,26 @@ rozpada się na dwa pod-punkty / dwa PR-y z jawną zależnością (`P-8.3c-theme
   bazy TEJ instalacji Local, NIE migracja/kod — nowe środowisko wystartuje
   ze świeżymi domyślnymi wartościami WooCommerce do czasu ręcznego
   powtórzenia tych czterech zmian.
+- **D-8.6c.4 (ekran „zapomniałem hasła" + polski slug endpointu)
+  [USTALONE — decyzja użytkownika, sesja 2026-08-07, kontynuacja NA TYM
+  SAMYM branchu/PR #24, wzorem P-8.6a.2/.3]:** dograne po runcie
+  pierwotnej — użytkownik poprosił o restyling ekranu widocznego pod
+  natywnym `wc_lostpassword_url()` (link „Nie pamiętasz hasła?" w
+  `form-login.php`) + polski slug zamiast domyślnego `lost-password`.
+  `woocommerce_myaccount_lost_password_endpoint` → `zapomniane-haslo` (ten
+  sam wzorzec zmiany stanu bazy co D-8.6c.3, `wp option update` +
+  `wp rewrite flush`) — WSZYSTKIE TRZY ekrany tej ścieżki
+  (`form-lost-password.php`/`lost-password-confirmation.php`/
+  `form-reset-password.php`, patrz `WC_Shortcode_My_Account::lost_password()`)
+  żyją pod TYM SAMYM endpointem (rozróżniane przez `$_GET['reset-link-sent']`/
+  `$_GET['show-reset-form']`), więc jedna zmiana opcji pokrywa cały flow.
+  Restyling na TĘ SAMĄ rodzinę `.auth-wrap`/`.auth-card`/`.auth-form` co
+  `form-login.php` — BEZ odpowiednika w prototypie (`design/vanilla` nie ma
+  takiego ekranu), więc dopasowanie do istniejącego systemu projektowego,
+  nie do nieistniejącego wzorca. `form-reset-password.php` (token z e-maila)
+  zweryfikowany WYŁĄCZNIE statycznie (kod/PHPStan) — Local nie ma
+  przechwytywacza poczty w tej sesji, więc pełny cykl e-mail→link nie był
+  klikany.
 - **Metody płatności (`payment-methods` endpoint) świadomie POMINIĘTE** — WC
   chowa je natywnie (`wc_get_account_menu_items()`, sprawdza
   `PaymentGatewayFeature::ADD_PAYMENT_METHOD`/`TOKENIZATION`), bo żadna
@@ -2928,10 +2950,7 @@ rozpada się na dwa pod-punkty / dwa PR-y z jawną zależnością (`P-8.3c-theme
   `my-address.php`) bez odpowiednika w prototypie (jedna karta „Adres
   dostawy") — lekki restyling bez próby dopasowania 1:1, bo
   `woocommerce_ship_to_destination` na tej instalacji (`billing`, nie
-  `billing_only`) sprawia, że WC natywnie rozróżnia oba adresy; (3)
-  `form-lost-password.php`/`form-reset-password.php`/`lost-password-confirmation.php`
-  zostają na natywnym, nierestylowanym markupie WC (poza plikami
-  wymienionymi w D-8.6c.1).
+  `billing_only`) sprawia, że WC natywnie rozróżnia oba adresy.
 
 **Uwaga (P-8.6):** ewentualny glue logiki (nie szablon) → **core** jako OSOBNY
 punkt, nie w PR-ze motywu (granica artefaktów). Dla P-8.6c dotyczy to
