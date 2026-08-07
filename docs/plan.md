@@ -4062,11 +4062,31 @@ opakowania"). Przycisk „Generuj" ma działać AJAX-em (BEZ przeładowania
 strony — patrz D-13.G2 o świadomej niekonsystencji z generatorem opisu),
 plus przycisk „Reset" przywracający oryginalną nazwę Allegro.
 
-Rozbite na trzy pod-punkty per repo — zależność P-13.2b/P-13.2c → P-13.2a.
+Rozbite na cztery pod-punkty per repo — zależność P-13.2b/P-13.2c →
+P-13.2a-core → P-13.2a-meta. Pierwotnie „P-13.2a" był zapisany jako
+jeden punkt jednorepowy (qutlet-core) — ground-truth przy realizacji
+(sesja 2026-08-07) ujawnił, że nowe literały (meta_key, nazwa pola ACF)
+nie mają jeszcze wpisu w `docs/kontrakt-danych.md`. Zgodnie z utrwaloną
+praktyką projektu (P-5.1a/P-5.1b; analogicznie P-9.2, którego kontrakt
+ostatecznie też trafił osobnym PR-em do `qutlet-meta` — PR #43
+„docs/p92-ship-content-model" — mimo że plan pierwotnie zapisywał go
+jako jednorepowy) kontrakt wchodzi NAJPIERW osobnym punktem/PR-em w
+`qutlet-meta`, dopiero potem rejestracja w `qutlet-core` czyta z niego
+literały VERBATIM. Decyzja użytkownika (sesja 2026-08-07): rozbić.
 
-#### P-13.2a — Core: pole oryginalnej nazwy Allegro + pole „podnazwa"
+#### 🟡 P-13.2a-meta — Kontrakt: pole oryginalnej nazwy Allegro + pole „podnazwa" (qutlet-meta)
+- **Repo:** qutlet-meta (`docs/kontrakt-danych.md`)
+- **Zakres:** dopisać do kontraktu nowe literały modelu P-13.2: `meta_key`
+  oryginalnej nazwy Allegro (warstwa surowa, verbatim — §9.1, wzorem
+  `_qutlet_allegro_description_raw`/`_qutlet_allegro_specification_raw`)
+  oraz nazwę pola ACF `podnazwa` (warstwa przerobiona — §9.2, ta sama
+  grupa co `opis`). Źródło Allegro dla nazwy: `mapping-allegro.md` §1
+  (`name` oferty → dziś wprost `post_title`).
+- **Zależności:** brak nowych.
+
+#### P-13.2a-core — Core: rejestracja pola oryginalnej nazwy Allegro + pola „podnazwa"
 - **Repo:** qutlet-core
-- **Zakres:** nowa stała `META_NAME_RAW` (np. `_qutlet_allegro_nazwa_raw`)
+- **Zakres:** nowa stała `META_NAME_RAW` (literał z kontraktu P-13.2a-meta)
   w `src\ProductInfo\RawLayerMeta.php` — NATURALNE miejsce, klasa już
   trzyma dokładnie taki „verbatim z Allegro, nieedytowalny" typ pola
   (`META_OFFER`/`META_DESCRIPTION_RAW`/`META_SPECIFICATION_RAW`, ten sam
@@ -4076,18 +4096,19 @@ Rozbite na trzy pod-punkty per repo — zależność P-13.2b/P-13.2c → P-13.2a
   która po P-13.3a traci `opis`; nazwa grupy prawdopodobnie do zmiany, bo
   „opis produktu" nie opisuje już zawartości, jeśli zostaje tylko
   `podnazwa` — do rozstrzygnięcia przy realizacji, razem z P-13.3a).
-- **Zależności:** brak nowych.
+- **Zależności:** P-13.2a-meta (kontrakt ustala literały).
 
 #### P-13.2b — Allegro: zapis oryginalnej nazwy przy sync
 - **Repo:** qutlet-allegro (`OfferSync/ProductWriter.php`)
 - **Zakres:** `upsert()` dopisuje `$offer['name']` do
-  `RawLayerMeta::META_NAME_RAW` (P-13.2a) RÓWNOLEGLE z istniejącym
+  `RawLayerMeta::META_NAME_RAW` (P-13.2a-core) RÓWNOLEGLE z istniejącym
   `set_name()` na `post_title` (zachowanie domyślne — bez AI, oryginał
   ląduje w obu miejscach, jak dziś, tylko teraz też zapamiętany osobno).
   Domyślne zachowanie (`post_title` = nazwa Allegro) NIE zmienia się —
   ten punkt tylko DOPISUJE zapis do nowego pola, nie zmienia istniejącej
   ścieżki.
-- **Zależności:** P-13.2a (pole musi istnieć, żeby coś do niego zapisać).
+- **Zależności:** P-13.2a-core (pole musi istnieć, żeby coś do niego
+  zapisać).
 
 #### P-13.2c — AI: generator tytułu/podnazwy (AJAX) + reset
 - **Repo:** qutlet-ai
@@ -4098,16 +4119,16 @@ Rozbite na trzy pod-punkty per repo — zależność P-13.2b/P-13.2c → P-13.2a
   mechanizm wywołania w tym pluginie, inny niż `admin-post.php` generatora
   opisu (patrz D-13.G2, świadoma niekonsystencja + wymagane zabezpieczenie
   zastępcze przed przypadkowym kliknięciem). Wynik nadpisuje `post_title`
-  + `podnazwa` (P-13.2a) — prawdopodobnie z tym samym mechanizmem
+  + `podnazwa` (P-13.2a-core) — prawdopodobnie z tym samym mechanizmem
   podglądu przed zapisem, co generator opisu (transient), do
   potwierdzenia przy realizacji czy podgląd jest tu też potrzebny, czy
   bezpośredni zapis (bo AJAX bez przeładowania i tak daje szybki „undo"
   przez przycisk Reset). Przycisk „Reset" (osobna akcja AJAX albo prościej
   JS, jeśli `nazwa_allegro` już jest w DOM-ie strony) przywraca
   `post_title` = `RawLayerMeta::META_NAME_RAW` i czyści `podnazwa`.
-- **Zależności:** P-13.2a (pola), P-13.2b (żeby reset miał do czego
+- **Zależności:** P-13.2a-core (pola), P-13.2b (żeby reset miał do czego
   wracać — choć technicznie reset mógłby czytać `META_NAME_RAW` nawet bez
-  P-13.2b na produktach zsynchronizowanych PO P-13.2a).
+  P-13.2b na produktach zsynchronizowanych PO P-13.2a-core).
 
 ### P-13.3 — Opis produktu: natywne pole WP zamiast ACF, generator zaraz pod nim
 
