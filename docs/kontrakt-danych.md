@@ -306,6 +306,7 @@ zablokowana (`auth_callback` → false), a sync zapisuje je bezpośrednio
 | Pole (znaczenie)        | Literał (`meta_key`)                | Miejsce | Typ            | Opcjonalne? | Źródło Allegro (mapping) | Kształt / uwagi |
 |-------------------------|-------------------------------------|---------|----------------|-------------|--------------------------|-----------------|
 | Pełna oferta (verbatim) | `_qutlet_allegro_offer`             | meta    | string (JSON)  | tak         | cała zwrotka `GET /sale/product-offers/{id}` (`mapping` §4) | JSON **verbatim, bajt-w-bajt** — warunek zasiewu sandboxa (FAZA 3A) i najlepszy kontekst AI (FAZA 7). Brak → produkt nie pochodzi z Allegro (utworzony ręcznie). |
+| Nazwa oryginalna (verbatim) | `_qutlet_allegro_nazwa_raw`      | meta    | string         | tak         | `name` oferty (`mapping` §1) | oryginalna nazwa Allegro, **bez żadnej normalizacji** (kapitaliki itd. jak przyszły). DOMYŚLNIE (bez ingerencji AI) ląduje wprost w natywnym `post_title`, jak dziś (P-13.2). Wejście do przeróbki AI (tytuł oczyszczony + `podnazwa`, §9.2, P-13.2c) i punkt powrotu przycisku „Reset". Brak → produkt nie pochodzi z Allegro (utworzony ręcznie). |
 | Opis prozą (surowy)     | `_qutlet_allegro_description_raw`    | meta    | string (HTML)  | tak         | `description.sections[].items[]` type `TEXT` (`mapping` §4e) | wyprowadzony z JSON-a: sekcje `TEXT` sklejone w prozę (obrazy `IMAGE` pomijane tu — są w verbatim JSON). Wejście do przeróbki AI. Puste → oferta bez opisu tekstowego. |
 | Specyfikacja (surowa)   | `_qutlet_allegro_specification_raw`  | meta    | array          | tak         | `productSet[0].product.parameters[]` (`mapping` §4b) | tablica par etykieta→wartość, kształt niżej. Puste → oferta bez parametrów. |
 
@@ -334,6 +335,7 @@ Uwagi do kształtu:
 | Pole (znaczenie)       | Literał              | Miejsce | Typ                 | Opcjonalne? | Uwagi |
 |------------------------|----------------------|---------|---------------------|-------------|-------|
 | Opis (przerobiony)     | `opis`               | ACF     | WYSIWYG (rich text) | tak         | user-facing opis produktu pokazywany na stronie; wypełniany przez AI (FAZA 7) i redagowany ręcznie; **NIE nadpisywany przez sync**. Wzorzec rejestracji jak `zawartosc_zestawu` (§2). Puste → motyw ukrywa/fallback (FAZA 8). Odczyt: `get_field('opis')` / `get_post_meta($id,'opis',true)`. |
+| Podnazwa (przerobiona) | `podnazwa`           | ACF     | text (jedna linia)  | tak         | druga część nazwy, gdy AI rozbije zbyt długą `_qutlet_allegro_nazwa_raw` (§9.1) na tytuł (→ `post_title`) + podnazwę — AI decyduje GDZIE dzielić (FAZA 13, P-13.2c). **NIE** WYSIWYG — krótka linia tekstu, ta sama grupa ACF co `opis`. Redagowalna ręcznie; **NIE nadpisywana przez sync** (sync dotyka tylko `post_title` i `_qutlet_allegro_nazwa_raw`, P-13.2b). Puste → motyw renderuje sam tytuł, bez podnazwy. Odczyt: `get_field('podnazwa')` / `get_post_meta($id,'podnazwa',true)`. |
 | Specyfikacja (przerob.)| **atrybuty WooCommerce** (`_product_attributes`) | Woo | atrybuty produktu (custom, per-produkt) | tak | **natywny mechanizm Woo** — `qutlet-core` NIE rejestruje dla niej pola (D-5.1.1). Glue/sync zapisuje atrybuty produktu; motyw renderuje natywnie (zakładka „Informacje dodatkowe" / własny render FAZA 8). Odczyt: `$product->get_attributes()`. Puste → brak tabeli spec. |
 
 **Dlaczego opis = ACF, a specyfikacja = atrybuty WC (asymetria świadoma):** opis to
@@ -347,9 +349,12 @@ meta (§9.1, D-5.1.2).
 
 ### Odnośniki (§9)
 - Mapping (skąd płyną te pola z Allegro): `docs/mapping-allegro.md` §4b (parametry →
-  specyfikacja), §4e (opis/media → warstwa surowa/AI), §4 (cały surowy JSON w meta).
+  specyfikacja), §4e (opis/media → warstwa surowa/AI), §4 (cały surowy JSON w meta),
+  §1 (`name` oferty → nazwa oryginalna, `_qutlet_allegro_nazwa_raw`).
 - Plan: `docs/plan.md` → FAZA 5 (D-5.G1/G3/G4), P-5.1 (D-5.1.1/D-5.1.2/D-5.1.3),
-  P-5.3 (podgląd warstwy surowej w adminie).
+  P-5.3 (podgląd warstwy surowej w adminie). Pola nazwy (`_qutlet_allegro_nazwa_raw`,
+  `podnazwa`): FAZA 13, P-13.2 (P-13.2a-meta ustala te literały; P-13.2a-core
+  rejestruje w `qutlet-core`; P-13.2b zapisuje przy sync; P-13.2c generuje AI).
 
 ---
 
