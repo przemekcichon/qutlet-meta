@@ -2774,10 +2774,93 @@ rozpada się na dwa pod-punkty / dwa PR-y z jawną zależnością (`P-8.3c-theme
   istniejącą akcję Store API z JS, patrz D-8.6a.4 — bez nowego hooka PHP);
   pole `item_savings_formatted` to rendering (D-8.G1), nie glue do Woo —
   bez dotykania core/allegro/ai.
-### P-8.6b — Kasa + potwierdzenie
+### 🟡 P-8.6b — Kasa + potwierdzenie
 - Kasa (`kasa.html` → `woocommerce/checkout/`) + potwierdzenie zamówienia
   (`potwierdzenie.html` → `woocommerce/checkout/thankyou.php`, potwierdzone
   `potwierdzenie.html:13`). **Zależności:** P-8.1 (+ Woo).
+- **D-8.6b.1 (kasa: Checkout Block + WooCommerce Blocks Integration, ta sama
+  nowoczesna ścieżka co koszyk, NIE classic) [USTALONE — decyzja użytkownika,
+  sesja 2026-08-06]:** ground-truth powtórzył zaskoczenie z D-8.6a.1 — Strona
+  „Checkout" na tej instalacji domyślnie zawiera blok `wp:woocommerce/checkout`,
+  NIE shortcode, mimo komentarza w prototypie (`kasa.html:13`) sugerującego
+  classic `form-checkout.php`. Zrealizowane analogicznie do koszyka:
+  `CheckoutBlocksIntegration` (osobna instancja `IntegrationRegistry` — hook
+  `woocommerce_blocks_checkout_block_registration`, per-blok, patrz
+  `IntegrationRegistry::initialize()`) + `assets/js/checkout-block-filters.js`
+  (DOM-injection, ten sam wzorzec co `cart-block-filters.js`). Dane per-wiersz
+  (`qutlet-klasa`) NIE wymagały osobnej rejestracji Store API — zweryfikowane
+  runtime (Playwright): blok Checkout czyta z TEGO SAMEGO zasobu `wc/store/cart`
+  co blok Cart, więc rozszerzenia zarejestrowane raz w `Cart::register_store_api_data()`
+  są widoczne na obu blokach (D-12.G2 potwierdzone praktycznie, mimo że FAZA 12
+  jeszcze nie zbudowana — kasa pokazuje dziś to samo, co koszyk pokazywał PRZED
+  FAZĄ 12: pigułka klasy + statyczny literał „Gwarancja 1 rok" + stara cena +
+  oszczędności per wiersz i w podsumowaniu). Podsumowanie zamówienia bloku
+  Checkout renderuje się DWA RAZY jednocześnie (mobilny podgląd Slot/Fill +
+  prawdziwy sidebar) — dopasowanie danych do wierszy po indeksie musiało być
+  scope'owane PO KONTENERZE (`.wc-block-components-order-summary__content`),
+  nie po jednej płaskiej liście `querySelectorAll` (złapane przy weryfikacji
+  Playwright, inaczej wiersz koszyka myliłby się z węzłem podglądu). Podobnie
+  pierwszy `wp.data.subscribe()` (wzorem koszyka) NIE WYSTARCZYŁ — podgląd
+  Slot/Fill montuje się własnym, opóźnionym cyklem Reacta niezależnym od zmian
+  sklepu `wc/store/cart`; dopisany `MutationObserver` na `<body>` jako
+  niezawodny fallback (złapane przy weryfikacji Playwright: bez niego odznaki
+  nie pojawiały się przy pierwszym, „zimnym" załadowaniu strony).
+- **D-8.6b.2 (potwierdzenie: szablon FSE `order-confirmation`, NIE classic
+  `checkout/thankyou.php` — pierwsza wersja tego punktu była TU BŁĘDNA)
+  [USTALONE — poprawione ground-truthem runtime, sesja 2026-08-06]:**
+  pierwotne założenie (na podstawie odczytu `Checkout::is_checkout_endpoint()`
+  w `woocommerce/src/Blocks/BlockTypes/Checkout.php`) było, że endpoint
+  `order-received` odpada na classic shortcode/`woocommerce/checkout/thankyou.php`
+  — ZWERYFIKOWANE RUNTIME jako fałszywe (Playwright, realne testowe
+  zamówienie): ten override nigdy się nie odpalał. `is_checkout_endpoint()`
+  dotyczy WYŁĄCZNIE bloku FORMULARZA (co zrobić, gdyby ktoś umieścił blok
+  checkoutu na stronie potwierdzenia) — o wyborze CAŁEGO SZABLONU STRONY dla
+  `order-received` decyduje osobny, równoległy mechanizm: WooCommerce Blocks
+  rejestruje własny szablon FSE `order-confirmation`
+  (`OrderConfirmationTemplate::is_active_template()` → `is_wc_endpoint_url('order-received')`),
+  analogicznie do `page-cart`/`page-checkout` (ten sam `AbstractPageTemplate`,
+  ten sam priorytet nad `templates/page.html` motywu). **Doprecyzowanie
+  (niezależna recenzja, sesja 2026-08-06):** na endpoincie `order-received`
+  `CheckoutTemplate::is_active_template()` i `OrderConfirmationTemplate::is_active_template()`
+  są PRAWDZIWE JEDNOCZEŚNIE (oba filtrują `page_template_hierarchy` z tym
+  samym priorytetem `1`) — o tym, że wygrywa Order Confirmation, decyduje
+  KOLEJNOŚĆ REJESTRACJI w `BlockTemplatesRegistry::init()` (Order
+  Confirmation inicjalizowany PO Checkout, więc trafia bliżej szczytu
+  hierarchii), nie odrębny, jawnie wyższy priorytet — nieformalna, wewnętrzna
+  gwarancja WC, nie kontrakt publiczny; warto ją re-zweryfikować przy
+  aktualizacji WooCommerce. Realny render —
+  natywne, CAŁKOWICIE SERWEROWO renderowane bloki
+  `wp:woocommerce/order-confirmation-status`/`-summary` (bez Store
+  API/Reacta, w przeciwieństwie do Cart/Checkout — bez potrzeby JS). Usunięty
+  martwy plik `woocommerce/checkout/thankyou.php` (nigdy nieosiągalny w tej
+  architekturze), zastąpiony `templates/order-confirmation.html` (nowy
+  szablon motywu — WYŁĄCZNIE bloki Status+Summary, port minimalistycznego
+  `.confirm-box` z prototypu; reszta domyślnych bloków WC — totals/shipping/
+  billing/downloads — świadomie pominięta, bo prototyp jest równie
+  minimalny) + filtry `woocommerce_thankyou_order_received_title`/`_text`
+  (`inc/features/Checkout/Checkout.php` — te same nazwy hooków co stary
+  classic `thankyou.php`, celowo zachowane przez WC przy przejściu na bloki,
+  jedyny punkt podmiany tekstu bloku Status bez przepisywania komponentu).
+- **D-8.6b.3 (slug Strony Checkout: `checkout` → `kasa`, tytuł → „Zamówienie")
+  [USTALONE — sesja 2026-08-06, wzorem D-8.6a.2]:** ground-truth ujawnił
+  nieprzetłumaczony slug domyślnej Strony WooCommerce „Checkout" (`/checkout/`).
+  Zmieniony na `kasa` przez wp-cli (URL — dopasowany do breadcrumb „Kasa" z
+  prototypu), `post_title` zmieniony na „Zamówienie" (dopasowany do H1
+  prototypu, `kasa.html:24` — świadomie INNY tekst niż slug/breadcrumb,
+  zgodnie z prototypem). **Uwaga wdrożeniowa (wzorzec D-8.4.3/D-8.5.3/D-8.6a.2):**
+  to stan bazy tej instalacji Local, NIE migracja/kod — nowe środowisko
+  wystartuje z domyślnym `checkout`/„Checkout" do czasu ręcznego powtórzenia.
+- **Znane luki, świadomie POZA zakresem tej rundy (fast-follow, wzorem
+  P-8.6a.2/.3):** (1) etykieta metody dostawy w podsumowaniu zostaje natywna
+  „Dostawa" zamiast dynamicznego „Dostawa (Kurier)" z prototypu — wymagałoby
+  odczytu nazwy wybranej stawki z JS; (2) tekst zgody na regulamin zostaje
+  natywny WC („Kontynuując zamówienie…"), NIE literalny tekst prototypu o
+  14-dniowym prawie zwrotu produktu używanego — to zmiana TREŚCI bloku
+  (edytowalna w Site Editorze/DB, nie kodzie motywu); (3) notatka „Kupujesz
+  jako gość — załóż konto" z prototypu nieobecna w potwierdzeniu (natywny
+  blok Status pokazuje taką treść WYŁĄCZNIE przy braku uprawnień do
+  podglądu, nie przy świeżo złożonym zamówieniu z poprawnym kluczem) —
+  wymagałoby dopisania własnego bloku/markupu obok Summary.
 ### P-8.6c — Konto + logowanie
 - Moje konto (`moje-konto.html`) + logowanie (`logowanie.html`) →
   `woocommerce/myaccount/`. **Zależności:** P-8.1 (+ Woo).
