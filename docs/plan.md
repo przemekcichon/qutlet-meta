@@ -3081,6 +3081,50 @@ znika) zamiast wrócić.
   header-nav.js).
 - **Zależności:** brak — niezależne od reszty FAZY 9.
 
+### P-9.6 — Motyw nie powinien ładować domyślnego CSS WooCommerce
+
+**Zgłoszenie (2026-08-07, sesja P-8.6c):** użytkownik porównał zrzuty
+ekranu prototypu i realnej strony „Moje konto" i złapał dwa błędy
+layoutu — oba z natywnych arkuszy WooCommerce (`.woocommerce{max-width:1000px}`
+bez centrowania, `.woocommerce-MyAccount-navigation{float:left;width:30%}`
+gniotące nawigację konta, patrz D-8.6c.5). Pytanie zadane wprost: skoro
+motyw i tak nadpisuje mnóstwo stylów WC pojedynczo `!important`, to po co
+w ogóle ładować te arkusze?
+
+- **Repo:** qutlet-theme, [PR #25](https://github.com/przemekcichon/qutlet-theme/pull/25)
+  (`fix/faza-9-6-wc-default-css`, branch od `main`, NIEZALEŻNY od
+  `feature/faza-8-6c-konto` — dotyka stron spoza zakresu P-8.6c).
+- **Analiza:** `woocommerce.css`/`woocommerce-layout.css`/`woocommerce-smallscreen.css`
+  (era motywów klasycznych) sprawdzone (`grep -c "wc-block"`) — praktycznie
+  ZERO odniesień do realnego markupu bloków Koszyka/Kasy, więc dla tych
+  dwóch stron to martwy kod. `woocommerce-blocktheme.css` (kompat WC dla
+  motywów blokowych) ładuje się RÓWNOLEGLE z powyższymi trzema, nie
+  zamiast — to on odpowiadał za oba bugi P-8.6c. Strona produktu (P-8.2)
+  i archiwum (P-8.3) używają klasycznego markupu WC (formularz `form.cart`,
+  stepper ilości) — WIĘKSZE ryzyko niż Koszyk/Kasa (kilka reguł w tych
+  arkuszach dotyczy layoutu, nie tylko kosmetyki), zweryfikowane RUNTIME
+  (nie tylko statycznie), nie założone.
+- **Rozwiązanie:** `functions.php` — `woocommerce_enqueue_styles` filtr
+  (`__return_empty_array`) zdejmuje trzy klasyczne arkusze;
+  `woocommerce-blocktheme` zdjęty osobno (hook `enqueue_block_assets`,
+  priorytet 20 > WC-owe 10 — nie jest objęty tym samym filtrem, rejestruje
+  się przez `WC_Frontend_Scripts::enqueue_block_assets()`). `select2.css`
+  (dropdown kraju)/`wc-blocks.css` (style bloków Koszyka/Kasy) NIETKNIĘTE.
+- **Weryfikacja (Playwright, realne dane):** produkt (w magazynie + brak w
+  magazynie, formularz `form.cart` + stepper ilości), archiwum/kategoria,
+  koszyk z realnym produktem, pełna kasa, REALNE złożone zamówienie do
+  ekranu potwierdzenia — wszystko bez zmian wizualnych, zero błędów
+  konsoli. Moje konto (P-8.6c, wtedy jeszcze niezmergowane) zweryfikowane
+  LOKALNYM test-merge'em tej gałęzi na `feature/faza-8-6c-konto` (bez
+  pushowania, odrzucony po teście) — identyczne jak z arkuszami WC
+  obecnymi.
+- **Poza zakresem:** sprzątanie już istniejących `!important` w
+  `style.css`, które wcześniej nadpisywały te arkusze (teraz nadmiarowe,
+  ale nieszkodliwe — reguła WC, którą miały bić, już nie istnieje).
+- **Zależności:** brak formalnej zależności od P-8.6c (dotyka innych,
+  już zmergowanych stron), ale znaleziony PRZY OKAZJI tej sesji — oba PR-y
+  mogą się zmergować w dowolnej kolejności.
+
 ---
 
 ## 🟦 FAZA 10 — Dodatki (poza pierwotnym zakresem prototypu/build-outu)
