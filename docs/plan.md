@@ -2861,12 +2861,125 @@ rozpada się na dwa pod-punkty / dwa PR-y z jawną zależnością (`P-8.3c-theme
   blok Status pokazuje taką treść WYŁĄCZNIE przy braku uprawnień do
   podglądu, nie przy świeżo złożonym zamówieniu z poprawnym kluczem) —
   wymagałoby dopisania własnego bloku/markupu obok Summary.
-### P-8.6c — Konto + logowanie
+### 🟡 P-8.6c — Konto + logowanie
 - Moje konto (`moje-konto.html`) + logowanie (`logowanie.html`) →
   `woocommerce/myaccount/`. **Zależności:** P-8.1 (+ Woo).
+  Realizacja: `qutlet-theme`, branch `feature/faza-8-6c-konto`,
+  [PR #24](https://github.com/przemekcichon/qutlet-theme/pull/24).
+- **D-8.6c.1 (renderer: CLASSIC shortcode `[woocommerce_my_account]` +
+  nadpisania `woocommerce/myaccount/*.php`, NIE WooCommerce Blocks)
+  [USTALONE — ground-truth, sesja 2026-08-07]:** odwrotnie niż Koszyk/Kasa
+  (D-8.6a.1/D-8.6b.1 — bloki mimo klasycznego komentarza w prototypie), tu
+  ground-truth potwierdził komentarz prototypu (`moje-konto.html:13` →
+  `woocommerce/myaccount/my-account.php`) jako TRAFNY: Strona „My account"
+  (ID 10, `woocommerce_myaccount_page_id`) na tej instalacji ma
+  `post_content` dosłownie `[woocommerce_my_account]`, nie blok. Realizacja
+  więc klasycznymi nadpisaniami PHP (`my-account.php`/`navigation.php`/
+  `dashboard.php`/`orders.php`/`form-edit-account.php`/
+  `form-edit-address.php`/`my-address.php`/`form-login.php`/
+  `form-lost-password.php`/`form-reset-password.php`/
+  `lost-password-confirmation.php`), restylowanymi na istniejące klasy
+  design-systemu (`.form-card`/`.field`) + nowo portowane
+  (`.acct-*`/`.auth-*`/`.order-card`/`.tile*`).
+- **D-8.6c.2 (brak osobnej strony/URL-a dla `logowanie.html`)
+  [USTALONE — fakt architektury WC, sesja 2026-08-07]:**
+  `WC_Shortcode_My_Account::output()` (WooCommerce core) sam sprawdza
+  `is_user_logged_in()` PRZED wywołaniem `my-account.php` — gdy false,
+  renderuje WYŁĄCZNIE `form-login.php` i wraca (`my-account.php`/
+  `navigation.php` w ogóle się nie ładują). Jeden URL (`/moje-konto/`)
+  obsługuje więc oba stany prototypu; zakładki Logowanie/Rejestracja w
+  `form-login.php` to czysty JS-owy DOM-toggle (`assets/js/account-auth-tabs.js`,
+  ten sam wzorzec co `product-buy-tabs.js`) — oba formularze WC renderują
+  się zawsze po stronie serwera.
+- **D-8.6c.3 (stan bazy tej instalacji dopasowany do prototypu — WZOREM
+  D-8.6a.2/D-8.6b.3) [USTALONE — sesja 2026-08-07]:** cztery zmiany opcji
+  WooCommerce przez wp-cli, nie kod:
+  1. Slug/tytuł Strony „My account" → `moje-konto`/„Moje konto" (jak Cart →
+     `koszyk`, Checkout → `kasa`).
+  2. `woocommerce_enable_myaccount_registration`: `no` → `yes` — świeża
+     instalacja WC ma rejestrację wyłączoną domyślnie, to nie była świadoma
+     decyzja biznesowa; sklep bez możliwości rejestracji odwiedzających
+     byłby niezgodny z prototypem (`logowanie.html`, zakładka „Rejestracja").
+  3. `woocommerce_registration_generate_password`: `yes` → `no` — przy `yes`
+     WC NIE pokazuje pola hasła przy rejestracji (wysyła mailem link do
+     jego ustawienia), niezgodnie z prototypem (`logowanie.html:42`, pole
+     „Hasło" zawsze widoczne). Znaleziono dopiero w niezależnej recenzji
+     PR #24 — pierwsza wersja kodu błędnie zakładała, że opcja już ma
+     wartość `no`.
+  4. `woocommerce_registration_privacy_policy_text`: domyślny angielski
+     tekst WC → przetłumaczony na polski (ten sam typ literału co
+     `woocommerce_registration_privacy_policy_text` treści prawnych gdzie
+     indziej — nie kod, treść ustawień).
+
+  **Uwaga wdrożeniowa (wzorzec D-8.4.3/D-8.5.3/D-8.6a.2/D-8.6b.3):** to stan
+  bazy TEJ instalacji Local, NIE migracja/kod — nowe środowisko wystartuje
+  ze świeżymi domyślnymi wartościami WooCommerce do czasu ręcznego
+  powtórzenia tych czterech zmian.
+- **D-8.6c.4 (ekran „zapomniałem hasła" + polski slug endpointu)
+  [USTALONE — decyzja użytkownika, sesja 2026-08-07, kontynuacja NA TYM
+  SAMYM branchu/PR #24, wzorem P-8.6a.2/.3]:** dograne po runcie
+  pierwotnej — użytkownik poprosił o restyling ekranu widocznego pod
+  natywnym `wc_lostpassword_url()` (link „Nie pamiętasz hasła?" w
+  `form-login.php`) + polski slug zamiast domyślnego `lost-password`.
+  `woocommerce_myaccount_lost_password_endpoint` → `zapomniane-haslo` (ten
+  sam wzorzec zmiany stanu bazy co D-8.6c.3, `wp option update` +
+  `wp rewrite flush`) — WSZYSTKIE TRZY ekrany tej ścieżki
+  (`form-lost-password.php`/`lost-password-confirmation.php`/
+  `form-reset-password.php`, patrz `WC_Shortcode_My_Account::lost_password()`)
+  żyją pod TYM SAMYM endpointem (rozróżniane przez `$_GET['reset-link-sent']`/
+  `$_GET['show-reset-form']`), więc jedna zmiana opcji pokrywa cały flow.
+  Restyling na TĘ SAMĄ rodzinę `.auth-wrap`/`.auth-card`/`.auth-form` co
+  `form-login.php` — BEZ odpowiednika w prototypie (`design/vanilla` nie ma
+  takiego ekranu), więc dopasowanie do istniejącego systemu projektowego,
+  nie do nieistniejącego wzorca. `form-reset-password.php` (token z e-maila)
+  zweryfikowany WYŁĄCZNIE statycznie (kod/PHPStan) — Local nie ma
+  przechwytywacza poczty w tej sesji, więc pełny cykl e-mail→link nie był
+  klikany.
+- **Metody płatności (`payment-methods` endpoint) świadomie POMINIĘTE
+  [POTWIERDZONE PRZEZ UŻYTKOWNIKA — sesja 2026-08-07, po porównaniu
+  zrzutów ekranu prototyp vs. WordPress]** — WC chowa je natywnie
+  (`wc_get_account_menu_items()`, sprawdza
+  `PaymentGatewayFeature::ADD_PAYMENT_METHOD`/`TOKENIZATION`), bo żadna
+  aktywna bramka (bacs/cheque/cod) nie wspiera tokenizacji kart. Panel
+  „Metody płatności" z prototypu to UI dla realnej tokenizacji, której ta
+  instalacja nie ma — budowanie fasady bez danych byłoby fikcją. Użytkownik
+  zapytany wprost (trzy opcje: zostaw/dodaj bramkę z tokenizacją/dodaj
+  nieaktywny placeholder) wybrał „zostaw jak jest" — rewizyta, gdy dojdzie
+  realna bramka z tokenizacją.
+- **D-8.6c.5 (dwa błędy layoutu z natywnych arkuszy WC, złapane przez
+  użytkownika na zrzutach ekranu) [USTALONE — sesja 2026-08-07]:** pierwsza
+  strona z classic shortcode'em WC w projekcie ujawniła dwa konflikty ze
+  współistniejącymi arkuszami WC, auto-ładowanymi dla KAŻDEGO motywu
+  blokowego niezależnie od własnego layoutu motywu:
+  1. `woocommerce-blocktheme.css` (`WC_Frontend_Scripts::enqueue_block_assets()`)
+     dokłada `max-width:1000px` na `.woocommerce-account main .woocommerce`
+     BEZ marginesów auto — cała treść konta była przyklejona do lewej
+     krawędzi zamiast wyśrodkowana. Naprawione:
+     `.woocommerce-account main .woocommerce { margin-left: auto; margin-right: auto; }`.
+  2. `woocommerce-layout.css` (klasyczny 2-kolumnowy layout WC, ładowany
+     RÓWNOLEGLE z blocktheme.css, nie zamiast) dokłada
+     `.woocommerce-MyAccount-navigation{float:left;width:30%}` — cała
+     nawigacja konta była ściśnięta do ~70px, etykiety zawijały się na dwie
+     linie. Naprawione: `float:none; width:100%` (specyficzność 0,2,0 bije
+     WC-owe 0,1,0). Ten sam `woocommerce-blocktheme.css` co pkt 1 dokładał
+     też `padding:1em 0` na każdy `<li>` nawigacji (~32px zbędnego odstępu)
+     — naprawione z `!important` (specyficzność WC 0,2,1 wyższa niż nasze
+     0,1,2, sama kolejność źródeł nie rozstrzygnęłaby tego przewidywalnie).
+- **Znane braki, świadomie POZA zakresem tej rundy (fast-follow, wzorem
+  P-8.6a.2/.3, P-8.6b):** (1) pola Imię/Nazwisko przy rejestracji z
+  prototypu (`logowanie.html:38-39`) NIE mają odpowiednika — WC ich nie
+  zbiera przy rejestracji, dopisanie + zapis do usermeta to GLUE (nie
+  szablon, patrz „Uwaga" niżej) → OSOBNY punkt w `qutlet-core`; (2)
+  `/moje-konto/edytuj-adres/` (index adresu rozliczeniowego+wysyłkowego,
+  `my-address.php`) bez odpowiednika w prototypie (jedna karta „Adres
+  dostawy") — lekki restyling bez próby dopasowania 1:1, bo
+  `woocommerce_ship_to_destination` na tej instalacji (`billing`, nie
+  `billing_only`) sprawia, że WC natywnie rozróżnia oba adresy.
 
 **Uwaga (P-8.6):** ewentualny glue logiki (nie szablon) → **core** jako OSOBNY
-punkt, nie w PR-ze motywu (granica artefaktów).
+punkt, nie w PR-ze motywu (granica artefaktów). Dla P-8.6c dotyczy to
+pól Imię/Nazwisko przy rejestracji (patrz „Znane braki" wyżej) — poza
+zakresem tego punktu.
 
 ### P-8.7 — Strona główna (front-page) — SUPERSEDOWANY przez P-11.4
 - **Zakres pierwotny (dla historii):** `index.html` → `front-page.php`
