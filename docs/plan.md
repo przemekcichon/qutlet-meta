@@ -4098,7 +4098,7 @@ literały VERBATIM. Decyzja użytkownika (sesja 2026-08-07): rozbić.
   `podnazwa` — do rozstrzygnięcia przy realizacji, razem z P-13.3a).
 - **Zależności:** P-13.2a-meta (kontrakt ustala literały).
 
-#### P-13.2b — Allegro: zapis oryginalnej nazwy przy sync
+#### 🟢 P-13.2b — Allegro: zapis oryginalnej nazwy przy sync
 - **Repo:** qutlet-allegro (`OfferSync/ProductWriter.php`)
 - **Zakres:** `upsert()` dopisuje `$offer['name']` do
   `RawLayerMeta::META_NAME_RAW` (P-13.2a-core) RÓWNOLEGLE z istniejącym
