@@ -4062,8 +4062,9 @@ opakowania"). Przycisk „Generuj" ma działać AJAX-em (BEZ przeładowania
 strony — patrz D-13.G2 o świadomej niekonsystencji z generatorem opisu),
 plus przycisk „Reset" przywracający oryginalną nazwę Allegro.
 
-Rozbite na cztery pod-punkty per repo — zależność P-13.2b/P-13.2c →
-P-13.2a-core → P-13.2a-meta. Pierwotnie „P-13.2a" był zapisany jako
+Rozbite na pięć pod-punktów per repo — zależność P-13.2b/P-13.2c →
+P-13.2a-core → P-13.2a-meta, P-13.2d niezależny (czyta gotowe pole,
+patrz niżej). Pierwotnie „P-13.2a" był zapisany jako
 jeden punkt jednorepowy (qutlet-core) — ground-truth przy realizacji
 (sesja 2026-08-07) ujawnił, że nowe literały (meta_key, nazwa pola ACF)
 nie mają jeszcze wpisu w `docs/kontrakt-danych.md`. Zgodnie z utrwaloną
@@ -4073,6 +4074,16 @@ ostatecznie też trafił osobnym PR-em do `qutlet-meta` — PR #43
 jako jednorepowy) kontrakt wchodzi NAJPIERW osobnym punktem/PR-em w
 `qutlet-meta`, dopiero potem rejestracja w `qutlet-core` czyta z niego
 literały VERBATIM. Decyzja użytkownika (sesja 2026-08-07): rozbić.
+
+P-13.2d (qutlet-theme, render `podnazwa` na froncie) dopisany później
+(sesja 2026-08-08, realizacja P-13.2c) — ground-truth ujawnił, że
+`docs/kontrakt-danych.md` §9.2 już zakłada render motywu („Puste →
+motyw pokazuje sam tytuł"), ale plan nigdy nie miał punktu, który by go
+faktycznie robił: `podnazwa` nie występuje NIGDZIE w kodzie
+`qutlet-theme` (sprawdzone grepem po realizacji P-13.2c — zero
+wyników), więc wygenerowana/zaakceptowana podnazwa nie wyświetla się
+NIGDZIE na stronie produktu. Świadomie odłożone jako osobny punkt (nie
+dopisane do P-13.2c) — inne repo, inna granica artefaktu.
 
 #### 🟢 P-13.2a-meta — Kontrakt: pole oryginalnej nazwy Allegro + pole „podnazwa" (qutlet-meta)
 - **Repo:** qutlet-meta (`docs/kontrakt-danych.md`)
@@ -4129,6 +4140,29 @@ literały VERBATIM. Decyzja użytkownika (sesja 2026-08-07): rozbić.
 - **Zależności:** P-13.2a-core (pola), P-13.2b (żeby reset miał do czego
   wracać — choć technicznie reset mógłby czytać `META_NAME_RAW` nawet bez
   P-13.2b na produktach zsynchronizowanych PO P-13.2a-core).
+
+#### P-13.2d — Theme: render `podnazwa` na stronie produktu
+- **Repo:** qutlet-theme (`woocommerce/content-single-product.php`,
+  ewentualnie `inc/features/ProductPage/ProductPage.php` — helper
+  `acf_field()` już istnieje, używany dla `opis`/`klasa_stanu`/
+  `cena_rynkowa_nowego`/`allegro_url`/`cena_allegro`, do reużycia dla
+  `podnazwa`).
+- **Zakres:** dziś `<h1 class="pd-title"><?php the_title(); ?></h1>`
+  (linia ok. 164) renderuje WYŁĄCZNIE `post_title` — pole ACF `podnazwa`
+  (P-13.2a-core, wypełniane przez generator AI z P-13.2c) nie jest
+  czytane NIGDZIE w motywie. Doczytać `get_field('podnazwa')`
+  (`ProductPage::acf_field()`) i wyrenderować przy tytule, gdy niepuste
+  — zgodnie z `docs/kontrakt-danych.md` §9.2 („Puste → motyw pokazuje
+  sam tytuł"). Do rozstrzygnięcia przy realizacji: (1) markup/styl
+  podnazwy przy `h1.pd-title` (prototyp `design/vanilla` nie ma wzorca —
+  pole powstało po P-8.2a, dobrać rozsądnie, np. mniejszy nagłówek/
+  `<p class="pd-subtitle">` pod `h1`); (2) czy podnazwa ma się też
+  pojawić w skróconym tytule sticky buybara (`.buybar-title`, linia ok.
+  555, dziś tylko `get_the_title()`) — buybar jest celowo zwięzły, więc
+  prawdopodobnie NIE, ale do potwierdzenia.
+- **Zależności:** P-13.2a-core (pole musi istnieć — już zmergowane).
+  Niezależny od P-13.2c (czyta cokolwiek jest w polu, niezależnie od
+  tego, czy trafiło tam przez AI czy ręczną edycję w adminie).
 
 ### P-13.3 — Opis produktu: natywne pole WP zamiast ACF, generator zaraz pod nim
 
