@@ -4121,7 +4121,7 @@ dopisane do P-13.2c) — inne repo, inna granica artefaktu.
 - **Zależności:** P-13.2a-core (pole musi istnieć, żeby coś do niego
   zapisać).
 
-#### P-13.2c — AI: generator tytułu/podnazwy (AJAX) + reset
+#### 🟢 P-13.2c — AI: generator tytułu/podnazwy (AJAX) + reset
 - **Repo:** qutlet-ai
 - **Zakres:** nowa akcja AI (prompt osobny od opisu — czyszczenie
   kapitalików, usuwanie fragmentów niezwiązanych z produktem typu „brak
