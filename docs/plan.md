@@ -4141,7 +4141,7 @@ dopisane do P-13.2c) — inne repo, inna granica artefaktu.
   wracać — choć technicznie reset mógłby czytać `META_NAME_RAW` nawet bez
   P-13.2b na produktach zsynchronizowanych PO P-13.2a-core).
 
-#### P-13.2d — Theme: render `podnazwa` na stronie produktu
+#### 🟢 P-13.2d — Theme: render `podnazwa` na stronie produktu
 - **Repo:** qutlet-theme (`woocommerce/content-single-product.php`,
   ewentualnie `inc/features/ProductPage/ProductPage.php` — helper
   `acf_field()` już istnieje, używany dla `opis`/`klasa_stanu`/
