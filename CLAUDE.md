@@ -48,6 +48,14 @@ per `.gitignore`) — jeśli serwer nie jest wpięty, agent NIE ma dostępu do r
 przeglądarki i musi przyznać to wprost zamiast zgadywać wygląd. Instalacja i pełny
 opis w `docs/playwright-mcp-setup.md`.
 
+**Logowanie do wp-admin dla Playwright:** gdy weryfikacja wizualna wymaga zalogowania
+(np. ekran edycji produktu w adminie), a agent nie zna aktualnego hasła, WOLNO mu
+zresetować hasło użytkownika administracyjnego `pc1511` przez `wp_cli`
+(`wp user update pc1511 --user_pass=<nowe-hasło>`) i zalogować się nim przez
+Playwright — WYŁĄCZNIE na Localu (`loc.qutlet.pl`), NIGDY na produkcji
+(`www.qutlet.pl`). Nie trzeba pytać o zgodę za każdym razem — to standardowa ścieżka
+weryfikacji UI w tym projekcie.
+
 Adresy: lokalny (Local) `loc.qutlet.pl`, produkcyjny `www.qutlet.pl`. Istotne przy
 konfiguracji OAuth Allegro (redirect URI) — sekrety (client ID/secret Allegro,
 klucze API dostawców AI) trzymamy w `wp-config.php`, nigdy w repo.
