@@ -4074,7 +4074,7 @@ jako jednorepowy) kontrakt wchodzi NAJPIERW osobnym punktem/PR-em w
 `qutlet-meta`, dopiero potem rejestracja w `qutlet-core` czyta z niego
 literały VERBATIM. Decyzja użytkownika (sesja 2026-08-07): rozbić.
 
-#### 🟡 P-13.2a-meta — Kontrakt: pole oryginalnej nazwy Allegro + pole „podnazwa" (qutlet-meta)
+#### 🟢 P-13.2a-meta — Kontrakt: pole oryginalnej nazwy Allegro + pole „podnazwa" (qutlet-meta)
 - **Repo:** qutlet-meta (`docs/kontrakt-danych.md`)
 - **Zakres:** dopisać do kontraktu nowe literały modelu P-13.2: `meta_key`
   oryginalnej nazwy Allegro (warstwa surowa, verbatim — §9.1, wzorem
@@ -4084,7 +4084,7 @@ literały VERBATIM. Decyzja użytkownika (sesja 2026-08-07): rozbić.
   (`name` oferty → dziś wprost `post_title`).
 - **Zależności:** brak nowych.
 
-#### P-13.2a-core — Core: rejestracja pola oryginalnej nazwy Allegro + pola „podnazwa"
+#### 🟢 P-13.2a-core — Core: rejestracja pola oryginalnej nazwy Allegro + pola „podnazwa"
 - **Repo:** qutlet-core
 - **Zakres:** nowa stała `META_NAME_RAW` (literał z kontraktu P-13.2a-meta)
   w `src\ProductInfo\RawLayerMeta.php` — NATURALNE miejsce, klasa już
