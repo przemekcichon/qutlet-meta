@@ -4209,7 +4209,7 @@ opisu, nie na dole strony jak dziś.
 
 ### P-13.4 — Atrybuty: tłumaczenie 1:1 z Allegro, bez udziału AI (REWIZJA D-5.1.1/D-5.1.2 — patrz D-13.G1)
 
-#### P-13.4a — Allegro: zapis natywnych atrybutów WC z surowych parametrów
+#### 🟢 P-13.4a — Allegro: zapis natywnych atrybutów WC z surowych parametrów
 - **Repo:** qutlet-allegro (`OfferSync/ProductWriter.php` albo nowa klasa
   w `OfferSync/`)
 - **Zakres:** przy `upsert()`, po zapisie warstwy surowej — zbudować
@@ -4229,7 +4229,7 @@ opisu, nie na dole strony jak dziś.
   bezwarunkowo, bez guardu „tylko gdy puste".
 - **Zależności:** brak nowych.
 
-#### P-13.4b — AI: opis przestaje generować atrybuty
+#### 🟢 P-13.4b — AI: opis przestaje generować atrybuty
 - **Repo:** qutlet-ai (`RewriteGenerator.php`, `RewriteWriter.php`)
 - **Zakres:** usunąć `specyfikacja` ze schematu JSON odpowiedzi AI
   (`RewriteGenerator::response_schema()`) i `build_attributes()`/wywołanie

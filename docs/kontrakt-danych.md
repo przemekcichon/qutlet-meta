@@ -292,8 +292,12 @@ dwóch warstwach:
 - **surowa** — wierna kopia tego, co przyszło z Allegro; **ukryta na froncie**
   (motyw jej nie czyta, D-5.G3/D-8.G1), w adminie tylko do odczytu, **nadpisywana
   przy każdym sync**. Sens: kontekst dla AI (FAZA 7) i zasiew sandboxa (FAZA 3A).
-- **przerobiona** — to, co ostatecznie widać na stronie produktu Qutlet; powstaje z
-  surowej przez AI + ręczną redakcję, **NIGDY nie nadpisywana przez sync**.
+- **przerobiona** — to, co ostatecznie widać na stronie produktu Qutlet. Dla opisu/
+  podnazwy powstaje z surowej przez AI + ręczną redakcję, **NIGDY nie nadpisywana
+  przez sync**. **Wyjątek: specyfikacja (atrybuty WC)** — od FAZY 13 (P-13.4a,
+  D-13.G1, REWIZJA D-5.1.1/D-5.1.2) to tłumaczenie 1:1 z warstwy surowej BEZ
+  udziału AI, wykonywane przez sync i **nadpisywane przy KAŻDYM jego przebiegu**
+  (sync-owned, D-13.4a.1) — patrz §9.2.
 
 ### 9.1 Warstwa surowa (rejestruje `qutlet-core` — `register_post_meta`)
 
@@ -336,7 +340,7 @@ Uwagi do kształtu:
 |------------------------|----------------------|---------|---------------------|-------------|-------|
 | Opis (przerobiony)     | `opis`               | ACF     | WYSIWYG (rich text) | tak         | user-facing opis produktu pokazywany na stronie; wypełniany przez AI (FAZA 7) i redagowany ręcznie; **NIE nadpisywany przez sync**. Wzorzec rejestracji jak `zawartosc_zestawu` (§2). Puste → motyw ukrywa/fallback (FAZA 8). Odczyt: `get_field('opis')` / `get_post_meta($id,'opis',true)`. |
 | Podnazwa (przerobiona) | `podnazwa`           | ACF     | text (jedna linia)  | tak         | druga część nazwy, gdy AI rozbije zbyt długą `_qutlet_allegro_nazwa_raw` (§9.1) na tytuł (→ `post_title`) + podnazwę — AI decyduje GDZIE dzielić (FAZA 13, P-13.2c). **NIE** WYSIWYG — krótka linia tekstu, ta sama grupa ACF co `opis`. Redagowalna ręcznie; **NIE nadpisywana przez sync** (sync dotyka tylko `post_title` i `_qutlet_allegro_nazwa_raw`, P-13.2b). Puste → motyw renderuje sam tytuł, bez podnazwy. Odczyt: `get_field('podnazwa')` / `get_post_meta($id,'podnazwa',true)`. |
-| Specyfikacja (przerob.)| **atrybuty WooCommerce** (`_product_attributes`) | Woo | atrybuty produktu (custom, per-produkt) | tak | **natywny mechanizm Woo** — `qutlet-core` NIE rejestruje dla niej pola (D-5.1.1). Glue/sync zapisuje atrybuty produktu; motyw renderuje natywnie (zakładka „Informacje dodatkowe" / własny render FAZA 8). Odczyt: `$product->get_attributes()`. Puste → brak tabeli spec. |
+| Specyfikacja (przerob.)| **atrybuty WooCommerce** (`_product_attributes`) | Woo | atrybuty produktu (custom, per-produkt, lokalne — `id=0`, NIE taksonomia) | tak | **natywny mechanizm Woo** — `qutlet-core` NIE rejestruje dla niej pola (D-5.1.1). Od FAZY 13 (P-13.4a, D-13.G1) pisze je BEZPOŚREDNIO sync Allegro (`Qutlet\Allegro\OfferSync\ProductWriter::upsert()`), tłumacząc `_qutlet_allegro_specification_raw` (§9.1) 1:1, BEZ udziału AI; **nadpisywane przy KAŻDYM sync** (sync-owned, D-13.4a.1 — jedyny wyjątek od reguły „przerobiona nigdy nie nadpisywana przez sync" powyżej). Do FAZY 13 pisała je AI (`RewriteWriter::build_attributes()`, D-5.1.1/D-5.1.2) — mechanizm USUNIĘTY (P-13.4b). Motyw renderuje natywnie (zakładka „Informacje dodatkowe" / własny render FAZA 8). Odczyt: `$product->get_attributes()`. Puste → brak tabeli spec. |
 
 **Dlaczego opis = ACF, a specyfikacja = atrybuty WC (asymetria świadoma):** opis to
 swobodny rich text jednego pola → ACF WYSIWYG (jak `zawartosc_zestawu`). Specyfikacja
@@ -346,6 +350,15 @@ produktu** (custom, per-produkt — pasuje do rozłącznych parametrów per kate
 dublowałoby natywny mechanizm Woo. **Warstwa surowa** specyfikacji NIE może być
 atrybutami WC, bo atrybuty są z natury widoczne na froncie — została więc wewnętrznym
 meta (§9.1, D-5.1.2).
+
+**Rewizja D-13.G1 (FAZA 13, sesja 2026-08-09):** pierwotne uzasadnienie D-5.1.1/
+D-5.1.2 kierowało specyfikację PRZEZ AI do atrybutów WC, bo „atrybuty front-facing
+nie utrzymają rozdzielenia surowa↔przerobiona". Użytkownik to odwrócił: atrybuty
+front-facing są tłumaczone 1:1 z surowych parametrów Allegro **bezpośrednio przez
+sync** (`qutlet-allegro`), bez udziału AI — koszt/czas wywołania AI i ryzyko
+zniekształcenia wartości nie są uzasadnione tam, gdzie wystarczy prosta transformacja.
+AI (od FAZY 13) zostaje odpowiedzialne WYŁĄCZNIE za opis/tytuł/podnazwę, nie za
+specyfikację. Szczegóły decyzji: `docs/plan.md` → FAZA 13, D-13.G1, P-13.4a/P-13.4b.
 
 ### Odnośniki (§9)
 - Mapping (skąd płyną te pola z Allegro): `docs/mapping-allegro.md` §4b (parametry →
@@ -734,8 +747,8 @@ do core AI Client.
 
 | Decyzja  | Rozstrzygnięcie                                                                 | Podstawa |
 |----------|--------------------------------------------------------------------------------|----------|
-| D-5.1.1  | dwuwarstwowość → przechowywanie: surowa = 3 prywatne `register_post_meta` (`_qutlet_allegro_offer` JSON verbatim, `_qutlet_allegro_description_raw`, `_qutlet_allegro_specification_raw` tablica); przerobiona: `opis` = ACF WYSIWYG, specyfikacja = natywne atrybuty WooCommerce (core nie rejestruje pola) | decyzja użytkownika (sesja 2026-07-23) |
-| D-5.1.2  | surowa specyfikacja = wewnętrzne meta, NIE atrybuty WC (atrybuty front-facing → nie utrzymają ukrycia/rozdzielenia surowa↔przerobiona; D-5.G3/G4) | decyzja użytkownika (sesja 2026-07-23) |
+| D-5.1.1  | dwuwarstwowość → przechowywanie: surowa = 3 prywatne `register_post_meta` (`_qutlet_allegro_offer` JSON verbatim, `_qutlet_allegro_description_raw`, `_qutlet_allegro_specification_raw` tablica); przerobiona: `opis` = ACF WYSIWYG, specyfikacja = natywne atrybuty WooCommerce (core nie rejestruje pola) — **kto PISZE specyfikację przerobioną ZREWIDOWANE przez D-13.G1** (FAZA 13, sesja 2026-08-09): było przez AI, jest 1:1 przez sync, patrz §9.2 | decyzja użytkownika (sesja 2026-07-23) |
+| D-5.1.2  | surowa specyfikacja = wewnętrzne meta, NIE atrybuty WC (atrybuty front-facing → nie utrzymają ukrycia/rozdzielenia surowa↔przerobiona; D-5.G3/G4) — uzasadnienie „AI musi pisać atrybuty" **ZREWIDOWANE przez D-13.G1** (rozdzielenie surowa↔przerobiona nadal obowiązuje, ale przerobioną pisze teraz sync 1:1, nie AI); rozdzielenie surowa/przerobiona jako takie NIENARUSZONE | decyzja użytkownika (sesja 2026-07-23) |
 | D-5.1.3  | slice `ProductInfo/` (mirror w qutlet-allegro sync; dzieli go P-5.3)            | decyzja użytkownika (sesja 2026-07-23) |
 
 ## Log decyzji (P-5.2a)
