@@ -4218,11 +4218,15 @@ opisu, nie na dole strony jak dziś.
   `$product->set_attributes()`/`save()`. Lokalne (niestaksonomiczne)
   atrybuty, jak dziś robi `RewriteWriter::build_attributes()` (kod do
   przeniesienia/portu z `qutlet-ai`, nie do wymyślania na nowo — ten sam
-  kształt wejścia). Czy nadpisywać PRZY KAŻDYM sync (jak tytuł) czy tylko
-  gdy puste (jak `klasa_stanu`) — do rozstrzygnięcia: prawdopodobnie
-  sync-owned (nadpisywane), bo to dane WPROST z Allegro bez ręcznej
-  edycji w grze (w przeciwieństwie do `klasa_stanu`, gdzie kurator może
-  poprawić automat).
+  kształt wejścia).
+- **D-13.4a.1 (atrybuty WC nadpisywane PRZY KAŻDYM sync — sync-owned)
+  [USTALONE — decyzja użytkownika, sesja 2026-08-09]:** rozstrzygnięcie
+  „nadpisywać przy każdym sync (jak tytuł) czy tylko gdy puste (jak
+  `klasa_stanu`)" — użytkownik potwierdził **sync-owned (nadpisywane)**:
+  to dane WPROST z Allegro, bez ręcznej edycji w grze do ochrony (w
+  przeciwieństwie do `klasa_stanu`, gdzie kurator może poprawić automat).
+  `ProductWriter::upsert()` wywołuje `set_attributes()`/`save()`
+  bezwarunkowo, bez guardu „tylko gdy puste".
 - **Zależności:** brak nowych.
 
 #### P-13.4b — AI: opis przestaje generować atrybuty
