@@ -334,18 +334,19 @@ Uwagi do kształtu:
 
 | Pole (znaczenie)       | Literał              | Miejsce | Typ                 | Opcjonalne? | Uwagi |
 |------------------------|----------------------|---------|---------------------|-------------|-------|
-| Opis (przerobiony)     | `opis`               | ACF     | WYSIWYG (rich text) | tak         | user-facing opis produktu pokazywany na stronie; wypełniany przez AI (FAZA 7) i redagowany ręcznie; **NIE nadpisywany przez sync**. Wzorzec rejestracji jak `zawartosc_zestawu` (§2). Puste → motyw ukrywa/fallback (FAZA 8). Odczyt: `get_field('opis')` / `get_post_meta($id,'opis',true)`. |
-| Podnazwa (przerobiona) | `podnazwa`           | ACF     | text (jedna linia)  | tak         | druga część nazwy, gdy AI rozbije zbyt długą `_qutlet_allegro_nazwa_raw` (§9.1) na tytuł (→ `post_title`) + podnazwę — AI decyduje GDZIE dzielić (FAZA 13, P-13.2c). **NIE** WYSIWYG — krótka linia tekstu, ta sama grupa ACF co `opis`. Redagowalna ręcznie; **NIE nadpisywana przez sync** (sync dotyka tylko `post_title` i `_qutlet_allegro_nazwa_raw`, P-13.2b). Puste → motyw renderuje sam tytuł, bez podnazwy. Odczyt: `get_field('podnazwa')` / `get_post_meta($id,'podnazwa',true)`. |
+| Opis (przerobiony)     | `post_content` (natywne) | Woo/WP | HTML (post_content) | tak     | user-facing opis produktu pokazywany na stronie; wypełniany przez AI (FAZA 7, P-13.3b) i redagowany ręcznie w natywnym edytorze treści; **NIE nadpisywany przez sync**. **BYŁO ACF `opis`** (WYSIWYG, P-5.1b) — **WYCOFANE w P-13.3a** (FAZA 13, sesja 2026-08-09): pole usunięte z rejestracji `RewrittenFields`, cel zapisu/odczytu = natywne `post_content`. Historyczne wartości `opis` zmigrowane jednorazową komendą WP-CLI `wp qutlet-core backfill-opis-to-content` (`BackfillOpisToContentCommand`, D-13.G3) — bez fallbacku, migracja poprzedzała przełączenie odczytu motywu. Puste → motyw ukrywa/fallback (FAZA 8). Odczyt: `$product->get_description()` / `the_content()`. |
+| Podnazwa (przerobiona) | `podnazwa`           | ACF     | text (jedna linia)  | tak         | druga część nazwy, gdy AI rozbije zbyt długą `_qutlet_allegro_nazwa_raw` (§9.1) na tytuł (→ `post_title`) + podnazwę — AI decyduje GDZIE dzielić (FAZA 13, P-13.2c). **NIE** WYSIWYG — krótka linia tekstu; jedyne pole w grupie ACF `group_qutlet_product_info` (dawniej „Qutlet — opis produktu…", retitled „Qutlet — nazwa produktu (warstwa przerobiona)" w P-13.3a po wycofaniu `opis` z tej grupy). Redagowalna ręcznie; **NIE nadpisywana przez sync** (sync dotyka tylko `post_title` i `_qutlet_allegro_nazwa_raw`, P-13.2b). Puste → motyw renderuje sam tytuł, bez podnazwy. Odczyt: `get_field('podnazwa')` / `get_post_meta($id,'podnazwa',true)`. |
 | Specyfikacja (przerob.)| **atrybuty WooCommerce** (`_product_attributes`) | Woo | atrybuty produktu (custom, per-produkt) | tak | **natywny mechanizm Woo** — `qutlet-core` NIE rejestruje dla niej pola (D-5.1.1). Glue/sync zapisuje atrybuty produktu; motyw renderuje natywnie (zakładka „Informacje dodatkowe" / własny render FAZA 8). Odczyt: `$product->get_attributes()`. Puste → brak tabeli spec. |
 
-**Dlaczego opis = ACF, a specyfikacja = atrybuty WC (asymetria świadoma):** opis to
-swobodny rich text jednego pola → ACF WYSIWYG (jak `zawartosc_zestawu`). Specyfikacja
-to zbiór par etykieta→wartość, który WooCommerce modeluje natywnie jako **atrybuty
-produktu** (custom, per-produkt — pasuje do rozłącznych parametrów per kategoria,
-`mapping` §4b) i renderuje bez naszego kodu. Rejestrowanie własnego repeatera
-dublowałoby natywny mechanizm Woo. **Warstwa surowa** specyfikacji NIE może być
-atrybutami WC, bo atrybuty są z natury widoczne na froncie — została więc wewnętrznym
-meta (§9.1, D-5.1.2).
+**Dlaczego opis i specyfikacja to oba natywne mechanizmy WP/Woo, nie ACF (od
+P-13.3a):** opis to swobodny rich text jednego pola — dokładnie to, co WordPress
+już modeluje natywnie jako `post_content` (edytor treści); rejestrowanie
+osobnego pola ACF obok niego było zbędnym dublowaniem (stąd wycofanie w
+P-13.3a). Specyfikacja to zbiór par etykieta→wartość, który WooCommerce
+modeluje natywnie jako **atrybuty produktu** (custom, per-produkt — pasuje do
+rozłącznych parametrów per kategoria, `mapping` §4b) i renderuje bez naszego
+kodu. **Warstwa surowa** specyfikacji NIE może być atrybutami WC, bo atrybuty
+są z natury widoczne na froncie — została więc wewnętrznym meta (§9.1, D-5.1.2).
 
 ### Odnośniki (§9)
 - Mapping (skąd płyną te pola z Allegro): `docs/mapping-allegro.md` §4b (parametry →

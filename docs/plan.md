@@ -4010,15 +4010,16 @@ każdego punktu, per `docs/ground-truth.md`):**
   odpaleniem inaczej niż „brak AJAX-u" (np. explicit confirm w JS, nie
   tylko `onclick`), żeby nie stracić tej ochrony przy zmianie mechanizmu.
 - **D-13.G3 (migracja istniejących wartości `opis`→`post_content`)
-  [OTWARTE]:** P-13.3 przełącza CEL zapisu nowych generacji z ACF `opis`
-  na natywne `post_content`, ale produkty już mające wypełnione pole
-  `opis` (z poprzednich generacji/edycji) nie migrują się same — czy
-  P-13.3a robi jednorazowy skrypt/WP-CLI migrujący istniejące `opis` →
-  `post_content` dla już zsynchronizowanych produktów, czy `opis` po
-  prostu zostaje nieużywanym śmieciem (starym polem) dla starych
-  produktów, a nowe/kolejne generacje idą już do `post_content`? Wpływa na
-  to, czy motyw (`qutlet-theme`) potrzebuje fallbacku `post_content ??
-  get_field('opis')` na przejściowy czas, czy nie.
+  [USTALONE — decyzja użytkownika, sesja 2026-08-09]:** skrypt migrujący,
+  nie porzucenie. P-13.3a dostał jednorazową komendę WP-CLI
+  (`wp qutlet-core backfill-opis-to-content [--dry-run]`,
+  `BackfillOpisToContentCommand`) — kopiuje istniejące `opis` (ACF) do
+  `post_content` dla już zsynchronizowanych produktów, pomija (z
+  ostrzeżeniem, bez nadpisania) produkty z już niepustym `post_content`,
+  kasuje `opis`/`_opis` po udanym zapisie (idempotentna — rerun nic nie
+  znajduje). Dzięki temu motyw (P-13.3c) NIE potrzebował przejściowego
+  fallbacku `post_content ?? get_field('opis')` — czyta samo
+  `post_content` od razu.
 - **D-13.G4 (mechanizm współdzielenia pola `prompt_ai` między core i ai)
   [OTWARTE]:** P-13.6 chce pole `prompt_ai` (rejestrowane w `qutlet-core`
   per granicę artefaktów — core rejestruje ACF, ai NIE rejestruje pól)
@@ -4173,39 +4174,74 @@ opisu, nie na dole strony jak dziś.
 
 #### P-13.3a — Core: `opis` (ACF) przestaje być celem, decyzja o migracji
 - **Repo:** qutlet-core (`src\ProductInfo\RewrittenFields.php`)
-- **Zakres:** usunąć/wycofać pole ACF `opis` z grupy „Qutlet — opis
-  produktu (warstwa przerobiona)" (grupa być może zmienia nazwę/zakres —
-  patrz P-13.2a, zostaje w niej `podnazwa`). Motyw (`qutlet-theme`,
-  `ProductPage`) MUSI przejść z `get_field('opis')` na natywne
-  `the_content()`/`$post->post_content` — punkt osobny, wielorepowy
-  (motyw), NIE część tego punktu (core), ale ZALEŻNY od niego — do
-  dopisania jako P-13.3c, gdy ten punkt trafi do realizacji.
-- **D-13.G3** (migracja istniejących wartości) rozstrzyga zakres tego
-  punktu — patrz decyzje globalne fazy.
+- **Zakres:** usunięte pole ACF `opis` z grupy `group_qutlet_product_info`
+  (retitled „Qutlet — opis produktu…" → „Qutlet — nazwa produktu
+  (warstwa przerobiona)" — zostaje w niej wyłącznie `podnazwa`, patrz
+  P-13.2a). D-13.G3 rozstrzygnięta na skrypt migrujący — nowa komenda
+  `wp qutlet-core backfill-opis-to-content [--dry-run]`
+  (`BackfillOpisToContentCommand`), wzorzec `qutlet-allegro`
+  `BackfillOrderAttributionCommand`. Uruchomiona na sandboxie lokalnym
+  (6 produktów zmigrowanych poprawnie, rerun idempotentny — 0 zmian).
+  Motyw — P-13.3c (dopisany niżej, zależny, zrealizowany razem w tej
+  samej sesji po tym jak ground-truth live na Local ujawnił, że
+  `qutlet-ai` (P-13.3b) też trzeba było poprawić od razu — patrz niżej).
 - **Zależności:** brak nowych.
+- **PR:** [qutlet-core #18](https://github.com/przemekcichon/qutlet-core/pull/18).
 
 #### P-13.3b — AI: cel zapisu = `post_content`, metabox pod natywnym edytorem
 - **Repo:** qutlet-ai (`RewriteWriter.php`, `GenerationMetaBox.php`)
-- **Zakres:** `RewriteWriter::accept()` przestaje pisać przez
-  `update_field()` do `opis` — pisze `wp_update_post(['ID' => $id,
-  'post_content' => $opis])` (albo `$product->set_description()` — Woo
-  owija `post_content` tym setterem, do wyboru przy realizacji, efekt
-  identyczny). `GenerationMetaBox` zmienia kontekst/priorytet
-  rejestracji, żeby renderować się BEZPOŚREDNIO pod natywnym edytorem
-  treści — WP renderuje: tytuł → edytor → metaboxy `normal`/`high` →
-  `normal`/`default` → `normal`/`low`; natywny Product Data Woo jest
-  `normal`/`high`, więc żeby wylądować MIĘDZY edytorem a Product Data
-  (czyli faktycznie NAJWYŻEJ), ten metabox potrzebuje priorytetu WYŻSZEGO
-  niż `high` — WP nie ma takiej wartości natywnie (`high`/`core`/
-  `default`/`low`, w tej kolejności) — do rozstrzygnięcia przy
-  realizacji: albo `core` (nieoficjalnie wyższy niż `high` w niektórych
-  wersjach WP — do zweryfikowania w kodzie rdzenia), albo przesunięcie
-  natywnego Product Data niżej przez `remove_meta_box()`+
-  `add_meta_box()` ponownie (bardziej inwazyjne, ryzyko konfliktu z
-  przyszłymi update'ami WooCommerce). Ten sam metabox NIESIE TEŻ P-13.6b
-  (pole promptu + podgląd globalnego promptu) — realizować razem, jedna
-  sesja/PR, jeśli to praktyczne (dwa punkty planu, jedna zmiana kodu).
+- **Zakres zrealizowany:** `RewriteWriter::accept()` pisze
+  `wp_update_post(['ID' => $id, 'post_content' => wp_kses_post($opis)])`
+  zamiast `update_field()` do `opis` (usunięta stała `FIELD_OPIS`).
+  Zwraca `false` (bez zapisu atrybutów) gdy `wp_update_post()` zwróci
+  `WP_Error` — wzorzec `is_wp_error()` z `TitleWriter::accept()`.
+  `GenerationMetaBox::render_current_column()` czyta
+  `$post->post_content` zamiast meta `opis`. Priorytet metaboxa
+  `default` → `high` — ROZSTRZYGNIĘCIE niepewności z pierwotnego zapisu
+  planu (WP faktycznie NIE MA priorytetu wyżej niż `high`, ale to
+  niepotrzebne): w obrębie JEDNEGO priorytetu kolejność renderu =
+  kolejność DOPISANIA do `$wp_meta_boxes` przez callbacki hooka
+  `add_meta_boxes`, a nasz hook rejestruje się na priorytecie 10
+  (domyślnym), WCZEŚNIEJ niż `WC_Admin_Meta_Boxes::add_meta_boxes()`
+  (priorytet 30) — więc `high` + naturalna kolejność hooków wystarczą,
+  żeby wylądować NAD natywnym „Product data", bez inwazyjnego
+  `remove_meta_box()`+`add_meta_box()`. P-13.6b (pole promptu w tym
+  samym metaboksie) NIE zrealizowane razem — zostaje osobnym, jeszcze
+  otwartym punktem (D-13.G4 nadal OTWARTA).
+- **Real bug znaleziony live** (sesja 2026-08-09, testowanie na Local
+  PO zmergowaniu P-13.3a): `RewriteWriter::accept()` dalej wołał
+  `update_field('field_qutlet_opis', …)` po usunięciu rejestracji pola
+  w P-13.3a — ACF, nie mogąc rozwiązać klucza, po cichu zapisał „dummy"
+  meta pod DOSŁOWNYM kluczem `field_qutlet_opis` zamiast `opis`.
+  Atrybuty zapisały się poprawnie (inny writer), ale `post_content`
+  zostawał pusty, metabox pokazywał „Brak opisu". Wykryte na produkcie
+  3430 („Myszka bezprzewodowa M40 Comfort Mouse"), dane odzyskane
+  ręcznie (tekst przeniesiony z `field_qutlet_opis` do `post_content`,
+  śmieciowe meta skasowane) — stąd P-13.3b zrealizowane NATYCHMIAST po
+  P-13.3a w tej samej sesji, nie jako osobna sesja.
 - **Zależności:** P-13.3a (core przestaje być właścicielem `opis`).
+- **PR:** [qutlet-ai #7](https://github.com/przemekcichon/qutlet-ai/pull/7).
+
+#### P-13.3c — Theme: render natywnego `post_content` zamiast ACF `opis`
+- **Repo:** qutlet-theme (`woocommerce/content-single-product.php`)
+- **Dopisany retroaktywnie** (sesja 2026-08-09) — zapowiedziany w
+  pierwotnym tekście P-13.3a jako „punkt osobny, wielorepowy, do
+  dopisania gdy ten punkt trafi do realizacji"; zrealizowany OD RAZU w
+  tej samej sesji co P-13.3a/b (nie w osobnej), bo bez niego front-end
+  nie pokazywałby ŻADNEGO opisu — `get_field('opis')` zawsze pusty po
+  wycofaniu pola w P-13.3a.
+- **Zakres zrealizowany:** `$description_html = (string) ProductPage::acf_field('opis', $product_id)`
+  → `$description_html = (string) $product->get_description()`
+  (natywny `post_content`, WooCommerce owija je tym getterem). Bez
+  fallbacku `post_content ?? get_field('opis')` — D-13.G3 (skrypt
+  migrujący) uczynił go zbędnym.
+- **Zweryfikowane end-to-end** na Local przez Playwright: opis
+  wygenerowany przez AI na produkcie 3430 renderuje się poprawnie w
+  zakładce „Opis i specyfikacja" pod „O produkcie".
+- **Zależności:** P-13.3a (core), P-13.3b (ai) — kolejność mergowania
+  3a → 3b → 3c (merge w innej kolejności zostawia front-end bez opisu
+  na przejściowy czas — bezpieczne, bez fatali, tylko pusta sekcja).
+- **PR:** [qutlet-theme #27](https://github.com/przemekcichon/qutlet-theme/pull/27).
 
 ### P-13.4 — Atrybuty: tłumaczenie 1:1 z Allegro, bez udziału AI (REWIZJA D-5.1.1/D-5.1.2 — patrz D-13.G1)
 
