@@ -69,8 +69,9 @@ kontrakt musi być kompletny (co jest Woo-natywne, a co dokładamy w ACF).
 | Wyróżniony        | flaga „featured" Woo (`product_visibility` term `featured`) | Woo | bool | tak | `index.html:84,93` (`data-featured-grid`) | pętla „Świeżo na wyprzedaży" = `WP_Query` po wyróżnionych |
 
 > **Uwaga o cenach:** cena sprzedaży (`.now`) to natywne pole Woo. Odniesienie
-> „Nowy w sklepach" (`.old`, patrz §2) to OSOBNE pole ACF `cena_rynkowa_nowego`,
-> **NIE** natywne `_regular_price` Woo. Rabat („-72%", „Oszczędzasz …") jest
+> „Nowy w sklepach" (`.old`, patrz §2.1) to OSOBNE meta `cena_rynkowa_nowego`
+> — od P-13.5 natywne pole zakładki **General** panelu danych produktu Woo
+> (NIE ACF, NIE `_regular_price`). Rabat („-72%", „Oszczędzasz …") jest
 > liczony (patrz §6), nie przechowywany.
 
 ### 1.1 Zestaw termów `product_cat` (kuracja P-6.8b)
@@ -118,8 +119,29 @@ tylko ustabilizowana LISTA slugów + nazwa czytelna.
 | Pole (design)      | Literał ACF            | Miejsce | Typ                     | Opcjonalne? | Prototyp                       | Kształt / wartości |
 |--------------------|------------------------|---------|-------------------------|-------------|--------------------------------|--------------------|
 | Klasa stanu        | `klasa_stanu`          | ACF     | select (single)         | nie         | `data.js` `.cls`; `produkt.html:13,46` | wartości (literały): `A`, `B`, `C`, `D`. Etykiety w wyborze pola: A=„Jak nowy", B=„Dobry", C=„Mocne ślady", D=„Na części" (`data.js` `QT.COND`) |
-| Cena rynkowa nowego| `cena_rynkowa_nowego`  | ACF     | number (PLN)            | tak         | `data.js` `.old`; `produkt.html:13` | odniesienie „nowy w sklepach / średnia rynkowa". Brak → motyw ukrywa linię „nowy" i rabat |
 | Co w przesyłce (pozycje) | `zawartosc_zestawu_pozycje` | ACF | repeater          | tak         | `produkt.html:13,142-173`      | **Zastępuje wcześniejsze pole WYSIWYG `zawartosc_zestawu` (D-9.2.1)** — patrz uzasadnienie niżej. Wiersz repeatera = jedna pozycja zestawu; kształt niżej. Pusty repeater → motyw nie renderuje zakładki „Co w przesyłce" (ani karuzeli, ani checklisty) |
+
+„Cena rynkowa nowego" NIE jest już w tej tabeli — od P-13.5 to NIE pole ACF,
+patrz §2.1.
+
+### 2.1 Cena rynkowa nowego — natywne Product Data (nie ACF, P-13.5)
+
+| Pole (design)       | Literał (meta_key)     | Miejsce | Typ           | Opcjonalne? | Prototyp                       | Uwagi |
+|---------------------|-------------------------|---------|---------------|-------------|---------------------------------|-------|
+| Cena rynkowa nowego | `cena_rynkowa_nowego`  | meta    | number (PLN)  | tak         | `data.js` `.old`; `produkt.html:13` | odniesienie „nowy w sklepach / średnia rynkowa" — baza rabatu (§6). Brak → motyw ukrywa linię „nowy" i rabat. Pole w zakładce **General** panelu danych produktu Woo, hook `woocommerce_product_options_pricing` — tuż pod ceną promocyjną, ten sam mechanizm co `_qutlet_stawka_rabatu` (§11). Zapis: `WC_Product::update_meta_data()`/`delete_meta_data()` na `woocommerce_admin_process_product_object`, edytowane ręcznie w adminie, **NIE dotykane przez sync**. |
+
+Do P-13.5 pole było ACF (`field_qutlet_cena_rynkowa_nowego`, grupa §2) —
+przeniesione do natywnego Product Data, `meta_key` **BEZ ZMIANY**
+(`cena_rynkowa_nowego`, publiczny, bez podkreślnika — D-13.5.2, patrz log
+decyzji niżej) — zero migracji danych, istniejące wartości czytelne wprost.
+
+**Widoczność (inaczej niż `_qutlet_stawka_rabatu`):** boks cenowy w adminie
+(`options_group pricing`) ma klasy `show_if_simple show_if_external` — pole
+jest ukrywane przez JS Woo dla produktów typu `grouped`/`variable`. W
+praktyce bez znaczenia — `qutlet-allegro` tworzy wyłącznie `WC_Product_Simple`
+(potwierdzone: cały katalog Local, 525/525 produktów, typ `simple`), ale to
+realna różnica względem `_qutlet_stawka_rabatu` (widoczne dla każdego typu),
+gdyby kiedyś doszły inne typy produktu.
 
 **Kształt `zawartosc_zestawu_pozycje`** (wiersz ACF repeatera — sub-pola):
 
@@ -801,3 +823,10 @@ do core AI Client.
 | Decyzja  | Rozstrzygnięcie                                                                 | Podstawa |
 |----------|--------------------------------------------------------------------------------|----------|
 | D-9.2.1  | `zawartosc_zestawu` (ACF WYSIWYG, P-1.2) zastąpione repeaterem `zawartosc_zestawu_pozycje` (sub-pola `zdjecie` image / `etykieta` text / `w_zestawie` true_false) — jeden repeater niesie zarówno zdjęcia karuzeli, jak i checklistę check/cross z `.ship-grid` (`produkt.html:142-173`); WYSIWYG (`media_upload=0`) nie mógł unieść żadnego z tych dwóch | ground-truth P-8.2c (`ProductConditionFields.php:91-99`), decyzja użytkownika (sesja 2026-07-27) |
+
+## Log decyzji (P-13.5)
+
+| Decyzja  | Rozstrzygnięcie                                                                 | Podstawa |
+|----------|--------------------------------------------------------------------------------|----------|
+| D-13.5.1 | pozycja pola w zakładce General: dosłowne „między `_regular_price` a `_sale_price`" niewykonalne — oba pola to hardcoded HTML w `html-product-data-general.php` (WooCommerce 11.0.0), nie callbacki na żadnym hooku, więc nic nie da się między nie wstrzyknąć. Wybrany hook `woocommerce_product_options_pricing` — fires tuż PO `_sale_price` + polach harmonogramu promocji, wciąż WEWNĄTRZ tego samego boksu `options_group pricing` (bliżej cen niż `woocommerce_product_options_general_product_data`, którego używa `_qutlet_stawka_rabatu` — ten hook lądowałby pole daleko od cen, przy polach podatkowych) | ground-truth P-13.5 (`html-product-data-general.php:60-104`, WooCommerce 11.0.0), decyzja użytkownika (sesja 2026-08-11) |
+| D-13.5.2 | `meta_key` ZOSTAJE publiczny `cena_rynkowa_nowego` (bez zmian, bez migracji danych) — `_cena_rynkowa_nowego` (prywatny, wzorem `_qutlet_stawka_rabatu`) odrzucony: ACF wewnętrznie już pisze `_{nazwa_pola}` jako reference meta (klucz pola ACF, NIE cenę) na każdym produkcie, gdzie pole było kiedyś zapisane przez ACF (`MetaLocation::$reference_prefix = '_'`, ACF Pro) — przejęcie tego klucza pod nową wartość kolidowałoby z tymi danymi i wymagałoby migracji | ground-truth P-13.5 (ACF Pro `src/Meta/MetaLocation.php:31,114,161`), decyzja użytkownika (sesja 2026-08-11) |
