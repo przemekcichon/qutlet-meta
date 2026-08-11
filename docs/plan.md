@@ -4243,36 +4243,51 @@ opisu, nie na dole strony jak dziś.
   było okna, w którym ŻADEN mechanizm nie pisze atrybutów.
 
 ### P-13.5 — Cena rynkowa nowego: przenosiny do natywnego Product Data (Ogólne)
+
+Punkt okazał się wielorepowy przy realizacji (sesja 2026-08-11) — kod w
+qutlet-core, ale aktualizacja `docs/kontrakt-danych.md` żyje w qutlet-meta
+(osobny `origin`) — stąd rozbicie na dwa pod-punkty, dwa branche, dwa PR-y
+(wzorem `P-13.2a-meta`/`P-13.2a-core`).
+
+#### 🟡 P-13.5-core — Core: pole w natywnym Product Data
 - **Repo:** qutlet-core (`src\ProductCondition\ProductConditionFields.php`,
+  nowa `src\ProductCondition\MarketPriceField.php`,
   `src\Pricing\ProductDiscountRateField.php` jako wzorzec)
 - **Zakres:** `cena_rynkowa_nowego` przestaje być polem ACF w metaboxie
   „Qutlet — stan i zawartość produktu" — ląduje w natywnej zakładce
-  „Ogólne" Product Data, DOKŁADNIE tym samym mechanizmem co
-  `qutlet_stawka_rabatu` (`ProductDiscountRateField`):
-  `add_action('woocommerce_product_options_general_product_data', …)` +
-  `woocommerce_wp_text_input()`/`_price` styl pola, zapis na
-  `woocommerce_admin_process_product_object` (natywny nonce/capability
-  Woo, nie własny). Życzenie użytkownika co do POZYCJI: między ceną
-  (`_regular_price`) a ceną promocyjną (`_sale_price`), o ile hook
-  `woocommerce_product_options_general_product_data` pozwala na
-  wstrzyknięcie MIĘDZY dwa natywne pola (kolejność w DOM-ie zależy od
-  KOLEJNOŚCI WYWOŁANIA callbacków na tym samym hooku — WooCommerce
-  wywołuje własne pola cenowe NA TYM SAMYM hooku, więc trzeba
-  zweryfikować priorytet `add_action` potrzebny, żeby wstrzyknięcie
-  wypadło we właściwym miejscu, nie na końcu). Jeśli niemożliwe bez
-  hacków — najbliższe rozsądne miejsce (np. bezpośrednio PO cenie
-  promocyjnej) jest akceptowalnym fallbackiem, do potwierdzenia z
-  użytkownikiem przy realizacji, jeśli się okaże niewykonalne 1:1.
-  Migracja pola ACF → nowe miejsce: dane istniejące (`cena_rynkowa_nowego`
-  jako meta) NIE zmieniają meta key, tylko PRZESTAJĄ być rejestrowane
-  jako ACF i zaczynają być czytane/zapisywane jak `_qutlet_stawka_rabatu`
-  (plain `get_post_meta`/`update_post_meta`, nie ACF) — do potwierdzenia,
-  czy meta key zostaje `cena_rynkowa_nowego` (bez podkreślnika, jak dziś,
-  publiczne) czy zamienia się na prywatny `_cena_rynkowa_nowego` (wzorem
-  `_qutlet_stawka_rabatu`) — WPŁYWA na `docs/kontrakt-danych.md` (dziś
-  dokumentuje `cena_rynkowa_nowego` jako ACF, będzie wymagało aktualizacji
-  kontraktu niezależnie od wyboru).
+  „Ogólne" Product Data, tym samym mechanizmem co `_qutlet_stawka_rabatu`
+  (`ProductDiscountRateField`): `woocommerce_wp_text_input()`/`price` styl
+  pola, zapis na `woocommerce_admin_process_product_object` (natywny
+  nonce/capability Woo, nie własny).
+  **D-13.5.1 [ROZSTRZYGNIĘTE — ground-truth + decyzja użytkownika,
+  sesja 2026-08-11]:** życzenie użytkownika co do POZYCJI (między
+  `_regular_price` a `_sale_price`) okazało się NIEWYKONALNE bez patcha
+  rdzenia — `html-product-data-general.php` (WooCommerce 11.0.0) renderuje
+  oba pola jako hardcoded HTML PRZED jakimkolwiek `do_action`, nie jako
+  callbacki na `woocommerce_product_options_general_product_data` (ten
+  hook fires dopiero PO całym boksie cenowym, przy polach podatkowych).
+  Wybrany hook: `woocommerce_product_options_pricing` — fires zaraz PO
+  `_sale_price` i polach harmonogramu promocji, ale WCIĄŻ wewnątrz tego
+  samego boksu `options_group pricing` (najbliższe dostępne miejsce, nie
+  dosłowne „między").
+  **D-13.5.2 [ROZSTRZYGNIĘTE — decyzja użytkownika, sesja 2026-08-11]:**
+  meta_key ZOSTAJE publiczny `cena_rynkowa_nowego` (bez zmian, zero
+  migracji danych). Prywatny `_cena_rynkowa_nowego` ODRZUCONY — ACF Pro
+  wewnętrznie pisze `_{nazwa_pola}` jako hidden reference meta (klucz
+  pola ACF, NIE wartość) na każdym produkcie, gdzie dowolne pole ACF było
+  kiedyś zapisane (`MetaLocation::$reference_prefix = '_'`); potwierdzone
+  na realnych danych Local (`_klasa_stanu` = `field_qutlet_klasa_stanu`
+  itd.) — przejęcie klucza `_cena_rynkowa_nowego` kolidowałoby z tym
+  wzorcem.
 - **Zależności:** brak nowych.
+
+#### 🟡 P-13.5-meta — Kontrakt: aktualizacja `docs/kontrakt-danych.md`
+- **Repo:** qutlet-meta (`docs/kontrakt-danych.md`)
+- **Zakres:** przenieść `cena_rynkowa_nowego` z tabeli §2 (pola ACF) do
+  nowej §2.1 (natywne Product Data) pod faktycznie podjętą decyzję
+  (D-13.5.1/D-13.5.2 wyżej); log decyzji P-13.5.
+- **Zależności:** P-13.5-core (dokumentuje decyzję podjętą przy
+  realizacji kodu).
 
 ### P-13.6 — Prompt AI: konsolidacja w metaboxie generacji + podgląd globalnego
 
