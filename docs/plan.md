@@ -4172,7 +4172,7 @@ dziś nieużywane przez motyw, MA być tym, co wypełnia AI (zamiast ACF
 `opis`). Generator AI ma siedzieć w metaboxie POD natywnym edytorem
 opisu, nie na dole strony jak dziś.
 
-#### P-13.3a — Core: `opis` (ACF) przestaje być celem, decyzja o migracji
+#### 🟢 P-13.3a — Core: `opis` (ACF) przestaje być celem, decyzja o migracji
 - **Repo:** qutlet-core (`src\ProductInfo\RewrittenFields.php`)
 - **Zakres:** usunięte pole ACF `opis` z grupy `group_qutlet_product_info`
   (retitled „Qutlet — opis produktu…" → „Qutlet — nazwa produktu
@@ -4188,7 +4188,7 @@ opisu, nie na dole strony jak dziś.
 - **Zależności:** brak nowych.
 - **PR:** [qutlet-core #18](https://github.com/przemekcichon/qutlet-core/pull/18).
 
-#### P-13.3b — AI: cel zapisu = `post_content`, metabox pod natywnym edytorem
+#### 🟢 P-13.3b — AI: cel zapisu = `post_content`, metabox pod natywnym edytorem
 - **Repo:** qutlet-ai (`RewriteWriter.php`, `GenerationMetaBox.php`)
 - **Zakres zrealizowany:** `RewriteWriter::accept()` pisze
   `wp_update_post(['ID' => $id, 'post_content' => wp_kses_post($opis)])`
@@ -4222,7 +4222,7 @@ opisu, nie na dole strony jak dziś.
 - **Zależności:** P-13.3a (core przestaje być właścicielem `opis`).
 - **PR:** [qutlet-ai #7](https://github.com/przemekcichon/qutlet-ai/pull/7).
 
-#### P-13.3c — Theme: render natywnego `post_content` zamiast ACF `opis`
+#### 🟢 P-13.3c — Theme: render natywnego `post_content` zamiast ACF `opis`
 - **Repo:** qutlet-theme (`woocommerce/content-single-product.php`)
 - **Dopisany retroaktywnie** (sesja 2026-08-09) — zapowiedziany w
   pierwotnym tekście P-13.3a jako „punkt osobny, wielorepowy, do
