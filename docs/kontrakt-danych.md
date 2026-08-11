@@ -135,6 +135,14 @@ przeniesione do natywnego Product Data, `meta_key` **BEZ ZMIANY**
 (`cena_rynkowa_nowego`, publiczny, bez podkreślnika — D-13.5.2, patrz log
 decyzji niżej) — zero migracji danych, istniejące wartości czytelne wprost.
 
+**Widoczność (inaczej niż `_qutlet_stawka_rabatu`):** boks cenowy w adminie
+(`options_group pricing`) ma klasy `show_if_simple show_if_external` — pole
+jest ukrywane przez JS Woo dla produktów typu `grouped`/`variable`. W
+praktyce bez znaczenia — `qutlet-allegro` tworzy wyłącznie `WC_Product_Simple`
+(potwierdzone: cały katalog Local, 525/525 produktów, typ `simple`), ale to
+realna różnica względem `_qutlet_stawka_rabatu` (widoczne dla każdego typu),
+gdyby kiedyś doszły inne typy produktu.
+
 **Kształt `zawartosc_zestawu_pozycje`** (wiersz ACF repeatera — sub-pola):
 
 ```jsonc
