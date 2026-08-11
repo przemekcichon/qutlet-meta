@@ -4249,7 +4249,7 @@ qutlet-core, ale aktualizacja `docs/kontrakt-danych.md` żyje w qutlet-meta
 (osobny `origin`) — stąd rozbicie na dwa pod-punkty, dwa branche, dwa PR-y
 (wzorem `P-13.2a-meta`/`P-13.2a-core`).
 
-#### 🟡 P-13.5-core — Core: pole w natywnym Product Data
+#### 🟢 P-13.5-core — Core: pole w natywnym Product Data
 - **Repo:** qutlet-core (`src\ProductCondition\ProductConditionFields.php`,
   nowa `src\ProductCondition\MarketPriceField.php`,
   `src\Pricing\ProductDiscountRateField.php` jako wzorzec)
@@ -4281,7 +4281,7 @@ qutlet-core, ale aktualizacja `docs/kontrakt-danych.md` żyje w qutlet-meta
   wzorcem.
 - **Zależności:** brak nowych.
 
-#### 🟡 P-13.5-meta — Kontrakt: aktualizacja `docs/kontrakt-danych.md`
+#### 🟢 P-13.5-meta — Kontrakt: aktualizacja `docs/kontrakt-danych.md`
 - **Repo:** qutlet-meta (`docs/kontrakt-danych.md`)
 - **Zakres:** przenieść `cena_rynkowa_nowego` z tabeli §2 (pola ACF) do
   nowej §2.1 (natywne Product Data) pod faktycznie podjętą decyzję
