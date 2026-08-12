@@ -4035,10 +4035,18 @@ każdego punktu, per `docs/ground-truth.md`):**
   metabox grupy (`remove_meta_box('acf-{key grupy}', 'product', 'normal')`
   na `add_meta_boxes` priorytet 20 — PO priorytecie 10, na którym ACF go
   dodaje; zdjęcie nie wpływa na zapis, bo `ACF_Form_Post::save_post()` wisi
-  na osobnym hooku `save_post` i sam dopasowuje grupy po `location`,
-  niezależnie od tego, czy ich metabox się kiedykolwiek wyrenderował) i
-  wystawia PUBLICZNĄ METODĘ STATYCZNĄ `PromptOverrideField::render_field( int $product_id ): void`
-  (`acf_get_fields()` + `acf_render_fields()` w środku — WYŁĄCZNIE w core).
+  na osobnym hooku `save_post`, a sam zapis, `acf_update_values()`
+  (`includes/acf-value-functions.php`), resolvuje każdy wpis `$_POST['acf']`
+  PO KLUCZU POLA (`acf_get_field( $key )`) — bez odwołania do `location`/grup
+  pól w ogóle, więc niezależnie od tego, czy metabox danej grupy się
+  kiedykolwiek wyrenderował — zweryfikowane wprost w kodzie ACF Pro przez
+  niezależną recenzję sesji, nie tylko na słowo) i wystawia PUBLICZNĄ METODĘ
+  STATYCZNĄ `PromptOverrideField::render_field( int $product_id ): void`
+  (`acf_get_fields()` + `acf_render_fields()` w środku — WYŁĄCZNIE w core, z
+  `function_exists()` guardem — `qutlet-ai`'s `dependencies_met()` nie
+  sprawdza ACF Pro, więc bez guardu scenariusz „ACF wyłączone, core+ai+Woo
+  aktywne" fatalowałby na każdym ekranie edycji produktu; znalezisko
+  niezależnej recenzji sesji 2026-08-12, naprawione w tej samej sesji).
   `qutlet-ai` (`GenerationMetaBox`) importuje tę klasę i woła metodę wprost
   — NIE genuine hook WP (`do_action`) — wzorem już istniejącego
   bezpośredniego użycia `Qutlet\Core\ProductInfo\RawLayerMeta` w tym samym

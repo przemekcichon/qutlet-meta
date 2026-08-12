@@ -754,8 +754,11 @@ statyczna**, nie hook WP. `PromptOverrideField::remove_own_metabox()` (core, hoo
 `add_meta_boxes` priorytet 20 — PO priorytecie 10, na którym ACF dodaje własny
 metabox grupy) zdejmuje autogenerowany metabox ACF z ekranu edycji produktu; zapis
 nie jest tym dotknięty (`ACF_Form_Post::save_post()` wisi na osobnym hooku
-`save_post`, dopasowuje grupy pól po `location`, niezależnie od tego, czy ich
-metabox się kiedykolwiek wyrenderował). `PromptOverrideField::render_field( int $product_id ): void`
+`save_post` i sam zapis, `acf_update_values()`, resolvuje każdy wpis
+`$_POST['acf']` PO KLUCZU POLA (`acf_get_field( $key )`) — bez odwołania do
+`location`/grup pól w ogóle, więc niezależnie od tego, czy metabox danej grupy
+się kiedykolwiek wyrenderował — zweryfikowane wprost w `includes/acf-value-functions.php`
+ACF Pro, niezależna recenzja sesja 2026-08-12). `PromptOverrideField::render_field( int $product_id ): void`
 (`acf_get_fields()` + `acf_render_fields()` w środku) renderuje pole — `qutlet-ai`
 (`GenerationMetaBox`) importuje tę klasę i woła metodę wprost, wzorem już
 istniejącego bezpośredniego użycia `Qutlet\Core\ProductInfo\RawLayerMeta` w tym
@@ -854,4 +857,4 @@ niezadeklarowaną twardą zależnością (fatal przy wyłączonym ACF).
 
 | Decyzja  | Rozstrzygnięcie                                                                 | Podstawa |
 |----------|--------------------------------------------------------------------------------|----------|
-| D-13.6.1 | render `prompt_ai` przenosi się do metaboxu `qutlet-ai` przez publiczną metodę statyczną `PromptOverrideField::render_field()` (core zdejmuje własny metabox ACF przez `remove_meta_box()`, `qutlet-ai` woła metodę wprost) — NIE genuine hook WP (`do_action`), bo `qutlet-ai` i tak hard-dependuje na `qutlet-core` (D-G5); genuine hook odrzucony jako niepotrzebna dodatkowa warstwa. Odrzucone też: `qutlet-ai` wołający funkcje ACF (`acf_render_field()`/`get_field_object()`) samodzielnie — `qutlet-ai` NIE ma twardej zależności na ACF Pro (tylko core + Woo), więc stałaby się niezadeklarowaną twardą zależnością | ground-truth P-13.6 (`advanced-custom-fields-pro/includes/forms/form-post.php` — metabox ACF `add_meta_box()`/priorytet, `ACF_Form_Post::save_post()` na osobnym hooku), decyzja użytkownika (sesja 2026-08-12), rozstrzyga D-13.G4 |
+| D-13.6.1 | render `prompt_ai` przenosi się do metaboxu `qutlet-ai` przez publiczną metodę statyczną `PromptOverrideField::render_field()` (core zdejmuje własny metabox ACF przez `remove_meta_box()`, `qutlet-ai` woła metodę wprost) — NIE genuine hook WP (`do_action`), bo `qutlet-ai` i tak hard-dependuje na `qutlet-core` (D-G5); genuine hook odrzucony jako niepotrzebna dodatkowa warstwa. Odrzucone też: `qutlet-ai` wołający funkcje ACF (`acf_render_field()`/`get_field_object()`) samodzielnie — `qutlet-ai` NIE ma twardej zależności na ACF Pro (tylko core + Woo), więc stałaby się niezadeklarowaną twardą zależnością. `render_field()` ma `function_exists()` guard (defense-in-depth): `qutlet-ai`'s `dependencies_met()` nie sprawdza ACF, więc scenariusz „ACF wyłączone, core+ai+Woo aktywne" bez guardu fatalowałby na KAŻDYM ekranie edycji produktu — znalezisko niezależnej recenzji (sesja 2026-08-12), naprawione w tej samej sesji | ground-truth P-13.6 (`advanced-custom-fields-pro/includes/forms/form-post.php` — metabox ACF `add_meta_box()`/priorytet, `ACF_Form_Post::save_post()` na osobnym hooku; `includes/acf-value-functions.php` — zapis po kluczu pola, bez `location`), decyzja użytkownika (sesja 2026-08-12), rozstrzyga D-13.G4; niezależna recenzja (sesja 2026-08-12) |
