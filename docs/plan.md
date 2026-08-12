@@ -4382,26 +4382,39 @@ qutlet-core, ale aktualizacja `docs/kontrakt-danych.md` żyje w qutlet-meta
 - **PR:** [qutlet-ai #9](https://github.com/przemekcichon/qutlet-ai/pull/9).
 
 ### P-13.7 — Metabox stanu: surowy „Stan" Allegro (read-only) + gwarancja/reklamacja
-- **Repo:** qutlet-core (`src\ProductCondition\ProductConditionFields.php`
-  albo nowa read-only sekcja w tym samym metaboxie, wzorem
-  `RawLayerMetaBox`)
-- **Zakres:** metabox „Qutlet — stan i zawartość produktu" zyskuje DWIE
-  nowe, NIEEDYTOWALNE informacje: (1) surowa wartość parametru „Stan" z
-  Allegro (odczyt istniejących danych raw layer —
-  `parameter_value(offer_parameters($offer), 'Stan')` na
-  `_qutlet_allegro_offer`, ten sam odczyt co `OfferMapper::
-  condition_class()` już robi do ustawienia `klasa_stanu` — TU tylko
-  wyświetlana, nie zapisywana ponownie); (2) długość gwarancji i
-  reklamacji USTAWOWEJ dla WYBRANEJ (edytowalnej) `klasa_stanu` — odczyt z
-  bytu klas z **FAZY 12** (`P-12.1a` — pola `okres_gwarancji`/
-  `okres_reklamacji`), wyświetlone jako informacja przy polu `klasa_stanu`
-  (np. „Klasa B → gwarancja 1 rok, reklamacja 1 rok"), żeby kurator widział
-  konsekwencję wyboru klasy bez przechodzenia do ekranu zarządzania
-  klasami.
-- **Zależności:** **P-12.1a (FAZA 12)** — pola gwarancji/reklamacji na
-  bycie klasy muszą istnieć, zanim ten punkt będzie miał co wyświetlić.
-  Bez P-12.1a punkt (2) nie da się zrealizować — punkt (1) (surowy „Stan")
-  jest niezależny i może wejść wcześniej.
+
+Punkt rozbity przy realizacji (sesja 2026-08-12) — podpunkt (2) zależy od
+`P-12.1a` (FAZA 12), która jest wciąż 🟦 (nierealizowana) na dzień rozbicia;
+podpunkt (1) jest niezależny. Decyzja użytkownika: zrealizować TERAZ tylko
+(1) (`P-13.7a`), (2) (`P-13.7b`) odłożyć do czasu `P-12.1a`.
+
+#### 🟡 P-13.7a — Metabox: surowy „Stan" Allegro (read-only)
+- **Repo:** qutlet-core (`src\ProductCondition\ProductConditionFields.php`)
+- **Zakres:** metabox „Qutlet — stan i zawartość produktu" zyskuje pole
+  read-only (ACF `message`, bez zapisu żadnej wartości) z surową wartością
+  parametru „Stan" z Allegro — odczyt istniejących danych raw layer
+  (`parameter_value(offer_parameters($offer), 'Stan')` na
+  `_qutlet_allegro_offer`, ten sam odczyt co `OfferMapper::condition_class()`
+  już robi do ustawienia `klasa_stanu` — TU tylko wyświetlana, nie zapisywana
+  ponownie). Ekstrakcja zduplikowana w core, NIE importowana z
+  `qutlet-allegro` (granica repo, `CLAUDE.md` §Struktura) — patrz docblock
+  `ProductConditionFields`. Treść pola dopisywana dynamicznie na
+  `acf/pre_render_field` (jedyny hook ACF z `$post_id` wprost jako
+  argumentem).
+- **Zależności:** brak nowych.
+
+#### P-13.7b — Metabox: długość gwarancji/reklamacji dla wybranej klasy stanu
+- **Repo:** qutlet-core (`src\ProductCondition\ProductConditionFields.php` +
+  konsument bytu klasy z FAZY 12)
+- **Zakres:** długość gwarancji i reklamacji USTAWOWEJ dla WYBRANEJ
+  (edytowalnej) `klasa_stanu` — odczyt z bytu klas z **FAZY 12** (`P-12.1a` —
+  pola `okres_gwarancji`/`okres_reklamacji`), wyświetlone jako informacja przy
+  polu `klasa_stanu` (np. „Klasa B → gwarancja 1 rok, reklamacja 1 rok"), żeby
+  kurator widział konsekwencję wyboru klasy bez przechodzenia do ekranu
+  zarządzania klasami.
+- **Zależności:** **P-12.1a (FAZA 12)** — pola gwarancji/reklamacji na bycie
+  klasy muszą istnieć, zanim ten punkt będzie miał co wyświetlić. Bez
+  P-12.1a punkt się nie da zrealizować.
 
 ---
 
