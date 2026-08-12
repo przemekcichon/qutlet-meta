@@ -4350,7 +4350,7 @@ qutlet-core, ale aktualizacja `docs/kontrakt-danych.md` żyje w qutlet-meta
 
 ### P-13.6 — Prompt AI: konsolidacja w metaboxie generacji + podgląd globalnego
 
-#### 🟡 P-13.6a — Core: pole `prompt_ai` bez własnego metaboxu
+#### 🟢 P-13.6a — Core: pole `prompt_ai` bez własnego metaboxu
 - **Repo:** qutlet-core (`src\AiRewrite\PromptOverrideField.php`)
 - **Zakres zrealizowany (D-13.G4):** pole ACF `prompt_ai` PRZESTAJE mieć
   własny metabox „Qutlet — prompt AI (nadpisanie per produkt)" —
@@ -4364,7 +4364,7 @@ qutlet-core, ale aktualizacja `docs/kontrakt-danych.md` żyje w qutlet-meta
 - **Zależności:** brak nowych.
 - **PR:** [qutlet-core #20](https://github.com/przemekcichon/qutlet-core/pull/20).
 
-#### 🟡 P-13.6b — AI: pole promptu + podgląd globalnego promptu w metaboxie generacji
+#### 🟢 P-13.6b — AI: pole promptu + podgląd globalnego promptu w metaboxie generacji
 - **Repo:** qutlet-ai (`GenerationMetaBox.php`)
 - **Zakres zrealizowany:** metabox „Qutlet — generacja AI" (już przesuwany
   w P-13.3b) zyskał sekcję promptu (przed przyciskiem „Generuj"): (1) pole
