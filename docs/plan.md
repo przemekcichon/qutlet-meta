@@ -3681,9 +3681,12 @@ zamiast 1 roku jak dla dzisiejszych klas „używane" A-D) — BEZ nowej logiki 
 kodzie, bo to tylko kolejny wiersz rozszerzalnego bytu z innymi wartościami
 (patrz D-12.G1). Dodatkowo: te trzy fakty — klasa, gwarancja, reklamacja —
 muszą być widoczne nie tylko na stronie produktu, ale też w koszyku (P-8.6a,
-🟡 w trakcie — już renderuje „Klasa X"/„Gwarancja 1 rok" jako pigułki, ale
-gwarancja jest DZIŚ hardkodowanym stringiem w `assets/js/cart-block-filters.js`,
-bez reklamacji wcale) i w kasie (P-8.6b, jeszcze niezbudowana).
+w momencie pisania tego akapitu 🟡 w trakcie, dziś już 🟢 — już renderuje
+„Klasa X"/„Gwarancja 1 rok" jako pigułki, ale gwarancja jest DZIŚ hardkodowanym
+stringiem w `assets/js/cart-block-filters.js`, bez reklamacji wcale) i w kasie
+(P-8.6b — w momencie pisania tego akapitu jeszcze niezbudowane; **KOREKTA,
+ground-truth sesji P-12.1b, patrz D-12.1b.1**: P-8.6b jest już 🟢 zrealizowane
+i ma WŁASNY analogiczny hardkodowany literał w `assets/js/checkout-block-filters.js`).
 
 **Ground-truth duplikacji (sesja 2026-08-06, `qutlet-theme`) — tekst
 „1 rok"/„12 miesięcy" jest hardkodowany w PIĘCIU miejscach jednego pliku,
@@ -3708,9 +3711,10 @@ identyczny dla każdej klasy:**
 
 **Zależności fazy:** P-1.2 (🟢 — ACF `klasa_stanu`, do rewizji jak w
 pierwotnym `P-9.3`), P-8.2b (🟢 — tabela klasyfikacji na stronie produktu),
-P-8.6a (🟡 w trakcie — koszyk, pigułki „Klasa"/„Gwarancja" już renderowane,
-do przepisania na dane z bytu), P-8.6b (🟦 — kasa, jeszcze niezbudowana;
-gdy powstanie, MUSI pokazywać te same trzy fakty, patrz D-12.G2).
+P-8.6a (🟢 — koszyk, pigułki „Klasa"/„Gwarancja" już renderowane, do
+przepisania na dane z bytu), P-8.6b (🟢 — kasa, patrz D-12.1b.1: w momencie
+pisania tej fazy jeszcze niezbudowana, dziś już zrealizowana i MUSI pokazywać
+te same trzy fakty, patrz D-12.G2).
 
 ### Decyzje globalne fazy
 
@@ -3723,13 +3727,19 @@ gdy powstanie, MUSI pokazywać te same trzy fakty, patrz D-12.G2).
   indziej w kodzie (core/theme/allegro) — to sygnał, że model bytu jest
   źle zaprojektowany, nie że taki `if` jest w porządku.
 - **D-12.G2 (kasa pokazuje te same trzy fakty co koszyk, gdy powstanie)
-  [USTALONE]:** P-8.6b (Kasa) nie ma jeszcze własnego punktu realizacji w
-  planie (wciąż 🟦 w FAZIE 8), ale klasa/gwarancja/reklamacja per pozycja
-  MUSZĄ tam być widoczne identycznie jak w koszyku — renderowanie
-  ustalone w P-12.1b (theme) ma być zbudowane w sposób reużywalny między
-  koszykiem i kasą (ten sam Store API extension `qutlet-klasa` obsługuje
-  oba bloki Woo Blocks — Cart i Checkout — bez dodatkowej pracy po stronie
-  PHP), nie zduplikowane osobno dla kasy przy P-8.6b.
+  [USTALONE; PRZESŁANKA SKORYGOWANA przy P-12.1b, patrz D-12.1b.1]:** w
+  momencie ustalania tej decyzji P-8.6b (Kasa) nie miało jeszcze własnego
+  punktu realizacji w planie (wciąż 🟦 w FAZIE 8) — DZIŚ P-8.6b jest już 🟢
+  zrealizowane i miało WŁASNY hardkodowany literał „Gwarancja 1 rok" w
+  `assets/js/checkout-block-filters.js` (naprawione w P-12.1b). Klasa/
+  gwarancja/reklamacja per pozycja MUSZĄ tam być widoczne identycznie jak w
+  koszyku — renderowanie ustalone w P-12.1b (theme) zbudowane w sposób
+  reużywalny między koszykiem i kasą (ten sam Store API extension
+  `qutlet-klasa`/endpoint `cart-item` obsługuje oba bloki Woo Blocks — Cart
+  i Checkout — bez dodatkowej pracy po stronie PHP), ale JS-owy konsument w
+  kasie (`checkout-block-filters.js`) i tak wymagał osobnej, małej poprawki
+  (czytał dane, ale ignorował je na rzecz własnego literału) — patrz
+  D-12.1b.1.
 - **D-12.G3 (gwarancja i reklamacja to DWA osobne pola bytu, nie jedno)
   [USTALONE — sesja 2026-08-06]:** użytkownik wymienił „gwarancję ORAZ
   reklamację ustawową" jako dwa fakty prawne (gwarancja = dobrowolne
@@ -3875,7 +3885,7 @@ czytać).
 - **PR:** [qutlet-core #22](https://github.com/przemekcichon/qutlet-core/pull/22),
   [qutlet-meta #74](https://github.com/przemekcichon/qutlet-meta/pull/74).
 
-#### P-12.1b — Theme: render czyta z nowego bytu (produkt, koszyk, kasa) zamiast hardkodowanych stringów
+#### 🟡 P-12.1b — Theme: render czyta z nowego bytu (produkt, koszyk, kasa) zamiast hardkodowanych stringów
 - **Repo:** qutlet-theme (slice `ProductPage/` + `Cart/`)
 - **Zakres:** WSZYSTKIE pięć miejsc z ground-truth duplikacji wyżej —
   `ProductPage::condition_label()` (hardkodowany słownik), `class-pill` (chip
@@ -3896,7 +3906,54 @@ czytać).
 - **Uwaga (D-12.G2):** render koszyka/kasy ma być JEDNYM mechanizmem
   reużywalnym między blokiem Cart i Checkout (Store API extension
   `qutlet-klasa` już działa na obu endpointach w WC Blocks) — kasa (P-8.6b)
-  dostaje te dane „za darmo", gdy powstanie, nie osobną pracę.
+  dostaje te dane „za darmo" na poziomie PHP/Store API. PO ground-truth tej
+  sesji (D-12.1b.1) okazało się, że kasa istnieje już od dawna i miała
+  WŁASNY hardkodowany JS-owy literał ignorujący te dane — naprawione w tym
+  samym PR.
+- **D-12.1b.1 (P-8.6b/kasa już istnieje i miała WŁASNY duplikat — naprawione
+  w tym samym PR) [ROZSTRZYGNIĘTE — decyzja użytkownika, sesja 2026-08-12/13,
+  ODKRYTE w ground-truth PRZED implementacją]:** ten punkt i D-12.G2 były
+  napisane (sesja 2026-08-06) z założeniem, że P-8.6b (Kasa) jeszcze nie
+  istnieje — realny kod ujawnił, że P-8.6b jest już 🟢 zrealizowane
+  (`### 🟢 P-8.6b — Kasa + potwierdzenie`) i ma własny plik
+  `assets/js/checkout-block-filters.js`, który już renderuje podpis pozycji
+  w podsumowaniu, ale z WŁASNYM, osobnym hardkodowanym literałem
+  `'Klasa ' + ext.klasa_stanu + ' · Gwarancja 1 rok · ' + item.quantity + ' szt.'`
+  — bez reklamacji wcale (naruszenie D-12.G2, „trzy fakty"). Docblock tego
+  pliku EXPLICITE zakładał tę naprawę: „gwarancja dziś nadal statyczny
+  literał „1 rok" — byt klas z FAZY 12 jeszcze niezbudowany". Dane Store API
+  (`Cart::cart_item_data()`, endpoint `cart-item`) SĄ współdzielone między
+  Cart i Checkout (potwierdzone w obu docblockach) — więc PHP nie wymagał
+  osobnej pracy dla kasy — ale JS kasy trzeba było OSOBNO przepisać, żeby
+  faktycznie z nich czytał, bo dotąd ich ignorował. Rozstrzygnięcie: naprawić
+  też `checkout-block-filters.js` w tym samym PR/branchu P-12.1b (nie osobny
+  punkt) — ten sam repo (qutlet-theme), ten sam mechanizm Store API, a
+  odkładanie zostawiłoby D-12.G2 formalnie niedomknięte. Zakres kasy
+  pozostaje TEKSTOWY (bez kolorowych chipów, `klasa_kolor` świadomie NIE
+  użyty) — to wcześniejsza, osobna decyzja zwężająca P-8.6b (sesja
+  2026-08-06), niezmieniona przez ten punkt.
+- **D-12.1b.2 (ustalenia niezależnej recenzji — jedno naprawione w PR, jedno
+  odłożone jako nowy gap) [ROZSTRZYGNIĘTE — decyzja użytkownika, sesja
+  2026-08-12/13]:** recenzja (`docs/review.md`, werdykt 🟡 WARUNKOWO, zero
+  🔴) znalazła CZWARTE miejsce hardkodowania A-D poza pięciu z ground-truth
+  fazy: `patterns/class-table.php` — statyczny wzorzec blokowy (użyty przez
+  stronę „Jak to działa?") renderujący TEN SAM duplikat, całkowicie
+  niezależnie. Naprawiony w tym samym PR (pętla po
+  `ClassDefinitionsTaxonomy::all()`, ten sam mechanizm co akordeon
+  „Klasyfikacja produktów"). **Nowy, nierozwiązany gap odkryty PRZY tej
+  naprawie:** strona `/jak-to-dziala/` ma treść tabeli klas WKLEJONĄ
+  statycznie w `post_content` (Gutenberg pattern = punkt startowy kopiowany
+  RAZ do treści, nie żywe `wp:pattern {"slug":…}` odwołanie) — fix pliku
+  wzorca poprawia definicję na PRZYSZŁOŚĆ (nowe wstawienia), ale NIE zmienia
+  już opublikowanej strony, która nadal pokazuje odklejoną, statyczną kopię
+  A-D. Naprawa wymagałaby albo edycji treści strony w adminie (zamiana
+  statycznego HTML na żywe `wp:pattern`), albo przebudowy
+  `page-jak-to-dziala.php` na render PHP wprost z bytu (jak
+  `content-single-product.php`) — decyzja o mechanizmie odłożona do
+  osobnego, przyszłego punktu, NIE robiona po cichu w tej sesji. Drugie
+  ustalenie recenzji (fallback all-or-nothing w perk-row — gdy tylko JEDNO z
+  pól gwarancja/reklamacja jest puste/zero, cała linia znikała mimo że drugi
+  fakt jest znany) naprawione w tym samym PR (gałęzie częściowe).
 - **Zależności:** P-12.1a.
 
 #### P-12.1c — Allegro: strona informacyjna mapowania „Stan" → klasa (read-only)
