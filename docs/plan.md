@@ -3885,7 +3885,7 @@ czytać).
 - **PR:** [qutlet-core #22](https://github.com/przemekcichon/qutlet-core/pull/22),
   [qutlet-meta #74](https://github.com/przemekcichon/qutlet-meta/pull/74).
 
-#### 🟡 P-12.1b — Theme: render czyta z nowego bytu (produkt, koszyk, kasa) zamiast hardkodowanych stringów
+#### 🟢 P-12.1b — Theme: render czyta z nowego bytu (produkt, koszyk, kasa) zamiast hardkodowanych stringów
 - **Repo:** qutlet-theme (slice `ProductPage/` + `Cart/`)
 - **Zakres:** WSZYSTKIE pięć miejsc z ground-truth duplikacji wyżej —
   `ProductPage::condition_label()` (hardkodowany słownik), `class-pill` (chip
@@ -3955,6 +3955,22 @@ czytać).
   pól gwarancja/reklamacja jest puste/zero, cała linia znikała mimo że drugi
   fakt jest znany) naprawione w tym samym PR (gałęzie częściowe).
 - **Zależności:** P-12.1a.
+- **Weryfikacja:** PHPStan czysto (zweryfikowane dwukrotnie — przed i po
+  poprawkach z recenzji). Niezależna recenzja 🟡 WARUNKOWO (drobne, zero
+  🔴) — dwa ustalenia (patterns/class-table.php, fallback all-or-nothing w
+  perk-row) poprawione przed merge'em, patrz D-12.1b.2. Runtime (Playwright,
+  Local) zweryfikowany NIEZALEŻNIE przez wykonawcę i recenzenta — identyczny
+  render 1:1: strona produktu (chip, eco-note, tabela klasyfikacji z realnymi
+  kolorami hex, 2× perk-row, pd-fine, akordeon „Gwarancja i reklamacje"),
+  koszyk (3 pigułki: klasa+kolor, gwarancja, reklamacja), kasa („Klasa A ·
+  Gwarancja 1 rok · Reklamacja 1 rok · 1 szt."). Niezweryfikowane runtime
+  (brak danych w tym Local): klasa z asymetrycznymi okresami gwarancja≠
+  reklamacja albo jednym z pól = 0 (fallback zweryfikowany statycznie w
+  kodzie), klasa „Nowe" z reklamacją ≥ 24 miesiące (gałąź akordeonu — dopiero
+  P-12.1c doda tę klasę). Gap strony `/jak-to-dziala/` (D-12.1b.2) świadomie
+  NIE naprawiony w tym punkcie — do osobnej decyzji.
+- **PR:** [qutlet-theme #28](https://github.com/przemekcichon/qutlet-theme/pull/28),
+  [qutlet-meta #75](https://github.com/przemekcichon/qutlet-meta/pull/75).
 
 #### P-12.1c — Allegro: strona informacyjna mapowania „Stan" → klasa (read-only)
 - **Repo:** qutlet-allegro (`OfferSync/OfferMapper.php`)
