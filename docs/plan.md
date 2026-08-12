@@ -4388,12 +4388,12 @@ Punkt rozbity przy realizacji (sesja 2026-08-12) — podpunkt (2) zależy od
 podpunkt (1) jest niezależny. Decyzja użytkownika: zrealizować TERAZ tylko
 (1) (`P-13.7a`), (2) (`P-13.7b`) odłożyć do czasu `P-12.1a`.
 
-#### 🟡 P-13.7a — Metabox: surowy „Stan" Allegro (read-only)
+#### 🟢 P-13.7a — Metabox: surowy „Stan" Allegro (read-only)
 - **Repo:** qutlet-core (`src\ProductCondition\ProductConditionFields.php`)
-- **Zakres:** metabox „Qutlet — stan i zawartość produktu" zyskuje pole
-  read-only (ACF `message`, bez zapisu żadnej wartości) z surową wartością
-  parametru „Stan" z Allegro — odczyt istniejących danych raw layer
-  (`parameter_value(offer_parameters($offer), 'Stan')` na
+- **Zakres zrealizowany:** metabox „Qutlet — stan i zawartość produktu"
+  zyskało pole read-only (ACF `message`, bez zapisu żadnej wartości) z
+  surową wartością parametru „Stan" z Allegro — odczyt istniejących danych
+  raw layer (`parameter_value(offer_parameters($offer), 'Stan')` na
   `_qutlet_allegro_offer`, ten sam odczyt co `OfferMapper::condition_class()`
   już robi do ustawienia `klasa_stanu` — TU tylko wyświetlana, nie zapisywana
   ponownie). Ekstrakcja zduplikowana w core, NIE importowana z
@@ -4402,6 +4402,14 @@ podpunkt (1) jest niezależny. Decyzja użytkownika: zrealizować TERAZ tylko
   `acf/pre_render_field` (jedyny hook ACF z `$post_id` wprost jako
   argumentem).
 - **Zależności:** brak nowych.
+- **Weryfikacja:** PHPStan czysto (cała wtyczka); niezależna recenzja
+  🟢 CZYSTE (zero ustaleń blokujących). Kształt danych źródłowych
+  zweryfikowany dwukrotnie przez `wp post meta get` (produkt 3800:
+  offer-level `parameters[]` → `Stan` = „Uszkodzony"). Render W
+  PRZEGLĄDARCE NIE zweryfikowany w tej sesji (Playwright MCP miał
+  zablokowany profil przez cały czas realizacji punktu) — do potwierdzenia
+  ręcznie albo na starcie następnej sesji.
+- **PR:** [qutlet-core #21](https://github.com/przemekcichon/qutlet-core/pull/21).
 
 #### P-13.7b — Metabox: długość gwarancji/reklamacji dla wybranej klasy stanu
 - **Repo:** qutlet-core (`src\ProductCondition\ProductConditionFields.php` +
