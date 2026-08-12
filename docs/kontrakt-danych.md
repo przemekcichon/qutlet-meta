@@ -118,11 +118,61 @@ tylko ustabilizowana LISTA slugów + nazwa czytelna.
 
 | Pole (design)      | Literał ACF            | Miejsce | Typ                     | Opcjonalne? | Prototyp                       | Kształt / wartości |
 |--------------------|------------------------|---------|-------------------------|-------------|--------------------------------|--------------------|
-| Klasa stanu        | `klasa_stanu`          | ACF     | select (single)         | nie         | `data.js` `.cls`; `produkt.html:13,46` | wartości (literały): `A`, `B`, `C`, `D`. Etykiety w wyborze pola: A=„Jak nowy", B=„Dobry", C=„Mocne ślady", D=„Na części" (`data.js` `QT.COND`) |
+| Klasa stanu        | `klasa_stanu`          | ACF     | select (single)         | nie         | `data.js` `.cls`; `produkt.html:13,46` | Wartości (literały) i mechanizm zapisu **BEZ ZMIAN od P-1.2** (plain postmeta, dowolny literał — dziś `A`/`B`/`C`/`D`). **`choices` NIE są już hardkodowane w kodzie od P-12.1a** — budowane dynamicznie z bytu §2.2 (`ClassDefinitionsTaxonomy::all()`, join key = term meta `kod`). Etykieta w polu = `nazwa` (natywne `name` WP-termu) dopasowanej definicji. |
 | Co w przesyłce (pozycje) | `zawartosc_zestawu_pozycje` | ACF | repeater          | tak         | `produkt.html:13,142-173`      | **Zastępuje wcześniejsze pole WYSIWYG `zawartosc_zestawu` (D-9.2.1)** — patrz uzasadnienie niżej. Wiersz repeatera = jedna pozycja zestawu; kształt niżej. Pusty repeater → motyw nie renderuje zakładki „Co w przesyłce" (ani karuzeli, ani checklisty) |
 
 „Cena rynkowa nowego" NIE jest już w tej tabeli — od P-13.5 to NIE pole ACF,
-patrz §2.1.
+patrz §2.1. Definicje klas stanu (kolor/opisy/gwarancja/reklamacja) NIE są już
+hardkodowane w PHP — od P-12.1a to byt opisany w §2.2.
+
+### 2.2 Definicja klasy stanu — taksonomia + term meta (P-12.1a)
+
+**REWIZJA D-1.2.1** (niżej) — rozszerzalny byt niosący dane OPISOWE per klasa,
+zastępujący hardkodowaną tablicę `choices` w `ProductConditionFields` ORAZ
+(docelowo, P-12.1b) hardkodowane duplikaty w `qutlet-theme` (`condition_label()`,
+`$classification_rows`, kolory `.dot-a…d`, tekst „dlaczego taniej", akordeon
+„Gwarancja i reklamacje" — ground-truth pełna lista w `docs/plan.md` FAZA 12).
+
+**Mechanizm zapisu na produkcie BEZ ZMIAN** — pole `klasa_stanu` (wyżej) zostaje
+prostym literałem w postmeta; ten byt NIE jest relacją `wp_set_object_terms()` z
+produktem. Decyzja użytkownika (sesja 2026-08-12, `docs/plan.md` P-12.1a):
+`qutlet-allegro` (`ProductWriter`) i `qutlet-theme` (`ProductPage::acf_field()`
+w kilku miejscach) czytają/piszą ten literał, a obie ścieżki są POZA zakresem
+P-12.1a (osobne punkty P-12.1b/P-12.1c) — zrywanie tego kontraktu teraz
+zepsułoby sync i render na żywej stronie do czasu ich wdrożenia.
+
+| Pole (design)                       | Literał (term meta) | Typ           | Opcjonalne? | Uwagi |
+|--------------------------------------|----------------------|---------------|-------------|-------|
+| Kod (klucz techniczny, join key)     | `kod`                | text          | nie, unikalny | Literał zapisywany na produkcie w polu `klasa_stanu` (dziś `A`/`B`/`C`/`D`). NIE slug WP (`sanitize_title()` bezwarunkowo obniża wielkość liter) — osobne term meta właśnie z tego powodu. |
+| Nazwa                                | natywne `name` WP-termu | string     | nie         | Opisowa nazwa klasy (np. „Jak nowy") — administrator zarządza klasami pod tą nazwą (ekran Produkty → Klasy stanu), `kod` jest technicznym szczegółem. |
+| Kolor                                | `kolor`              | color_picker  | nie         | Dawniej `.dot-a…d` w `style.css` (`qutlet-theme`, hardkodowane). |
+| Opis na chipsie                      | `opis_chip`          | text          | nie         | Wolny format (np. „Klasa A · Jak nowy") — NIE musi zaczynać się od „Klasa X" (D-12.1a.2, sesja 2026-08-12 — użytkownik: nowe klasy nie muszą być identyfikowane jako „Klasa A/B/C/D"). |
+| Stan wizualny                        | `stan_wizualny`      | text          | nie         | Kolumna „Stan wizualny" w `$classification_rows` (dawniej hardkodowane w `content-single-product.php`). |
+| Charakterystyka                      | `charakterystyka`    | text          | nie         | Kolumna „Charakterystyka", jak wyżej. |
+| Dlaczego taniej                      | `dlaczego_taniej`    | textarea      | **tak**     | Tekst „Skąd niższa cena?" (`.eco-note`) — może być PUSTY (np. klasa „Nowe" nie ma czego tłumaczyć). Dziś WSPÓLNY dla A-D (seedowany identycznie), różnicowanie per klasa to przyszła praca redakcyjna. |
+| Okres gwarancji (miesiące)           | `okres_gwarancji_miesiace` | number (int) | nie      | Dobrowolne zobowiązanie sprzedawcy. Dziś 12 dla A-D (verbatim „12 miesięcy"/„1 rok" z `content-single-product.php`). |
+| Okres reklamacji ustawowej (miesiące) | `okres_reklamacji_miesiace` | number (int) | nie     | Rękojmia — DWA OSOBNE pola od gwarancji (D-12.G3), nawet gdy liczbowo równe. Dziś 12 dla A-D. |
+
+Taksonomia: `klasa_stanu_definicja` (`ClassDefinitionsTaxonomy::TAXONOMY`) —
+niehierarchiczna, `public=false`, dołączona do `product` WYŁĄCZNIE po admin
+UI (ekran „Produkty → Klasy stanu"); `meta_box_cb=false` — na ekranie edycji
+produktu NIE pokazuje się panel wyboru termu (rzeczywisty wybór klasy zostaje
+na polu ACF `klasa_stanu` wyżej).
+
+**Odczyt (API core):** `ClassDefinitionsTaxonomy::all(): array<kod, array{...}>`
+/ `::get(string $kod): array|null` — P-12.1b (theme) i P-12.1c (allegro, jeśli
+potrzebuje opisów przy mapowaniu) czytają PRZEZ te metody, nie bezpośrednio
+`get_term_meta()`.
+
+**Seedowanie (D-12.1a.2 — „migracja"):** `wp qutlet-core seed-klasa-stanu
+[--dry-run]` (`SeedClassDefinitionsCommand`) — jednorazowo tworzy klasy A-D z
+dzisiejszą treścią, dziś zaszytą jako hardkodowane literały w `qutlet-theme`
+(ground-truth pełna lista `docs/plan.md` FAZA 12). Idempotentna (dopasowanie po
+`kod`, nie nadpisuje ręcznych edycji admina). Klasa **„Nowe" NIE jest seedowana
+tą komendą** — D-12.1a.3 (sesja 2026-08-12): mapuje się z wartości Allegro
+„Stan", więc jej definicja i mapowanie powstają razem przy P-12.1c, nie tu
+(D-12.G1 — dodanie klasy to zawsze tylko nowy term, zero kodu, niezależnie od
+tego, KTO/KIEDY go dodaje).
 
 ### 2.1 Cena rynkowa nowego — natywne Product Data (nie ACF, P-13.5)
 
@@ -159,8 +209,20 @@ niesie wartość (domyślnie `true`), więc „wymagane" w sensie ACF byłoby tu
 przy zapisie i uniemożliwiało zapisanie wiersza jako „brakująca pozycja" (`false`). Doprecyzowane po
 recenzji qutlet-core PR #14, sesja 2026-07-27 — pierwotne sformułowanie „wymagane" mylone z ACF `required=1`).
 
-**D-1.2.1 [ROZSTRZYGNIĘTE — prototyp]:** klasa stanu to **pole ACF select**
-(`data.js:11` „pole ACF 'klasa_stanu' (select: A/B/C/D)"), NIE własna taksonomia.
+**D-1.2.1 [ROZSTRZYGNIĘTE — prototyp; REWIZJA CZĘŚCIOWA P-12.1a, sesja
+2026-08-12, decyzja użytkownika]:** pierwotnie: klasa stanu to **pole ACF
+select** (`data.js:11` „pole ACF 'klasa_stanu' (select: A/B/C/D)"), NIE własna
+taksonomia. **Od P-12.1a to NIE JEST już całkiem prawdą** — własna taksonomia
+WRACA (`klasa_stanu_definicja`, §2.2), ale WYŁĄCZNIE jako byt OPISOWY (definicje
+klas), nie jako mechanizm przypisania klasy do produktu. Pole ACF `klasa_stanu`
+NA PRODUKCIE zostaje (mechanizm zapisu bez zmian — plain postmeta, literał) —
+decyzja o zachowaniu kontraktu wstecz z `qutlet-allegro`/`qutlet-theme` (poza
+zakresem P-12.1a). Powód rewizji: `choices` pola były hardkodowaną tablicą w
+PHP (4 klasy, bez gwarancji/reklamacji per klasa) — użytkownik chciał
+rozszerzalności (dodawanie klas przez admina, D-12.G1) i bogatszych danych per
+klasa (kolor/gwarancja/reklamacja/„dlaczego taniej"), co ACF select z
+hardkodowanymi `choices` nie mógł dać. Zobacz `docs/plan.md` → FAZA 12 →
+P-12.1a, D-12.1a.1/2/3.
 
 **D-1.2.2 [ROZSTRZYGNIĘTE — prototyp, podtyp SUPERSEDED przez D-9.2.1]:**
 `zawartosc_zestawu` należy do **FAZY 1** (pole front-driven z prototypu).
@@ -780,7 +842,7 @@ niezadeklarowaną twardą zależnością (fatal przy wyłączonym ACF).
 | Decyzja  | Rozstrzygnięcie                                        | Podstawa |
 |----------|--------------------------------------------------------|----------|
 | D-1.1.1  | marka = natywna `product_brand` (WC_Brands)            | decyzja użytkownika (Woo 10.9.4 ma natywne marki) |
-| D-1.2.1  | klasa stanu = ACF select `A/B/C/D` (`klasa_stanu`)     | prototyp (`data.js:11`) |
+| D-1.2.1  | klasa stanu = ACF select (`klasa_stanu`, wartość = plain literał, mechanizm zapisu BEZ ZMIAN) + REWIZJA P-12.1a: `choices` z nowej taksonomii opisowej `klasa_stanu_definicja` (§2.2), NIE relacja z produktem | prototyp (`data.js:11`) + decyzja użytkownika (rewizja, sesja 2026-08-12) |
 | D-1.2.2  | `zawartosc_zestawu` → FAZA 1 (front-driven), ACF (podtyp WYSIWYG SUPERSEDED, patrz D-9.2.1) | prototyp (`produkt.html:13,170`) |
 | D-1.3.1  | cena Allegro = osobne pole ACF `cena_allegro`; nota „~X%" liczona | decyzja użytkownika |
 | P-1.4    | `meta_key` czasu czytania = `_qutlet_reading_time`     | decyzja użytkownika |
