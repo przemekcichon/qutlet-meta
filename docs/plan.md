@@ -3795,7 +3795,7 @@ Rozbite na trzy pod-punkty per repo (reguła punktów wielorepowych) — zależn
 P-12.1b/P-12.1c → P-12.1a (model musi powstać, zanim konsumenci będą mieli co
 czytać).
 
-#### 🟡 P-12.1a — Core: byt „klasa stanu" jako rozszerzalny model + gwarancja/reklamacja + admin UI
+#### 🟢 P-12.1a — Core: byt „klasa stanu" jako rozszerzalny model + gwarancja/reklamacja + admin UI
 - **Repo:** qutlet-core (slice `ProductCondition/` — rozbudowa istniejącego
   slice'a, nie nowy)
 - **Zakres:** zastąpić zamknięty ACF select (`klasa_stanu`, `choices` A-D na
@@ -3864,6 +3864,16 @@ czytać).
   pierwotnego umiejscowienia tego punktu w FAZIE 9 (P-9.2 — ten sam wzorzec
   rewizji), tylko wyniesiona do własnej fazy ze względu na rozmiar/wagę
   zmiany (dotyka trzech repo i dwóch już zbudowanych powierzchni renderu).
+- **Weryfikacja:** PHPStan czysto; niezależna recenzja 🟡 WARUNKOWO (drobne,
+  zero 🔴) — dwa ustalenia (unikalność `kod`, nieścisłość komentarza)
+  poprawione przed merge'em. Runtime (WP-CLI, Local) zweryfikowany
+  NIEZALEŻNIE przez wykonawcę i recenzenta: seed/dry-run/idempotencja,
+  `wp post meta get 3800 klasa_stanu` → `C` nietknięte. Render w przeglądarce
+  NIE zweryfikowany (Playwright MCP miał zablokowany profil w obu sesjach,
+  jak przy P-13.7a) — do potwierdzenia ręcznie. Walidacja unikalności `kod`
+  też niezweryfikowana runtime (wymaga POST-owego zapisu formularza ACF).
+- **PR:** [qutlet-core #22](https://github.com/przemekcichon/qutlet-core/pull/22),
+  [qutlet-meta #74](https://github.com/przemekcichon/qutlet-meta/pull/74).
 
 #### P-12.1b — Theme: render czyta z nowego bytu (produkt, koszyk, kasa) zamiast hardkodowanych stringów
 - **Repo:** qutlet-theme (slice `ProductPage/` + `Cart/`)
