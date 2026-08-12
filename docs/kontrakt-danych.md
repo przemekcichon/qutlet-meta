@@ -723,7 +723,7 @@ rozproszony, ta sama nazwa slice'a `AiRewrite/` w obu repo. Prompt efektywny
 
 | Ustawienie (znaczenie)              | Literał       | Miejsce | Typ                    | Opcjonalne? | Uwagi |
 |--------------------------------------|---------------|---------|------------------------|-------------|-------|
-| Prompt AI (nadpisanie per produkt)   | `prompt_ai`   | ACF (meta na produkcie) | textarea (plain text) | tak | Rejestruje `qutlet-core` (P-7.2a). Treść wysyłana do core AI Client (`using_system_instruction()` / dołączona do promptu) ZAMIAST globalnego promptu, gdy niepuste. Puste → `qutlet-ai` używa globalnego promptu. Wejściem do generacji jest surowy JSON pojedynczego produktu (D-7.G5/D-5.G4) — to pole tylko dostarcza instrukcję/styl, NIE dane produktu. Odczyt cross-plugin: `get_post_meta( $product_id, 'prompt_ai', true )` (wzorzec §9.2 — `get_field()`/`get_post_meta()` równoważne dla prostych pól tekstowych ACF). |
+| Prompt AI (nadpisanie per produkt)   | `prompt_ai`   | ACF (meta na produkcie) | textarea (plain text) | tak | Rejestruje `qutlet-core` (P-7.2a). Treść wysyłana do core AI Client (`using_system_instruction()` / dołączona do promptu) ZAMIAST globalnego promptu, gdy niepuste. Puste → `qutlet-ai` używa globalnego promptu. Wejściem do generacji jest surowy JSON pojedynczego produktu (D-7.G5/D-5.G4) — to pole tylko dostarcza instrukcję/styl, NIE dane produktu. Odczyt cross-plugin: `get_post_meta( $product_id, 'prompt_ai', true )` (wzorzec §9.2 — `get_field()`/`get_post_meta()` równoważne dla prostych pól tekstowych ACF). **Render (P-13.6, D-13.G4/D-13.6.1):** BEZ własnego metaboxu ACF — `qutlet-core` (`PromptOverrideField::remove_own_metabox()`) zdejmuje go z ekranu produktu; renderuje się WEWNĄTRZ metaboxu „Qutlet — generacja AI" (`qutlet-ai`), wołaniem publicznej metody `PromptOverrideField::render_field( $product_id )` (rejestracja i wywołania ACF zostają w core — `qutlet-ai` nie ma twardej zależności na ACF Pro, D-G5). |
 | Prompt AI (globalny)                | `qutlet_ai_prompt_global` | option (Settings API) | string (textarea, plain text) | tak (brak/puste → brak instrukcji systemowej — core AI Client generuje bez `using_system_instruction()`) | Rejestruje `qutlet-ai` (P-7.2b): strona ustawień pod menu WooCommerce (wzorzec `DiscountRateSettingsPage`, §11), sanityzacja `sanitize_textarea_field()`. Odczyt: `get_option( 'qutlet_ai_prompt_global', '' )`, ale wołający NIE czyta opcji bezpośrednio — używa `Qutlet\Ai\AiRewrite\PromptSettings::effective_prompt( $product_id )` (override per-produkt ?? opcja globalna ?? `null`), analogicznie do `DiscountRate::effective_percent()` (§11). |
 
 **D-7.2a.1 [USTALONE]:** mechanizm rejestracji pola per-produkt = `acf_add_local_field_group()`
@@ -747,9 +747,27 @@ zwraca `null` (NIE pusty string) — wołający (P-7.3) ma wtedy jawny sygnał �
 promptu", żeby pominąć `using_system_instruction()` zamiast wysłać pustą instrukcję
 do core AI Client.
 
+**D-13.6.1 [USTALONE — decyzja użytkownika, sesja 2026-08-12, rozstrzyga D-13.G4]:**
+mechanizm współdzielenia renderu `prompt_ai` między `qutlet-core` (rejestracja) i
+`qutlet-ai` (miejsce renderu, metabox „Qutlet — generacja AI") = **publiczna metoda
+statyczna**, nie hook WP. `PromptOverrideField::remove_own_metabox()` (core, hook
+`add_meta_boxes` priorytet 20 — PO priorytecie 10, na którym ACF dodaje własny
+metabox grupy) zdejmuje autogenerowany metabox ACF z ekranu edycji produktu; zapis
+nie jest tym dotknięty (`ACF_Form_Post::save_post()` wisi na osobnym hooku
+`save_post`, dopasowuje grupy pól po `location`, niezależnie od tego, czy ich
+metabox się kiedykolwiek wyrenderował). `PromptOverrideField::render_field( int $product_id ): void`
+(`acf_get_fields()` + `acf_render_fields()` w środku) renderuje pole — `qutlet-ai`
+(`GenerationMetaBox`) importuje tę klasę i woła metodę wprost, wzorem już
+istniejącego bezpośredniego użycia `Qutlet\Core\ProductInfo\RawLayerMeta` w tym
+samym pliku. Odrzucone: `qutlet-ai` wołający `acf_render_field()`/`get_field_object()`
+samodzielnie — `qutlet-ai` ma twardą zależność WYŁĄCZNIE na core + Woo (D-G5), nie na
+ACF Pro, więc bezpośrednie wywołanie funkcji ACF przez `qutlet-ai` byłoby
+niezadeklarowaną twardą zależnością (fatal przy wyłączonym ACF).
+
 ### Odnośniki (§13)
 - Plan: `docs/plan.md` → FAZA 7 (D-7.G1–G7), P-7.2a (pole per-produkt + rejestracja
   core), P-7.2b (ten kontrakt: ustawienie globalne + odczyt efektywnego promptu w
+  `qutlet-ai`), P-13.6a/P-13.6b (D-13.G4/D-13.6.1 — render przeniesiony do metaboxu
   `qutlet-ai`).
 
 ---
@@ -831,3 +849,9 @@ do core AI Client.
 |----------|--------------------------------------------------------------------------------|----------|
 | D-13.5.1 | pozycja pola w zakładce General: dosłowne „między `_regular_price` a `_sale_price`" niewykonalne — oba pola to hardcoded HTML w `html-product-data-general.php` (WooCommerce 11.0.0), nie callbacki na żadnym hooku, więc nic nie da się między nie wstrzyknąć. Wybrany hook `woocommerce_product_options_pricing` — fires tuż PO `_sale_price` + polach harmonogramu promocji, wciąż WEWNĄTRZ tego samego boksu `options_group pricing` (bliżej cen niż `woocommerce_product_options_general_product_data`, którego używa `_qutlet_stawka_rabatu` — ten hook lądowałby pole daleko od cen, przy polach podatkowych) | ground-truth P-13.5 (`html-product-data-general.php:60-104`, WooCommerce 11.0.0), decyzja użytkownika (sesja 2026-08-11) |
 | D-13.5.2 | `meta_key` ZOSTAJE publiczny `cena_rynkowa_nowego` (bez zmian, bez migracji danych) — `_cena_rynkowa_nowego` (prywatny, wzorem `_qutlet_stawka_rabatu`) odrzucony: ACF wewnętrznie już pisze `_{nazwa_pola}` jako reference meta (klucz pola ACF, NIE cenę) na każdym produkcie, gdzie pole było kiedyś zapisane przez ACF (`MetaLocation::$reference_prefix = '_'`, ACF Pro) — przejęcie tego klucza pod nową wartość kolidowałoby z tymi danymi i wymagałoby migracji | ground-truth P-13.5 (ACF Pro `src/Meta/MetaLocation.php:31,114,161`), decyzja użytkownika (sesja 2026-08-11) |
+
+## Log decyzji (P-13.6)
+
+| Decyzja  | Rozstrzygnięcie                                                                 | Podstawa |
+|----------|--------------------------------------------------------------------------------|----------|
+| D-13.6.1 | render `prompt_ai` przenosi się do metaboxu `qutlet-ai` przez publiczną metodę statyczną `PromptOverrideField::render_field()` (core zdejmuje własny metabox ACF przez `remove_meta_box()`, `qutlet-ai` woła metodę wprost) — NIE genuine hook WP (`do_action`), bo `qutlet-ai` i tak hard-dependuje na `qutlet-core` (D-G5); genuine hook odrzucony jako niepotrzebna dodatkowa warstwa. Odrzucone też: `qutlet-ai` wołający funkcje ACF (`acf_render_field()`/`get_field_object()`) samodzielnie — `qutlet-ai` NIE ma twardej zależności na ACF Pro (tylko core + Woo), więc stałaby się niezadeklarowaną twardą zależnością | ground-truth P-13.6 (`advanced-custom-fields-pro/includes/forms/form-post.php` — metabox ACF `add_meta_box()`/priorytet, `ACF_Form_Post::save_post()` na osobnym hooku), decyzja użytkownika (sesja 2026-08-12), rozstrzyga D-13.G4 |

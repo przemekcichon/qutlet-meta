@@ -4021,16 +4021,31 @@ każdego punktu, per `docs/ground-truth.md`):**
   fallbacku `post_content ?? get_field('opis')` — czyta samo
   `post_content` od razu.
 - **D-13.G4 (mechanizm współdzielenia pola `prompt_ai` między core i ai)
-  [OTWARTE]:** P-13.6 chce pole `prompt_ai` (rejestrowane w `qutlet-core`
-  per granicę artefaktów — core rejestruje ACF, ai NIE rejestruje pól)
-  wyrenderowane WEWNĄTRZ metaboxu „Qutlet — generacja AI" (`qutlet-ai`),
-  nie w swoim własnym metaboxie jak dziś. Mechanizm do rozstrzygnięcia
-  przy realizacji: (a) `qutlet-core` przestaje renderować WŁASNY metabox
-  dla tego pola i wystawia hook/filtr, który `qutlet-ai` wykorzystuje do
-  wyrenderowania pola (`acf_render_field()` z tablicą pola pobraną przez
-  `acf_get_field()`) wewnątrz swojego metaboxu; (b) coś inne. Granica
-  artefaktów (core rejestruje ACF, ai nie) MA zostać nienaruszona — pytanie
-  dotyczy TYLKO renderu/pozycji, nie własności pola.
+  [USTALONE — decyzja użytkownika, sesja 2026-08-12]:** ground-truth (kod
+  realny + `advanced-custom-fields-pro/includes/forms/form-post.php`)
+  ujawnił, że `acf_get_field()` (zakładany w pierwotnym zapisie) NIE
+  przyjmuje nazwy pola — właściwy odczyt „po nazwie" to
+  `acf_get_fields( $group_key )`. Ważniejsze znalezisko: `qutlet-ai` ma
+  twardą zależność WYŁĄCZNIE na core + Woo (D-G5), NIE na ACF Pro (patrz
+  `PromptSettings` — cross-plugin odczyt idzie przez `get_post_meta()`, nie
+  `get_field()`, z tego samego powodu) — gdyby `qutlet-ai` wołał
+  `acf_render_field()`/`get_field_object()` samodzielnie, ACF stałby się
+  niezadeklarowaną twardą zależnością (fatal przy wyłączonym ACF).
+  Rozstrzygnięcie: `qutlet-core` (`PromptOverrideField`) zdejmuje WŁASNY
+  metabox grupy (`remove_meta_box('acf-{key grupy}', 'product', 'normal')`
+  na `add_meta_boxes` priorytet 20 — PO priorytecie 10, na którym ACF go
+  dodaje; zdjęcie nie wpływa na zapis, bo `ACF_Form_Post::save_post()` wisi
+  na osobnym hooku `save_post` i sam dopasowuje grupy po `location`,
+  niezależnie od tego, czy ich metabox się kiedykolwiek wyrenderował) i
+  wystawia PUBLICZNĄ METODĘ STATYCZNĄ `PromptOverrideField::render_field( int $product_id ): void`
+  (`acf_get_fields()` + `acf_render_fields()` w środku — WYŁĄCZNIE w core).
+  `qutlet-ai` (`GenerationMetaBox`) importuje tę klasę i woła metodę wprost
+  — NIE genuine hook WP (`do_action`) — wzorem już istniejącego
+  bezpośredniego użycia `Qutlet\Core\ProductInfo\RawLayerMeta` w tym samym
+  pliku (spójne z ustaloną konwencją cross-plugin w projekcie; `qutlet-ai`
+  i tak hard-dependuje na `qutlet-core`, więc bezpośrednie wywołanie klasy
+  nie jest nowym rodzajem sprzężenia). Granica D-7.G6 (core rejestruje ACF,
+  ai nie) nienaruszona — `qutlet-ai` nie dotyka funkcji ACF bezpośrednio.
 
 ### 🟢 P-13.1 — Import: nowe produkty w statusie „Oczekuje na przegląd", nie „Opublikowany"
 - **Repo:** qutlet-allegro (`OfferSync/ImportOffersCommand.php`,
@@ -4327,20 +4342,27 @@ qutlet-core, ale aktualizacja `docs/kontrakt-danych.md` żyje w qutlet-meta
 
 ### P-13.6 — Prompt AI: konsolidacja w metaboxie generacji + podgląd globalnego
 
-#### P-13.6a — Core: pole `prompt_ai` bez własnego metaboxu
+#### 🟡 P-13.6a — Core: pole `prompt_ai` bez własnego metaboxu
 - **Repo:** qutlet-core (`src\AiRewrite\PromptOverrideField.php`)
-- **Zakres:** pole ACF `prompt_ai` PRZESTAJE mieć własny metabox „Qutlet —
-  prompt AI (nadpisanie per produkt)" — rejestracja pola (ACF) zostaje w
-  core (granica artefaktów, core=dane/model), ale renderowanie
-  przenosi się do metaboxu `qutlet-ai` (P-13.6b). Mechanizm do
-  rozstrzygnięcia — patrz D-13.G4.
+- **Zakres zrealizowany (D-13.G4):** pole ACF `prompt_ai` PRZESTAJE mieć
+  własny metabox „Qutlet — prompt AI (nadpisanie per produkt)" —
+  rejestracja pola (ACF) zostaje w core (granica artefaktów,
+  core=dane/model); `PromptOverrideField::remove_own_metabox()` (hook
+  `add_meta_boxes`, priorytet 20) zdejmuje autogenerowany metabox ACF
+  (`acf-group_qutlet_ai_rewrite`) z ekranu edycji produktu. Nowa publiczna
+  metoda statyczna `PromptOverrideField::render_field( int $product_id ): void`
+  (`acf_get_fields()` + `acf_render_fields()`) renderuje pole w miejscu
+  wywołania — dziś wołana z metaboxu `qutlet-ai` (P-13.6b).
 - **Zależności:** brak nowych.
+- **PR:** [qutlet-core #20](https://github.com/przemekcichon/qutlet-core/pull/20).
 
-#### P-13.6b — AI: pole promptu + podgląd globalnego promptu w metaboxie generacji
+#### 🟡 P-13.6b — AI: pole promptu + podgląd globalnego promptu w metaboxie generacji
 - **Repo:** qutlet-ai (`GenerationMetaBox.php`)
-- **Zakres:** metabox „Qutlet — generacja AI" (już przesuwany w P-13.3b —
-  realizować razem) zyskuje: (1) pole `prompt_ai` (per-produkt override,
-  P-13.6a) wyrenderowane w tym metaboxie; (2) READ-ONLY podgląd
+- **Zakres zrealizowany:** metabox „Qutlet — generacja AI" (już przesuwany
+  w P-13.3b) zyskał sekcję promptu (przed przyciskiem „Generuj"): (1) pole
+  `prompt_ai` (per-produkt override) wyrenderowane wołaniem
+  `PromptOverrideField::render_field()` (P-13.6a, D-13.G4 — bezpośrednie
+  wywołanie klasy `qutlet-core`, nie hook WP); (2) READ-ONLY podgląd
   GLOBALNEGO promptu (`PromptSettings::OPTION_NAME`/
   `qutlet_ai_prompt_global`, dziś tylko na stronie ustawień) — sam odczyt
   `get_option()`, bez linku edycji (link do strony ustawień jako
@@ -4349,6 +4371,7 @@ qutlet-core, ale aktualizacja `docs/kontrakt-danych.md` żyje w qutlet-meta
   użyje" (`PromptSettings::effective_prompt()` — override gdy niepusty,
   inaczej globalny) bez przeskakiwania między ekranami.
 - **Zależności:** P-13.6a, P-13.3b (współdzielony metabox — jedna sesja).
+- **PR:** [qutlet-ai #9](https://github.com/przemekcichon/qutlet-ai/pull/9).
 
 ### P-13.7 — Metabox stanu: surowy „Stan" Allegro (read-only) + gwarancja/reklamacja
 - **Repo:** qutlet-core (`src\ProductCondition\ProductConditionFields.php`
