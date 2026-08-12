@@ -3932,6 +3932,28 @@ czytać).
   pozostaje TEKSTOWY (bez kolorowych chipów, `klasa_kolor` świadomie NIE
   użyty) — to wcześniejsza, osobna decyzja zwężająca P-8.6b (sesja
   2026-08-06), niezmieniona przez ten punkt.
+- **D-12.1b.2 (ustalenia niezależnej recenzji — jedno naprawione w PR, jedno
+  odłożone jako nowy gap) [ROZSTRZYGNIĘTE — decyzja użytkownika, sesja
+  2026-08-12/13]:** recenzja (`docs/review.md`, werdykt 🟡 WARUNKOWO, zero
+  🔴) znalazła CZWARTE miejsce hardkodowania A-D poza pięciu z ground-truth
+  fazy: `patterns/class-table.php` — statyczny wzorzec blokowy (użyty przez
+  stronę „Jak to działa?") renderujący TEN SAM duplikat, całkowicie
+  niezależnie. Naprawiony w tym samym PR (pętla po
+  `ClassDefinitionsTaxonomy::all()`, ten sam mechanizm co akordeon
+  „Klasyfikacja produktów"). **Nowy, nierozwiązany gap odkryty PRZY tej
+  naprawie:** strona `/jak-to-dziala/` ma treść tabeli klas WKLEJONĄ
+  statycznie w `post_content` (Gutenberg pattern = punkt startowy kopiowany
+  RAZ do treści, nie żywe `wp:pattern {"slug":…}` odwołanie) — fix pliku
+  wzorca poprawia definicję na PRZYSZŁOŚĆ (nowe wstawienia), ale NIE zmienia
+  już opublikowanej strony, która nadal pokazuje odklejoną, statyczną kopię
+  A-D. Naprawa wymagałaby albo edycji treści strony w adminie (zamiana
+  statycznego HTML na żywe `wp:pattern`), albo przebudowy
+  `page-jak-to-dziala.php` na render PHP wprost z bytu (jak
+  `content-single-product.php`) — decyzja o mechanizmie odłożona do
+  osobnego, przyszłego punktu, NIE robiona po cichu w tej sesji. Drugie
+  ustalenie recenzji (fallback all-or-nothing w perk-row — gdy tylko JEDNO z
+  pól gwarancja/reklamacja jest puste/zero, cała linia znikała mimo że drugi
+  fakt jest znany) naprawione w tym samym PR (gałęzie częściowe).
 - **Zależności:** P-12.1a.
 
 #### P-12.1c — Allegro: strona informacyjna mapowania „Stan" → klasa (read-only)
