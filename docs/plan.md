@@ -3668,7 +3668,7 @@ artykuł nie ma dziś jak ich odtworzyć w edytorze:
 
 ---
 
-## 🟦 FAZA 12 — Klasy stanu: rozszerzalny byt + gwarancja/reklamacja + widoczność w koszyku i kasie
+## 🟨 FAZA 12 — Klasy stanu: rozszerzalny byt + gwarancja/reklamacja + widoczność w koszyku i kasie
 
 Cel: wyniesiony z FAZY 9 (był `P-9.3`) i ROZSZERZONY na wyraźną prośbę
 użytkownika (sesja 2026-08-06): zamiast zamkniętego, hardkodowanego enum
@@ -3795,7 +3795,7 @@ Rozbite na trzy pod-punkty per repo (reguła punktów wielorepowych) — zależn
 P-12.1b/P-12.1c → P-12.1a (model musi powstać, zanim konsumenci będą mieli co
 czytać).
 
-#### P-12.1a — Core: byt „klasa stanu" jako rozszerzalny model + gwarancja/reklamacja + admin UI
+#### 🟡 P-12.1a — Core: byt „klasa stanu" jako rozszerzalny model + gwarancja/reklamacja + admin UI
 - **Repo:** qutlet-core (slice `ProductCondition/` — rozbudowa istniejącego
   slice'a, nie nowy)
 - **Zakres:** zastąpić zamknięty ACF select (`klasa_stanu`, `choices` A-D na
@@ -3811,36 +3811,55 @@ czytać).
   to inny wzorzec odmiany, bo „rok/lata/lat" ma NIEREGULARNY trzeci wariant,
   inny niż „sztuka/sztuki/sztuk"). Musi dać się dodać NOWĄ klasę (włącznie z
   „Nowe") bez zmiany kodu (przez admina WP) — patrz D-12.G1.
-- **D-12.1a.1 (mechanizm bytu — jak modelować rozszerzalność) [OTWARTE]:**
-  (przeniesione z pierwotnego D-9.3a.1, bez zmian — nadal nierozstrzygnięte)
-  kilka opcji, żadna nierekomendowana — decyzja użytkownika:
-  1. **Własna taksonomia** (np. `klasa_stanu`) z **term meta** na
-     kolor/opisy/gwarancję/reklamację — admin UI „za darmo" (ekran Tags),
-     rozszerzalność przez dodanie termu. Wymaga jawnego odwrócenia D-1.2.1
-     (świadomie odrzuciła taksonomię na rzecz ACF select) — nie ciche
-     nadpisanie, tylko udokumentowana rewizja z uzasadnieniem „czemu inaczej
-     niż wtedy".
-  2. **CPT** (np. `klasa_produktu`) + relacja z produktem (post object/ID) —
-     pełna elastyczność pól (repeater-like przez ACF na CPT), ale własny ekran
-     admina do zbudowania (nie „za darmo" jak taksonomia).
-  3. **Opcja WP z repeaterem ACF (options page)** — jedna globalna lista klas,
-     wzorzec zbliżony do `qutlet_stawka_rabatu` z P-6.1, ale repeater zamiast
-     jednej liczby; produkt trzyma tylko literał/klucz wskazujący wiersz.
-     Prostsze niż CPT, ale repeater w jednej opcji nie ma natywnego
-     admin-listing jak CPT/taksonomia (edycja w jednym długim formularzu).
-  Wybór wpływa wprost na P-12.1b (jak motyw czyta/referencjonuje klasę) i
-  P-12.1c (gdzie żyje mapowanie Allegro → klasa).
-- **D-12.1a.2 (migracja istniejących wartości) [OTWARTE]:** (przeniesione z
-  pierwotnego D-9.3a.2, bez zmian) produkty już zsynchronizowane z Allegro
-  mają zapisany literał `klasa_stanu` (A/B/C/D) — czy nowy byt WSPÓŁISTNIEJE
-  z tym literałem (produkt trzyma FK/klucz bez zmian, zmienia się tylko SKĄD
-  biorą się opisy/kolor/gwarancja/reklamacja), czy potrzebna migracja danych?
-  Wpływa na to, czy P-12.1c (mapowanie sync) w ogóle rusza istniejące produkty.
+- **D-12.1a.1 (mechanizm bytu — jak modelować rozszerzalność) [ROZSTRZYGNIĘTE —
+  decyzja użytkownika, sesja 2026-08-12]:** **własna taksonomia**
+  (`klasa_stanu_definicja`) z **term meta** na kolor/opisy/gwarancję/reklamację
+  — admin UI „za darmo" (ekran „Produkty → Klasy stanu"), rozszerzalność przez
+  dodanie termu. **REWIZJA D-1.2.1** (`docs/kontrakt-danych.md` §2 — świadomie
+  odrzuciła taksonomię na rzecz ACF select) — jawna, udokumentowana (patrz
+  §2.2 kontraktu i D-12.1a.4 niżej, czemu inaczej niż wtedy: potrzeba
+  rozszerzalności bez kodu, D-12.G1, i bogatszych danych per klasa, czego
+  hardkodowany ACF select z sztywnymi `choices` nie mógł dać). Odrzucone
+  warianty: CPT + relacja (własny ekran admina do zbudowania, niepotrzebny
+  narzut) i opcja WP z repeaterem ACF (brak natywnego admin-listing).
+- **D-12.1a.2 (migracja istniejących wartości) [ROZSTRZYGNIĘTE — decyzja
+  użytkownika, sesja 2026-08-12; DOPRECYZOWANE w toku realizacji, patrz
+  D-12.1a.4]:** migracja danych JEST wymagana, klasy przestają być
+  identyfikowane jako gołe „Klasa A/B/C/D" w warstwie OPISOWEJ (nazwa/opis
+  chipsa dostają wolny format, nie sztywny szablon „Klasa X · …") — ale
+  literał zapisywany NA PRODUKCIE (pole `klasa_stanu`) zostaje BEZ ZMIAN
+  (patrz D-12.1a.4, ground-truth ujawnił żywe sprzężenie z `qutlet-allegro`/
+  `qutlet-theme`, poza zakresem tej sesji). „Migracja" = jednorazowe
+  SEEDOWANIE nowego bytu opisowego wierszami A-D (`wp qutlet-core
+  seed-klasa-stanu`, idempotentna), NIE migracja per-produkt — żaden produkt
+  nie zmienia swojej wartości `klasa_stanu`.
 - **D-12.1a.3 (skąd bierze się klasa „Nowe" — sync Allegro czy tylko ręcznie)
-  [OTWARTE]:** patrz akapit o mapowaniu wyżej — do rozstrzygnięcia razem z
-  P-12.1c, czy jakakolwiek wartość Allegro „Stan" mapuje się na „Nowe", czy
-  ta klasa istnieje WYŁĄCZNIE dla produktów wprowadzanych poza automatycznym
-  sync (ręcznie w adminie).
+  [ROZSTRZYGNIĘTE — decyzja użytkownika, sesja 2026-08-12]:** klasa „Nowe"
+  MAPUJE SIĘ z wartości Allegro „Stan" — konkretne mapowanie (która z 7
+  wartości, czy odbiera coś klasie A) do ustalenia przy P-12.1c
+  (`OfferMapper::CONDITION_MAP`, poza zakresem tej sesji). Konsekwencja dla
+  P-12.1a: klasa „Nowe" NIE jest seedowana komendą tej sesji (D-12.G1 — dodanie
+  klasy to zawsze tylko nowy term, zero kodu, niezależnie od tego kto/kiedy go
+  dodaje) — jej definicja i mapowanie powstają razem przy P-12.1c.
+- **D-12.1a.4 (kompatybilność wsteczna z qutlet-allegro/qutlet-theme podczas
+  przejścia) [ROZSTRZYGNIĘTE — decyzja użytkownika, sesja 2026-08-12, ODKRYTE
+  w ground-truth PRZED implementacją]:** realny kod ujawnił żywe sprzężenie
+  poza zakresem tej sesji: `qutlet-allegro\ProductWriter.php` (linia ok. 275)
+  zapisuje literał `A`-`D` przez `update_field(ACF_KEY_CONDITION, …)`;
+  `qutlet-theme` (`ProductPage.php` `condition_label()`, `content-single-
+  product.php`, `content-product.php`, `Cart.php`) czyta ten literał i mapuje
+  go przez WŁASNY, zaszyty w motywie słownik — obie ścieżki osobne
+  branche/PR-y (P-12.1b/P-12.1c). Gdyby P-12.1a zmieniło mechanizm ZAPISU
+  (relacja z taksonomią zamiast postmeta) lub WARTOŚĆ (opisowy slug zamiast
+  litery), sync i render na ŻYWEJ stronie popsuje się do czasu wdrożenia tamtych
+  punktów (puste etykiety, brak auto-klasyfikacji nowych produktów).
+  Rozstrzygnięcie: **zachować kontrakt wstecz** — pole `klasa_stanu` na
+  produkcie zostaje ACF select zapisujący plain literał, mechanizm BEZ ZMIAN;
+  nowa taksonomia (D-12.1a.1) jest WYŁĄCZNIE bytem opisowym (`choices` pola
+  budowane z niej dynamicznie), nie relacją z produktem. Zero zmian wymaganych
+  w `qutlet-allegro`/`qutlet-theme` w tej sesji — P-12.1b/P-12.1c dostają
+  czystą metodę odczytu `ClassDefinitionsTaxonomy::get(string $kod)` do
+  wykorzystania, gdy przyjdzie ich kolej.
 - **Zależności:** brak nowych — rewizja P-1.2 (już 🟢), analogicznie do
   pierwotnego umiejscowienia tego punktu w FAZIE 9 (P-9.2 — ten sam wzorzec
   rewizji), tylko wyniesiona do własnej fazy ze względu na rozmiar/wagę
