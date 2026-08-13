@@ -85,14 +85,14 @@ kierunek jest jednostronny (produkcja → snapshot → sandbox). Wznawialna, ide
 względem stanu sandboksa.
 **Repo/klasa:** `qutlet-allegro`, `Qutlet\Allegro\SandboxSeed\SandboxSeedCommand`.
 
-### `wp qutlet-allegro import-offers [--environment=<env>=sandbox] [--offer=<id>] [--limit=<n>=100] [--max-offers=<n>=0] [--skip-images] [--status=<status>=pending]`
+### `wp qutlet-allegro import-offers [--environment=<env>=sandbox|production] [--offer=<id>] [--limit=<n>=100] [--max-offers=<n>=0] [--skip-images] [--status=<status>=pending|publish|draft]`
 Pobiera oferty `ACTIVE`/`BUY_NOW` z Allegro i tworzy/aktualizuje produkty WooCommerce
 wg mappingu (kontrakt danych) — jedyna komenda, którą realnie zasila się katalog
 produktów. Idempotentna po `_qutlet_allegro_offer_id`. Slot `read`. **Bez WP-Cron —
 wyłącznie ręczna.**
 **Repo/klasa:** `qutlet-allegro`, `Qutlet\Allegro\OfferSync\ImportOffersCommand`.
 
-### `wp qutlet-allegro sync-stock [--environment=<env>=sandbox] [--full]`
+### `wp qutlet-allegro sync-stock [--environment=<env>=sandbox|production] [--full]`
 Synchronizuje stany magazynowe i ceny między Allegro a WooCommerce: pull przyrostowy
 po `GET /order/events` (własny kursor), `--full` = rekoncyliacja z listy
 `GET /sale/offers`. Push Woo→Allegro leci natychmiast hookiem sprzedaży — ten
@@ -100,7 +100,7 @@ przebieg tylko ponawia zaległe pushe. Sloty `read` (pull) + `write` (push).
 **Napędzana przez WP-Cron** — patrz sekcja niżej. Można też odpalić ręcznie (debug).
 **Repo/klasa:** `qutlet-allegro`, `Qutlet\Allegro\OfferSync\SyncStockCommand`.
 
-### `wp qutlet-allegro category-report [--out=<path>] [--apply] [--resolve-missing] [--environment=<env>=sandbox]`
+### `wp qutlet-allegro category-report [--out=<path>] [--apply] [--resolve-missing] [--environment=<env>=sandbox|production]`
 Raport liści kategorii Allegro obecnych w imporcie (ścieżka, liczba produktów,
 dopasowana reguła / kosz „brak reguły") — bez `--apply` zero zapisów. Z `--apply`
 przelicza regułę wg aktualnego `CategoryMapRules` i nadpisuje `product_cat` tam,
@@ -108,7 +108,7 @@ gdzie wynik się zmienił. `--resolve-missing` opcjonalnie dociąga z API ście�
 nierozwiązane przy imporcie (slot `read`, wtedy używa `--environment`).
 **Repo/klasa:** `qutlet-allegro`, `Qutlet\Allegro\OfferSync\CategoryReportCommand`.
 
-### `wp qutlet-allegro sync-orders [--environment=<env>=sandbox] [--full]`
+### `wp qutlet-allegro sync-orders [--environment=<env>=sandbox|production] [--full]`
 Import oraz synchronizacja statusów zamówień Allegro → natywne `WC_Order`: tor
 przyrostowy po `GET /order/events` (własny kursor, osobny od `sync-stock`),
 `--full` = rekoncyliacja zamówień nieterminalnych bez kursora. Wyłącznie pull —
