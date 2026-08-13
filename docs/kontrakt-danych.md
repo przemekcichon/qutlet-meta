@@ -206,10 +206,12 @@ literał w postmeta `klasa_stanu` i jeszcze żadnej relacji z tą taksonomią
 (mapowanie literał → `term_id` przez `kod`). Idempotentna (pomija produkty z
 JAKĄKOLWIEK już istniejącą relacją). **TWARDY WARUNEK WSTĘPNY, nie opcjonalne
 czyszczenie** — patrz „Uwaga operacyjna" `docs/plan.md` P-12.2a: pole
-`klasa_stanu` (ACF `taxonomy`, `load_terms=1`) czyta WYŁĄCZNIE z relacji, więc
-produkt bez niej pokazuje pusty dropdown, a zapis formularza (z
-jakiegokolwiek powodu) nadpisałby to pustą relacją. Uruchomiona w Localu
-sesji P-12.2a: 525/525 zrelacjonowanych.
+`klasa_stanu` (ACF `taxonomy`, `load_terms=1`, `required=1`) czyta WYŁĄCZNIE
+z relacji, więc produkt bez niej pokazuje pusty dropdown — zapis formularza
+(z jakiegokolwiek powodu) BLOKUJE się na walidacji „wartość jest wymagana"
+(zmierzone, `docs/plan.md` P-12.2a), baza zostaje nienaruszona; skutek to
+wymuszona reklasyfikacja i zablokowana edycja produktu, NIE utrata danych.
+Uruchomiona w Localu sesji P-12.2a: 525/525 zrelacjonowanych.
 
 ### 2.1 Cena rynkowa nowego — natywne Product Data (nie ACF, P-13.5)
 

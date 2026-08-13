@@ -4160,22 +4160,56 @@ oraz przeoczonego konsumenta literału W TYM SAMYM repo. Trzy ustalenia
    na `term_id` wewnętrznie przez `ClassDefinitionsTaxonomy::get()`.
    **Zweryfikowane runtime PO naprawie:** szuflada filtrów pokazuje liczniki
    z realnej relacji (41/424/37 w kontekście `/strefa-okazji/`); zaznaczenie
-   „Klasa A" i „Pokaż wyniki" → `?klasa_stanu[]=A` → 40 wyników, wszystkie
-   „Klasa A · Jak nowy" (spot-check 16/16).
+   „Klasa A" i „Pokaż wyniki" → `?klasa_stanu[]=A` → liczba wyników zgodna z
+   licznikiem facetu (41), wszystkie sprawdzone wyniki „Klasa A · Jak nowy"
+   (niezależna recenzja #2 potwierdziła 41/41 zgodne z facetem; pierwszy
+   przebieg wykonawcy odnotował 40 — rozbieżność niewyjaśniona, prawdopodobnie
+   stan cache'u/param URL między przebiegami, bez wpływu na wniosek: filtr
+   zwraca WYŁĄCZNIE poprawną klasę).
+
+**Niezależna recenzja #2 (świeża sesja, PO naprawach recenzji #1) — werdykt
+🔴 BLOKADA, wyłącznie dokumentacyjna:** recenzent potwierdził NIEZALEŻNIE (bez
+powtarzania testu) mechanizm zmierzony w recenzji #1 (ACF `required=1` blokuje
+zapis, DB nienaruszona) i wskazał, że korekta tej tezy trafiła TYLKO do
+`docs/plan.md` (ten dokument) — trzy inne miejsca (`docs/kontrakt-danych.md`
+§2.2, docblocki `BackfillKlasaStanuRelationCommand`/`ClassDefinitionsTaxonomy`
+w kodzie) wciąż niosły starą, obaloną wersję („nadpisałby to pustą relacją,
+kasując klasyfikację"), sprzeczną z wersją tutaj. Naprawione: wszystkie
+cztery miejsca ujednolicone do zmierzonej wersji (blokada walidacji, nie
+utrata danych). Dodatkowo naprawiono dwa ustalenia 🟡 z tej rundy: nieaktualne
+docblocki `meta_query` w `ProductFilterQuery` (klasa stanu jedzie przez
+`tax_query` od cutoveru — docblok `main_query_parts()` mówił inaczej) oraz
+fallback {@see ProductConditionFields::format_condition_as_kod()} dla termu
+bez wypełnionego `kod` — zwracał surowy `term_id` (mogłoby wyciekać na
+powierzchnię klienta jako „Klasa 166"), teraz zwraca `''` (ta sama degradacja
+co `ClassDefinitionsTaxonomy::all()`/`for_product()`). Recenzent NIEZALEŻNIE
+potwierdził też kolejność hooków ACF (`format_value`, wariant `type` przed
+`key`), poprawność migracji `ProductFilterQuery` na dwóch dodatkowych
+scenariuszach nieprzetestowanych w rundzie 1 (flaga wykluczająca przez
+`WP_Tax_Query::__construct()`, kontekst archiwum kategorii + filtr klasy
+razem) oraz brak realnej ścieżki utraty danych przez `ProductWriter` (gałąź
+kasująca relację w `wp_set_object_terms()` nieosiągalna, bo wymagałaby
+PUSTEGO postmeta na produkcie, który ma relację).
 
 **Uwaga operacyjna (ryzyko przejścia, analogiczne do D-12.1c.1) [ODNOTOWANE
-i ZWĘŻONE po naprawach wyżej — realizacja P-12.2a, sesja 2026-08-13]:**
+i ZWĘŻONE po naprawach — realizacja P-12.2a, sesja 2026-08-13]:**
 zmiana typu pola `klasa_stanu` (D-12.2.1) ma JEDEN pozostały żywy skutek
 poza zakresem repo `qutlet-core`, do zamknięcia w P-12.2b (wszystkie inne
 skutki — front theme, filtr core — naprawione wyżej w TEJ sesji):
 - `qutlet-allegro\OfferSync\ProductWriter` woła dziś `update_field(
   ACF_KEY_CONDITION, $kod, …)` gołym literałem string (`'A'`…) — ACF
-  taxonomy field potrzebuje `term_id` (int), nie kodu. Od merge'u tej sesji
-  do merge'u P-12.2b auto-klasyfikacja NOWYCH produktów przy imporcie
-  Allegro (`OfferMapper::condition_class()` → `ProductWriter`) przestaje
-  poprawnie ustawiać relację — `intval('A')` daje `0`, nieistniejący term.
-  Edycja RĘCZNA w adminie działa poprawnie OD RAZU — idzie przez natywny
-  formularz ACF, nie przez `update_field()` z gołym stringiem.
+  taxonomy field potrzebuje `term_id` (int), nie kodu; `intval($kod)` daje
+  `0`, więc `wp_set_object_terms()` pomija tę wartość i relacja NIE POWSTAJE
+  (postmeta i tak dostaje literał — zapis metadanych ACF jest bezwarunkowy).
+  Taki NOWY produkt renderuje się na żywej stronie BEZ chipa/wiersza
+  tabeli/tekstu gwarancji-reklamacji, nie wchodzi do filtra/facetów, i NIE da
+  się go zapisać z wp-admin (pole wymagane, puste) do czasu ręcznej
+  klasyfikacji — objawy identyczne jak przy produkcie bez backfillu. Skutek
+  dotyczy KAŻDEGO produktu zaimportowanego od merge'u tej sesji do merge'u
+  P-12.2b — trzeba więc uruchamiać backfill PO KAŻDYM `import-offers` w tym
+  oknie, nie tylko raz na starcie. Edycja RĘCZNA w adminie działa poprawnie
+  OD RAZU — idzie przez natywny formularz ACF, nie przez `update_field()` z
+  gołym stringiem.
 
 **Ryzyko produktu BEZ relacji przy zapisie — ZMIERZONE runtime, MILSZE niż
 pierwszy opis:** pierwsza wersja tej uwagi twierdziła, że zapis formularza
@@ -4191,9 +4225,14 @@ Backfill (D-12.2.3) MUSI mimo to przebiec natychmiast po aktywacji zmiany w
 każdym środowisku — bez niego KAŻDA edycja JAKIEGOKOLWIEK produktu
 (nieklasyfikowanego) zablokuje się na tym polu, nawet gdy admin chciał
 zmienić coś zupełnie innego. Zalecenie: traktować P-12.2b jako priorytet —
-nie odkładać.
+nie odkładać. Niezależna recenzja #2 potwierdziła ten mechanizm BEZ
+powtarzania testu (destrukcyjnego dla współdzielonego Locala) — znalazła w
+DOM-ie żywego formularza natywny ukryty input ACF o tej samej nazwie co
+select (mechanizm, którym ACF pozwala walidacji zobaczyć `<select>` bez
+wybranej wartości), zweryfikowała warunek `required` w `validation.php`
+ACF Pro i doszła do tego samego wniosku niezależną ścieżką.
 
-**Weryfikacja P-12.2a (sesja 2026-08-13, PO naprawach z recenzji #1):**
+**Weryfikacja P-12.2a (sesja 2026-08-13, PO naprawach z recenzji #1 i #2):**
 PHPStan (`--memory-limit=1G --debug`) czysto. PHPUnit 8/8 (bez zmian — brak
 testów dla tego slice'a, zgodnie z dotychczasowym stanem). `wp plugin list`
 po zmianie: bez fatala, `error.log` bez nowych wpisów. Runtime Local (525
