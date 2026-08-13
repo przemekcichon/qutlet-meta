@@ -4308,6 +4308,41 @@ stanu z realnymi licznikami i poprawnym filtrowaniem).
   P-12.1c (qutlet-allegro #26, qutlet-meta #76) nie są zmergowane — osobny
   branch/PR na już otwartych branchach byłby zły stan gita.
 
+#### P-12.3 — Theme: kropka klasy jako kolor inline, nie klasa CSS `.dot-<kod>`
+- **Zgłoszenie:** niezależna recenzja P-12.2c (qutlet-theme #29, sesja
+  2026-08-13) znalazła 🟡 (nieblokujące) ustalenie: karta produktu klasy
+  „Nowe" w archiwum pokazuje kropkę BEZ koloru — `content-product.php` i
+  `loop/filters-and-sort.php` (szuflada filtrów) generują klasę CSS
+  `dot-<?php echo strtolower($kod); ?>`, a `style.css` definiuje tylko
+  `.dot-a`…`.dot-d` (dziedzictwo sprzed P-12.1a, gdy klasy stanu były
+  zamkniętym słownikiem A-D). Byt `ClassDefinitionsTaxonomy` jest
+  rozszerzalny (D-12.G1, term meta `kolor`) od P-12.1a — nowa klasa (np.
+  „Nowe") nigdy nie dostanie gotowej reguły `.dot-<kod>` bez ręcznej zmiany
+  w `style.css`, więc ten wzorzec jest ślepym zaułkiem przy KAŻDEJ nowej
+  klasie, nie tylko „Nowe". `patterns/class-table.php` i
+  `assets/js/cart-block-filters.js` już unikają tego problemu (kolor inline
+  `style="background:…"` z term meta `kolor`) — te dwa miejsca były jedynymi,
+  które tego wzorca NIE przejęły.
+- **Repo:** qutlet-theme (slice `ProductPage/` + `ProductFilters/`)
+- **Zakres:** `content-product.php` (kropka karty archiwum) i
+  `loop/filters-and-sort.php` (kropka w szufladzie filtrów, facet klasy
+  stanu) przechodzą z klasy CSS `.dot-<kod>` na inline `style="background:…"`
+  z term meta `kolor` (kontrakt §2.2) — ten sam wzorzec co
+  `class-table.php`/`cart-block-filters.js`. Usunięcie martwych reguł
+  `.dot-a`…`.dot-d` ze `style.css` (żaden konsument nie zostaje po migracji).
+- **Zależności:** P-12.1a (byt/term meta `kolor` — już 🟢).
+- **Zrealizowano:** {@see ProductPage::condition_color()} (nowa metoda, join
+  po `kod`, ten sam wzorzec co `condition_label()`/`condition_definition()`).
+  `content-product.php` i `loop/filters-and-sort.php` migrowane na inline
+  `style="background:…"`; martwe reguły `.dot-a`…`.dot-d` usunięte ze
+  `style.css`. Branch zrobiony na świeżo z `main` (NIE stackowany na
+  jeszcze-niezmergowanym P-12.2c) — fix czyta kolor przez `kod`, nie przez
+  relację, więc jest w pełni niezależny od cutoveru zapisu. PHPStan czysto;
+  runtime (Playwright, Local) — karta klasy „Nowe" w archiwum
+  `/product-category/monitory/` pokazuje niebieską kropkę (wcześniej
+  bezbarwną), szuflada filtrów pokazuje poprawne kolory dla klas A/B.
+- **PR:** [qutlet-theme #30](https://github.com/przemekcichon/qutlet-theme/pull/30).
+
 ---
 
 ## 🟨 FAZA 13 — Strona produktu: edytor admina i to, co ściągamy z Allegro
