@@ -4341,7 +4341,8 @@ stanu z realnymi licznikami i poprawnym filtrowaniem).
   runtime (Playwright, Local) — karta klasy „Nowe" w archiwum
   `/product-category/monitory/` pokazuje niebieską kropkę (wcześniej
   bezbarwną), szuflada filtrów pokazuje poprawne kolory dla klas A/B.
-- **PR:** [qutlet-theme #30](https://github.com/przemekcichon/qutlet-theme/pull/30).
+- **PR:** [qutlet-theme #30](https://github.com/przemekcichon/qutlet-theme/pull/30),
+  [qutlet-meta #80](https://github.com/przemekcichon/qutlet-meta/pull/80).
 
 ---
 
