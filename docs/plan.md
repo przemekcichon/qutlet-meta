@@ -4087,11 +4087,20 @@ zgadywać tu z wyprzedzeniem):**
   odpowiedź). Ponieważ ACF field zmienia TYP (nie zostaje osobne, drugie
   pole), nie ma dwóch artefaktów do wyboru między — jest JEDNO pole
   `klasa_stanu`, które od P-12.2a NIE trzyma już swojej wartości jako gołego
-  literału w postmeta (ACF taxonomy field zapisuje `term_id`, czyta przez
-  `load_terms` z relacji, nie z postmeta). Historyczny literał (`A`-`D`,
-  `Nowe`) w postmeta zostaje NIETKNIĘTY na dysku (backfill go nie kasuje,
-  patrz D-12.2.3) — martwy, nieaktualizowany bajt, nie „pochodny podgląd" w
-  sensie żywego mechanizmu.
+  literału kod-string w postmeta. **KOREKTA po niezależnej recenzji (patrz
+  „Uwaga operacyjna" niżej):** pierwsza wersja tego zapisu twierdziła, że
+  historyczny literał zostaje „nietknięty/nieaktualizowany" — to nieprawda.
+  ACF (`acf_update_value()` → `acf_update_metadata_by_field()`) NADPISUJE
+  postmeta `klasa_stanu` na `term_id` (int) przy KAŻDYM zapisie ekranu
+  edycji produktu, niezależnie od tego, czy admin dotknął tego pola.
+  Konsekwencja jest jednak NIESZKODLIWA dla wszystkich dzisiejszych
+  konsumentów tego postmeta: `qutlet-allegro\ProductWriter`'s sprawdzenie
+  „czy puste" (`'' === $current_condition`) zostaje prawdziwe niezależnie od
+  DOKŁADNEJ treści (term_id vs kod — obie są „niepuste"), a jedyny w
+  `qutlet-core` konsument czytający ten literał jako STRING A-D
+  (`ProductFilters\ProductFilterQuery`) został w tej samej sesji
+  przepisany na `tax_query`/relację (patrz niżej) — nie zależy już od
+  postmeta wcale.
 - **D-12.2.3 [USTALONE — zrealizowane P-12.2a]:** backfill istniejących
   produktów — `wp qutlet-core backfill-klasa-stanu-relacja [--dry-run]`
   ({@see BackfillKlasaStanuRelationCommand}, wzorzec
@@ -4116,40 +4125,90 @@ zgadywać tu z wyprzedzeniem):**
   (D-12.2.3) przebiegł PRZED cutoverem zapisu w danym środowisku** (patrz
   „Uwaga operacyjna" niżej — w Localu już przebiegł, tej sesji).
 
-**Uwaga operacyjna (ryzyko przejścia, analogiczne do D-12.1c.1) [ODNOTOWANE
-— realizacja P-12.2a, sesja 2026-08-13]:** zmiana typu pola `klasa_stanu`
-(D-12.2.1) ma DWA żywe skutki poza zakresem repo `qutlet-core`, oba do
-zamknięcia w P-12.2b:
-1. `qutlet-allegro\OfferSync\ProductWriter` woła dziś `update_field(
-   ACF_KEY_CONDITION, $kod, …)` gołym literałem string (`'A'`…) — ACF
-   taxonomy field potrzebuje `term_id` (int), nie kodu. Od merge'u tej
-   sesji do merge'u P-12.2b auto-klasyfikacja NOWYCH produktów przy imporcie
-   Allegro (`OfferMapper::condition_class()` → `ProductWriter`) przestaje
-   poprawnie ustawiać relację — `intval('A')` daje `0`, nieistniejący term.
-   Edycja RĘCZNA w adminie (dropdown ACF) działa poprawnie OD RAZU — idzie
-   przez natywny formularz, nie przez `update_field()` z gołym stringiem.
-2. Każdy produkt BEZ relacji (czyli każdy zaimportowany PRZED backfillem)
-   pokazuje PUSTY dropdown na ekranie edycji — zapis formularza (z
-   JAKIEGOKOLWIEK powodu) nadpisałby to pustą relacją, kasując istniejącą
-   klasyfikację. **Zamknięte w Localu tej sesji** (backfill D-12.2.3
-   uruchomiony natychmiast po zmianie, przed jakimkolwiek zapisem ekranu
-   edycji produktu) — ale przy wdrożeniu na produkcję (lub innym Local) ten
-   sam backfill MUSI przebiec w tym samym oknie: natychmiast po aktywacji
-   PR-a, przed pierwszym zapisem produktu i przed pierwszym `import-offers`.
-   Zalecenie: traktować P-12.2b jako priorytet — nie odkładać.
+**Niezależna recenzja #1 (sesja 2026-08-13, `docs/review.md`) — werdykt
+🔴 BLOKADA, wszystkie ustalenia naprawione w tej samej sesji przed merge:**
+recenzja znalazła realną regresję renderu na żywym Localu (nie
+hipotetyczną — zmierzoną na produkcie 3466 i archiwum `/strefa-okazji/`)
+oraz przeoczonego konsumenta literału W TYM SAMYM repo. Trzy ustalenia
+🔴 i ich naprawy:
+1. **Regresja frontu (`qutlet-theme`, POTWIERDZONA runtime przed naprawą):**
+   `ProductPage::acf_field()`/`Cart::cart_item_data()` czytają przez
+   `get_field('klasa_stanu')` — po zmianie typu pola ACF zwraca `term_id`
+   (int, np. `166`), nie kod (`C`). Efekt zmierzony PRZED naprawą: chip klasy,
+   wiersz tabeli klasyfikacji i tekst gwarancji/reklamacji ZNIKAŁY ze strony
+   produktu i kart archiwum; koszyk pokazywałby „Klasa 166". **Naprawa (w
+   granicach `qutlet-core`, zero zmian w `qutlet-theme`/`qutlet-allegro`):**
+   {@see ProductConditionFields::format_condition_as_kod()} — filtr
+   `acf/format_value/key=…` mapujący `term_id` z powrotem na `kod` (przez
+   term meta), fires PO wewnętrznym `format_value()` ACF (ta sama kolejność
+   wariantów `type` → `key` co `acf/update_value`). `get_field('klasa_stanu')`
+   znów zwraca `C`. **Zweryfikowane runtime PO naprawie:** produkt 3466 —
+   chip „Klasa C · Mocne ślady", tabela klasyfikacji, perk-row reklamacji i
+   sticky bar wróciły; archiwum `/strefa-okazji/` — chipy na kartach wróciły.
+2. **Fałszywe twierdzenie kontraktowe** („literał nietknięty/nieaktualizowany")
+   — patrz korekta w D-12.2.2 wyżej.
+3. **Przeoczony konsument W TYM SAMYM repo:** `qutlet-core\ProductFilters\
+   ProductFilterQuery` filtrował (`meta_query`) i liczył facety (`GROUP BY
+   meta_value`) klasy stanu przez STARY literał postmeta — nigdzie
+   wymieniony jako P-12.2b/c (błędnie, bo to nie inny artefakt/repo, to ten
+   sam punkt). Bez naprawy: po pierwszym zapisie JAKIEGOKOLWIEK produktu
+   (patrz pkt 2) filtr/facety cicho przestają go widzieć. **Naprawa:**
+   `apply_condition_filter()`/`condition_facets()` przechodzą na
+   `tax_query`/JOIN po realnej relacji (ten sam wzorzec co
+   `apply_brand_filter()`/`brand_facets()` na `product_brand`) — kod GET
+   (`?klasa_stanu[]=A`) BEZ ZMIAN jako publiczny kontrakt URL, rozwiązywany
+   na `term_id` wewnętrznie przez `ClassDefinitionsTaxonomy::get()`.
+   **Zweryfikowane runtime PO naprawie:** szuflada filtrów pokazuje liczniki
+   z realnej relacji (41/424/37 w kontekście `/strefa-okazji/`); zaznaczenie
+   „Klasa A" i „Pokaż wyniki" → `?klasa_stanu[]=A` → 40 wyników, wszystkie
+   „Klasa A · Jak nowy" (spot-check 16/16).
 
-**Weryfikacja P-12.2a (sesja 2026-08-13):** PHPStan (`--memory-limit=1G
---debug`) czysto. PHPUnit 8/8 (bez zmian — brak testów dla tego slice'a,
-zgodnie z dotychczasowym stanem). `wp plugin list` po zmianie: bez fatala,
-`error.log` bez nowych wpisów. Runtime Local (525 produktów sandbox):
-dry-run i realny backfill 525/525 (0 błędów), powtórny dry-run 0/525
-(idempotencja), liczniki taksonomii z 0/0/0/0/0 → **434/44/43/2/1**
-(dokładnie naprawia zgłoszony bug), `wp post meta get 3800 klasa_stanu` → `C`
-nietknięte, `wp post term list 3800 klasa_stanu_definicja` → „Mocne ślady"
-(join poprawny). Render w przeglądarce (Playwright MCP) — **zweryfikowany
-tej sesji** (profil odblokowany w trakcie): ekran edycji produktu 3800
-pokazuje natywny widget ACF taxonomy z zaznaczoną wartością „Mocne ślady";
-ekran „Produkty → Klasy stanu" pokazuje realne, klikalne liczniki.
+**Uwaga operacyjna (ryzyko przejścia, analogiczne do D-12.1c.1) [ODNOTOWANE
+i ZWĘŻONE po naprawach wyżej — realizacja P-12.2a, sesja 2026-08-13]:**
+zmiana typu pola `klasa_stanu` (D-12.2.1) ma JEDEN pozostały żywy skutek
+poza zakresem repo `qutlet-core`, do zamknięcia w P-12.2b (wszystkie inne
+skutki — front theme, filtr core — naprawione wyżej w TEJ sesji):
+- `qutlet-allegro\OfferSync\ProductWriter` woła dziś `update_field(
+  ACF_KEY_CONDITION, $kod, …)` gołym literałem string (`'A'`…) — ACF
+  taxonomy field potrzebuje `term_id` (int), nie kodu. Od merge'u tej sesji
+  do merge'u P-12.2b auto-klasyfikacja NOWYCH produktów przy imporcie
+  Allegro (`OfferMapper::condition_class()` → `ProductWriter`) przestaje
+  poprawnie ustawiać relację — `intval('A')` daje `0`, nieistniejący term.
+  Edycja RĘCZNA w adminie działa poprawnie OD RAZU — idzie przez natywny
+  formularz ACF, nie przez `update_field()` z gołym stringiem.
+
+**Ryzyko produktu BEZ relacji przy zapisie — ZMIERZONE runtime, MILSZE niż
+pierwszy opis:** pierwsza wersja tej uwagi twierdziła, że zapis formularza
+produktu bez relacji „nadpisałby to pustą relacją, kasując klasyfikację"
+(sugestia: silent data loss). **Sprawdzone kontrolowanym testem** (usunięcie
+relacji produktu 42 przez `wp post term remove --by=id`, próba zapisu przez
+UI, przywrócenie przez ponowny backfill): pole ma `required=1` — ACF
+BLOKUJE zapis walidacją inline („Klasa stanu wartość jest wymagana"), baza
+danych zostaje NIENARUSZONA (ani postmeta, ani relacja). Skutek praktyczny
+(„odpal backfill natychmiast po deployu, przed dotknięciem ekranu edycji
+produktu") jest ten sam — ale to wymuszona reklasyfikacja, nie utrata danych.
+Backfill (D-12.2.3) MUSI mimo to przebiec natychmiast po aktywacji zmiany w
+każdym środowisku — bez niego KAŻDA edycja JAKIEGOKOLWIEK produktu
+(nieklasyfikowanego) zablokuje się na tym polu, nawet gdy admin chciał
+zmienić coś zupełnie innego. Zalecenie: traktować P-12.2b jako priorytet —
+nie odkładać.
+
+**Weryfikacja P-12.2a (sesja 2026-08-13, PO naprawach z recenzji #1):**
+PHPStan (`--memory-limit=1G --debug`) czysto. PHPUnit 8/8 (bez zmian — brak
+testów dla tego slice'a, zgodnie z dotychczasowym stanem). `wp plugin list`
+po zmianie: bez fatala, `error.log` bez nowych wpisów. Runtime Local (525
+produktów sandbox): dry-run i realny backfill 525/525 (0 błędów), powtórny
+dry-run 0/525 (idempotencja), liczniki taksonomii z 0/0/0/0/0 →
+**434/44/43/2/1** (dokładnie naprawia zgłoszony bug — rozbieżność 524 vs 525
+wyjaśniona i potwierdzona: 1 produkt sandbox ma `post_status=pending`,
+natywne liczenie termów WP liczy tylko `publish`), `wp post meta get 3800
+klasa_stanu` → `C`, `wp post term list 3800 klasa_stanu_definicja` → „Mocne
+ślady" (join poprawny). Render w przeglądarce (Playwright MCP, profil
+odblokowany w trakcie) — **zweryfikowany end-to-end PO naprawach**: ekran
+edycji produktu 3800/42 (natywny widget ACF taxonomy), ekran „Produkty →
+Klasy stanu" (liczniki), strona produktu 3466 (chip/tabela/perk-row/sticky
+bar), archiwum `/strefa-okazji/` (chipy na kartach + filtr/facet klasy
+stanu z realnymi licznikami i poprawnym filtrowaniem).
 
 #### 🟡 P-12.2a — Core: mechanizm relacji + komenda backfill
 - **Repo:** qutlet-core (slice `ProductCondition/`)
@@ -4163,8 +4222,13 @@ ekran „Produkty → Klasy stanu" pokazuje realne, klikalne liczniki.
   ClassDefinitionsTaxonomy::for_product()} dodane; {@see
   BackfillKlasaStanuRelationCommand} (`wp qutlet-core
   backfill-klasa-stanu-relacja [--dry-run]`, D-12.2.3) — 525/525 w Localu.
-  Szczegóły decyzji i weryfikacji wyżej (D-12.2.1-4 + „Uwaga operacyjna" +
-  „Weryfikacja P-12.2a").
+  PO niezależnej recenzji #1 (🔴 BLOKADA → naprawione w tej samej sesji):
+  {@see ProductConditionFields::format_condition_as_kod()} (kompatybilność
+  wsteczna `get_field()` dla `qutlet-theme`/`qutlet-allegro`, zamyka
+  regresję frontu) + `ProductFilters\ProductFilterQuery` przepisany na
+  `tax_query` (zamyka przeoczonego konsumenta W TYM SAMYM repo). Szczegóły
+  decyzji i weryfikacji wyżej (D-12.2.1-4 + „Niezależna recenzja #1" +
+  „Uwaga operacyjna" + „Weryfikacja P-12.2a").
 - **Zależności:** P-12.1a (byt musi istnieć — już 🟢).
 - **PR:** [qutlet-core #23](https://github.com/przemekcichon/qutlet-core/pull/23),
   [qutlet-meta #79](https://github.com/przemekcichon/qutlet-meta/pull/79).
