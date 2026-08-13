@@ -3972,7 +3972,7 @@ czytać).
 - **PR:** [qutlet-theme #28](https://github.com/przemekcichon/qutlet-theme/pull/28),
   [qutlet-meta #75](https://github.com/przemekcichon/qutlet-meta/pull/75).
 
-#### 🟡 P-12.1c — Allegro: strona informacyjna mapowania „Stan" → klasa (read-only)
+#### 🟢 P-12.1c — Allegro: strona informacyjna mapowania „Stan" → klasa (read-only)
 - **Repo:** qutlet-allegro (`OfferSync/OfferMapper.php`)
 - **D-12.1c.1 (rozstrzygnięcie D-12.1a.3 — konkretne mapowanie „Nowe") [USTALONE
   — decyzja użytkownika, sesja 2026-08-13]:** ground-truth ujawnił, że
@@ -4027,6 +4027,23 @@ czytać).
 - **Zależności:** P-12.1a (potrzebuje zbioru klas z opisami, żeby pokazać
   coś więcej niż goły literał A-D — degradowalne do literałów, jeśli
   P-12.1a jeszcze nie gotowe przy realizacji tego punktu).
+- **Weryfikacja:** PHPStan (poziom 5) czysto. PHPUnit 21/21. Plugin ładuje się
+  bez fatala po zmianie (`wp plugin list` przez MCP, `error.log` bez nowych
+  wpisów) — zweryfikowane niezależnie przez wykonawcę i recenzenta. Niezależna
+  recenzja 🟡 WARUNKOWO (drobne, zero 🔴) — trzy ustalenia (brak testów na
+  zmianę mappingu, `kontrakt-danych.md` nieaktualny, ryzyko operacyjne
+  pierwszego `import-offers` po merge'u) naprawione przed merge'em. Runtime
+  end-to-end zweryfikowany PO merge'u na realnych danych sandboksu: term
+  `Nowe` wyseedowany ręcznie (`wp term create`/`term meta update`,
+  `term_id=168`), produkt 57 (offer `7781903194`, Allegro „Stan"=„Nowy")
+  wyczyszczony i re-zaimportowany → `wp post meta get 57 klasa_stanu` = `Nowe`
+  (potwierdza D-6.1.4: import NIE nadpisuje 17 już wcześniej zaimportowanych
+  ofert ze „Stan"=„Nowy", które mają dziś `klasa_stanu=A` z przebiegu PRZED tą
+  zmianą — zamierzone, nie bug). Render w przeglądarce NIEZWERYFIKOWANY
+  (Playwright MCP miał zablokowany profil Chrome w obu sesjach) — do
+  potwierdzenia ręcznie.
+- **PR:** [qutlet-allegro #26](https://github.com/przemekcichon/qutlet-allegro/pull/26),
+  [qutlet-meta #76](https://github.com/przemekcichon/qutlet-meta/pull/76).
 
 ### P-12.2 — Klasa stanu: cutover z literału na realną relację taksonomijną (punkt wielorepowy → P-12.2a + P-12.2b + P-12.2c)
 
