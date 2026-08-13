@@ -4274,7 +4274,7 @@ stanu z realnymi licznikami i poprawnym filtrowaniem).
 - **PR:** [qutlet-core #23](https://github.com/przemekcichon/qutlet-core/pull/23),
   [qutlet-meta #79](https://github.com/przemekcichon/qutlet-meta/pull/79).
 
-#### P-12.2b — Allegro: `ProductWriter` zapisuje relację, nie literał
+#### 🟢 P-12.2b — Allegro: `ProductWriter` zapisuje relację, nie literał
 - **Repo:** qutlet-allegro (`OfferSync/ProductWriter.php`)
 - **Zakres:** zapis klasy stanu przy imporcie przechodzi z
   `update_field(ACF_KEY_CONDITION, $condition, $product_id)` na wywołanie
@@ -4282,7 +4282,15 @@ stanu z realnymi licznikami i poprawnym filtrowaniem).
   „puste"). `OfferMapper::condition_class()` zostaje bez zmian (nadal zwraca
   `kod` jako string — to core/allegro rozstrzygają, jak ten kod trafia na
   produkt).
+- **Zrealizowano:** emptiness-check przez `ClassDefinitionsTaxonomy::for_product()
+  === null` (D-12.2.4); kod z auto-mapy rozwiązywany na `term_id` przez
+  `ClassDefinitionsTaxonomy::get($kod)['term_id']`, zapisywany przez
+  `update_field()` (natywny mechanizm ACF taxonomy, `save_terms=1` — ten sam,
+  którym idzie ręczna edycja w adminie). Runtime-weryfikacja na Localu
+  (produkt 3800/offer 7781957420): usunięcie relacji + `import-offers` →
+  relacja odtworzona z poprawnym `term_id`. Niezależna recenzja: 🟢 CZYSTE.
 - **Zależności:** P-12.2a.
+- **PR:** [qutlet-allegro #27](https://github.com/przemekcichon/qutlet-allegro/pull/27).
 
 #### P-12.2c — Theme: render czyta relację, nie literał
 - **Repo:** qutlet-theme (slice `ProductPage/` + `Cart/`)
