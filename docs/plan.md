@@ -4069,36 +4069,102 @@ niż byłby przy P-12.1a.
 
 **Decyzje do rozstrzygnięcia PRZY REALIZACJI (ground-truth-najpierw, nie
 zgadywać tu z wyprzedzeniem):**
-- **D-12.2.1 [OTWARTE]** — mechanizm relacji: ACF field `klasa_stanu`
-  zmienia typ na `taxonomy` (natywna integracja ACF ↔ `wp_set_object_terms()`)
-  vs. zostaje `select`, a relacja jest dopisywana OSOBNO (hook zapisu ACF /
-  wołanie w `ProductWriter`). Wpływa na to, co dokładnie przekazuje
-  `update_field()`/odpowiednik w `ProductWriter` (dziś goły string kod).
-- **D-12.2.2 [OTWARTE]** — los pola `klasa_stanu` (postmeta/ACF): usunięte
-  całkowicie (user: „pozbywamy się starego") vs. zostaje jako pochodny,
-  read-only podgląd (wygodny do prostych zapytań `WP_Query
-  meta_query`/eksportów bez `tax_query`). Rozstrzyga to, czy stary literał w
-  ogóle nadal istnieje na dysku po cutover, czy trafia do jednorazowej
-  migracji i kasowany.
-- **D-12.2.3 [OTWARTE]** — backfill istniejących produktów: jednorazowa
-  komenda (wzorzec `SeedClassDefinitionsCommand`/`BackfillOpisToContentCommand`)
-  mapująca dzisiejszy literał → `term_id` przez `kod` i wołająca
-  `wp_set_object_terms()` dla KAŻDEGO już zaimportowanego produktu (w
-  Localu: 525 produktów sandbox, patrz P-12.1c runtime-check tej sesji).
-  Idempotencja i dry-run jak w istniejących komendach backfill.
-- **D-12.2.4 [OTWARTE]** — semantyka D-6.1.4 („ustaw TYLKO gdy puste") po
-  cutoverze: „puste" = brak przypisanego termu (`get_the_terms()` zwraca
-  pusto/`false`), nie pusty string — `ProductWriter` musi to sprawdzać przez
-  nowy mechanizm, zachowując IDENTYCZNY skutek (ręczna korekta sprzedawcy
-  nigdy nadpisywana kolejnym importem).
+- **D-12.2.1 [USTALONE — decyzja użytkownika, sesja 2026-08-13, realizacja
+  P-12.2a]:** mechanizm relacji: ACF field `klasa_stanu` zmienia TYP na
+  `taxonomy` (natywna integracja ACF ↔ `wp_set_object_terms()`, `save_terms`/
+  `load_terms` włączone, `field_type=select` single-value, `return_format=id`,
+  `add_term=0` — nowe klasy TYLKO przez ekran „Produkty → Klasy stanu",
+  D-12.G1). Odrzucony wariant: zostaje `select`, a relacja dopisywana OSOBNO
+  (hook zapisu ACF) — odrzucony przez użytkownika na rzecz natywnego
+  mechanizmu, mimo że to drugi wariant byłby bezpieczniejszy dla
+  sekwencjonowania (patrz „Uwaga operacyjna" niżej). Skutek dla `choices`:
+  {@see ProductConditionFields::inject_dynamic_choices()} (P-12.1a) USUNIĘTE
+  całkowicie — ACF buduje UI z realnych termów taksonomii natywnie, nie trzeba
+  już wstrzykiwać `choices` ręcznie.
+- **D-12.2.2 [USTALONE — decyzja użytkownika, sesja 2026-08-13]:** los pola
+  `klasa_stanu` — **rozstrzyga się PRZEZ D-12.2.1, to NIE jest osobna
+  decyzja** (użytkownik: wybór mechanizmu relacji już determinuje tę
+  odpowiedź). Ponieważ ACF field zmienia TYP (nie zostaje osobne, drugie
+  pole), nie ma dwóch artefaktów do wyboru między — jest JEDNO pole
+  `klasa_stanu`, które od P-12.2a NIE trzyma już swojej wartości jako gołego
+  literału w postmeta (ACF taxonomy field zapisuje `term_id`, czyta przez
+  `load_terms` z relacji, nie z postmeta). Historyczny literał (`A`-`D`,
+  `Nowe`) w postmeta zostaje NIETKNIĘTY na dysku (backfill go nie kasuje,
+  patrz D-12.2.3) — martwy, nieaktualizowany bajt, nie „pochodny podgląd" w
+  sensie żywego mechanizmu.
+- **D-12.2.3 [USTALONE — zrealizowane P-12.2a]:** backfill istniejących
+  produktów — `wp qutlet-core backfill-klasa-stanu-relacja [--dry-run]`
+  ({@see BackfillKlasaStanuRelationCommand}, wzorzec
+  `SeedClassDefinitionsCommand`/`BackfillOpisToContentCommand`). Mapuje
+  historyczny literał `klasa_stanu` → `term_id` przez `kod`
+  ({@see ClassDefinitionsTaxonomy::get()}) i woła `wp_set_object_terms()` dla
+  każdego produktu bez istniejącej relacji. Idempotentna (pomija produkty,
+  które już mają JAKĄKOLWIEK relację — nie nadpisuje). Uruchomiona w Localu tej
+  sesji: **525/525 sprawdzonych, 525 zrelacjonowanych, 0 nieznany kod**
+  (potwierdza D-12.1c.1 — term `Nowe` już wyseedowany, produkt 57 poprawnie
+  dopasowany). Powtórny dry-run po realnym przebiegu: `0 dostałoby relację,
+  525 już miało relację` (idempotencja potwierdzona runtime).
+- **D-12.2.4 [USTALONE — realizacja P-12.2a]:** semantyka D-6.1.4 („ustaw
+  TYLKO gdy puste") po cutoverze — „puste" =
+  `ClassDefinitionsTaxonomy::for_product($id) === null` (brak relacji LUB
+  relacja do termu bez wypełnionego `kod`), NIE pusty string postmeta.
+  `for_product()` czyta przez `get_the_terms()` (nie przez zewnętrzny
+  literał) — P-12.2b (`ProductWriter`) ma sprawdzać emptiness przez tę
+  metodę, zachowując IDENTYCZNY skutek co dzisiejsze
+  `'' === get_post_meta($id, 'klasa_stanu', true)` (ręczna korekta sprzedawcy
+  nigdy nadpisywana kolejnym importem) — **POD WARUNKIEM, że backfill
+  (D-12.2.3) przebiegł PRZED cutoverem zapisu w danym środowisku** (patrz
+  „Uwaga operacyjna" niżej — w Localu już przebiegł, tej sesji).
 
-#### P-12.2a — Core: mechanizm relacji + komenda backfill
+**Uwaga operacyjna (ryzyko przejścia, analogiczne do D-12.1c.1) [ODNOTOWANE
+— realizacja P-12.2a, sesja 2026-08-13]:** zmiana typu pola `klasa_stanu`
+(D-12.2.1) ma DWA żywe skutki poza zakresem repo `qutlet-core`, oba do
+zamknięcia w P-12.2b:
+1. `qutlet-allegro\OfferSync\ProductWriter` woła dziś `update_field(
+   ACF_KEY_CONDITION, $kod, …)` gołym literałem string (`'A'`…) — ACF
+   taxonomy field potrzebuje `term_id` (int), nie kodu. Od merge'u tej
+   sesji do merge'u P-12.2b auto-klasyfikacja NOWYCH produktów przy imporcie
+   Allegro (`OfferMapper::condition_class()` → `ProductWriter`) przestaje
+   poprawnie ustawiać relację — `intval('A')` daje `0`, nieistniejący term.
+   Edycja RĘCZNA w adminie (dropdown ACF) działa poprawnie OD RAZU — idzie
+   przez natywny formularz, nie przez `update_field()` z gołym stringiem.
+2. Każdy produkt BEZ relacji (czyli każdy zaimportowany PRZED backfillem)
+   pokazuje PUSTY dropdown na ekranie edycji — zapis formularza (z
+   JAKIEGOKOLWIEK powodu) nadpisałby to pustą relacją, kasując istniejącą
+   klasyfikację. **Zamknięte w Localu tej sesji** (backfill D-12.2.3
+   uruchomiony natychmiast po zmianie, przed jakimkolwiek zapisem ekranu
+   edycji produktu) — ale przy wdrożeniu na produkcję (lub innym Local) ten
+   sam backfill MUSI przebiec w tym samym oknie: natychmiast po aktywacji
+   PR-a, przed pierwszym zapisem produktu i przed pierwszym `import-offers`.
+   Zalecenie: traktować P-12.2b jako priorytet — nie odkładać.
+
+**Weryfikacja P-12.2a (sesja 2026-08-13):** PHPStan (`--memory-limit=1G
+--debug`) czysto. PHPUnit 8/8 (bez zmian — brak testów dla tego slice'a,
+zgodnie z dotychczasowym stanem). `wp plugin list` po zmianie: bez fatala,
+`error.log` bez nowych wpisów. Runtime Local (525 produktów sandbox):
+dry-run i realny backfill 525/525 (0 błędów), powtórny dry-run 0/525
+(idempotencja), liczniki taksonomii z 0/0/0/0/0 → **434/44/43/2/1**
+(dokładnie naprawia zgłoszony bug), `wp post meta get 3800 klasa_stanu` → `C`
+nietknięte, `wp post term list 3800 klasa_stanu_definicja` → „Mocne ślady"
+(join poprawny). Render w przeglądarce (Playwright MCP) — **zweryfikowany
+tej sesji** (profil odblokowany w trakcie): ekran edycji produktu 3800
+pokazuje natywny widget ACF taxonomy z zaznaczoną wartością „Mocne ślady";
+ekran „Produkty → Klasy stanu" pokazuje realne, klikalne liczniki.
+
+#### 🟡 P-12.2a — Core: mechanizm relacji + komenda backfill
 - **Repo:** qutlet-core (slice `ProductCondition/`)
 - **Zakres:** rozstrzygnąć D-12.2.1/D-12.2.2, zaimplementować wybrany
   mechanizm relacji, dodać komendę backfill (D-12.2.3) z `--dry-run`.
   `ClassDefinitionsTaxonomy` dostaje metodę odczytu klasy PRODUKTU (np.
   `for_product(int $product_id): ?array`) — czytającą przez
   `get_the_terms()`, nie przez zewnętrzny literał.
+- **Zrealizowano:** pole `klasa_stanu` (ACF, {@see ProductConditionFields})
+  zmienia typ `select` → `taxonomy` (D-12.2.1); {@see
+  ClassDefinitionsTaxonomy::for_product()} dodane; {@see
+  BackfillKlasaStanuRelationCommand} (`wp qutlet-core
+  backfill-klasa-stanu-relacja [--dry-run]`, D-12.2.3) — 525/525 w Localu.
+  Szczegóły decyzji i weryfikacji wyżej (D-12.2.1-4 + „Uwaga operacyjna" +
+  „Weryfikacja P-12.2a").
 - **Zależności:** P-12.1a (byt musi istnieć — już 🟢).
 
 #### P-12.2b — Allegro: `ProductWriter` zapisuje relację, nie literał
