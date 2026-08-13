@@ -4552,6 +4552,136 @@ podpunkt (1) jest niezależny. Decyzja użytkownika: zrealizować TERAZ tylko
 
 ---
 
+## 🟦 FAZA 14 — Dokumentacja operacyjna: komendy WP-CLI/cron + środowiska (dev + produkcja)
+
+Cel: dwa dokumenty referencyjne w `docs/` (qutlet-meta) — dla człowieka i LLM-a,
+jak reszta `docs/` (patrz CLAUDE.md → „Dokumenty projektu"). Czysto
+dokumentacyjna faza, JEDEN repo (qutlet-meta), zero zmian w kodzie
+pluginów/motywu. Realizuje odłożoną notatkę z „Kandydaci do dalszych faz"
+(niżej w tym pliku): „rozłożenie sekretów/crona na prod… rozpiszemy, gdy
+dojdziemy do tego etapu" — ten etap nastąpił na wyraźną prośbę użytkownika
+(sesja 2026-08-13), przed samym deployem (deploy jako taki wciąż POZA planem).
+
+**Ground-truth zrobiony przy dopisywaniu tej fazy (sesja 2026-08-13)** — do
+zweryfikowania PONOWNIE na start realizacji (kod się zmienia między sesjami):
+
+- **Komendy `wp qutlet-*` dziś zarejestrowane** (`WP_CLI::add_command`,
+  grep po trzech pluginach): **2 w `qutlet-core`**
+  (`qutlet-core backfill-opis-to-content` →
+  `ProductInfo\BackfillOpisToContentCommand`; `qutlet-core seed-klasa-stanu
+  [--dry-run]` → `ProductCondition\SeedClassDefinitionsCommand`), **11 w
+  `qutlet-allegro`** (`qutlet-allegro.php:156-185`: `sample-offers`,
+  `sample-categories`, `sample-orders`, `snapshot-offers`,
+  `sandbox-preflight`, `seed-sandbox`, `import-offers`, `sync-stock`,
+  `category-report`, `sync-orders`, `backfill-order-attribution`), **0 w
+  `qutlet-ai`** (generacja AI dziś WYŁĄCZNIE przez przycisk w metaboxie
+  edycji produktu — brak jakiejkolwiek komendy CLI; zaznaczyć to explicite w
+  dokumencie, żeby nie wyglądało na przeoczenie ground-truth).
+- **WP-Cron dziś zarejestrowany** (`wp_schedule_event`, grep po trzech
+  pluginach): **WYŁĄCZNIE 3 schedulery, wszystkie w `qutlet-allegro`** —
+  `Auth\RefreshScheduler` (odświeżanie/rotacja tokenów OAuth), `OfferSync\
+  StockSyncScheduler` (push/pull stanu magazynowego), `OrderSync\
+  OrderSyncScheduler` (polling zamówień, uruchamia `sync-orders`). Żadna
+  komenda `qutlet-core` i ŻADNA inna komenda `qutlet-allegro` (w tym
+  `import-offers`) nie ma schedulera — wyłącznie ręczne, potwierdzone
+  brakiem dopasowań grepa poza tymi trzema plikami.
+- **Trigger crona w Local:** `DISABLE_WP_CRON=true` w `wp-config.php`
+  (potwierdzone `read_wp_config`) — pseudo-cron WP wyłączony, jedynym
+  triggerem jest zadanie Windows `qutlet-wp-cron-tick` (znane ograniczenie:
+  zatrzymuje się na baterii, patrz notatka pamięci z sesji). Produkcja
+  (seohost.pl) potrzebuje ANALOGICZNEGO mechanizmu (real crontab albo
+  panel hostingu) — do ustalenia przy realizacji P-14.2, bo shared hosting
+  bywa różny.
+- **Stałe `wp-config.php` dziś w Local** (nazwy z `read_wp_config`,
+  WYŁĄCZNIE nazwy — wartości to sekrety, NIGDY w tym pliku ani w żadnym
+  dokumencie): `QUTLET_ALLEGRO_PRODUCTION_READ_CLIENT_ID`/`_SECRET`,
+  `QUTLET_ALLEGRO_PRODUCTION_WRITE_CLIENT_ID`/`_SECRET`,
+  `QUTLET_ALLEGRO_SANDBOX_READ_CLIENT_ID`/`_SECRET`,
+  `QUTLET_ALLEGRO_SANDBOX_WRITE_CLIENT_ID`/`_SECRET`,
+  `QUTLET_ALLEGRO_TOKEN_KEY` (klucz szyfrowania zapisanych tokenów),
+  `QUTLET_ALLEGRO_SYNC_ORDERS_ENVIRONMENTS` (dziś `sandbox` w Local).
+  **Brak jakiejkolwiek stałej AI** — sprzeczne z zadeklarowaną polityką
+  projektu („klucze AI w wp-config.php, nigdy w DB", docblock
+  `qutlet-ai.php` + FAZA 7) — do rozstrzygnięcia przy P-14.2 (patrz niżej,
+  to jest realny rozjazd kod↔decyzja, nie tylko brak dokumentacji).
+- **Mechanizm klucza AI** (wtyczka core `ai`, `includes/helpers.php::
+  get_connector_api_key_source()`): kolejność źródeł zmienna środowiskowa →
+  **stała PHP** → opcja DB. Konkretna NAZWA stałej dla connectora Google
+  (`ai-provider-for-google`) NIE została zidentyfikowana w tej sesji (nie
+  jest hardkodowanym literałem w kodzie tej wtyczki, prawdopodobnie
+  rejestrowana dynamicznie) — do ustalenia przy realizacji, czytając kod na
+  dysku, nie zgadując.
+- **Ekrany admina AI** (wtyczka core `ai`): „Ustawienia → AI"
+  (`Settings\Settings_Page`, `add_options_page`) — konfiguracja/wybór
+  connectora; „AI Request Logs" (`Logging\AI_Request_Log_Page`,
+  submenu) — log lokalny wykonanych żądań, NIE panel limitów/billingu
+  dostawcy. Brak w kodzie jakiegokolwiek natywnego ekranu z limitami/stanem
+  konta dostawcy — sprawdzanie „ile do limitu" musi więc kierować do
+  PANELU DOSTAWCY (Google), nie do WP-adminowi.
+
+### P-14.1 — Dokument: komendy `wp qutlet-*` + WP-Cron
+- **Repo:** qutlet-meta (nowy `docs/wp-cli-commands.md`)
+- **Zakres:** dla KAŻDEJ komendy z inwentarza wyżej (ground-truth do
+  odświeżenia na start realizacji, nie kopiować liczb z tego akapitu bez
+  ponownego sprawdzenia) — pełna sygnatura z `## OPTIONS` docblocka
+  (nie z pamięci), krótki opis co robi i po co (1-2 zdania), repo/klasa.
+  Osobna sekcja „WP-Cron": dla każdego z 3 schedulerów — nazwa hooka crona,
+  interwał, jak zweryfikować (`wp cron event list`), którą komendę/logikę
+  odpala, zależność od `DISABLE_WP_CRON` i realnego triggera (Local vs
+  produkcja — link do P-14.2 po szczegóły produkcyjne). Jawna sekcja
+  „komendy WYŁĄCZNIE ręczne" (wszystko poza tymi 3 schedulerami) — żeby nie
+  było niejasne, co się NIE odpali samo.
+- **Zależności:** brak.
+
+### P-14.2 — Dokument: środowiska (lokalny dev + produkcja seohost.pl) + klucze + AI
+- **Repo:** qutlet-meta (nowy `docs/environment-setup.md` albo podobna nazwa
+  — do ustalenia przy realizacji, unikając kolizji z istniejącymi
+  `docs/localwp-mcp-setup.md`/`docs/playwright-mcp-setup.md`/
+  `docs/composer.md`/`docs/lokalny-serwer-vanilla.md`)
+- **Zakres:**
+  - **Lokalny dev** — dokument ma być PUNKTEM WEJŚCIA linkującym do
+    istniejących docs (nie duplikować ich treści), wypełniającym GAPY, które
+    one nie pokrywają: kolejność aktywacji pluginów (core → allegro/ai →
+    theme, zależności D-G5 z `CLAUDE.md`), pełna lista NAZW stałych
+    `wp-config.php` wymaganych do działania (bez wartości), jak
+    zainicjalizować sandbox (`seed-sandbox`, `sandbox-preflight` —
+    FAZA 3A), jak włączyć trigger crona lokalnie (Windows Scheduled Task).
+  - **Produkcja (seohost.pl, hosting współdzielony, WP-CLI + Composer)** —
+    dokument musi PRZEDE WSZYSTKIM ustalić na miejscu (STOP i zapytaj, gdzie
+    kod tego nie rozstrzyga): dostęp do crontaba czy tylko WP-CLI z panelu
+    (wpływa na wybór mechanizmu crona — realny crontab wołający `wp cron
+    event run --due-now` per interwał vs. inny mechanizm, jeśli hosting nie
+    daje crontaba); limity execution time/memory (istotne dla
+    `import-offers` z obrazkami — bez limitu mostu MCP jak w Local, ale
+    hosting współdzielony ma WŁASNE limity); sposób instalacji WooCommerce +
+    ACF Pro na prod (licencja ACF Pro — czy wymaga osobnej aktywacji klucza
+    licencyjnego per-domena). Pełna lista stałych `wp-config.php` z
+    ground-truth wyżej (NAZWY, wartości sprodukowane osobno, nigdy w repo) +
+    jasne rozstrzygnięcie, czy prod potrzebuje TYLKO `PRODUCTION_*` czy też
+    `SANDBOX_*` (do testów bez ruszania żywych danych) i jaką wartość
+    powinno mieć `QUTLET_ALLEGRO_SYNC_ORDERS_ENVIRONMENTS` na prod.
+    `composer install --no-dev` per plugin (kontrast z dev — patrz
+    `docs/composer.md`, tam `--dev` dla PHPStan).
+  - **Konfiguracja połączenia z AI** — rozstrzygnąć NAJPIERW rozjazd z
+    ground-truth wyżej (brak stałej AI w Local, sprzeczne z deklarowaną
+    polityką „wp-config, nie DB") — ustalić z użytkownikiem, czy dziś AI w
+    ogóle działa lokalnie (klucz przez opcję DB w „Ustawienia → AI"?) i albo
+    (a) dopisać stałą PHP zgodnie z polityką i zaktualizować Local, albo
+    (b) jawnie zrewidować politykę, jeśli DB było świadomą zmianą — NIE
+    milczeć o rozjeździe. Dopiero potem opisać krok po kroku konfigurację
+    (nazwa stałej — do zidentyfikowania w kodzie `ai-provider-for-google`/
+    `ai` przy realizacji, nie zgadywana tu) dla dev i dla prod.
+  - **Sprawdzenie stanu konta AI (limity)** — WP nie ma własnego panelu
+    (ground-truth wyżej) — dokument musi wskazać KONKRETNY panel dostawcy
+    (Google) używany do sprawdzania limitów/zużycia klucza — dokładny
+    produkt (AI Studio vs Vertex AI) do potwierdzenia z użytkownikiem przy
+    realizacji, bo zmienia adres i sposób sprawdzania; nie zgadywać.
+- **Zależności:** brak twardych; korzysta z inwentarza crona z P-14.1 przy
+  opisie triggera produkcyjnego (miękka zależność treściowa, nie blokująca
+  kolejności realizacji).
+
+---
+
 ## Materiał referencyjny i kandydaci do dalszych faz
 
 ### Inwentarz endpointów Allegro (dostarczony przez użytkownika)
@@ -4566,6 +4696,9 @@ podpunkt (1) jest niezależny. Decyzja użytkownika: zrealizować TERAZ tylko
 
 ### Kandydaci do dalszych faz (NIE zatwierdzone)
 Większość dawnych kandydatów jest już rozpisana (import/sync → FAZA 6, przeróbka
-AI → FAZA 7, render → FAZA 8). Poza planem pozostają świadomie: dalsze utwardzanie (podniesienie poziomu
-PHPStan, testy e2e), ewentualny deploy na produkcję (`www.qutlet.pl`) i rozłożenie
-sekretów/crona na prod. Rozpiszemy, gdy dojdziemy do tego etapu.
+AI → FAZA 7, render → FAZA 8). **Dokumentacja rozłożenia sekretów/crona na
+prod → FAZA 14** (dopisana 2026-08-13). Poza planem pozostają świadomie:
+dalsze utwardzanie (podniesienie poziomu PHPStan, testy e2e) i sam
+DEPLOY na produkcję (`www.qutlet.pl`, faktyczne wgranie i uruchomienie) —
+FAZA 14 dokumentuje JAK skonfigurować środowisko, nie wykonuje deployu.
+Rozpiszemy deploy jako taki, gdy dojdziemy do tego etapu.
