@@ -3668,7 +3668,7 @@ artykuł nie ma dziś jak ich odtworzyć w edytorze:
 
 ---
 
-## 🟨 FAZA 12 — Klasy stanu: rozszerzalny byt + gwarancja/reklamacja + widoczność w koszyku i kasie
+## 🟩 FAZA 12 — Klasy stanu: rozszerzalny byt + gwarancja/reklamacja + widoczność w koszyku i kasie
 
 Cel: wyniesiony z FAZY 9 (był `P-9.3`) i ROZSZERZONY na wyraźną prośbę
 użytkownika (sesja 2026-08-06): zamiast zamkniętego, hardkodowanego enum
@@ -4292,7 +4292,7 @@ stanu z realnymi licznikami i poprawnym filtrowaniem).
 - **Zależności:** P-12.2a.
 - **PR:** [qutlet-allegro #27](https://github.com/przemekcichon/qutlet-allegro/pull/27).
 
-#### P-12.2c — Theme: render czyta relację, nie literał
+#### 🟢 P-12.2c — Theme: render czyta relację, nie literał
 - **Repo:** qutlet-theme (slice `ProductPage/` + `Cart/`)
 - **Zakres:** wszystkie miejsca odczytu `klasa_stanu` (ground-truth P-12.1b:
   `ProductPage`, `content-single-product.php`, `Cart::cart_item_data()`/
@@ -4301,6 +4301,22 @@ stanu z realnymi licznikami i poprawnym filtrowaniem).
   na odczyt przez nowy mechanizm core (D-12.2.1, `for_product()`).
 - **Zależności:** P-12.2a, P-12.2b (dane muszą już płynąć jako relacja, żeby
   render miał co czytać na realnych produktach).
+- **Zrealizowano:** {@see ProductPage::condition_for_product()} (wrapper na
+  `ClassDefinitionsTaxonomy::for_product()`) — jedyny sposób odczytu klasy
+  PRODUKTU od tej sesji. Cztery miejsca zmigrowane: `content-single-product.php`,
+  `content-product.php` (archiwum — nienazwane wprost w P-12.1b, znalezione
+  ground-truth tej sesji), `Cart::cart_item_data()`, `Cart::render_cart_menu()`
+  (mini-koszyk headera — jw.). `condition_label()`/`condition_definition()`
+  (join po `kod`) zostają wyłącznie dla `ProductFilters` (słownik WSZYSTKICH
+  klas, etykiety facetów). `patterns/class-table.php` i oba JS-y
+  (`cart-block-filters.js`/`checkout-block-filters.js`) NIE wymagały zmian
+  (czytają `all()`/Store API, nie literał per-produkt). PHPStan czysto.
+  Runtime (Playwright, Local) — strona produktu 3466 (Klasa C), archiwum
+  `/product-category/monitory/`, koszyk + mini-koszyk + kasa (produkt 578,
+  Klasa B) — wszystko zgodne z relacją. Niezależna recenzja: 🟢 CZYSTE
+  (znalazła jedno nieblokujące ustalenie o kolorze kropki `.dot-<kod>`,
+  wydzielone jako P-12.3 niżej).
+- **PR:** [qutlet-theme #29](https://github.com/przemekcichon/qutlet-theme/pull/29).
 
 - **Zależności całości punktu:** P-12.1a/b/c (kompletne — cutover rewiduje
   ich mechanizm, nie ich istnienie). **Sekwencjonowanie (decyzja
@@ -4308,7 +4324,7 @@ stanu z realnymi licznikami i poprawnym filtrowaniem).
   P-12.1c (qutlet-allegro #26, qutlet-meta #76) nie są zmergowane — osobny
   branch/PR na już otwartych branchach byłby zły stan gita.
 
-#### P-12.3 — Theme: kropka klasy jako kolor inline, nie klasa CSS `.dot-<kod>`
+#### 🟢 P-12.3 — Theme: kropka klasy jako kolor inline, nie klasa CSS `.dot-<kod>`
 - **Zgłoszenie:** niezależna recenzja P-12.2c (qutlet-theme #29, sesja
   2026-08-13) znalazła 🟡 (nieblokujące) ustalenie: karta produktu klasy
   „Nowe" w archiwum pokazuje kropkę BEZ koloru — `content-product.php` i
