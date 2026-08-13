@@ -4028,6 +4028,88 @@ czytać).
   coś więcej niż goły literał A-D — degradowalne do literałów, jeśli
   P-12.1a jeszcze nie gotowe przy realizacji tego punktu).
 
+### P-12.2 — Klasa stanu: cutover z literału na realną relację taksonomijną (punkt wielorepowy → P-12.2a + P-12.2b + P-12.2c)
+
+**Zgłoszenie użytkownika (sesja 2026-08-13, po runtime-weryfikacji P-12.1c):**
+licznik „produktów" przy termie w Produkty → Klasy stanu ZAWSZE pokazuje 0,
+niezależnie od tego, ile produktów faktycznie ma daną klasę — bo
+`klasa_stanu_definicja` (P-12.1a) jest bytem WYŁĄCZNIE opisowym,
+dopasowywanym do produktu przez ręczny join po stringu (`kod` = term meta,
+porównywany z literałem w postmeta `klasa_stanu`), NIE przez natywną relację
+WP (`wp_set_object_terms()`). Użytkownik ocenia to jako confusing i chce
+cutover: produkt dostaje REALNĄ relację z termem tej taksonomii, stary
+mechanizm (goły literał jako jedyne źródło prawdy) odchodzi.
+
+**REWIZJA D-12.1a.1/D-12.1a.4** — przesłanka tamtej decyzji (zachowanie
+literału, bo `qutlet-allegro`/`qutlet-theme` czytały/pisały go WPROST i
+zerwanie kontraktu zepsułoby sync/render przed ich migracją) jest DZIŚ w
+większości nieaktualna: P-12.1b (theme, 🟢) i P-12.1c (allegro, PR w
+recenzji) przepisały odczyt OPISOWY na `ClassDefinitionsTaxonomy::get($kod)`
+— większość konsumentów jest już odseparowana od gołego literału. Zostaje
+otwarte tylko MIEJSCE zapisu (`ProductWriter`) i sam fakt, że „przypisanie"
+to wciąż literał, nie relacja. Cutover TERAZ jest z tego powodu bezpieczniejszy
+niż byłby przy P-12.1a.
+
+**Decyzje do rozstrzygnięcia PRZY REALIZACJI (ground-truth-najpierw, nie
+zgadywać tu z wyprzedzeniem):**
+- **D-12.2.1 [OTWARTE]** — mechanizm relacji: ACF field `klasa_stanu`
+  zmienia typ na `taxonomy` (natywna integracja ACF ↔ `wp_set_object_terms()`)
+  vs. zostaje `select`, a relacja jest dopisywana OSOBNO (hook zapisu ACF /
+  wołanie w `ProductWriter`). Wpływa na to, co dokładnie przekazuje
+  `update_field()`/odpowiednik w `ProductWriter` (dziś goły string kod).
+- **D-12.2.2 [OTWARTE]** — los pola `klasa_stanu` (postmeta/ACF): usunięte
+  całkowicie (user: „pozbywamy się starego") vs. zostaje jako pochodny,
+  read-only podgląd (wygodny do prostych zapytań `WP_Query
+  meta_query`/eksportów bez `tax_query`). Rozstrzyga to, czy stary literał w
+  ogóle nadal istnieje na dysku po cutover, czy trafia do jednorazowej
+  migracji i kasowany.
+- **D-12.2.3 [OTWARTE]** — backfill istniejących produktów: jednorazowa
+  komenda (wzorzec `SeedClassDefinitionsCommand`/`BackfillOpisToContentCommand`)
+  mapująca dzisiejszy literał → `term_id` przez `kod` i wołająca
+  `wp_set_object_terms()` dla KAŻDEGO już zaimportowanego produktu (w
+  Localu: 525 produktów sandbox, patrz P-12.1c runtime-check tej sesji).
+  Idempotencja i dry-run jak w istniejących komendach backfill.
+- **D-12.2.4 [OTWARTE]** — semantyka D-6.1.4 („ustaw TYLKO gdy puste") po
+  cutoverze: „puste" = brak przypisanego termu (`get_the_terms()` zwraca
+  pusto/`false`), nie pusty string — `ProductWriter` musi to sprawdzać przez
+  nowy mechanizm, zachowując IDENTYCZNY skutek (ręczna korekta sprzedawcy
+  nigdy nadpisywana kolejnym importem).
+
+#### P-12.2a — Core: mechanizm relacji + komenda backfill
+- **Repo:** qutlet-core (slice `ProductCondition/`)
+- **Zakres:** rozstrzygnąć D-12.2.1/D-12.2.2, zaimplementować wybrany
+  mechanizm relacji, dodać komendę backfill (D-12.2.3) z `--dry-run`.
+  `ClassDefinitionsTaxonomy` dostaje metodę odczytu klasy PRODUKTU (np.
+  `for_product(int $product_id): ?array`) — czytającą przez
+  `get_the_terms()`, nie przez zewnętrzny literał.
+- **Zależności:** P-12.1a (byt musi istnieć — już 🟢).
+
+#### P-12.2b — Allegro: `ProductWriter` zapisuje relację, nie literał
+- **Repo:** qutlet-allegro (`OfferSync/ProductWriter.php`)
+- **Zakres:** zapis klasy stanu przy imporcie przechodzi z
+  `update_field(ACF_KEY_CONDITION, $condition, $product_id)` na wywołanie
+  nowego mechanizmu core (D-12.2.1) — rozstrzygnąć D-12.2.4 (semantyka
+  „puste"). `OfferMapper::condition_class()` zostaje bez zmian (nadal zwraca
+  `kod` jako string — to core/allegro rozstrzygają, jak ten kod trafia na
+  produkt).
+- **Zależności:** P-12.2a.
+
+#### P-12.2c — Theme: render czyta relację, nie literał
+- **Repo:** qutlet-theme (slice `ProductPage/` + `Cart/`)
+- **Zakres:** wszystkie miejsca odczytu `klasa_stanu` (ground-truth P-12.1b:
+  `ProductPage`, `content-single-product.php`, `Cart::cart_item_data()`/
+  `cart-block-filters.js`, `checkout-block-filters.js`,
+  `patterns/class-table.php`) przechodzą z odczytu literału + join po `kod`
+  na odczyt przez nowy mechanizm core (D-12.2.1, `for_product()`).
+- **Zależności:** P-12.2a, P-12.2b (dane muszą już płynąć jako relacja, żeby
+  render miał co czytać na realnych produktach).
+
+- **Zależności całości punktu:** P-12.1a/b/c (kompletne — cutover rewiduje
+  ich mechanizm, nie ich istnienie). **Sekwencjonowanie (decyzja
+  użytkownika, sesja 2026-08-13):** realizacja NIE zaczyna się, dopóki PR-y
+  P-12.1c (qutlet-allegro #26, qutlet-meta #76) nie są zmergowane — osobny
+  branch/PR na już otwartych branchach byłby zły stan gita.
+
 ---
 
 ## 🟨 FAZA 13 — Strona produktu: edytor admina i to, co ściągamy z Allegro
