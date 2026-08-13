@@ -4250,7 +4250,9 @@ bar), archiwum `/strefa-okazji/` (chipy na kartach + filtr/facet klasy
 stanu z realnymi licznikami i poprawnym filtrowaniem).
 
 #### 🟡 P-12.2a — Core: mechanizm relacji + komenda backfill
-- **Repo:** qutlet-core (slice `ProductCondition/`)
+- **Repo:** qutlet-core (slice `ProductCondition/`; PO niezależnej recenzji
+  #1 zakres poszerzony o slice `ProductFilters/` — TEN SAM repo, przeoczony w
+  ground-truth konsument mechanizmu, patrz „Niezależna recenzja #1" niżej)
 - **Zakres:** rozstrzygnąć D-12.2.1/D-12.2.2, zaimplementować wybrany
   mechanizm relacji, dodać komendę backfill (D-12.2.3) z `--dry-run`.
   `ClassDefinitionsTaxonomy` dostaje metodę odczytu klasy PRODUKTU (np.
