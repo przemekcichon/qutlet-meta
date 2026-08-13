@@ -4166,6 +4166,8 @@ ekran „Produkty → Klasy stanu" pokazuje realne, klikalne liczniki.
   Szczegóły decyzji i weryfikacji wyżej (D-12.2.1-4 + „Uwaga operacyjna" +
   „Weryfikacja P-12.2a").
 - **Zależności:** P-12.1a (byt musi istnieć — już 🟢).
+- **PR:** [qutlet-core #23](https://github.com/przemekcichon/qutlet-core/pull/23),
+  [qutlet-meta #79](https://github.com/przemekcichon/qutlet-meta/pull/79).
 
 #### P-12.2b — Allegro: `ProductWriter` zapisuje relację, nie literał
 - **Repo:** qutlet-allegro (`OfferSync/ProductWriter.php`)
