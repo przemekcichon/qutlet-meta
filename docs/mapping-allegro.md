@@ -110,18 +110,22 @@ Gdy żadne nie występuje — brak marki (pole opcjonalne, kontrakt §3). Znorma
 
 ## Decyzje sesji P-4.1
 
-### D-4.1.1 — `klasa_stanu` z Allegro „Stan" (auto-map + override) [USTALONE — decyzja użytkownika]
+### D-4.1.1 — `klasa_stanu` z Allegro „Stan" (auto-map + override) [USTALONE — decyzja użytkownika; REWIZJA CZĘŚCIOWA P-12.1c, sesja 2026-08-13, decyzja użytkownika]
 
 Allegro niesie stan w offer-level `parameters[Stan]` (`id 11323`), obecny w **100%**
-ofert snapshotu, o **7 wartościach**. Nasze `klasa_stanu` ma **4 klasy** (A/B/C/D,
-etykiety wg kontraktu §2: A=„Jak nowy", B=„Dobry", C=„Mocne ślady", D=„Na części").
-Import **wyprowadza** klasę z „Stan" wg tabeli poniżej; **sprzedawca może nadpisać**
-ręcznie (pole ACF pozostaje edytowalne — źródłem prawdy dla stanu jest ocena
-egzemplarza, Allegro daje wartość domyślną).
+ofert snapshotu, o **7 wartościach**. Pierwotnie (sesja P-4.1) nasze `klasa_stanu`
+miało **4 klasy** (A/B/C/D, etykiety wg kontraktu §2: A=„Jak nowy", B=„Dobry",
+C=„Mocne ślady", D=„Na części"). **Od P-12.1c**: FAZA 12 wprowadziła rozszerzalny
+byt klas stanu (`Qutlet\Core\ProductCondition\ClassDefinitionsTaxonomy`, P-12.1a) i
+piątą klasę **„Nowe"** (kod `Nowe`, D-12.G1) — `Nowy` przeniesiony z A do `Nowe`
+(patrz tabela poniżej), A zostaje z samym `Powystawowy`. Import **wyprowadza**
+klasę z „Stan" wg tabeli poniżej; **sprzedawca może nadpisać** ręcznie (pole ACF
+pozostaje edytowalne — źródłem prawdy dla stanu jest ocena egzemplarza, Allegro
+daje wartość domyślną).
 
 | Allegro „Stan” (`values[0]`) | liczność w snapshocie | → `klasa_stanu` | Uwaga |
 |------------------------------|-----------------------|-----------------|-------|
-| `Nowy`                       | 21                    | **A** (Jak nowy) | |
+| `Nowy`                       | 21                    | **Nowe** (Nowe) | REWIZJA P-12.1c — pierwotnie A (sesja P-4.1/D-6.1.4); przeniesione do nowej klasy „Nowe", bo „Nowy" to dosłownie stan nieużywany |
 | `Powystawowy`                | 29                    | **A** (Jak nowy) | egzemplarz ekspozycyjny, minimalne ślady |
 | `Po zwrocie`                 | **313** (dominująca)  | **B** (Dobry)   | ⚠ **DO POTWIERDZENIA** — wartość dominująca; „po zwrocie" bywa jak-nowy (A) albo używany (B). Wybór B jako ostrożny domyślny. |
 | `Używany`                    | 144                   | **B** (Dobry)   | |
@@ -133,6 +137,15 @@ egzemplarza, Allegro daje wartość domyślną).
 `Uszkodzony` → C, `Nowy z defektem` → C) następuje w **FAZIE 6** — tam
 `klasa_stanu` faktycznie powstaje przy imporcie (auto-map z „Stan”), więc tam
 zapada ostateczna kalibracja tych trzech przypadków wobec realnej oceny egzemplarza.
+
+**Stan klasy „Nowe" (P-12.1c):** termin `Nowe` istnieje w `OfferMapper::CONDITION_MAP`
+(kod) od tej sesji, ale definicja opisowa (`Qutlet\Core\ProductCondition\
+ClassDefinitionsTaxonomy`, term z `kod = Nowe`) NIE jest jeszcze wyseedowana — to
+dane (term taksonomii), nie kod, i wykracza poza repo `qutlet-allegro` (granica
+artefaktów, CLAUDE.md). Strona informacyjna mapowania (P-12.1c) degraduje się do
+gołego literału `Nowe`, dopóki term nie powstanie (przez admina WP, ręcznie, tak
+jak każda nowa klasa — D-12.G1); brak automatycznego seedowania jest ZAMIERZONY,
+nie przeoczeniem.
 
 **Pola powiązane do warstwy surowej (nie do `klasa_stanu`):** offer-level
 `parameters[Stan opakowania]` (`id 229205`, w 485/555) oraz surowa wartość „Stan” —
