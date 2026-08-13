@@ -4249,7 +4249,7 @@ Klasy stanu" (liczniki), strona produktu 3466 (chip/tabela/perk-row/sticky
 bar), archiwum `/strefa-okazji/` (chipy na kartach + filtr/facet klasy
 stanu z realnymi licznikami i poprawnym filtrowaniem).
 
-#### 🟡 P-12.2a — Core: mechanizm relacji + komenda backfill
+#### 🟢 P-12.2a — Core: mechanizm relacji + komenda backfill
 - **Repo:** qutlet-core (slice `ProductCondition/`; PO niezależnej recenzji
   #1 zakres poszerzony o slice `ProductFilters/` — TEN SAM repo, przeoczony w
   ground-truth konsument mechanizmu, patrz „Niezależna recenzja #1" niżej)
