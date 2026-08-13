@@ -3972,8 +3972,32 @@ czytać).
 - **PR:** [qutlet-theme #28](https://github.com/przemekcichon/qutlet-theme/pull/28),
   [qutlet-meta #75](https://github.com/przemekcichon/qutlet-meta/pull/75).
 
-#### P-12.1c — Allegro: strona informacyjna mapowania „Stan" → klasa (read-only)
+#### 🟡 P-12.1c — Allegro: strona informacyjna mapowania „Stan" → klasa (read-only)
 - **Repo:** qutlet-allegro (`OfferSync/OfferMapper.php`)
+- **D-12.1c.1 (rozstrzygnięcie D-12.1a.3 — konkretne mapowanie „Nowe") [USTALONE
+  — decyzja użytkownika, sesja 2026-08-13]:** ground-truth ujawnił, że
+  `CONDITION_MAP` ma dziś WYŁĄCZNIE 7→4 (A-D), zero wpisu dla „Nowe", a term
+  taksonomii `klasa_stanu_definicja` z `kod = Nowe` NIE istnieje (w Localu
+  wyseedowane tylko A-D — potwierdza D-12.1a.3: „Nowe" miało dostać definicję i
+  mapowanie właśnie tu). Decyzja: `Nowy` (Allegro „Stan") przenosi się z klasy
+  **A** do nowej klasy **`Nowe`** (kod literału: `Nowe`, pełne słowo — nie
+  jednoliterowy jak A-D) — semantycznie najbliższe („Nowy" = nieużywany).
+  `Powystawowy` zostaje w A (egzemplarz ekspozycyjny, ale używany/wystawiany).
+  Rewizja `docs/mapping-allegro.md` D-4.1.1 (tabela + nowa nota o stanie klasy
+  „Nowe"). **Seedowanie termu `Nowe` w `klasa_stanu_definicja` (dane, nie kod)
+  ŚWIADOMIE POZA zakresem tej sesji** — inny artefakt (`qutlet-core`, granica
+  repo, CLAUDE.md), do zrobienia ręcznie w adminie (D-12.G1: dodanie klasy =
+  dodanie termu, zero kodu). Strona (ta sesja) degraduje się do gołego literału
+  `Nowe` dla tego wiersza, dopóki term nie powstanie — zamierzone, nie bug.
+  **Uwaga operacyjna (recenzja PR #26):** `CONDITION_MAP` to mapowanie ŻYWE
+  (czyta je `ProductWriter` przy imporcie, nie tylko strona podglądu) — po
+  merge'u pierwszy `wp qutlet-allegro import-offers` dla oferty ze
+  `Stan=Nowy` ustawi `klasa_stanu='Nowe'` na produkcie BEZ zdefiniowanego
+  termu, więc render (`qutlet-theme`) cicho zdegraduje się (brak chipsa/
+  gwarancji/reklamacji) do czasu ręcznego seedu. Zalecane: wyseedować term
+  `Nowe` PRZED pierwszym `import-offers` po merge'u tego punktu (albo
+  natychmiast po nim). `import-offers` jest wyłącznie komendą WP-CLI (brak
+  harmonogramu/cron) — ryzyko wymaga ręcznego triggera, nie odpali się samo.
 - **D-12.1c.2 (zakres zwężony do READ-ONLY, bez edycji w adminie) [USTALONE
   — decyzja użytkownika, sesja 2026-08-06, ZWĘŻA pierwotny zakres tego
   punktu]:** pierwotnie ten punkt (i jego poprzednik `D-9.3c.1`) planował
