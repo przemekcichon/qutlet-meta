@@ -118,7 +118,7 @@ tylko ustabilizowana LISTA slugów + nazwa czytelna.
 
 | Pole (design)      | Literał ACF            | Miejsce | Typ                     | Opcjonalne? | Prototyp                       | Kształt / wartości |
 |--------------------|------------------------|---------|-------------------------|-------------|--------------------------------|--------------------|
-| Klasa stanu        | `klasa_stanu`          | ACF     | select (single)         | nie         | `data.js` `.cls`; `produkt.html:13,46` | Wartości (literały) i mechanizm zapisu **BEZ ZMIAN od P-1.2** (plain postmeta, dowolny literał — dziś `A`/`B`/`C`/`D`). **`choices` NIE są już hardkodowane w kodzie od P-12.1a** — budowane dynamicznie z bytu §2.2 (`ClassDefinitionsTaxonomy::all()`, join key = term meta `kod`). Etykieta w polu = `nazwa` (natywne `name` WP-termu) dopasowanej definicji. |
+| Klasa stanu        | `klasa_stanu`          | ACF     | select (single)         | nie         | `data.js` `.cls`; `produkt.html:13,46` | Wartości (literały) i mechanizm zapisu **BEZ ZMIAN od P-1.2** (plain postmeta, dowolny literał — dziś `A`/`B`/`C`/`D`, i od P-12.1c może dostać `Nowe` przez auto-mapę importu Allegro, patrz §2.2 „Seedowanie"). **`choices` NIE są już hardkodowane w kodzie od P-12.1a** — budowane dynamicznie z bytu §2.2 (`ClassDefinitionsTaxonomy::all()`, join key = term meta `kod`). Etykieta w polu = `nazwa` (natywne `name` WP-termu) dopasowanej definicji. |
 | Co w przesyłce (pozycje) | `zawartosc_zestawu_pozycje` | ACF | repeater          | tak         | `produkt.html:13,142-173`      | **Zastępuje wcześniejsze pole WYSIWYG `zawartosc_zestawu` (D-9.2.1)** — patrz uzasadnienie niżej. Wiersz repeatera = jedna pozycja zestawu; kształt niżej. Pusty repeater → motyw nie renderuje zakładki „Co w przesyłce" (ani karuzeli, ani checklisty) |
 
 „Cena rynkowa nowego" NIE jest już w tej tabeli — od P-13.5 to NIE pole ACF,
@@ -143,7 +143,7 @@ zepsułoby sync i render na żywej stronie do czasu ich wdrożenia.
 
 | Pole (design)                       | Literał (term meta) | Typ           | Opcjonalne? | Uwagi |
 |--------------------------------------|----------------------|---------------|-------------|-------|
-| Kod (klucz techniczny, join key)     | `kod`                | text          | nie, unikalny | Literał zapisywany na produkcie w polu `klasa_stanu` (dziś `A`/`B`/`C`/`D`). NIE slug WP (`sanitize_title()` bezwarunkowo obniża wielkość liter) — osobne term meta właśnie z tego powodu. |
+| Kod (klucz techniczny, join key)     | `kod`                | text          | nie, unikalny | Literał zapisywany na produkcie w polu `klasa_stanu` (`A`/`B`/`C`/`D`, jedna litera; od P-12.1c też `Nowe`, pełne słowo — `kod` jest wolnym tekstem, NIE ograniczonym do jednej litery). NIE slug WP (`sanitize_title()` bezwarunkowo obniża wielkość liter) — osobne term meta właśnie z tego powodu. |
 | Nazwa                                | natywne `name` WP-termu | string     | nie         | Opisowa nazwa klasy (np. „Jak nowy") — administrator zarządza klasami pod tą nazwą (ekran Produkty → Klasy stanu), `kod` jest technicznym szczegółem. |
 | Kolor                                | `kolor`              | color_picker  | nie         | Dawniej `.dot-a…d` w `style.css` (`qutlet-theme`, hardkodowane). |
 | Opis na chipsie                      | `opis_chip`          | text          | nie         | Wolny format (np. „Klasa A · Jak nowy") — NIE musi zaczynać się od „Klasa X" (D-12.1a.2, sesja 2026-08-12 — użytkownik: nowe klasy nie muszą być identyfikowane jako „Klasa A/B/C/D"). |
@@ -170,9 +170,16 @@ dzisiejszą treścią, dziś zaszytą jako hardkodowane literały w `qutlet-them
 (ground-truth pełna lista `docs/plan.md` FAZA 12). Idempotentna (dopasowanie po
 `kod`, nie nadpisuje ręcznych edycji admina). Klasa **„Nowe" NIE jest seedowana
 tą komendą** — D-12.1a.3 (sesja 2026-08-12): mapuje się z wartości Allegro
-„Stan", więc jej definicja i mapowanie powstają razem przy P-12.1c, nie tu
-(D-12.G1 — dodanie klasy to zawsze tylko nowy term, zero kodu, niezależnie od
-tego, KTO/KIEDY go dodaje).
+„Stan" (D-12.G1 — dodanie klasy to zawsze tylko nowy term, zero kodu,
+niezależnie od tego, KTO/KIEDY go dodaje). **REWIZJA/DOPRECYZOWANIE P-12.1c
+(sesja 2026-08-13, D-12.1c.1):** mapowanie („który «Stan» Allegro → `Nowe`")
+POWSTAŁO przy P-12.1c (`OfferMapper::CONDITION_MAP`, `Nowy` → kod `Nowe`) —
+ale term z definicją opisową (`kod = Nowe` w `klasa_stanu_definicja`) NADAL
+nie istnieje, bo jego seedowanie to dane, nie kod, i wykracza poza repo
+`qutlet-allegro` (granica artefaktów, CLAUDE.md). Do czasu ręcznego dodania
+tego termu w adminie, `ClassDefinitionsTaxonomy::get('Nowe')` zwraca `null`
+— konsumenci (`qutlet-theme` render, `ConditionMapPage` w `qutlet-allegro`)
+muszą degradować się bezpiecznie do gołego kodu `Nowe`, nie fatalować.
 
 ### 2.1 Cena rynkowa nowego — natywne Product Data (nie ACF, P-13.5)
 

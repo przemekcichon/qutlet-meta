@@ -3989,6 +3989,15 @@ czytać).
   repo, CLAUDE.md), do zrobienia ręcznie w adminie (D-12.G1: dodanie klasy =
   dodanie termu, zero kodu). Strona (ta sesja) degraduje się do gołego literału
   `Nowe` dla tego wiersza, dopóki term nie powstanie — zamierzone, nie bug.
+  **Uwaga operacyjna (recenzja PR #26):** `CONDITION_MAP` to mapowanie ŻYWE
+  (czyta je `ProductWriter` przy imporcie, nie tylko strona podglądu) — po
+  merge'u pierwszy `wp qutlet-allegro import-offers` dla oferty ze
+  `Stan=Nowy` ustawi `klasa_stanu='Nowe'` na produkcie BEZ zdefiniowanego
+  termu, więc render (`qutlet-theme`) cicho zdegraduje się (brak chipsa/
+  gwarancji/reklamacji) do czasu ręcznego seedu. Zalecane: wyseedować term
+  `Nowe` PRZED pierwszym `import-offers` po merge'u tego punktu (albo
+  natychmiast po nim). `import-offers` jest wyłącznie komendą WP-CLI (brak
+  harmonogramu/cron) — ryzyko wymaga ręcznego triggera, nie odpali się samo.
 - **D-12.1c.2 (zakres zwężony do READ-ONLY, bez edycji w adminie) [USTALONE
   — decyzja użytkownika, sesja 2026-08-06, ZWĘŻA pierwotny zakres tego
   punktu]:** pierwotnie ten punkt (i jego poprzednik `D-9.3c.1`) planował
