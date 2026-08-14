@@ -2628,9 +2628,10 @@ rozpada się na dwa pod-punkty / dwa PR-y z jawną zależnością (`P-8.3c-theme
   skrypt `wc-cart-fragments` odświeża je automatycznie po zmianach koszyka).
   Niezależne od D-8.6a.1 — fragments API działa niezależnie od tego, czy sama
   strona `/koszyk/` jest blokowa czy classic.
-### P-8.6a.2 — Koszyk, runda 2: minimalny nagłówek + poprawki mobile
+### 🟢 P-8.6a.2 — Koszyk, runda 2: minimalny nagłówek + poprawki mobile
 - **Kontynuacja P-8.6a na TYM SAMYM branchu/PR** (`feature/faza-8-6a-koszyk`,
-  qutlet-theme, PR #22 — nadal otwarty/draft) — NIE nowy branch. Zakres
+  qutlet-theme, [PR #22](https://github.com/przemekcichon/qutlet-theme/pull/22) —
+  zmergowany 2026-08-06) — NIE nowy branch. Zakres
   znaleziony przez realne klikanie po już zbudowanej stronie koszyka (nie z
   przeglądu `design/vanilla`), sesja 2026-08-05.
 - **Minimalny nagłówek strony koszyka** — WYŁĄCZNIE logo + strzałka powrotu
@@ -2666,9 +2667,10 @@ rozpada się na dwa pod-punkty / dwa PR-y z jawną zależnością (`P-8.3c-theme
   „?" chowa się razem z mechanizmem przycinania (nie osobno).
 - **Uwaga:** wszystkie punkty czysto CSS/markup w `qutlet-theme` — bez
   dotykania core/allegro/ai (D-8.G1 bez zmian).
-### P-8.6a.3 — Koszyk, runda 3+4+5: miniaturka mobile, usuń obok steppera, „Oszczędzasz" per wiersz, dropdown ilości
+### 🟢 P-8.6a.3 — Koszyk, runda 3+4+5: miniaturka mobile, usuń obok steppera, „Oszczędzasz" per wiersz, dropdown ilości
 - **Kontynuacja P-8.6a na TYM SAMYM branchu/PR** (`feature/faza-8-6a-koszyk`,
-  qutlet-theme, PR #22 — nadal otwarty/draft) — NIE nowy branch. Zakres
+  qutlet-theme, [PR #22](https://github.com/przemekcichon/qutlet-theme/pull/22) —
+  zmergowany 2026-08-06) — NIE nowy branch. Zakres
   znaleziony przez realne klikanie po już zbudowanej stronie koszyka, sesje
   2026-08-05/2026-08-06. Dopisane do planu RETROSPEKTYWNIE, po fakcie (na
   wyraźną prośbę użytkownika: „możesz to wcześniej wpisać do planu ale od
@@ -3195,6 +3197,10 @@ znika) zamiast wrócić.
 - **Zależności:** brak — niezależne od reszty FAZY 9.
 
 ### P-9.6 — Motyw nie powinien ładować domyślnego CSS WooCommerce
+
+**✅ Zrealizowane, zmergowane** — [qutlet-theme PR #25](https://github.com/przemekcichon/qutlet-theme/pull/25) (2026-08-07). Nieformalny
+znacznik dla czytelności — FAZA 9 nie używa ikon 🟡/🟢 na punktach (patrz
+`### P-9.1`/`### P-9.5`, ta sama konwencja), sama faza zostaje 🟨 na stałe.
 
 **Zgłoszenie (2026-08-07, sesja P-8.6c):** użytkownik porównał zrzuty
 ekranu prototypu i realnej strony „Moje konto" i złapał dwa błędy
