@@ -4884,7 +4884,7 @@ podpunkt (1) jest niezależny. Decyzja użytkownika: zrealizować TERAZ tylko
 
 ---
 
-## 🟨 FAZA 14 — Dokumentacja operacyjna: komendy WP-CLI/cron + środowiska (dev + produkcja)
+## 🟩 FAZA 14 — Dokumentacja operacyjna: komendy WP-CLI/cron + środowiska (dev + produkcja)
 
 Cel: dwa dokumenty referencyjne w `docs/` (qutlet-meta) — dla człowieka i LLM-a,
 jak reszta `docs/` (patrz CLAUDE.md → „Dokumenty projektu"). Czysto
@@ -4965,7 +4965,7 @@ zweryfikowania PONOWNIE na start realizacji (kod się zmienia między sesjami):
   było niejasne, co się NIE odpali samo.
 - **Zależności:** brak.
 
-### 🟡 P-14.2 — Dokument: środowiska (lokalny dev + produkcja seohost.pl) + klucze + AI
+### 🟢 P-14.2 — Dokument: środowiska (lokalny dev + produkcja seohost.pl) + klucze + AI
 - **Repo:** qutlet-meta (nowy `docs/environment-setup.md` albo podobna nazwa
   — do ustalenia przy realizacji, unikając kolizji z istniejącymi
   `docs/localwp-mcp-setup.md`/`docs/playwright-mcp-setup.md`/
