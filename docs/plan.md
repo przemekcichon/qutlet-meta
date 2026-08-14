@@ -4362,7 +4362,7 @@ stanu z realnymi licznikami i poprawnym filtrowaniem).
 
 ---
 
-## 🟨 FAZA 13 — Strona produktu: edytor admina i to, co ściągamy z Allegro
+## 🟩 FAZA 13 — Strona produktu: edytor admina i to, co ściągamy z Allegro
 
 Cel: zgłoszenie użytkownika (sesja 2026-08-06) po realnym używaniu ekranu
 edycji produktu — siedem poprawek do tego, JAK dane z Allegro trafiają do
@@ -4869,18 +4869,32 @@ podpunkt (1) jest niezależny. Decyzja użytkownika: zrealizować TERAZ tylko
   ręcznie albo na starcie następnej sesji.
 - **PR:** [qutlet-core #21](https://github.com/przemekcichon/qutlet-core/pull/21).
 
-#### P-13.7b — Metabox: długość gwarancji/reklamacji dla wybranej klasy stanu
-- **Repo:** qutlet-core (`src\ProductCondition\ProductConditionFields.php` +
-  konsument bytu klasy z FAZY 12)
-- **Zakres:** długość gwarancji i reklamacji USTAWOWEJ dla WYBRANEJ
-  (edytowalnej) `klasa_stanu` — odczyt z bytu klas z **FAZY 12** (`P-12.1a` —
-  pola `okres_gwarancji`/`okres_reklamacji`), wyświetlone jako informacja przy
-  polu `klasa_stanu` (np. „Klasa B → gwarancja 1 rok, reklamacja 1 rok"), żeby
-  kurator widział konsekwencję wyboru klasy bez przechodzenia do ekranu
-  zarządzania klasami.
-- **Zależności:** **P-12.1a (FAZA 12)** — pola gwarancji/reklamacji na bycie
-  klasy muszą istnieć, zanim ten punkt będzie miał co wyświetlić. Bez
-  P-12.1a punkt się nie da zrealizować.
+#### 🟢 P-13.7b — Metabox: długość gwarancji/reklamacji dla wybranej klasy stanu
+- **Repo:** qutlet-core (`src\ProductCondition\ProductConditionFields.php`)
+- **Zakres zrealizowany:** metabox „Qutlet — stan i zawartość produktu"
+  zyskało drugie pole read-only (ACF `message`, bez zapisu żadnej wartości)
+  tuż po `klasa_stanu` — gwarancja i reklamacja USTAWOWA dla klasy stanu
+  PRZYPISANEJ dziś do produktu (odczyt przez istniejący helper
+  `ClassDefinitionsTaxonomy::for_product()`, FAZA 12, pola term meta
+  `okres_gwarancji_miesiace`/`okres_reklamacji_miesiace`), np. „Klasa „Mocne
+  ślady" → gwarancja: 12 mies., reklamacja: 12 mies." Okresy wyświetlone w
+  miesiącach (nie skonwertowane na lata) — pluralizacja polska lat/miesięcy
+  żyje w `qutlet-theme` (`ProductPage::period_years_text()`), core NIE
+  importuje kodu z theme (granica repo, `CLAUDE.md` §Struktura), a to
+  wyłącznie informacja dla kuratora w adminie. Treść dopisywana dynamicznie
+  na `acf/pre_render_field`, ten sam mechanizm co P-13.7a (osobny guard po
+  kluczu pola).
+- **Zależności:** P-12.1a/P-12.2a (FAZA 12) — spełnione (🟢 przed startem tej
+  sesji).
+- **Weryfikacja:** PHPStan czysto (cała wtyczka, potwierdzone też przez
+  niezależnego recenzenta). Runtime w przeglądarce (Playwright MCP) — OBIE
+  gałęzie komunikatu zweryfikowane: klasa przypisana (produkt 3800, klasa
+  „Mocne ślady", term meta 12/12 mies. potwierdzone `wp term meta list`) i
+  brak relacji (świeży, niezapisany produkt). Ta sama sesja domknęła też
+  zaległą lukę z P-13.7a (render „Stan wg Allegro" w przeglądarce, wcześniej
+  zablokowany przez zajęty profil Playwright). Niezależna recenzja
+  🟢 CZYSTE (zero ustaleń blokujących).
+- **PR:** [qutlet-core #24](https://github.com/przemekcichon/qutlet-core/pull/24).
 
 ---
 
