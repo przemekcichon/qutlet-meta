@@ -37,7 +37,7 @@ Ten dokument NIE powtarza instalacji mostu MCP ani prototypu frontendu —
 
 ### Kolejność aktywacji pluginów
 
-Zależności twarde (D-G5, `CLAUDE.md`): `core` → WooCommerce + ACF Pro;
+Zależności twarde (D-G5, `docs/plan.md` → FAZA 0): `core` → WooCommerce + ACF Pro;
 `allegro` → Woo + core; `ai` → core; `theme` (motyw) → Woo + core. Z tego
 wynika kolejność aktywacji na świeżej instalacji:
 
@@ -161,18 +161,27 @@ sekretami Allegro (też wyłącznie w `wp-config.php`).
 
 ### Mechanizm rozwiązywania klucza (kod, nie zgadywane)
 
-Funkcja `WordPress\AI\get_connector_api_key_source()`
-(`wp-content/plugins/ai/includes/helpers.php`) sprawdza w kolejności: zmienna
+Funkcja, która to **faktycznie wykonuje** dziś na Local, to
+`_wp_connectors_get_api_key_source()` w `wp-includes/connectors.php:440-456` —
+**rdzeń WordPressa**, zawsze ładowany. Sprawdza w kolejności: zmienna
 środowiskowa (`getenv()`) → stała PHP (`defined()`/`constant()`) → opcja DB
-(`get_option()`). Konfiguracja poszczególnych connectorów (w tym Google) **NIE
-jest zarejestrowana przez wtyczkę `qutlet-ai`** ani przez wtyczkę community `ai`
+(`get_option()`). Wtyczka community `ai` (`wp-content/plugins/ai/includes/helpers.php`)
+ma funkcję o identycznej logice i tej samej nazwie bez podkreślenia
+(`WordPress\AI\get_connector_api_key_source()`), ale to **martwy kod w tym
+środowisku** — `wp plugin list` potwierdza `ai` → `status: inactive`, więc
+plik w ogóle nie jest ładowany przez WP. Nie mylić jednej z drugą przy
+dalszej lekturze kodu.
+
+Konfiguracja poszczególnych connectorów (w tym Google) **NIE jest
+zarejestrowana przez wtyczkę `qutlet-ai`** ani przez wtyczkę community `ai`
 — żyje w rdzeniu WordPressa: `wp-includes/connectors.php`, funkcja
 `_wp_connectors_register_default_ai_providers()`. Dla connectora `google`:
 
 - `setting_name` (opcja DB) = `connectors_ai_google_api_key`
 - `constant_name` = `env_var_name` = **`GOOGLE_API_KEY`** (wzorzec generyczny:
-  `strtoupper(sanitized_id) . '_API_KEY'` — dla `google` bez myślnika daje
-  wprost `GOOGLE_API_KEY`)
+  `strtoupper(preg_replace('/([a-z])([A-Z])/', '$1_$2', sanitized_id)) . '_API_KEY'`
+  — dla `google`, bez wielkich liter do rozdzielenia, daje wprost
+  `GOOGLE_API_KEY`)
 - `credentials_url` = `https://aistudio.google.com/api-keys`
 
 To rozstrzyga nazwę stałej, której ground-truth z 2026-08-13 nie potrafił
