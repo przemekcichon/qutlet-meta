@@ -3306,6 +3306,61 @@ archiwum kategorii.
 - **Zależności:** P-8.3a (karta produktu, reużywana w rzędach), P-8.3b-core
   (facety marki, jeśli D-10.1.3 je reużyje).
 
+### P-10.2 — Dodawanie do koszyka i usuwanie z mini-koszyka przez AJAX (bez przeładowania strony)
+
+**Zgłoszenie (2026-08-06, sesja P-8.6b):** przy weryfikacji kasy złapane
+ubocznie (kliknięcie realnego przycisku „Dodaj do koszyka" na stronie
+produktu przeładowywało całą stronę) — zgłoszone przez użytkownika jako
+osobny punkt, nie poprawka w locie w PR-ze kasy.
+
+**Ground-truth stanu obecnego (ta sama sesja):**
+- **Dodawanie do koszyka** (`woocommerce/single-product/add-to-cart/simple.php`,
+  P-8.2b) — zwykły classic `<form method="post">` + `<button type="submit">`
+  BEZ klas `ajax_add_to_cart`/`add_to_cart_button` ani atrybutów
+  `data-product_id`/`data-quantity`, których nasłuchuje natywny WC-owy
+  `wc-add-to-cart` JS (ten mechanizm domyślnie obsługuje AJAX-em przyciski
+  W PĘTLI/ARCHIWUM, NIE formularz strony pojedynczego produktu — to
+  natywne zachowanie WC, nie coś, co motyw świadomie wyłączył). Submit
+  dziś = pełny POST + redirect na tę samą stronę produktu (parametr
+  `added-to-cart` w URL, komunikat WC nad treścią).
+- **Usuwanie z mini-koszyka** (`Cart::render_cart_menu()`,
+  `inc/features/Cart/Cart.php`, P-8.6a) — link
+  `<a class="cart-menu-item-remove" href="<?php echo wc_get_cart_remove_url(...) ?>">`.
+  Klasa `cart-menu-item-remove` (własna, portowana z prototypu) NIE jest
+  klasą `remove`, której nasłuchuje natywny `wc-cart-fragments`/`add-to-cart.js`
+  (WC AJAX-uje usuwanie WYŁĄCZNIE linków z klasą `remove` + atrybutami
+  `data-product_id`/`data-cart_item_key`) — dziś to zwykłe kliknięcie linku,
+  pełne przeładowanie strony na URL z query argiem `remove_item`+nonce.
+
+**Cel:** obie interakcje (dodaj z produktu, usuń z mini-koszyka) mają
+działać przez AJAX/Store API — bez przeładowania strony, spójnie z resztą
+motywu opartą już o Store API w koszyku/kasie (P-8.6a/P-8.6b, `wc/store/cart`
+przez `wp.data`).
+
+- **D-10.2.1 (mechanizm — natywny classic AJAX WC czy Store API przez
+  `wp.data.dispatch`) [OTWARTE]:** dwie ścieżki, żadna nierekomendowana:
+  1. Dopisać brakujące klasy/atrybuty (`ajax_add_to_cart`/`data-product_id`
+     na przycisku, `remove`/`data-cart_item_key` na linku usuwania) i
+     dociągnąć skrypty `wc-add-to-cart`/`wc-cart-fragments` — najmniejsza
+     zmiana, ale to STARSZY, jQuery-owy mechanizm classic WC (osobny od
+     Store API, którym idzie reszta motywu).
+  2. `wp.data.dispatch('wc/store/cart').addItemToCart(...)`/
+     `removeItemFromCart(...)` (Store API, TEN SAM mechanizm co dropdown
+     ilości w koszyku, D-8.6a.4) — spójne z resztą motywu, ale strona
+     produktu dziś NIE ładuje `wc-blocks-data-store`/`wp-data` (te
+     dependency script handles są dziś rejestrowane WYŁĄCZNIE przez
+     `CartBlocksIntegration`/`CheckoutBlocksIntegration`, per-blok — trzeba
+     by je wyenqueue'ować też na stronie produktu/wszędzie, gdzie żyje
+     mini-koszyk, czyli praktycznie WSZĘDZIE, D-8.6a.3).
+- **D-10.2.2 (aktualizacja UI po dodaniu/usunięciu bez przeładowania)
+  [OTWARTE]:** dziś liczba w `.cart-badge`/zawartość `.cart-menu` idą przez
+  classic `woocommerce_add_to_cart_fragments` (D-8.6a.3), odświeżane
+  zdarzeniem jQuery `wc_fragment_refresh` — do potwierdzenia przy
+  realizacji, czy to zostaje (niezależnie od wyboru w D-10.2.1) czy też
+  przechodzi na Store API.
+- **Zależności:** P-8.2b (przycisk dodaj do koszyka), P-8.6a (mini-koszyk,
+  D-8.6a.3 — fragments).
+
 ---
 
 ## 🟩 FAZA 11 — Treść stron jako bloki edytora (block patterns zamiast PHP/HTML)
