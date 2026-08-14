@@ -3007,6 +3007,13 @@ FAZ 0–8 — rośnie, dopóki trwa eksploatacja.
 
 ### P-9.1 — Własność pól przy sync ofert Allegro: ryzyko nadpisania ręcznych edycji
 
+**✅ Zrealizowane, zmergowane** — [qutlet-allegro PR #28](https://github.com/przemekcichon/qutlet-allegro/pull/28)
+(P-9.1a.1/b/d, 2026-08-14) + [qutlet-ai PR #10](https://github.com/przemekcichon/qutlet-ai/pull/10)
+(P-9.1a.2, 2026-08-14). Nieformalny znacznik dla czytelności — FAZA 9 nie
+używa ikon 🟡/🟢 na punktach (patrz `### P-9.5`/`### P-9.6`, ta sama
+konwencja), sama faza zostaje 🟨 na stałe. Rozstrzygnięcia D-9.1a.1–D-9.1d.1
+niżej, przy każdym pod-punkcie.
+
 **Zgłoszenie (2026-07-27):** edycja tytułu produktu w adminie może zostać
 nadpisana przy kolejnym pełnym sync/imporcie tej samej oferty z Allegro.
 Ground-truth `qutlet-allegro/src/OfferSync/ProductWriter.php` (docblock klasy,
@@ -3039,9 +3046,30 @@ jest rekomendacją; wybór i priorytet = decyzja użytkownika).
   warunek to niepusty tytuł W OFERCIE, nie „czy produkt jest nowy"), na
   ścieżce create ORAZ update. Ręczna korekta tytułu w adminie ginie przy
   najbliższym pełnym re-imporcie tej oferty.
-- **D-9.1a.1 (jak chronić `post_title`) [OTWARTE]:** patrz sugestie niżej —
-  żadna nierekomendowana, decyzja użytkownika.
-- **Sugestie (nieprzesądzone):**
+- **D-9.1a.1 (jak chronić `post_title`) [ROZSTRZYGNIĘTE — decyzja
+  użytkownika, sesja 2026-08-14]:** ŻADNA z trzech sugestii niżej wprost —
+  użytkownik opisał własny, szerszy pomysł (metabox generujący
+  tytuł+podnazwę przez LLM z flagą „Nowy" i hookiem na przyszłość).
+  Ground-truth ujawnił, że taki metabox JUŻ ISTNIEJE w `qutlet-ai`
+  (`TitleGenerationMetaBox`/`TitleGenerator`/`TitleWriter`, P-13.2c) —
+  rozbite na dwa pod-punkty wielorepowe:
+  - **P-9.1a.1 (qutlet-allegro, [PR #28](https://github.com/przemekcichon/qutlet-allegro/pull/28)):**
+    `post_title` ustawiany TYLKO przy `$action === 'created'` (efekt zbliżony
+    do sugestii 1 niżej, ale bez utraty „redakcyjności" — warstwa surowa
+    `_qutlet_allegro_nazwa_raw` i tak już zawsze niesie aktualną nazwę,
+    sugestia 3 więc była już częściowo zaimplementowana wcześniej).
+  - **P-9.1a.2 (qutlet-ai, [PR #10](https://github.com/przemekcichon/qutlet-ai/pull/10),
+    ROZSZERZENIE poza literę tego punktu, ustalone ad-hoc w sesji):** flaga
+    „Nowy" na `TitleGenerationMetaBox` (nowa meta plugin-owned
+    `_qutlet_ai_title_source_raw`, bez `register_post_meta()` — nie wymagało
+    zmian w core) + hook `qutlet_product_title_generated` (świadomie bez
+    subskrybenta, udokumentowany w `qutlet-ai/docs/title-generated-hook.md`
+    pod przyszły mechanizm notyfikacji, NIE budowany teraz). Niezależna
+    recenzja (`docs/review.md`) znalazła realną lukę — flaga nigdy nie
+    zapalała się dla produktów, których nikt nie dotknął przez ten metabox —
+    naprawione w tym samym PR (fallback: porównanie `post_title` z warstwą
+    surową, działa dzięki P-9.1a.1).
+- **Sugestie (nieprzesądzone, zachowane dla historii decyzji):**
   1. „Ustawiane tylko gdy puste" wzorem `klasa_stanu` — tytuł nietykalny po
      pierwszym zapisaniu. Prosto, spójnie z istniejącym precedensem w tym samym
      pliku. Wada: uzasadniona korekta tytułu przez sprzedawcę na Allegro też
@@ -3066,9 +3094,10 @@ jest rekomendacją; wybór i priorytet = decyzja użytkownika).
   biznesowa, spór, wycofana oferta), najbliższy pełny re-import CICHO włączy
   go z powrotem. To ryzyko dotyka bezpośrednio klienta (widoczność kanału
   zakupu) — potencjalnie poważniejsze niż kosmetyka tytułu.
-- **D-9.1b.1 (jak chronić `allegro_wlaczone`) [OTWARTE]:** patrz sugestie
-  niżej — żadna nierekomendowana, decyzja użytkownika.
-- **Sugestie (nieprzesądzone):**
+- **D-9.1b.1 (jak chronić `allegro_wlaczone`) [ROZSTRZYGNIĘTE — decyzja
+  użytkownika, sesja 2026-08-14]:** sugestia 1 niżej, wprost. Zaimplementowane
+  w [qutlet-allegro PR #28](https://github.com/przemekcichon/qutlet-allegro/pull/28).
+- **Sugestie (nieprzesądzone, zachowane dla historii decyzji):**
   1. Najprostsze: usunąć wymuszenie z pełnego importu, ustawiać `1` WYŁĄCZNIE
      przy tworzeniu nowego produktu (`$action === 'created'`), nigdy przy
      aktualizacji. Traci możliwość auto-włączenia, gdyby coś inne wcześniej
@@ -3085,9 +3114,12 @@ jest rekomendacją; wybór i priorytet = decyzja użytkownika).
   wołane bezwarunkowo przy każdym przebiegu — ręczna rekategoryzacja produktu
   w adminie (np. poprawka błędnego automatycznego mapowania) ginie przy
   najbliższym re-imporcie.
-- **D-9.1c.1 (czy chronić kategorię/markę, i czy to realne ryzyko) [OTWARTE]:**
-  patrz sugestie niżej — decyzja użytkownika.
-- **Sugestie (nieprzesądzone):**
+- **D-9.1c.1 (czy chronić kategorię/markę, i czy to realne ryzyko)
+  [ROZSTRZYGNIĘTE — decyzja użytkownika, sesja 2026-08-14]:** sugestia 2
+  niżej — uznane za teoretyczne ryzyko, BEZ zmiany kodu. Kategoria i marka
+  zostają w pełni sync-owned (potwierdzone w [qutlet-allegro PR #28](https://github.com/przemekcichon/qutlet-allegro/pull/28),
+  brak zmiany w tym obszarze `ProductWriter.php`).
+- **Sugestie (nieprzesądzone, zachowane dla historii decyzji):**
   1. Ten sam wzorzec „dirty compare" co P-9.1a/2 — zapamiętać ostatni
      auto-zmapowany slug kategorii/marki, nadpisywać TYLKO gdy bieżący term
      wciąż się zgadza.
@@ -3104,9 +3136,13 @@ jest rekomendacją; wybór i priorytet = decyzja użytkownika).
   Allegro. Zdjęcie dodane ręcznie przez kuratora (np. własne zdjęcie
   faktycznej rysy/wady egzemplarza) nie pochodzi z tych URL-i, więc zniknie z
   galerii przy najbliższym pełnym re-imporcie.
-- **D-9.1d.1 (czy scalać galerię, i czy to realne ryzyko) [OTWARTE]:** patrz
-  sugestie niżej — decyzja użytkownika.
-- **Sugestie (nieprzesądzone):**
+- **D-9.1d.1 (czy scalać galerię, i czy to realne ryzyko) [ROZSTRZYGNIĘTE —
+  decyzja użytkownika, sesja 2026-08-14]:** sugestia 1 niżej, wprost.
+  Zaimplementowane w [qutlet-allegro PR #28](https://github.com/przemekcichon/qutlet-allegro/pull/28)
+  (`ProductWriter::manual_image_ids()` — attachmenty bez
+  `ImageSideloader::META_SOURCE_URL`, czyli dołożone ręcznie w adminie, są
+  dopisywane na końcu nowej galerii zamiast usuwane).
+- **Sugestie (nieprzesądzone, zachowane dla historii decyzji):**
   1. Scalanie zamiast podmiany: oznaczyć zsynchronizowane attachmenty osobną
      meta („pochodzi z sync"), przy kolejnym sync usuwać/dodawać TYLKO
      oznaczone, zachowując resztę galerii nietkniętą.
