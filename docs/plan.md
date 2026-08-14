@@ -4884,7 +4884,7 @@ podpunkt (1) jest niezależny. Decyzja użytkownika: zrealizować TERAZ tylko
 
 ---
 
-## 🟦 FAZA 14 — Dokumentacja operacyjna: komendy WP-CLI/cron + środowiska (dev + produkcja)
+## 🟨 FAZA 14 — Dokumentacja operacyjna: komendy WP-CLI/cron + środowiska (dev + produkcja)
 
 Cel: dwa dokumenty referencyjne w `docs/` (qutlet-meta) — dla człowieka i LLM-a,
 jak reszta `docs/` (patrz CLAUDE.md → „Dokumenty projektu"). Czysto
@@ -4951,7 +4951,7 @@ zweryfikowania PONOWNIE na start realizacji (kod się zmienia między sesjami):
   konta dostawcy — sprawdzanie „ile do limitu" musi więc kierować do
   PANELU DOSTAWCY (Google), nie do WP-adminowi.
 
-### P-14.1 — Dokument: komendy `wp qutlet-*` + WP-Cron
+### 🟡 P-14.1 — Dokument: komendy `wp qutlet-*` + WP-Cron
 - **Repo:** qutlet-meta (nowy `docs/wp-cli-commands.md`)
 - **Zakres:** dla KAŻDEJ komendy z inwentarza wyżej (ground-truth do
   odświeżenia na start realizacji, nie kopiować liczb z tego akapitu bez
