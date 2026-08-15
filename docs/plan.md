@@ -5343,7 +5343,7 @@ zależnościami — gotowy do realizacji w KOLEJNEJ, osobnej sesji.
   --due-now` (Local, handoff już ustanowiony w P-6.2b); nowy hook jest łapany
   automatycznie przez ten sam tick, bez dodatkowej konfiguracji Local.
 
-#### P-15.3b — Aktualizacja `docs/wp-cli-commands.md` (qutlet-meta)
+#### 🟡 P-15.3b — Aktualizacja `docs/wp-cli-commands.md` (qutlet-meta)
 - **Repo:** qutlet-meta
 - **Zakres:** dopisać `ImportOffersScheduler` do sekcji „WP-Cron" (P-14.1) —
   nazwa hooka, interwał, odpalana komenda, zależność od `DISABLE_WP_CRON`;
