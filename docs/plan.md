@@ -5277,7 +5277,7 @@ zależnościami — gotowy do realizacji w KOLEJNEJ, osobnej sesji.
   może ukryć/skasować żywy produkt) — świadomie ODŁOŻONE jako osobny, przyszły
   punkt (P-15.4, ❓ someday, niżej), nie blokuje P-15.2/P-15.3.
 
-### P-15.2 — Bulk lookup „znane offer_id” + flaga `--new-only` (qutlet-allegro)
+### 🟢 P-15.2 — Bulk lookup „znane offer_id” + flaga `--new-only` (qutlet-allegro)
 - **Repo:** qutlet-allegro (slice `OfferSync/` — rozszerzenie P-6.1b, ta sama
   komenda/klasy, nie nowy artefakt)
 - **Zakres:** nowy helper (np. `ProductWriter::known_offer_ids(): array<string,int>`
