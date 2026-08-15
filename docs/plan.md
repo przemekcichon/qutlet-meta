@@ -5118,7 +5118,7 @@ D-6.G1/D-6.G2 do zbadania i ewentualnego reużycia) ta faza dotyczy
 DOKŁADANIA nowych ofert do katalogu — rozszerzenie/nadbudowa nad P-6.1b,
 nie jego zamiana.
 
-### 🟡 P-15.1 — Zaplanuj mechanizm taniego delta-checku + harmonogram
+### 🟢 P-15.1 — Zaplanuj mechanizm taniego delta-checku + harmonogram
 
 **Punkt WYŁĄCZNIE planistyczny** — bez implementacji. Cel sesji: zejść z
 poziomu ogólnego zamiaru (wyżej) na konkretny, rozpisany projekt z
