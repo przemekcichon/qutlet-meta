@@ -3208,6 +3208,34 @@ nie tekst.
 
 ### P-9.5 — Nagłówek strony nie zawsze wraca przy scrollu w górę
 
+**✅ Zrealizowane, zmergowane** — [qutlet-theme PR #31](https://github.com/przemekcichon/qutlet-theme/pull/31)
+(2026-08-15). Nieformalny znacznik dla czytelności — FAZA 9 nie używa ikon
+🟡/🟢 na punktach (patrz `### P-9.1`/`### P-9.6`, ta sama konwencja), sama
+faza zostaje 🟨 na stałe.
+
+**Naprawiono:** `lastY` w `initHideOnScroll()` był nadpisywany bezwarunkowo
+na końcu każdego `update()`, więc przy scrollu złożonym z drobnych
+przyrostów tego samego znaku (≤4px/klatkę — częste przy płynnym/ciągłym
+scrollu) próg `|delta|>4px` nigdy się nie kumulował. Poprawka: `lastY`
+nadpisywany TYLKO wewnątrz gałęzi, która faktycznie decyduje o stanie —
+potwierdzone realnym logiem z przeglądarki użytkownika (nie tylko
+Playwright): klasa `header-hidden` schodzi poprawnie i szybko po
+odwróceniu kierunku scrolla.
+
+**Nierozwiązany follow-up (odkryty PO tym fixie, poza zakresem tej
+sesji):** mimo poprawnej i szybkiej zmiany klasy w JS, użytkownik nadal
+zgłasza, że przy scrollu w dół → pauza → krótki scroll w górę nagłówek
+WIZUALNIE nie wraca od razu (mimo że klasa `header-hidden` schodzi
+natychmiast, potwierdzone logiem konsoli). Podejrzenie: `position: sticky`
++ `transition: transform` + `backdrop-filter: blur()` na `.site-header`
+(style.css) to znana w Chrome kombinacja, przy której zmiana `transform`
+z JS w trakcie AKTYWNEGO scrolla na elemencie `sticky` bywa „gubiona"
+przez compositor aż do zakończenia scrolla. Próbowano `will-change:
+transform` na `.site-header` jako standardową poprawkę tego zjawiska —
+NIEPOTWIERDZONE (sesja przerwana przed weryfikacją przez użytkownika,
+budżet tokenów). Wymaga osobnego punktu planu i ground-truth CSS renderu
+nagłówka (nie tylko JS).
+
 **Zgłoszenie (2026-08-03, sesja P-11.3):** `.site-header` ma być `position:
 sticky` z chowaniem przy scrollu w dół i powrotem przy scrollu w górę
 (`assets/js/header-nav.js` → `initHideOnScroll()`, port
