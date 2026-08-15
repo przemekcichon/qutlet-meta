@@ -5098,6 +5098,72 @@ zweryfikowania PONOWNIE na start realizacji (kod się zmienia między sesjami):
 
 ---
 
+## 🟦 FAZA 15 — Import ofert Allegro na żądanie/cyklicznie: tani delta-check
+
+Cel: dziś `wp qutlet-allegro import-offers` (P-6.1b) to WYŁĄCZNIE ręczna
+komenda — pobiera `GET /sale/offers` (wszystkie oferty `ACTIVE`) i dla
+każdej ciągnie pełny szczegół (`GET /sale/product-offers/{id}`), bez
+żadnego triggera automatycznego (P-14.1: import-offers to jedyna komenda
+allegro BEZ schedulera). Potrzebujemy uruchamiania **na żądanie ORAZ
+cyklicznie (cron)**, ale bez powtarzania za każdym razem PEŁNEGO,
+kosztownego pociągnięcia wszystkiego. Docelowy kształt: tani krok
+wstępny, który szybko ustala, czy na Allegro pojawiło się coś NOWEGO
+(oferty spoza już zaimportowanego zbioru), i dopiero wtedy dociąga
+PEŁNE szczegóły WYŁĄCZNIE nowych/zmienionych pozycji — nie cały katalog
+za każdym tyknięciem.
+
+W odróżnieniu od P-6.2 (sync STANU magazynowego istniejących, już
+zaimportowanych ofert — już cykliczny, wzorzec `StockSyncScheduler`/
+D-6.G1/D-6.G2 do zbadania i ewentualnego reużycia) ta faza dotyczy
+DOKŁADANIA nowych ofert do katalogu — rozszerzenie/nadbudowa nad P-6.1b,
+nie jego zamiana.
+
+### P-15.1 — Zaplanuj mechanizm taniego delta-checku + harmonogram
+
+**Punkt WYŁĄCZNIE planistyczny** — bez implementacji. Cel sesji: zejść z
+poziomu ogólnego zamiaru (wyżej) na konkretny, rozpisany projekt z
+decyzjami (D-15.x), pod-punktami wielorepowymi (jeśli dotyczy) i
+zależnościami — gotowy do realizacji w KOLEJNEJ, osobnej sesji.
+
+- **Ground-truth do zrobienia na start (wg `docs/ground-truth.md`, kod na
+  dysku, nie pamięć):**
+  - Realny stan `OfferSync/` (qutlet-allegro) — sygnatura i zachowanie
+    `import-offers` (P-6.1b), czy istnieje już JAKIKOLWIEK cache/rejestr
+    zaimportowanych `offer_id` do porównania (idempotencja dziś opiera
+    się na `_qutlet_allegro_offer_id` per-produkt — czy to wystarcza do
+    TANIEGO porównania „co nowego", czy potrzeba osobnej listy/indeksu).
+  - Wzorzec schedulera już w kodzie (`Auth\RefreshScheduler`,
+    `OfferSync\StockSyncScheduler`, `OrderSync\OrderSyncScheduler`,
+    D-6.G1) — reużyć 1:1 dla nowego zadania czy potrzebna wariacja.
+  - API Allegro (`docs/allegro-api-samples/`, `GET /sale/offers`) — czy
+    endpoint wspiera filtrowanie/sortowanie po dacie utworzenia/zmiany
+    albo kursor pozwalający tanio wykryć „nowe od ostatniego przebiegu"
+    bez ciągnięcia pełnej listy stron; jeśli nie ma nic tańszego niż
+    pełna lista ID (bez szczegółów) — to i tak jest dużo tańsze niż
+    pełny `GET /sale/product-offers/{id}` per oferta, więc może być
+    wystarczającym „tanim krokiem".
+  - Limity/rate-limiting Allegro API (D-6.G2 już ustala zasadę
+    „przyrostowo, z backoffem" dla sync stanu — sprawdzić, czy ta sama
+    zasada/kod da się reużyć czy tylko wzorzec).
+- **Decyzje do rozstrzygnięcia w tej sesji (jako D-15.x, po ground-truth,
+  NIE zgadywane z góry tutaj):** kształt „taniego kroku" (lista ID vs
+  filtr po dacie vs coś innego, zależnie od realnych możliwości API);
+  trigger „na żądanie" (nowy WP-CLI subcommand? przycisk w adminie?);
+  kadencja crona; co się dzieje z ofertami, które ZNIKNĘŁY z Allegro
+  (poza zakresem P-6.1b dziś?) — czy to część tej fazy czy osobny punkt;
+  repo dotknięte (najpewniej qutlet-allegro, `OfferSync/` — potwierdzić,
+  czy core wymaga czegokolwiek nowego).
+- **Wyjście sesji:** ten punkt (P-15.1) rozpisany jako 🟢, a NIŻEJ w
+  FAZIE 15 nowy punkt/punkty (P-15.2+, z rozbiciem na pod-punkty
+  wielorepowe jeśli trzeba) gotowe do realizacji w kolejnej sesji —
+  realizacja NIE dzieje się w tej samej sesji co planowanie.
+- **Zależności:** P-6.1b (import-offers — rozszerzany), P-6.2/D-6.G1/
+  D-6.G2 (wzorzec schedulera i zasad przyrostowości do zbadania pod
+  reużycie), P-14.1 (inwentarz crona — punkt odniesienia, że dziś
+  import-offers nie ma schedulera).
+
+---
+
 ## Materiał referencyjny i kandydaci do dalszych faz
 
 ### Inwentarz endpointów Allegro (dostarczony przez użytkownika)
