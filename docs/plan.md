@@ -5311,7 +5311,7 @@ zależnościami — gotowy do realizacji w KOLEJNEJ, osobnej sesji.
 - **Zależności:** P-15.2 (flaga `--new-only`), wzorzec `StockSyncScheduler`/
   `OrderSyncScheduler` (D-15.5).
 
-#### P-15.3a — `ImportOffersScheduler` (qutlet-allegro)
+#### 🟢 P-15.3a — `ImportOffersScheduler` (qutlet-allegro)
 - **Repo:** qutlet-allegro (slice `OfferSync/`)
 - **Zakres:** nowa klasa `ImportOffersScheduler`, wzorzec 1:1 `StockSyncScheduler`
   (D-15.5): własny `cron_schedules` interwał (start: 15 min — do zmierzenia i
