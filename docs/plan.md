@@ -5098,6 +5098,274 @@ zweryfikowania PONOWNIE na start realizacji (kod się zmienia między sesjami):
 
 ---
 
+## 🟨 FAZA 15 — Import ofert Allegro na żądanie/cyklicznie: tani delta-check
+
+Cel: dziś `wp qutlet-allegro import-offers` (P-6.1b) to WYŁĄCZNIE ręczna
+komenda — pobiera `GET /sale/offers` (wszystkie oferty `ACTIVE`) i dla
+każdej ciągnie pełny szczegół (`GET /sale/product-offers/{id}`), bez
+żadnego triggera automatycznego (P-14.1: import-offers to jedyna komenda
+allegro BEZ schedulera). Potrzebujemy uruchamiania **na żądanie ORAZ
+cyklicznie (cron)**, ale bez powtarzania za każdym razem PEŁNEGO,
+kosztownego pociągnięcia wszystkiego. Docelowy kształt: tani krok
+wstępny, który szybko ustala, czy na Allegro pojawiło się coś NOWEGO
+(oferty spoza już zaimportowanego zbioru), i dopiero wtedy dociąga
+PEŁNE szczegóły WYŁĄCZNIE nowych/zmienionych pozycji — nie cały katalog
+za każdym tyknięciem.
+
+W odróżnieniu od P-6.2 (sync STANU magazynowego istniejących, już
+zaimportowanych ofert — już cykliczny, wzorzec `StockSyncScheduler`/
+D-6.G1/D-6.G2 do zbadania i ewentualnego reużycia) ta faza dotyczy
+DOKŁADANIA nowych ofert do katalogu — rozszerzenie/nadbudowa nad P-6.1b,
+nie jego zamiana.
+
+### 🟡 P-15.1 — Zaplanuj mechanizm taniego delta-checku + harmonogram
+
+**Punkt WYŁĄCZNIE planistyczny** — bez implementacji. Cel sesji: zejść z
+poziomu ogólnego zamiaru (wyżej) na konkretny, rozpisany projekt z
+decyzjami (D-15.x), pod-punktami wielorepowymi (jeśli dotyczy) i
+zależnościami — gotowy do realizacji w KOLEJNEJ, osobnej sesji.
+
+- **Ground-truth do zrobienia na start (wg `docs/ground-truth.md`, kod na
+  dysku, nie pamięć):**
+  - Realny stan `OfferSync/` (qutlet-allegro) — sygnatura i zachowanie
+    `import-offers` (P-6.1b), czy istnieje już JAKIKOLWIEK cache/rejestr
+    zaimportowanych `offer_id` do porównania (idempotencja dziś opiera
+    się na `_qutlet_allegro_offer_id` per-produkt — czy to wystarcza do
+    TANIEGO porównania „co nowego", czy potrzeba osobnej listy/indeksu).
+  - Wzorzec schedulera już w kodzie (`Auth\RefreshScheduler`,
+    `OfferSync\StockSyncScheduler`, `OrderSync\OrderSyncScheduler`,
+    D-6.G1) — reużyć 1:1 dla nowego zadania czy potrzebna wariacja.
+  - API Allegro (`docs/allegro-api-samples/`, `GET /sale/offers`) — czy
+    endpoint wspiera filtrowanie/sortowanie po dacie utworzenia/zmiany
+    albo kursor pozwalający tanio wykryć „nowe od ostatniego przebiegu"
+    bez ciągnięcia pełnej listy stron; jeśli nie ma nic tańszego niż
+    pełna lista ID (bez szczegółów) — to i tak jest dużo tańsze niż
+    pełny `GET /sale/product-offers/{id}` per oferta, więc może być
+    wystarczającym „tanim krokiem".
+  - Limity/rate-limiting Allegro API (D-6.G2 już ustala zasadę
+    „przyrostowo, z backoffem" dla sync stanu — sprawdzić, czy ta sama
+    zasada/kod da się reużyć czy tylko wzorzec).
+- **Decyzje do rozstrzygnięcia w tej sesji (jako D-15.x, po ground-truth,
+  NIE zgadywane z góry tutaj):** kształt „taniego kroku" (lista ID vs
+  filtr po dacie vs coś innego, zależnie od realnych możliwości API);
+  trigger „na żądanie" (nowy WP-CLI subcommand? przycisk w adminie?);
+  kadencja crona; co się dzieje z ofertami, które ZNIKNĘŁY z Allegro
+  (poza zakresem P-6.1b dziś?) — czy to część tej fazy czy osobny punkt;
+  repo dotknięte (najpewniej qutlet-allegro, `OfferSync/` — potwierdzić,
+  czy core wymaga czegokolwiek nowego).
+- **Wyjście sesji:** ten punkt (P-15.1) rozpisany jako 🟢, a NIŻEJ w
+  FAZIE 15 nowy punkt/punkty (P-15.2+, z rozbiciem na pod-punkty
+  wielorepowe jeśli trzeba) gotowe do realizacji w kolejnej sesji —
+  realizacja NIE dzieje się w tej samej sesji co planowanie.
+- **Zależności:** P-6.1b (import-offers — rozszerzany), P-6.2/D-6.G1/
+  D-6.G2 (wzorzec schedulera i zasad przyrostowości do zbadania pod
+  reużycie), P-14.1 (inwentarz crona — punkt odniesienia, że dziś
+  import-offers nie ma schedulera).
+
+#### Ground-truth (sesja 2026-08-15 — kod na dysku, nie pamięć)
+
+- **`ImportOffersCommand` (qutlet-allegro, `src/OfferSync/ImportOffersCommand.php`):**
+  metoda prywatna `offer_index()` już PAGINUJE `GET /sale/offers` (WYŁĄCZNIE
+  `limit`/`offset` — brak jakiegokolwiek innego parametru w tej metodzie) i buduje
+  w pamięci indeks `offerId => publication.status` ze WSZYSTKICH stron, zanim
+  cokolwiek dalej się dzieje. To już jest „tania lista" — nie niesie opisu, zdjęć,
+  parametrów ani kategorii, tylko `id` + `publication.status`. Pełny szczegół
+  (`GET /sale/product-offers/{id}`) jest ciągnięty DOPIERO per element `$targets`.
+- **Idempotencja dziś = N zapytań, nie rejestr.** `ProductWriter::find_product_id()`
+  (linie 461–482) robi PER-OFFER `WP_Query` (`meta_key` = `AllegroLinkMeta::META_OFFER_ID`
+  z qutlet-core = `_qutlet_allegro_offer_id`, `post_status` =
+  `ProductWriter::LINK_LOOKUP_STATUSES` = `publish, future, draft, pending, private, trash`).
+  Ten sam wzorzec (per-offer/per-order meta lookup) potwierdzony też w
+  `OrderSync\OrderWriter`. **Nie istnieje żaden zbiorczy rejestr/cache
+  zaimportowanych `offer_id`** — dokładnie luka, o którą pytał ten punkt. N
+  osobnych zapytań na cały katalog (dziś 555–768 ofert wg próbek FAZY 3) nie
+  nadaje się na „tani krok" wykonywany co kilka minut.
+- **`GET /sale/offers` — brak potwierdzonego filtra/sortu/kursora po dacie.**
+  Próbki (`docs/allegro-api-samples/GET_sale-offers.json`, `SOURCES.md` §P-3.1)
+  dokumentują WYŁĄCZNIE `limit`/`offset`; sam item listy niesie tylko
+  `publication.startedAt` (data PUBLIKACJI, nie modyfikacji) — nie ma pola, po
+  którym dałoby się tanio wykryć „co się zmieniło od ostatniego przebiegu".
+  Zgodnie z zasadą ground-truth NIE zgadujemy nieudokumentowanych możliwości API
+  — decyzje niżej (D-15.1/D-15.2) opierają się wyłącznie na tym, co potwierdzone.
+- **Wzorzec schedulera — trzy realizacje, dwie z nich (`StockSyncScheduler`,
+  `OrderSyncScheduler`) to niemal bajt-w-bajt kopie siebie nawzajem** (własny
+  `cron_schedules` interwał, dwa hooki — przyrostowy + `--full` —, konfigurowalna
+  CSV stała środowisk z fallbackiem „oba" i trójstopniową walidacją
+  fallback/warning-podzbiór/twardy-błąd, `WP_CLI::runcommand(['launch' => false,
+  'exit_error' => false])` + `catch (\Throwable)` PER środowisko w pętli,
+  self-healing `ensure_scheduled()` na `init` z przeplanowaniem przy zmianie
+  interwału, `unschedule()` na dezaktywację). `Auth\RefreshScheduler` jest
+  prostszy (jeden hook, wbudowany `hourly`, brak konfigurowalnej listy środowisk —
+  leci zawsze po wszystkich 4 slotach). Wzorzec 1:1 do reużycia dla trzeciego
+  zadania (delta-check importu).
+- **D-6.G2 (przyrostowo + backoff)** dotyczy dziś WYŁĄCZNIE `sync-stock`/
+  `sync-orders` przez `GET /order/events` (kursor per środowisko). `import-offers`
+  nie ma i nigdy nie miała logiki 429/backoff — błąd HTTP na dowolnej stronie
+  `offer_index()` kończy CAŁY przebieg `WP_CLI::error()` (istniejące zachowanie).
+  Pod schedulerem to samo w sobie jest bezpieczne: `exit_error => false` +
+  `catch (\Throwable)` (wzorzec `StockSyncScheduler::run_command()`) degraduje
+  błąd do warninga bez ubijania innych zdarzeń tego tyknięcia, a kolejny tick
+  jest naturalnym ponowieniem.
+- **Oferty, które ZNIKNĘŁY z Allegro (przestały być ACTIVE) — brak jakiejkolwiek
+  obsługi.** `import-offers` przetwarza WYŁĄCZNIE oferty obecne w bieżącym
+  indeksie ACTIVE; produkt, którego oferta wypadła z indeksu, nigdy nie jest
+  dotykany (ani przez import, ani przez `sync-stock`). Potwierdzone jako luka
+  osobna od „co nowego" (odwrotny kierunek), nie coś, co robi się przy okazji.
+- **Repo dotknięte:** WYŁĄCZNIE qutlet-allegro dla samej logiki delta-checku i
+  schedulera (`AllegroLinkMeta::META_OFFER_ID` już istnieje w core — zero nowych
+  pól/meta do zarejestrowania). Aktualizacja dokumentacji crona (P-14.1) dotyka
+  qutlet-meta — stąd wielorepowy podział niżej (P-15.3a/P-15.3b), zgodnie z
+  regułą „osobne `origin` = osobne PR-y".
+
+#### Decyzje sesji P-15.1 (2026-08-15)
+
+- **D-15.1 (kształt taniego kroku) [USTALONE]:** tani krok = (a) pełny,
+  PAGINOWANY indeks `offerId => publication.status` z `GET /sale/offers`
+  (reużycie ISTNIEJĄCEGO `offer_index()` — bez szczegółów, zdjęć, kategorii)
+  zestawiony z (b) NOWYM zbiorczym zapytaniem „znane offer_id" (JEDNO
+  zapytanie zamiast N wywołań `find_product_id()`). Różnica dwóch zbiorów →
+  `offer_id` NOWYCH. Dopiero dla TEGO podzbioru komenda ciągnie pełny
+  `GET /sale/product-offers/{id}` i istniejący `ProductWriter::upsert()`. Bez
+  zgadywania nieudokumentowanego filtra/kursora (ground-truth wyżej).
+- **D-15.2 (zakres „nowe" vs „zmienione") [USTALONE]:** tani krok wykrywa
+  WYŁĄCZNIE oferty NOWE (offer_id nieobecny w znanym zbiorze). Wykrywanie ZMIAN
+  TREŚCI już zaimportowanych ofert jest POZA zakresem tej fazy — `GET /sale/offers`
+  nie niesie pola modyfikacji nadającego się do taniego porównania (ground-truth
+  wyżej), a zgadywanie API łamałoby zasadę ground-truth. Zmiany treści istniejących
+  ofert nadal wymagają ręcznego pełnego `import-offers` (bez `--new-only`) — bez
+  zmian w tym punkcie. Jeśli Allegro udokumentuje kiedyś taki sygnał (np. przy
+  aktualizacji próbek FAZY 3), rewizja tej decyzji to osobny, przyszły punkt.
+- **D-15.3 (bulk lookup „znane offer_id") [USTALONE]:** nowy, JEDNO-zapytaniowy
+  helper w `OfferSync/` (qutlet-allegro) zwracający `offer_id => product_id` dla
+  WSZYSTKICH produktów z meta `AllegroLinkMeta::META_OFFER_ID`, z tym samym
+  zestawem statusów co dziś (`ProductWriter::LINK_LOOKUP_STATUSES` — w tym
+  `trash`, żeby wycofane oferty, D-6.2.1, NIGDY nie liczyły się jako „nowe" i nie
+  odradzały się jako duplikat). Istniejąca `find_product_id()` (per-offer, ścieżka
+  `--offer=<id>`, tam N=1) zostaje BEZ ZMIAN.
+- **D-15.4 (trigger „na żądanie") [USTALONE]:** nowa flaga `--new-only` na
+  ISTNIEJĄCEJ komendzie `wp qutlet-allegro import-offers` — rozszerzenie, NIE
+  nowa komenda (zgodnie z wstępem fazy: „rozszerzenie/nadbudowa nad P-6.1b, nie
+  jego zamiana"). Bez przycisku w adminie: qutlet-allegro nie ma dziś ŻADNEGO
+  panelu admina dla synchronizacji (wszystko WP-CLI + cron) — pierwszy przycisk
+  admina wyłącznie dla tej jednej operacji byłby niespójny z resztą pluginu.
+- **D-15.5 (harmonogram) [USTALONE — kadencja do potwierdzenia pomiarem przy
+  realizacji, wzorem 30 min dla `sync-stock --full`]:** nowy
+  `OfferSync\ImportOffersScheduler`, wzorzec 1:1 `StockSyncScheduler`/
+  `OrderSyncScheduler`: własny `cron_schedules` interwał, JEDEN hook
+  `qutlet_allegro_import_offers_delta` (BEZ podziału przyrostowy/`--full` — delta-
+  check to z natury pełny skan listy za każdym razem, tani sam w sobie, nie ma co
+  dzielić na dwa tory jak stan/zamówienia); konfigurowalna CSV stała
+  `QUTLET_ALLEGRO_IMPORT_OFFERS_ENVIRONMENTS` (fallback = oba środowiska, ta sama
+  trójstopniowa walidacja co D-6.2c.1–3/D-6.9.2); `WP_CLI::runcommand(['launch' =>
+  false, 'exit_error' => false])` + `catch (\Throwable)` per środowisko; self-
+  healing `ensure_scheduled()` na `init`; `unschedule()` na dezaktywację. Kadencja
+  startowa: **15 min** — pośrednia między stanem (~1 min, ryzyko nadsprzedaży) i
+  zamówieniami (~5 min, doświadczenie klienta); nowe oferty nie niosą ryzyka
+  finansowego, ale częstszy niż nocny tick uzasadnia bieżący dopływ katalogu.
+  Zmierzyć realny koszt paginowanej listy przy realizacji (jak 30 min dla
+  `sync-stock --full` zostało ZMIERZONE, nie zgadnięte) i skorygować, jeśli droższe
+  niż zakładane.
+- **D-15.6 (429/backoff) [USTALONE]:** bez nowej logiki retry/backoff w
+  `offer_index()` — błąd HTTP dowolnej strony listy nadal kończy przebieg
+  `WP_CLI::error()` (zachowanie niezmienione), co pod schedulerem degraduje się do
+  warninga (D-6.2b: `exit_error => false` + `catch (\Throwable)`); kolejne
+  tyknięcie (15 min) jest naturalnym ponowieniem — ten sam wzorzec uzasadnienia co
+  429 w `sync-stock`.
+- **D-15.7 (oferty zniknięte z Allegro) [POZA ZAKRESEM tej fazy]:** wycofywanie/
+  oznaczanie produktów, których oferta przestała być ACTIVE, to odwrotność
+  delta-checku („co zniknęło" vs „co nowe") i inny profil ryzyka (błędna decyzja
+  może ukryć/skasować żywy produkt) — świadomie ODŁOŻONE jako osobny, przyszły
+  punkt (P-15.4, ❓ someday, niżej), nie blokuje P-15.2/P-15.3.
+
+### P-15.2 — Bulk lookup „znane offer_id” + flaga `--new-only` (qutlet-allegro)
+- **Repo:** qutlet-allegro (slice `OfferSync/` — rozszerzenie P-6.1b, ta sama
+  komenda/klasy, nie nowy artefakt)
+- **Zakres:** nowy helper (np. `ProductWriter::known_offer_ids(): array<string,int>`
+  albo osobna mała klasa-współpracownik `OfferSync\KnownOfferIndex` — nazwa/miejsce
+  do rozstrzygnięcia przy realizacji) zwracający `offer_id => product_id` JEDNYM
+  zapytaniem, dla statusów `ProductWriter::LINK_LOOKUP_STATUSES` (D-15.3). Nowa
+  flaga `--new-only` na `ImportOffersCommand`: gdy ustawiona, `$targets` = różnica
+  indeksu ACTIVE (`offer_index()`, bez zmian) i zbioru znanych `offer_id` (D-15.1/
+  D-15.2), zamiast pełnej listy ACTIVE; reużywa ISTNIEJĄCĄ ścieżkę pełnego
+  `GET /sale/product-offers/{id}` + `ProductWriter::upsert()` bez zmian. Guard:
+  `--new-only` wzajemnie wykluczające się z `--offer` (błąd przy obu naraz). Nowe
+  testy jednostkowe (PHPUnit już w repo, `tests/OfferSync/`) dla bulk helpera oraz
+  dla czystej logiki różnicy zbiorów (testowalna bez WP, wzorzec
+  `StockSyncScheduler::plan_environments()`).
+- **Weryfikacja:** `wp qutlet-allegro import-offers --new-only --skip-images` na
+  sandboksie po ręcznym dodaniu 1 nowej oferty testowej na koncie — musi
+  zaimportować DOKŁADNIE tę jedną, zero innych; drugi przebieg bez zmian na
+  Allegro → 0 nowych, sukces bez zapisów.
+- **Zależności:** P-6.1b (`ImportOffersCommand`, `ProductWriter`), qutlet-core
+  (`AllegroLinkMeta::META_OFFER_ID` — bez zmian, tylko odczyt).
+
+### P-15.3 — Harmonogram delta-checku + aktualizacja dokumentacji crona — punkt wielorepowy → P-15.3a + P-15.3b
+- **Repo:** qutlet-allegro (P-15.3a) + qutlet-meta (P-15.3b)
+- **Zakres (całość):** nowy `OfferSync\ImportOffersScheduler` cyklicznie
+  odpalający `import-offers --new-only` (D-15.5) + odzwierciedlenie nowego
+  schedulera w inwentarzu `docs/wp-cli-commands.md` (P-14.1), który dziś jawnie
+  stwierdza, że `import-offers` nie ma schedulera — po tym punkcie to zdanie
+  staje się nieaktualne i wymaga korekty.
+- **Rozbicie:** repozytoria mają osobne `origin` (osobne PR-y) — kod schedulera w
+  qutlet-allegro, korekta dokumentu operacyjnego w qutlet-meta.
+- **Zależności:** P-15.2 (flaga `--new-only`), wzorzec `StockSyncScheduler`/
+  `OrderSyncScheduler` (D-15.5).
+
+#### P-15.3a — `ImportOffersScheduler` (qutlet-allegro)
+- **Repo:** qutlet-allegro (slice `OfferSync/`)
+- **Zakres:** nowa klasa `ImportOffersScheduler`, wzorzec 1:1 `StockSyncScheduler`
+  (D-15.5): własny `cron_schedules` interwał (start: 15 min — do zmierzenia i
+  ewentualnej korekty przy realizacji), JEDEN hook
+  `qutlet_allegro_import_offers_delta` → `wp qutlet-allegro import-offers
+  --new-only --environment=<env>` per skonfigurowane środowisko; konfigurowalna
+  stała `QUTLET_ALLEGRO_IMPORT_OFFERS_ENVIRONMENTS` (fallback oba środowiska,
+  walidacja jak D-6.2c.1–3); `WP_CLI::runcommand(['launch' => false, 'exit_error'
+  => false])` + `catch (\Throwable)` per środowisko (D-15.6); self-healing
+  `ensure_scheduled()` na `init` z przeplanowaniem przy zmianie interwału;
+  `unschedule()` na dezaktywację. Rejestracja pod guardem `WP_CLI` w bootstrapie
+  (jak pozostałe dwa schedulery).
+- **Uwaga (dług do rozważenia przy realizacji):** to będzie TRZECIA niemal
+  identyczna kopia (`plan_environments()`/`parse_environment_list()`/
+  `run_command()`/`ensure_hook_schedule()`) po `StockSyncScheduler` i
+  `OrderSyncScheduler`. Reguła trzech (jak w P-6.0 dla helperów HTTP/CLI)
+  sugeruje wydzielenie wspólnego traita zamiast kopiowania po raz trzeci —
+  rozstrzygnąć PRZY REALIZACJI (nie z góry tutaj), z dopuszczalną opcją zrobienia
+  refaktoru jako osobny, kolejny punkt, jeśli wykracza poza tani zakres tego.
+- **Weryfikacja:** `wp cron event list` pokazuje nowy hook z poprawnym
+  interwałem; `wp cron event run qutlet_allegro_import_offers_delta` odpala
+  `import-offers --new-only` dla obu środowisk bez błędu; testy jednostkowe
+  analogiczne do `StockSyncSchedulerTest` dla czystej logiki (`plan_environments`/
+  `parse_environment_list`), ewentualnie współdzielone, jeśli refaktor wyżej
+  wejdzie w zakres tego punktu.
+- **Zależności:** P-15.2 (flaga `--new-only`); wzorzec `Auth\RefreshScheduler` /
+  `OfferSync\StockSyncScheduler` / `OrderSync\OrderSyncScheduler`.
+- **Handoff:** BRAK nowego — reużywa istniejący systemowy tick `wp cron event run
+  --due-now` (Local, handoff już ustanowiony w P-6.2b); nowy hook jest łapany
+  automatycznie przez ten sam tick, bez dodatkowej konfiguracji Local.
+
+#### P-15.3b — Aktualizacja `docs/wp-cli-commands.md` (qutlet-meta)
+- **Repo:** qutlet-meta
+- **Zakres:** dopisać `ImportOffersScheduler` do sekcji „WP-Cron" (P-14.1) —
+  nazwa hooka, interwał, odpalana komenda, zależność od `DISABLE_WP_CRON`;
+  skorygować zdanie stwierdzające, że `import-offers` to jedyna komenda bez
+  schedulera (staje się nieaktualne); dopisać flagę `--new-only` do sygnatury
+  `import-offers` w tym samym dokumencie — ground-truth odświeżony z REALNEGO
+  docblocka po P-15.3a, nie kopiowany z pamięci (zasada P-14.1).
+- **Zależności:** P-15.3a (musi być zmergowany — dokumentujemy realny kod, nie
+  zamiar).
+
+### ❓ P-15.4 — Wycofywanie produktów po zniknięciu oferty z Allegro (someday)
+- **Kontekst (D-15.7):** odwrotność delta-checku tej fazy („co zniknęło" vs „co
+  nowe") i inny profil ryzyka — błędna decyzja tu może ukryć/skasować żywy
+  produkt, nie tylko spóźnić się z dodaniem nowego. Dziś ANI `import-offers`, ANI
+  `sync-stock` nie dotykają produktu, którego oferta przestała być ACTIVE/wypadła
+  z indeksu (ground-truth P-15.1) — produkt zostaje opublikowany bez powiązanej
+  żywej oferty, bezterminowo.
+- Odłożone BEZ zobowiązania do realizacji — zapisane, żeby nie zgubić obserwacji;
+  do rozpisania w osobnej sesji planistycznej, gdyby okazało się potrzebne.
+
+---
+
 ## Materiał referencyjny i kandydaci do dalszych faz
 
 ### Inwentarz endpointów Allegro (dostarczony przez użytkownika)
