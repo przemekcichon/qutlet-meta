@@ -5357,17 +5357,19 @@ zależnościami — gotowy do realizacji w KOLEJNEJ, osobnej sesji.
 - **Zależności:** P-15.3a (musi być zmergowany — dokumentujemy realny kod, nie
   zamiar).
 
-### ❓ P-15.4 — Wycofywanie produktów po zniknięciu oferty z Allegro (someday)
+### 🟢 P-15.4 — Wycofywanie produktów po zniknięciu oferty z Allegro
 - **Kontekst (D-15.7):** odwrotność delta-checku tej fazy („co zniknęło" vs „co
   nowe") i inny profil ryzyka — błędna decyzja tu może ukryć/skasować żywy
-  produkt, nie tylko spóźnić się z dodaniem nowego. Dziś ANI `import-offers`, ANI
-  `sync-stock` nie dotykają produktu, którego oferta przestała być ACTIVE/wypadła
-  z indeksu (ground-truth P-15.1) — produkt zostaje opublikowany bez powiązanej
-  żywej oferty, bezterminowo.
-- **Punkt WYŁĄCZNIE planistyczny** (sesja 2026-08-16) — bez implementacji.
-  Rozpisany na życzenie użytkownika wzorem P-15.1, ale **pozostaje ❓ „someday
-  maybe"** (żadna decyzja D-15.x niżej nie jest zobowiązaniem do realizacji) —
-  gotowy do podjęcia w osobnej, przyszłej sesji, gdyby okazało się potrzebne.
+  produkt, nie tylko spóźnić się z dodaniem nowego. Przed tym punktem ANI
+  `import-offers`, ANI `sync-stock` nie dotykały produktu, którego oferta
+  przestała być ACTIVE/wypadła z indeksu (ground-truth P-15.1) — produkt
+  zostawał opublikowany bez powiązanej żywej oferty, bezterminowo.
+- **Zrealizowane** (sesja 2026-08-16, ta sama sesja co rozpisanie planistyczne
+  niżej — odblokowane na wyraźną decyzję użytkownika mimo ❓ „someday").
+  qutlet-allegro PR [#31](https://github.com/przemekcichon/qutlet-allegro/pull/31)
+  (branch `feature/p15-4-offer-withdrawal`, zmergowany), zgodnie z zakresem
+  „Zakres skonkretyzowany" niżej. Niezależna recenzja wg `docs/review.md`:
+  🟢 CZYSTE, zero ustaleń blokujących.
 
 #### Ground-truth (sesja 2026-08-16 — kod na dysku, nie pamięć)
 
@@ -5482,11 +5484,14 @@ zależnościami — gotowy do realizacji w KOLEJNEJ, osobnej sesji.
   `known_offer_ids()` MINUS `offer_index()` (zamiast `offer_index()` MINUS
   `known_offer_ids()` jak w `--new-only`) — te same dwa, już policzone zbiory.
   Czysta logika różnicy (testowalna bez WP, wzorzec `StockSyncScheduler::plan_environments()`
-  / istniejące testy `--new-only`). **Otwarte przy realizacji (niżej niski
-  priorytet, nie blokuje sensu punktu):** czy to nowa flaga na `import-offers`
-  (np. `--mark-ended`, analogicznie do D-15.4/`--new-only`) uruchamiana zawsze
-  razem z `--new-only` (skoro liczy te same zbiory) czy osobny, jawny krok —
-  rozstrzygnąć PRZY REALIZACJI, nie zgadywać z góry tutaj.
+  / istniejące testy `--new-only`). **Rozstrzygnięte przy realizacji:** nowa
+  flaga `--mark-ended` na `import-offers`, NIEZALEŻNA od `--new-only` (własny
+  guard tylko przeciw `--offer`), dzieląca z `--new-only` jedno wyliczenie
+  `known_offer_ids()` gdy obie ustawione — zero dodatkowego kosztu API
+  niezależnie od kombinacji flag. Dopisana też do istniejącego
+  `ImportOffersScheduler` (decyzja użytkownika w sesji realizacji): cron co
+  15 min woła `import-offers --new-only --mark-ended`, mechanizm aktywny
+  automatycznie, bez osobnego harmonogramu.
 - **D-15.14 (repo — REWIZJA założenia z opisu zadania: WYŁĄCZNIE qutlet-allegro,
   NIE punkt wielorepowy) [USTALONE — wynik ground-truth, nie zgadywane]:**
   pierwotne założenie sesji („core, allegro, theme") NIE potwierdza się w
@@ -5498,34 +5503,35 @@ zależnościami — gotowy do realizacji w KOLEJNEJ, osobnej sesji.
   wyszła potrzeba zmiany w core/theme, to sygnał, że któraś z decyzji D-15.8–13
   wymaga rewizji (nie że punkt jest z natury wielorepowy).
 
-#### Zakres skonkretyzowany (do realizacji, jeśli punkt zostanie kiedyś odblokowany)
+#### Zakres skonkretyzowany (zrealizowany — patrz PR #31 wyżej)
 
 - **Repo:** WYŁĄCZNIE `qutlet-allegro`, slice `OfferSync/` (D-15.14).
 - Nowy krok delta-checku „co zniknęło" (D-15.13), reużywający `offer_index()` +
   `known_offer_ids()` (P-15.2) — zero nowych zapytań do Allegro API.
-- Nowy meta-marker operacyjny (D-15.8, nazwa TBD) + zapis `allegro_wlaczone = 0`
-  przez `update_field()` (D-15.9) dla nowo wykrytych zniknięć (pomijając `trash`,
-  D-15.12).
-- Nowa akcja domenowa (D-15.10, nazwa TBD) z payloadem `product_id`/nazwa/permalink
-  — BEZ konsumenta w tym punkcie (przyszła notyfikacja to OSOBNY, jeszcze
-  nieistniejący punkt planu, nie część P-15.4).
+- Nowy meta-marker operacyjny `_qutlet_allegro_offer_ended` (D-15.8) + zapis
+  `allegro_wlaczone = 0` przez `update_field()` (D-15.9) dla nowo wykrytych
+  zniknięć (pomijając `trash`, D-15.12) — klasa `OfferSync\OfferEndedMarker`.
+- Nowa akcja domenowa `qutlet_allegro_offer_ended` (D-15.10) z payloadem
+  `product_id`/nazwa/permalink — BEZ konsumenta w tym punkcie (przyszła
+  notyfikacja to OSOBNY, jeszcze nieistniejący punkt planu, nie część P-15.4).
 - Auto-reversal (D-15.11) gdy oferta wraca ACTIVE — czyszczenie markera +
   `allegro_wlaczone = 1`, z wyjątkiem produktów w koszu (D-15.12).
-- Testy jednostkowe czystej logiki różnicy zbiorów (wzorzec `--new-only`).
+- Testy jednostkowe czystej logiki różnicy zbiorów (`diff_ended_offer_ids()`,
+  wzorzec `--new-only`).
 - **Zależności:** P-15.2 (`known_offer_ids()`, `offer_index()`), D-6.2.1 (trash
   nadrzędny), D-6.2.3 (wzorzec markera operacyjnego).
-- **Poza zakresem (świadomie, nawet gdyby punkt został odblokowany):** faktyczna
-  notyfikacja redaktora (UI/e-mail/panel) — hook (D-15.10) tylko przygotowuje
-  grunt; nowy `register_post_status()` (odrzucone, D-15.8); jakiekolwiek zmiany
-  w `qutlet-theme` lub `ProductFilterQuery.php` (D-15.9/ground-truth).
+- **Poza zakresem (świadomie):** faktyczna notyfikacja redaktora (UI/e-mail/
+  panel) — hook (D-15.10) tylko przygotowuje grunt; nowy `register_post_status()`
+  (odrzucone, D-15.8); jakiekolwiek zmiany w `qutlet-theme` lub
+  `ProductFilterQuery.php` (D-15.9/ground-truth).
 
-**Wyjście sesji:** P-15.4 w pełni rozpisane (ground-truth + D-15.8–D-15.14 +
-skonkretyzowany zakres jednorepowy), ale **ikona zostaje ❓** — nadal BEZ
-zobowiązania do realizacji, zgodnie z pierwotną notatką i regułą legendy (❓ nie
-blokuje domknięcia fazy, precedens FAZA 6/FAZA 15). Realizacja — jeśli zapadnie
-decyzja o odblokowaniu — to osobna, przyszła sesja + branch + PR w
-`qutlet-allegro`, zaczynająca od świeżego ground-truth (kod mógł się zmienić od
-2026-08-16).
+**Wyjście sesji:** P-15.4 zrealizowane i zmergowane (qutlet-allegro PR #31) —
+zgodnie z decyzją użytkownika o odblokowaniu ❓ „someday" w tej samej sesji, w
+której powstało rozpisanie planistyczne. Bez flipu 🟡 „w trakcie" (punkt czysto
+kodowy w repo innym niż qutlet-meta — plan.md nie mógł go nieść na branchu
+qutlet-allegro; precedens P-15.2/P-15.3a, patrz historia `git log --
+docs/plan.md`), flip prosto na 🟢 osobnym commitem `docs:` na `main` po
+merge'u.
 
 ---
 
