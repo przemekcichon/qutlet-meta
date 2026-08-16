@@ -5364,8 +5364,168 @@ zależnościami — gotowy do realizacji w KOLEJNEJ, osobnej sesji.
   `sync-stock` nie dotykają produktu, którego oferta przestała być ACTIVE/wypadła
   z indeksu (ground-truth P-15.1) — produkt zostaje opublikowany bez powiązanej
   żywej oferty, bezterminowo.
-- Odłożone BEZ zobowiązania do realizacji — zapisane, żeby nie zgubić obserwacji;
-  do rozpisania w osobnej sesji planistycznej, gdyby okazało się potrzebne.
+- **Punkt WYŁĄCZNIE planistyczny** (sesja 2026-08-16) — bez implementacji.
+  Rozpisany na życzenie użytkownika wzorem P-15.1, ale **pozostaje ❓ „someday
+  maybe"** (żadna decyzja D-15.x niżej nie jest zobowiązaniem do realizacji) —
+  gotowy do podjęcia w osobnej, przyszłej sesji, gdyby okazało się potrzebne.
+
+#### Ground-truth (sesja 2026-08-16 — kod na dysku, nie pamięć)
+
+- **`allegro_wlaczone` (ACF, core `AllegroChannel\AllegroChannelFields`,
+  `field_qutlet_allegro_wlaczone`) już steruje widocznością taba Allegro —
+  mechanizm ISTNIEJE i jest kompletny (D-8.G1, kontrakt §4).**
+  `Qutlet\Theme\features\ProductPage\ProductPage::is_allegro_enabled()` czyta
+  WYŁĄCZNIE tę flagę (bool); `body_class()` dokłada `body.allegro-off` gdy
+  wyłączona; szablon (`design/vanilla/produkt.html:52-55`, port w
+  `content-single-product.php`) nie renderuje ŻADNEGO `[data-allegro-only]` przy
+  `allegro_wlaczone=false` — niezależnie od `allegro_url`/`cena_allegro`. **Zero
+  nowego kodu w theme potrzebne do „wyłączenia taba"** — to już działa.
+- **`qutlet-allegro` JUŻ PISZE to pole programowo** —
+  `OfferSync\ProductWriter::upsert()` (linia ~281) woła
+  `update_field( self::ACF_KEY_ALLEGRO_ENABLED, 1, $product_id )` z kluczem ACF
+  `field_qutlet_allegro_wlaczone` (VERBATIM skopiowany z core), ale **TYLKO przy
+  tworzeniu NOWEGO produktu** (D-9.1b.1) — nigdy przy re-imporcie istniejącego
+  (żeby nie nadpisać ręcznego wyłączenia przez kuratora). Zapis `allegro_wlaczone
+  = 0` na ISTNIEJĄCYM produkcie to dziś **osobna, nieistniejąca ścieżka kodu** —
+  P-15.4 by ją dodał, ale w NOWYM miejscu (delta-check „co zniknęło"), nie w
+  `upsert()`, żeby nie zderzyć się z regułą D-9.1b.1.
+- **Precedens markera operacyjnego (D-6.2.3): `OfferSync\StockPusher::META_PUSH_PENDING
+  = '_qutlet_allegro_stock_push_pending'`** — meta WŁASNOŚCI qutlet-allegro,
+  celowo NIE rejestrowana przez core („stan operacyjny syncu, nie fakt modelu").
+  Dokładnie ten wzorzec pasuje do nowego markera „oferta zakończona" (niżej,
+  D-15.8) — kod na dysku POTWIERDZA, że tego typu stan już dziś żyje w
+  `qutlet-allegro`, nie w core.
+- **`OfferSync\ProductWriter::known_offer_ids(): array<string,int>`
+  (`offer_id => product_id`, P-15.2, zaimplementowane — plik istnieje, testy
+  `tests/OfferSync/ProductWriterKnownOfferIdsTest.php` też)** — JEDNO zapytanie,
+  te same `LINK_LOOKUP_STATUSES` (w tym `trash`) co dziś. **Gotowy budulec do
+  odwrotnej różnicy** („co zniknęło" = `known_offer_ids()` MINUS `offer_index()`),
+  zero nowego kosztu zapytań do Allegro API — te same dwa zbiory, które
+  `--new-only` (P-15.2) i tak liczy dla kierunku „co nowe".
+- **`ImportOffersCommand::offer_index()`** (prywatna, `--new-only`, D-15.1) —
+  paginowany indeks `offerId => publication.status` z BIEŻĄCEGO `GET /sale/offers`
+  — jedyne dziś źródło „co jest ACTIVE teraz".
+- **`ProductFilterQuery.php` (core, slice `ProductFilters/`) — 4 miejsca z
+  surowym SQL `post_status = 'publish'`** (linie 396, 524, 653, 731) w
+  zapytaniach listingu/filtrów sklepu. **Ground-truth rozstrzyga pierwotne
+  pytanie „ukryć całkowicie czy zostawić":** produkt na JAKIMKOLWIEK statusie
+  innym niż `publish` (nowy, custom post_status) wypadłby z tych 4 zapytań
+  BEZWARUNKOWO i wymagałby ich poprawy + weryfikacji, czy strona pojedynczego
+  produktu w ogóle serwuje się gościowi dla nie-`publish` statusu (ryzyko 404) —
+  koszt i ryzyko realne, nie teoretyczne.
+- **Żaden nowy `register_post_status()` dla CPT `product` NIE istnieje** (jedyne
+  użycie mechanizmu w core to `OrderSync\OrderStatuses` — ale to rejestracja
+  statusu **`WC_Order`** przez filtry Woo `woocommerce_register_shop_order_post_statuses`
+  / `wc_order_statuses`, mechanizm SPECYFICZNY dla zamówień, nieprzenoszalny 1:1
+  na produkt bez własnego `register_post_status()` + obsługi Quick Edita w
+  adminie). Potwierdzone: nie ma nic gotowego do reużycia dla produktu.
+
+#### Decyzje sesji P-15.4 (2026-08-16 — po ground-truth i konsultacji z użytkownikiem)
+
+- **D-15.8 (kształt „zakończona" — meta operacyjny, NIE nowy `post_status`)
+  [USTALONE — decyzja użytkownika, po ground-truth `ProductFilterQuery.php`]:**
+  produkt ma zostać widoczny w sklepie (kanał Qutlet) po zniknięciu oferty
+  Allegro — to wyklucza nowy, nie-`publish` `post_status` (ground-truth wyżej:
+  4 miejsca `ProductFilterQuery.php` + ryzyko 404 na stronie produktu). „Zakończona"
+  to zamiast tego **operacyjny meta-marker** na produkcie, wzorcem
+  `StockPusher::META_PUSH_PENDING` (D-6.2.3) — własność `qutlet-allegro`, NIE
+  rejestrowany przez core. `post_status` produktu przez cały czas zostaje
+  `publish` (dopóki redaktor ręcznie nie wyrzuci do kosza — wtedy wchodzi
+  ISTNIEJĄCY D-6.2.1, bez zmian). Nazwa literału do potwierdzenia przy realizacji
+  (propozycja: `_qutlet_allegro_offer_ended`, format spójny z
+  `_qutlet_allegro_stock_push_pending`).
+- **D-15.9 (efekt marker → front: wyłącz tab Allegro, reużyj ISTNIEJĄCY mechanizm)
+  [USTALONE]:** ustawienie markera zapisuje `allegro_wlaczone = 0` przez
+  `update_field()` na kluczu `field_qutlet_allegro_wlaczone` — **DOKŁADNIE ten sam
+  zapis co `ProductWriter::upsert()` już robi przy tworzeniu (D-9.1b.1), tylko w
+  NOWYM miejscu kodu i z wartością 0 zamiast 1**, żeby nie kolidować z regułą
+  „TYLKO przy tworzeniu". `allegro_url`/`cena_allegro` **NIE są czyszczone** —
+  zostają jako historyczny zapis ostatniej znanej oferty (spójne z filozofią
+  warstwy surowej — nigdy nie tracimy danych źródłowych); `is_allegro_enabled()`
+  i tak ignoruje te pola przy `allegro_wlaczone=false` (ground-truth wyżej).
+  **Zero zmian w `qutlet-theme`** — front już to obsługuje.
+- **D-15.10 (hook domenowy na przyszłą notyfikację — TYLKO payload, bez
+  konsumenta w tym punkcie) [USTALONE]:** przy PIERWSZYM wykryciu zniknięcia
+  (marker jeszcze nieustawiony → ustawiany) `qutlet-allegro` odpala WŁASNĄ akcję
+  domenową (nazwa TBD przy realizacji, np. `qutlet_allegro_offer_ended`) z
+  payloadem `product_id`, nazwa produktu, permalink — **wyłącznie na potrzeby
+  PRZYSZŁEJ, nieistniejącej jeszcze funkcji notyfikacji redaktora** (poza
+  zakresem TEGO punktu — żaden konsument hooka nie powstaje w P-15.4). Hook żyje
+  w `qutlet-allegro` (domena Allegro — offer status), nie w core (odwrotny
+  kierunek niż P-6.2a, gdzie to core tłumaczy zdarzenie Woo→domena; tu allegro
+  tłumaczy zdarzenie Allegro→domena, core nie ma wiedzy o Allegro poza polami
+  kanału, CLAUDE.md granice repo). Idempotentne — kolejne tyknięcia z tym samym
+  markerem już ustawionym NIE odpalają hooka ponownie.
+- **D-15.11 (auto-reversal — odwracalne automatycznie, bez udziału człowieka)
+  [USTALONE — potwierdzone przez użytkownika]:** gdy kolejny delta-check
+  (rozszerzenie mechanizmu z D-15.1/P-15.2 — ten sam `offer_index()` +
+  `known_offer_ids()`) znajdzie offer_id z ustawionym markerem z powrotem w
+  indeksie ACTIVE → marker jest CZYSZCZONY i `allegro_wlaczone` przywracane na 1
+  BEZWARUNKOWO (bo marker istnieje TYLKO gdy TEN mechanizm sam wcześniej wyłączył
+  kanał — nie ma ryzyka nadpisania niezależnej, ręcznej decyzji kuratora:
+  kurator wyłączający kanał z własnej woli nigdy nie ustawia tego markera, więc
+  jego wybór nigdy nie jest przez to tknięty). Odwrotność `trash` (D-6.2.1),
+  który NIGDY nie odradza się automatycznie — stąd świadomie OSOBNY mechanizm
+  (D-15.8), nie rozszerzenie kosza.
+- **D-15.12 (trash nadrzędny wobec całego mechanizmu, bez zmian w D-6.2.1)
+  [USTALONE]:** produkt w koszu jest pomijany BEZWARUNKOWO przez obie strony
+  mechanizmu — (a) wykrywanie zniknięcia NIE ustawia markera/nie odpala hooka dla
+  produktu, którego bieżący `post_status` to `trash` (kurator już zdecydował,
+  D-6.2.1 wygrywa); (b) auto-reversal (D-15.11) NIE przywraca `allegro_wlaczone`
+  ani nie czyści markera dla produktu w koszu, nawet jeśli marker był ustawiony
+  PRZED wyrzuceniem — kurator nadal wygrywa, zero automatycznego „odkosza".
+  `known_offer_ids()` już dziś zwraca też trashowane produkty (`LINK_LOOKUP_STATUSES`
+  zawiera `trash`) — sam status trzeba jawnie odczytać i odfiltrować w nowej
+  logice, indeks tego nie robi za nas.
+- **D-15.13 (mechanizm detekcji „co zniknęło" — dokładne lustro P-15.2, zero
+  nowego kosztu API) [USTALONE]:** nowy krok w `OfferSync/` liczy różnicę
+  `known_offer_ids()` MINUS `offer_index()` (zamiast `offer_index()` MINUS
+  `known_offer_ids()` jak w `--new-only`) — te same dwa, już policzone zbiory.
+  Czysta logika różnicy (testowalna bez WP, wzorzec `StockSyncScheduler::plan_environments()`
+  / istniejące testy `--new-only`). **Otwarte przy realizacji (niżej niski
+  priorytet, nie blokuje sensu punktu):** czy to nowa flaga na `import-offers`
+  (np. `--mark-ended`, analogicznie do D-15.4/`--new-only`) uruchamiana zawsze
+  razem z `--new-only` (skoro liczy te same zbiory) czy osobny, jawny krok —
+  rozstrzygnąć PRZY REALIZACJI, nie zgadywać z góry tutaj.
+- **D-15.14 (repo — REWIZJA założenia z opisu zadania: WYŁĄCZNIE qutlet-allegro,
+  NIE punkt wielorepowy) [USTALONE — wynik ground-truth, nie zgadywane]:**
+  pierwotne założenie sesji („core, allegro, theme") NIE potwierdza się w
+  kodzie: `allegro_wlaczone` już istnieje i jest zapisywalny z poziomu
+  `qutlet-allegro` (ground-truth wyżej), front już go konsumuje (D-8.G1, zero
+  zmian w theme), a marker operacyjny wg wzorca D-6.2.3 świadomie NIE jest
+  rejestrowany przez core. **Cały punkt mieści się w jednym repo
+  (`qutlet-allegro`, slice `OfferSync/`)** — gdyby przy realizacji jednak
+  wyszła potrzeba zmiany w core/theme, to sygnał, że któraś z decyzji D-15.8–13
+  wymaga rewizji (nie że punkt jest z natury wielorepowy).
+
+#### Zakres skonkretyzowany (do realizacji, jeśli punkt zostanie kiedyś odblokowany)
+
+- **Repo:** WYŁĄCZNIE `qutlet-allegro`, slice `OfferSync/` (D-15.14).
+- Nowy krok delta-checku „co zniknęło" (D-15.13), reużywający `offer_index()` +
+  `known_offer_ids()` (P-15.2) — zero nowych zapytań do Allegro API.
+- Nowy meta-marker operacyjny (D-15.8, nazwa TBD) + zapis `allegro_wlaczone = 0`
+  przez `update_field()` (D-15.9) dla nowo wykrytych zniknięć (pomijając `trash`,
+  D-15.12).
+- Nowa akcja domenowa (D-15.10, nazwa TBD) z payloadem `product_id`/nazwa/permalink
+  — BEZ konsumenta w tym punkcie (przyszła notyfikacja to OSOBNY, jeszcze
+  nieistniejący punkt planu, nie część P-15.4).
+- Auto-reversal (D-15.11) gdy oferta wraca ACTIVE — czyszczenie markera +
+  `allegro_wlaczone = 1`, z wyjątkiem produktów w koszu (D-15.12).
+- Testy jednostkowe czystej logiki różnicy zbiorów (wzorzec `--new-only`).
+- **Zależności:** P-15.2 (`known_offer_ids()`, `offer_index()`), D-6.2.1 (trash
+  nadrzędny), D-6.2.3 (wzorzec markera operacyjnego).
+- **Poza zakresem (świadomie, nawet gdyby punkt został odblokowany):** faktyczna
+  notyfikacja redaktora (UI/e-mail/panel) — hook (D-15.10) tylko przygotowuje
+  grunt; nowy `register_post_status()` (odrzucone, D-15.8); jakiekolwiek zmiany
+  w `qutlet-theme` lub `ProductFilterQuery.php` (D-15.9/ground-truth).
+
+**Wyjście sesji:** P-15.4 w pełni rozpisane (ground-truth + D-15.8–D-15.14 +
+skonkretyzowany zakres jednorepowy), ale **ikona zostaje ❓** — nadal BEZ
+zobowiązania do realizacji, zgodnie z pierwotną notatką i regułą legendy (❓ nie
+blokuje domknięcia fazy, precedens FAZA 6/FAZA 15). Realizacja — jeśli zapadnie
+decyzja o odblokowaniu — to osobna, przyszła sesja + branch + PR w
+`qutlet-allegro`, zaczynająca od świeżego ground-truth (kod mógł się zmienić od
+2026-08-16).
 
 ---
 
