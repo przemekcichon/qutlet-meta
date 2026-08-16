@@ -5789,6 +5789,16 @@ najpierw zarejestrować core).
   `add_submenu_page()` w tym samym slice — zero zmiany żadnego literału danych,
   istotne przy ground-truth P-16.2b tylko jako ciekawostka mechaniki WP, nie
   jako coś, co P-16.2b musi uwzględnić w renderze.
+  **Poprawka po merge'u (`qutlet-core` #26, sesja P-16.2b):** ta pierwsza
+  wersja przekazywała `add_submenu_page()` slug `'nav-menus.php'` jako rodzica
+  — NIE top-level slug (to sam slug submenu „Menu" zarejestrowanego pod
+  `themes.php`, `wp-admin/menu.php:251` tej instalacji), więc wpis „Grupy mega
+  menu" ginął w tablicy `$submenu['nav-menus.php']`, której admin sidebar
+  nigdy nie renderuje (renderuje wyłącznie `$submenu[$top_level_slug]` dla
+  slugów z `$menu`) — link był niewidoczny pod Wygląd, zero błędu. Znalezisko
+  użytkownika (ręczna inspekcja Wygląd w adminie po merge'u), naprawione
+  zmianą `ADMIN_PARENT_SLUG` na `'themes.php'`; zero zmiany literałów danych.
+  `docs/kontrakt-danych.md` §14.3 zaktualizowane w tej samej sesji.
 - **Zależności:** brak (punkt startowy — P-16.2b czyta to, co tu powstaje).
   ACF Pro 6.8.7 (środowiskowa, już zainstalowana, potwierdzona ground-truthem).
 
