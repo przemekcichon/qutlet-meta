@@ -194,9 +194,10 @@ rozbicia na pod-punkty a/b tylko po to, żeby zapalić ikonę pośrodku realizac
 Flip 🟢/🟩 wchodzi normalnie, jak wyżej — jedynym śladem punktu w trakcie
 realizacji jest wtedy PR w repo kodu, nie ikona w planie. Gdy punkt MA realną
 pracę po stronie `qutlet-meta` (kontrakt, decyzja, sama treść planu) —
-obowiązuje PRAWDZIWY podział na pod-punkty (meta = pod-punkt „a", kod =
-pod-punkt „b", zależność a→b, patrz „Punkt wielorepowy" niżej) i flip 🟡 jedzie
-normalnie, pierwszym commitem brancha pod-punktu „a".
+obowiązuje PRAWDZIWY podział na pod-punkty (kolejność a/b wg zależności — który
+musi powstać najpierw, NIE zawsze meta; patrz „Punkt wielorepowy" niżej), a
+flip 🟡 jedzie normalnie, pierwszym commitem brancha TEGO pod-punktu, który
+niesie pracę `qutlet-meta`.
 
 Powód rozdziału: flip „w trakcie" opisuje pracę, która JEST w danym branchu, więc należy
 do jego PR-a; flip „zrealizowane" opisuje fakt POWSTAŁY dopiero przy merge'u, więc do
