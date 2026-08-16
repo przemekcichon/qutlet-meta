@@ -5535,7 +5535,7 @@ merge'u.
 
 ---
 
-## 🟨 FAZA 16 — Nagłówek: dwa menu (nawigacja + kategorie z mega menu) — ROZPISANA
+## 🟩 FAZA 16 — Nagłówek: dwa menu (nawigacja + kategorie z mega menu) — ROZPISANA
 
 **Zgłoszenie (2026-08-16):** nagłówek ma dziś DWA odrębne menu, oba w 100%
 zaszyte na sztywno w kodzie, zero powiązania z jakimkolwiek menu WordPressa:
@@ -5802,7 +5802,7 @@ najpierw zarejestrować core).
 - **Zależności:** brak (punkt startowy — P-16.2b czyta to, co tu powstaje).
   ACF Pro 6.8.7 (środowiskowa, już zainstalowana, potwierdzona ground-truthem).
 
-### P-16.2b — theme: lokalizacja + render dynamiczny + CSS + seed (`qutlet-theme`)
+### 🟢 P-16.2b — theme: lokalizacja + render dynamiczny + CSS + seed (`qutlet-theme`)
 
 - Lokalizacja menu `kategorie` (`register_nav_menu()`, slice `HeaderMenu/`) —
   literał MUSI być zgodny z regułą lokalizacji ACF w P-16.2a (kontrakt §14,
@@ -5841,12 +5841,32 @@ najpierw zarejestrować core).
   przykładowe nazwy z prototypu.
 - **Zależności:** P-16.2a (pola/taksonomia muszą istnieć przed renderem), P-8.1.
 
-**Status:** P-16.1 i P-16.2a zrealizowane i zmergowane (`qutlet-theme` #33,
-`qutlet-core` #25, obie sesje 2026-08-16) — dwa z trzech punktów fazy. P-16.2b
-(`qutlet-theme`: lokalizacja `kategorie` + render dynamiczny + CSS + seed)
-jeszcze nie zbudowany — ostatni punkt fazy, zależny od P-16.2a (pola/taksonomia
-już istnieją w core). Prompt startowy na sesję realizującą P-16.2b przekazany
-użytkownikowi w rozmowie kończącej sesję P-16.2a.
+**Zrealizowano (`qutlet-theme` #34, sesja 2026-08-16):** trzy bloki dynamiczne,
+nie sztywno 2/3 z szkicu — `qutlet/header-categories-band` (pigułki),
+`qutlet/header-mega-grid` (kolumny, renderuje też `.wrap.mega-grid` z inline
+`--mega-cols`, bo to jedyne miejsce znające faktyczną liczbę kolumn),
+`qutlet/header-categories-mnav` (sekcja mobilna) — wszystkie zasilane wspólnym
+helperem `CategoryMenu` (memoizacja `wp_get_nav_menu_items()` per request,
+wzorem `Help::render_help_nav()`/`qutlet/header-nav`, typowanie `array<int,
+object>` NIE `WP_Post` z tego samego powodu co P-16.1). Seed WP-CLI (ad-hoc,
+D-16.G5) użył WSZYSTKICH 18 kategorii `product_cat` (kontrakt §1.1), nie 16 —
+zdecydowane przez realizującą sesję (plan zostawiał to otwarte): brak powodu
+arbitralnie pomijać 2 realne kategorie. Grupowanie: 4 kolumny „Mobile i
+noszone"/„Komputery"/„Audio i Foto"/„Dom i gaming" (kolejnosc 1-4, liczebność
+4/6/4/4), 6 pigułek (`smartfony`/`komputery`/`monitory`/`peryferia`/`audio`/
+`gaming`). Niezależna recenzja (`docs/review.md`): 🟢 CZYSTE.
+
+**Poprawka po merge'u (`qutlet-core` #26, ta sama sesja):** użytkownik ręcznie
+sprawdził Wygląd w adminie i nie znalazł tam ekranu „Grupy mega menu" opisanego
+w instrukcji pola ACF — przyczyna w P-16.2a (`ADMIN_PARENT_SLUG = 'nav-menus.php'`,
+NIE top-level slug, patrz notatka przy P-16.2a wyżej). Naprawione (`themes.php`),
+niezależna recenzja: 🟡 WARUNKOWO (drobne, brak must-fix). `docs/kontrakt-danych.md`
+§14.3 zaktualizowane w tej samej sesji (`qutlet-meta` #88) — opisywał nieaktualny
+mechanizm ze szkicu planu, nie to co P-16.2a faktycznie zaimplementowało.
+
+**Status:** FAZA 16 zrealizowana w całości — wszystkie trzy punkty zmergowane
+(`qutlet-theme` #33 i #34, `qutlet-core` #25 i #26, `qutlet-meta` #88, sesje
+2026-08-16).
 
 ---
 
