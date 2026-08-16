@@ -5535,6 +5535,76 @@ merge'u.
 
 ---
 
+## 🟦 FAZA 16 — Nagłówek: dwa menu (nawigacja + kategorie z mega menu) — DO ROZPISANIA
+
+**Zgłoszenie (2026-08-16):** nagłówek ma dziś DWA odrębne menu, oba w 100%
+zaszyte na sztywno w kodzie, zero powiązania z jakimkolwiek menu WordPressa:
+
+1. **Menu nawigacyjne** (`.header-nav` — 4 stałe linki: Strefa okazji / Jak to
+   działa? / Blog / Pomoc). Prosty temat.
+2. **Menu kategorii z mega menu** (`.subnav-band` — 6 sztywnych „pigułek" +
+   przycisk „Więcej"; `.mega` — 4 sztywne kolumny z nagłówkami „Mobile i
+   noszone" / „Komputery" / „Audio i Foto" / „Dom i gaming", po 4 linki każda).
+   Temat WIĘKSZY, bo pozycja menu potrzebuje DWÓCH właściwości, których
+   natywne menu WP nie mają:
+   - **checkbox „widoczna od razu na belce"** — czy pozycja ląduje jako stała
+     pigułka w `.subnav-band`, czy tylko w rozwijanym mega menu pod „Więcej";
+   - **etykieta grupy mega menu** — do której z (docelowo) **maksymalnie 6**
+     kolumn (dziś 4, na sztywno w kodzie) pozycja należy w rozwiniętym widoku.
+
+**Ground-truth wstępny (sesja 2026-08-16, ta sesja — POTWIERDZONY, nie
+zakładany):**
+- `register_nav_menu()`/`wp_nav_menu()` NIE występuje NIGDZIE w `qutlet-theme`
+  poza `Help::render_help_nav()` (menu `pomoc`, P-1.5, `inc/features/Help/Help.php`)
+  — jedyny istniejący w projekcie wzorzec: lokalizacja rozwiązywana przez
+  `get_nav_menu_locations()` (NIE po nazwie/slugu menu — `Help.php` ma o tym
+  wprost docblock, `wp_get_nav_menu_items('pomoc')` rozwiązywałby TERM menu o tej
+  nazwie z pominięciem lokalizacji). Cały nagłówek (`parts/header.html`, port
+  1:1 `design/vanilla/partials/header.html`) to dziś zwykły, statyczny HTML —
+  `href="#"` na WSZYSTKICH linkach `.subnav-band`/`.mega`, zero pętli
+  `wp_nav_menu()`/`WP_Query`.
+- ACF Pro (READ-ONLY, `advanced-custom-fields-pro/includes/locations/
+  class-acf-location-nav-menu-item.php`) ma NATYWNĄ lokalizację pola „Menu
+  Item" — prawdopodobny mechanizm dla dwóch dodatkowych pól per-pozycja
+  (checkbox + etykieta grupy) bez wynajdywania własnego ekranu w adminie
+  Wyglądu. DO POTWIERDZENIA ground-truthem następnej sesji (wersja
+  zainstalowanego ACF Pro, realne zachowanie w tym adminie), nie zakładać na
+  sucho.
+
+**Otwarte pytania na sesję planistyczną (celowo NIE rozstrzygnięte tutaj —
+to jest zawartość PEŁNEGO planowania, patrz prompt startowy niżej):**
+- Granica artefaktów: rejestracja dodatkowych pól per-pozycja menu to core
+  (wzorem reguły „rejestrujesz pole → core") czy zostaje w theme (jak `pomoc`,
+  P-1.5, który jest CZYSTO theme/content, bez core) — rozstrzygnąć PRZEZ
+  ground-truth i ten precedens, nie z góry.
+- Podział na punkty: menu nawigacyjne (proste) prawdopodobnie jeden mały
+  punkt; menu kategorii z mega menu (pola + admin UX + render + limit 6 grup)
+  prawdopodobnie kilka pod-punktów, możliwe że wielorepowe (core+theme) —
+  zgodnie z regułą punktów wielorepowych, ustalić PO ground-truth.
+  Nie zakładać z góry.
+- Skąd pozycja kategorii bierze docelowy link (zwykły custom link do
+  `product_cat` w Wyglądzie → Menu, czy coś więcej) — do ground-truth.
+- Limit 6 grup mega menu: twardy limit walidowany w adminie (np. pole wyboru
+  z 6 opcjami zamiast dowolnego tekstu), czy tylko wskazówka projektowa dla
+  redaktora — do decyzji użytkownika.
+- Migracja dzisiejszego hardkodowanego stanu (4 kolumny × 4 linki + 6 pigułek)
+  do nowego mechanizmu — ręczne odtworzenie w adminie czy wp-cli seed, wzorem
+  D-8.4.3/D-8.5.3 (zasiew treści przez wp-cli, nie migracja w kodzie).
+
+**Zależności:** P-8.1 (istniejący `parts/header.html`), P-1.5 (jedyny istniejący
+w projekcie wzorzec `register_nav_menu`/rozwiązywania przez lokalizację).
+
+**Status:** faza otwarta (🟦), BEZ rozpisania na punkty P-16.x — to celowe,
+zgodnie z zasadą „ground-truth NAJPIERW" (CLAUDE.md). Następna sesja robi
+PEŁNE planowanie (ground-truth + decyzje D-16.x + podział na P-16.x, w tym
+ewentualny rozpad wielorepowy), NIE implementację. Wyjście TEJ sesji (zamiast
+punktu do implementacji) = gotowy prompt startowy na sesję planistyczną,
+przekazany użytkownikowi w rozmowie (wzorzec „Realizacja punktu planu" →
+„Prompt startowy na następną sesję", CLAUDE.md) — nie jako osobny plik w
+`docs/`.
+
+---
+
 ## Materiał referencyjny i kandydaci do dalszych faz
 
 ### Inwentarz endpointów Allegro (dostarczony przez użytkownika)
