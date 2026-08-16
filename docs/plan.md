@@ -5755,7 +5755,7 @@ rejestruje lokalizację i renderuje) — dwa osobne `origin`, dwa branche, dwa
 PR-y, z jawną zależnością P-16.2b → P-16.2a (render czyta pola, które musi
 najpierw zarejestrować core).
 
-### P-16.2a — core: taksonomia grup + pola ACF na pozycji menu (`qutlet-core`)
+### 🟢 P-16.2a — core: taksonomia grup + pola ACF na pozycji menu (`qutlet-core`)
 
 - Nowy slice `HeaderMenu/` (ta sama nazwa co w theme, D-16.G1 + konwencja
   „ta sama nazwa slice'a w kilku repo", CLAUDE.md).
@@ -5772,6 +5772,23 @@ najpierw zarejestrować core).
     target `mega_menu_grupa`, `field_type=select`, single value, `save_terms`/
     `load_terms` włączone, **wymagane** — każda pozycja menu kategorii musi
     trafić do dokładnie jednej kolumny, ground-truth struktury danych wyżej).
+  **Zrealizowano (`qutlet-core` #25) z jedną korektą wobec szkicu wyżej:**
+  `register_taxonomy()` dostaje `show_in_menu => true` (bool), NIE string
+  `'nav-menus.php'` — ground-truth realizującej sesji (czytanie
+  `wp-admin/menu.php`/`wp-includes/post.php` tej instalacji, WP 7.0.4)
+  pokazał, że taksonomia scope'owana na `nav_menu_item` NIGDY nie dostaje
+  automatycznego wpisu w menu admina niezależnie od wartości `show_in_menu`
+  (`nav_menu_item` ma `_builtin => true`, więc nigdy nie trafia do pętli
+  `wp-admin/menu.php`, która łączy taksonomie z post typami po `object_type`
+  — mechanizm string-jako-parent-slug istnieje w WP core WYŁĄCZNIE dla CPT-ów,
+  `_add_post_type_submenus()`, nie dla taksonomii). Potwierdzone niezależnie
+  przez PHPStan (stuby WP typują `show_in_menu` taksonomii ściśle jako `bool`,
+  różnica vs. `bool|string` dla CPT) i przez niezależną recenzję (`docs/review.md`,
+  werdykt 🟢 CZYSTE). Faktyczne umieszczenie ekranu „Grupy mega menu" pod
+  Wygląd, obok Menu (kontrakt §14.3) realizuje osobny, ręczny
+  `add_submenu_page()` w tym samym slice — zero zmiany żadnego literału danych,
+  istotne przy ground-truth P-16.2b tylko jako ciekawostka mechaniki WP, nie
+  jako coś, co P-16.2b musi uwzględnić w renderze.
 - **Zależności:** brak (punkt startowy — P-16.2b czyta to, co tu powstaje).
   ACF Pro 6.8.7 (środowiskowa, już zainstalowana, potwierdzona ground-truthem).
 
@@ -5814,11 +5831,12 @@ najpierw zarejestrować core).
   przykładowe nazwy z prototypu.
 - **Zależności:** P-16.2a (pola/taksonomia muszą istnieć przed renderem), P-8.1.
 
-**Status:** P-16.1 zrealizowany i zmergowany (`qutlet-theme` #33, sesja
-2026-08-16) — pierwszy z trzech punktów fazy. P-16.2a/P-16.2b (punkt
-wielorepowy `qutlet-core` + `qutlet-theme`) jeszcze nie zbudowane. Prompt
-startowy na sesję realizującą P-16.2a przekazany użytkownikowi w rozmowie
-kończącej sesję P-16.1.
+**Status:** P-16.1 i P-16.2a zrealizowane i zmergowane (`qutlet-theme` #33,
+`qutlet-core` #25, obie sesje 2026-08-16) — dwa z trzech punktów fazy. P-16.2b
+(`qutlet-theme`: lokalizacja `kategorie` + render dynamiczny + CSS + seed)
+jeszcze nie zbudowany — ostatni punkt fazy, zależny od P-16.2a (pola/taksonomia
+już istnieją w core). Prompt startowy na sesję realizującą P-16.2b przekazany
+użytkownikowi w rozmowie kończącej sesję P-16.2a.
 
 ---
 
