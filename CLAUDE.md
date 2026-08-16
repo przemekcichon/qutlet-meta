@@ -184,6 +184,20 @@ granularności są w `docs/plan.md`.
 - **🟢/🟩 „zrealizowane"** → osobnym, atomowym commitem `docs:` wprost na `main` PO
   merge'u (szczegóły w „Git workflow" pkt 1).
 
+**Wyjątek od flipu 🟡 — punkt czysto-kodowy w JEDNYM repo, bez pracy w
+`qutlet-meta`:** `docs/plan.md` żyje w `qutlet-meta`, więc branch punktu w innym
+repo (core/theme/allegro/ai) fizycznie NIE MOŻE nieść flipu 🟡 — nie ma tam
+pliku do zmiany. Gdy punkt nie generuje ŻADNEJ pracy po stronie `qutlet-meta`
+(żadnej decyzji do zapisania, żadnej zmiany `kontrakt-danych.md`, sam kod w
+jednym repo) — pomijamy flip 🟡 CAŁKOWICIE, nie zmuszamy się do sztucznego
+rozbicia na pod-punkty a/b tylko po to, żeby zapalić ikonę pośrodku realizacji.
+Flip 🟢/🟩 wchodzi normalnie, jak wyżej — jedynym śladem punktu w trakcie
+realizacji jest wtedy PR w repo kodu, nie ikona w planie. Gdy punkt MA realną
+pracę po stronie `qutlet-meta` (kontrakt, decyzja, sama treść planu) —
+obowiązuje PRAWDZIWY podział na pod-punkty (meta = pod-punkt „a", kod =
+pod-punkt „b", zależność a→b, patrz „Punkt wielorepowy" niżej) i flip 🟡 jedzie
+normalnie, pierwszym commitem brancha pod-punktu „a".
+
 Powód rozdziału: flip „w trakcie" opisuje pracę, która JEST w danym branchu, więc należy
 do jego PR-a; flip „zrealizowane" opisuje fakt POWSTAŁY dopiero przy merge'u, więc do
 żadnego PR-a już się nie mieści.
