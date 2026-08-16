@@ -881,6 +881,83 @@ niezadeklarowaną twardą zależnością (fatal przy wyłączonym ACF).
 
 ---
 
+## 14. Menu nagłówka — nawigacja + kategorie z mega menu (FAZA 16)
+
+Nagłówek (`parts/header.html`, qutlet-theme) ma dziś DWA menu w 100% zaszyte na
+sztywno w HTML, zero powiązania z jakimkolwiek menu WordPressa (ground-truth
+FAZA 16). Ten rozdział spisuje literały, które to zmieniają. Granica: lokalizacje
+menu + render = `qutlet-theme` (wzorem `pomoc`, §8); dodatkowe pola per-pozycja
+menu kategorii (nieistniejące w natywnym menu WP) = `qutlet-core` — pierwszy
+przypadek rejestracji ACF w core NIE na `product` (D-16.G1, `docs/plan.md`).
+
+**Literał-most między repo (D-16.G1, KRYTYCZNY):** core scope'uje swoją grupę pól
+ACF regułą lokalizacji `nav_menu_item == location/kategorie` — `kategorie` MUSI
+być DOKŁADNIE tym samym stringiem, który `qutlet-theme` przekazuje jako pierwszy
+argument `register_nav_menu()` (§14.1). Zmiana sluga lokalizacji w JEDNYM repo
+bez drugiego cicho odłącza pola ACF od pozycji menu (dropdown przestaje się
+pokazywać w Wygląd → Menu, bez żadnego błędu/ostrzeżenia).
+
+### 14.1 Lokalizacje menu (rejestruje `qutlet-theme`, `register_nav_menu()`)
+
+| Lokalizacja (design)        | Literał (slug lokalizacji) | Zawartość                                                  | Rejestruje | Uwagi |
+|------------------------------|----------------------------|-------------------------------------------------------------|------------|-------|
+| Menu nawigacyjne (`.header-nav`) | `nawigacja`            | 4 proste linki (Strefa okazji / Jak to działa? / Blog / Pomoc) | `qutlet-theme`, slice `HeaderMenu/` | Zwykłe menu WP, bez dodatkowych pól — wzorzec `Help::MENU_LOCATION` (§8), rozwiązywane PRZEZ LOKALIZACJĘ (`get_nav_menu_locations()`), nie po nazwie/slugu menu. |
+| Menu kategorii (`.subnav-band` + `.mega` + sekcja „Kategorie" w `.mnav-panel`) | `kategorie` | pozycje = kategorie `product_cat` (natywny panel „Kategorie produktów" w Wygląd → Menu, `product_cat` jest `public=>true` — zweryfikowane runtime `wp taxonomy get product_cat`), + 2 pola ACF per pozycja (§14.2) | `qutlet-theme`, slice `HeaderMenu/` | Link pozycji = natywny `$item->url` rozwiązany przez WP z relacji taksonomii (`type=taxonomy`, `object=product_cat`) — ŻADNE nowe pole na link, redaktor dodaje kategorię przez natywny panel wyboru, nie custom link. |
+
+### 14.2 Pola ACF na pozycji menu kategorii (rejestruje `qutlet-core`)
+
+Lokalizacja ACF **„Menu Item"** (`nav_menu_item`, ACF Pro 6.8.7 — zweryfikowane w
+kodzie tej instalacji, `class-acf-location-nav-menu-item.php`/
+`class-acf-location-nav-menu.php`), reguła `nav_menu_item == location/kategorie`
+(wartość `location/{slug}` deleguje do `get_nav_menu_locations()` — grupa pól
+pojawia się WYŁĄCZNIE na pozycjach menu przypisanego do lokalizacji `kategorie`,
+niezależnie od tego, jak redaktor nazwie samo menu w Wygląd → Menu).
+
+| Pole (design)                         | Literał ACF          | Typ                                   | Opcjonalne? | Uwagi |
+|-----------------------------------------|-----------------------|----------------------------------------|-------------|-------|
+| Widoczna od razu na belce               | `widoczna_na_belce`  | true_false                            | nie (def. `false`) | `true` → pozycja renderuje się TAKŻE jako stała pigułka `.subnav-link`/`.mnav-link` (poza mega menu); `false` → pozycja istnieje WYŁĄCZNIE wewnątrz swojej kolumny mega menu (`.mega-col`), bez pigułki. |
+| Grupa mega menu (kolumna)               | `grupa_mega_menu`    | **taxonomy** (`mega_menu_grupa`, §14.3, `field_type=select`, single value, `save_terms`/`load_terms` włączone) | **nie** (wymagane) | KAŻDA pozycja menu `kategorie` musi trafić do dokładnie jednej kolumny mega menu — mega menu nie ma „pozycji bez grupy". Odczyt: `get_the_terms($item_id, 'mega_menu_grupa')` (relacja realna, wzorem `klasa_stanu` po P-12.2a, §2). |
+
+### 14.3 Taksonomia `mega_menu_grupa` — lista kolumn mega menu (rejestruje `qutlet-core`)
+
+Rozszerzalny byt, wzorem `klasa_stanu_definicja` (§2.2, D-16.G2) — admin
+zarządza nazwami/kolorem/kolejnością kolumn przez ekran WP, bez zmiany kodu.
+Dodanie/zmiana nazwy kolumny (dziś 4 na sztywno: „Mobile i noszone" / „Komputery"
+/ „Audio i Foto" / „Dom i gaming") = edycja termu, zero kodu.
+
+| Pole (znaczenie)        | Literał                | Miejsce | Typ    | Opcjonalne? | Uwagi |
+|--------------------------|-------------------------|---------|--------|-------------|-------|
+| Nazwa kolumny            | natywne `name` WP-termu | tax     | string | nie         | Nagłówek `<h6>` kolumny mega menu (np. „Mobile i noszone"). |
+| Kolejność kolumny        | `kolejnosc` (term meta) | tax ACF | number (int) | nie   | Lewo→prawo pozycja kolumny w `.mega-grid` — taksonomia nie ma natywnego porządku (jak `klasa_stanu_definicja`, sortowana po `kod`), tu porządek WIZUALNY więc osobne pole liczbowe, nie alfabetyczny fallback. |
+
+`register_taxonomy('mega_menu_grupa', ['nav_menu_item'], …)` — `object_type`
+semantycznie poprawny (realna relacja przez pole ACF §14.2), ale
+`meta_box_cb => false` (jak `klasa_stanu_definicja`): przypisanie pozycji do
+grupy dzieje się WYŁĄCZNIE przez pole `grupa_mega_menu` w Wygląd → Menu, NIE
+przez natywny metabox taksonomii (nav_menu_item nie ma standardowego ekranu
+edycji, więc taki metabox i tak by się nie pokazał — admin screen zarządzania
+LISTĄ grup to `show_in_menu => 'nav-menus.php'`, zagnieżdżony pod Wygląd, obok
+Menu — nie pod Produkty jak `klasa_stanu_definicja`).
+
+**D-16.G3 (limit 6 grup = wskazówka, NIE twardy limit) [USTALONE — decyzja
+użytkownika, sesja 2026-08-16]:** brak walidacji blokującej 7. termin. CSS
+`.mega-grid` (dziś `grid-template-columns:repeat(4,1fr)`, sztywne) przechodzi na
+elastyczny układ (liczbę kolumn wylicza render z faktycznej liczby UŻYTYCH grup,
+`--mega-cols` custom property; mobilny breakpoint — dziś też sztywne
+`repeat(2,1fr)` — na `repeat(auto-fit,minmax(…))`, żeby dowolna liczba grup
+zawinęła się bez łamania layoutu). Instrukcja tekstowa przy polu `kolejnosc`/na
+ekranie zarządzania grupami: „docelowo maks. 6 grup dla czytelności menu".
+
+### Odnośniki (§14)
+- Ground-truth: `docs/plan.md` → FAZA 16 (ground-truth pełny, sesja 2026-08-16).
+- Plan: `docs/plan.md` → FAZA 16, P-16.2a (core: taksonomia + pola), P-16.2b
+  (theme: lokalizacje + render + seed).
+- Wzorzec taksonomii rozszerzalnej: §2.2 (`klasa_stanu_definicja`).
+- Wzorzec lokalizacji menu rozwiązywanej przez `get_nav_menu_locations()`: §8
+  (`Help::MENU_LOCATION`).
+
+---
+
 ## Log decyzji (P-1.0)
 
 | Decyzja  | Rozstrzygnięcie                                        | Podstawa |
@@ -964,3 +1041,13 @@ niezadeklarowaną twardą zależnością (fatal przy wyłączonym ACF).
 | Decyzja  | Rozstrzygnięcie                                                                 | Podstawa |
 |----------|--------------------------------------------------------------------------------|----------|
 | D-13.6.1 | render `prompt_ai` przenosi się do metaboxu `qutlet-ai` przez publiczną metodę statyczną `PromptOverrideField::render_field()` (core zdejmuje własny metabox ACF przez `remove_meta_box()`, `qutlet-ai` woła metodę wprost) — NIE genuine hook WP (`do_action`), bo `qutlet-ai` i tak hard-dependuje na `qutlet-core` (D-G5); genuine hook odrzucony jako niepotrzebna dodatkowa warstwa. Odrzucone też: `qutlet-ai` wołający funkcje ACF (`acf_render_field()`/`get_field_object()`) samodzielnie — `qutlet-ai` NIE ma twardej zależności na ACF Pro (tylko core + Woo), więc stałaby się niezadeklarowaną twardą zależnością. `render_field()` ma `function_exists()` guard (defense-in-depth): `qutlet-ai`'s `dependencies_met()` nie sprawdza ACF, więc scenariusz „ACF wyłączone, core+ai+Woo aktywne" bez guardu fatalowałby na KAŻDYM ekranie edycji produktu — znalezisko niezależnej recenzji (sesja 2026-08-12), naprawione w tej samej sesji | ground-truth P-13.6 (`advanced-custom-fields-pro/includes/forms/form-post.php` — metabox ACF `add_meta_box()`/priorytet, `ACF_Form_Post::save_post()` na osobnym hooku; `includes/acf-value-functions.php` — zapis po kluczu pola, bez `location`), decyzja użytkownika (sesja 2026-08-12), rozstrzyga D-13.G4; niezależna recenzja (sesja 2026-08-12) |
+
+## Log decyzji (FAZA 16)
+
+| Decyzja  | Rozstrzygnięcie                                                                 | Podstawa |
+|----------|--------------------------------------------------------------------------------|----------|
+| D-16.G1  | dwa dodatkowe pola pozycji menu kategorii (`widoczna_na_belce`, `grupa_mega_menu`) rejestruje `qutlet-core` (ACF, lokalizacja „Menu Item" — pierwszy przypadek NIE na `product`), NIE `qutlet-theme` mimo precedensu P-1.5 (Help — czysto theme'owa lokalizacja menu bez żadnych dodatkowych pól); `qutlet-theme` rejestruje same lokalizacje menu (`nawigacja`/`kategorie`) i renderuje | decyzja użytkownika (sesja 2026-08-16) |
+| D-16.G2  | lista grup mega menu = rozszerzalna taksonomia `mega_menu_grupa` (wzorem `klasa_stanu_definicja`, §2.2) — admin zarządza nazwami/kolejnością bez zmiany kodu; odrzucone: ACF `select` z zahardkodowanymi opcjami (tańsze, ale nazwa kolumny wraca do kodu) | decyzja użytkownika (sesja 2026-08-16) |
+| D-16.G3  | limit 6 grup mega menu = wskazówka (tekst przy polu + CSS elastyczny), NIE twardy limit walidowany przy zapisie | decyzja użytkownika (sesja 2026-08-16) |
+| D-16.G4  | dynamiczna treść wewnątrz blokowego template parta `parts/header.html` (nie może wykonywać PHP wprost, w odróżnieniu od `patterns/*.php`) = własne bloki dynamiczne (`register_block_type` + `render.php`), osadzone w miejscu dzisiejszych statycznych fragmentów `<!-- wp:html -->` — jedyny mechanizm obsługujący zmienną liczbę pigułek/kolumn (Block Bindings API nie wspiera pętli) | decyzja użytkownika (sesja 2026-08-16) |
+| D-16.G5  | migracja dzisiejszej zaszytej treści (6 pigułek + 4 kolumny × 4 linki) = jednorazowy seed przez WP-CLI (wzorzec D-8.4.3/D-8.5.3 — stan bazy tej instalacji, NIE migracja/kod), nie ręczne odtwarzanie w adminie | wzorzec przyjęty, sesja 2026-08-16 |
