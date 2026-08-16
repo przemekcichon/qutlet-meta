@@ -6020,6 +6020,28 @@ PRZED spisaniem punktów P-17.x):**
   generowania opisu na AJAX (D-17.2), realną zmianą mechanizmu w
   `qutlet-ai`. Kategoria (D-17.3) i cena/stan/kanał Allegro dostają
   WYŁĄCZNIE nowe umiejscowienie w narracji kroków, bez zmiany zapisu.
+- **D-17.6 (styl wizualny kreatora — referencja: onboardingowy „Setup
+  Wizard" WooCommerce) [USTALONE — decyzja użytkownika, sesja 2026-08-17]:**
+  kreator ma wyglądem przypominać wzorzec znany z instalacji WooCommerce —
+  wyśrodkowana biała karta z delikatnym cieniem i sporym paddingiem, poziomy
+  pasek kroków z kropkami postępu, duże zaokrąglone przyciski w kolorze
+  akcentu, przejrzysta typografia. Ground-truth tego wzorca (tylko do
+  INSPEKCJI STYLU, nie kopiowania kodu 1:1) w zainstalowanej wersji
+  WooCommerce (READ-ONLY, `c:\Users\pc5123\Local Sites\qutlet\app\public\
+  wp-content\plugins\woocommerce`): `includes/admin/class-wc-admin-setup-
+  wizard.php` (markup: `.wc-setup-content` karta, `.wc-setup-steps` pasek
+  kroków, `.wc-setup-actions` przyciski) + `assets/css/wc-setup.scss`
+  (`.wc-setup-content { box-shadow: 0 1px 3px rgba(0,0,0,.13); padding: 2em;
+  background: #fff; }`, `.wc-setup-actions .button-primary { background-
+  color: $primary; }`, kropki kroków w `.wc-setup-steps`). Ta klasa PHP jest
+  `@deprecated 4.6.0` w tej wersji WC (nowoczesny onboarding Woo żyje w
+  React/wc-admin) — kreator qutlet dostaje WŁASNY CSS w `qutlet-core`
+  wzorowany na tym wyglądzie, nie import/enqueue plików WooCommerce (niosłyby
+  masę niepotrzebnego CSS instalacyjnego i mogłyby zniknąć przy aktualizacji
+  WC bez ostrzeżenia — to nie jest publiczne API do reużycia). Rozstrzyga
+  OTWARTE pytanie z P-17.2 (patrz tam): „krok" wymaga FIZYCZNEGO ukrycia
+  pozostałych metaboxów (`display:none`) + widocznego paska postępu — to
+  jest istota tego wzorca UX, nie sam scroll-to/kotwice.
 
 **Granica artefaktów [USTALONE na podstawie ground-truthu i
 D-17.1–D-17.4]:** punkt wielorepowy — ale, inaczej niż P-16.2 (jeden punkt
@@ -6073,7 +6095,10 @@ projektowaniu kroków kreatora), P-6.1 (`qutlet_stawka_rabatu`), P-6.8b
 
 - Nakładka (modal/panel, D-17.1) nad ekranem edycji produktu — JS/CSS
   orkiestrujący WIDOCZNOŚĆ istniejących metaboxów (bez przejmowania ich
-  logiki zapisu) w kroki:
+  logiki zapisu) w kroki, WIZUALNIE wzorem onboardingowego „Setup Wizard"
+  WooCommerce (D-17.6 — wyśrodkowana karta, pasek kroków z kropkami postępu,
+  duże zaokrąglone przyciski akcentu; własny CSS w `qutlet-core`, NIE import
+  plików WC):
   1. **Nazwa** — metabox `qutlet-ai` `TitleGenerationMetaBox` (bez zmian) +
      metabox ACF core `RewrittenFields` (`podnazwa`) — oba wizualnie w
      kroku 1.
@@ -6095,10 +6120,11 @@ projektowaniu kroków kreatora), P-6.1 (`qutlet_stawka_rabatu`), P-6.8b
   końcu, jak dziś) — kreator to WYŁĄCZNIE warstwa nawigacji/prezentacji nad
   tym samym formularzem. Kroki 1–2 zachowują swój niezależny AJAX
   (natychmiastowy zapis, poza głównym submitem).
-- **Otwarte pytanie do ground-truthu realizującej sesji [OTWARTE]:** czy
-  „krok" w sensie UI wymaga fizycznego ukrycia pozostałych metaboxów (JS
-  `display:none` + pasek postępu) czy wystarczy pasek nawigacji/kotwic
-  (scroll-to) bez ukrywania — wpływa na złożoność JS, nie na zakres danych.
+- **Rozstrzygnięte (D-17.6):** „krok" w sensie UI wymaga fizycznego ukrycia
+  pozostałych metaboxów (JS `display:none`) + widocznego paska postępu z
+  kropkami, wzorem WC Setup Wizard — NIE samego paska nawigacji/kotwic
+  (scroll-to) bez ukrywania. Ground-truth wizualny (klasy CSS, markup) —
+  patrz D-17.6 wyżej.
 - **Zależności:** P-17.1 (opis musi być AJAX, żeby zmieścić się w kroku
   nakładki bez przeładowania całej strony pod modałem).
 
