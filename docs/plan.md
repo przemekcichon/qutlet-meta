@@ -30,7 +30,10 @@ Reguły granularności:
 - **Do realizacji (🟦)** oznaczamy **TYLKO fazy**, nie podpunkty (inaczej sam szum).
 - **W trakcie** — oznaczamy fazę (🟨) ORAZ konkretny realizowany podpunkt (🟡).
 - **Zrealizowane** — oznaczamy fazę (🟩) ORAZ **każdy** zrealizowany podpunkt (🟢).
-  Faza dostaje 🟩 dopiero, gdy wszystkie jej podpunkty są 🟢.
+  Faza dostaje 🟩 dopiero, gdy wszystkie jej podpunkty **oznaczone jako 🟢-do-zrobienia**
+  są 🟢 — punkty ❓ ("someday maybe") NIE liczą się do tego warunku i NIE blokują
+  domknięcia fazy (precedens: FAZA 6 zamknięta na 🟩 mimo ❓ P-6.4/P-6.10 nadal
+  `[OTWARTE]`; potwierdzone ponownie przy domknięciu FAZY 15 mimo ❓ P-15.4).
 
 ---
 
@@ -5098,7 +5101,7 @@ zweryfikowania PONOWNIE na start realizacji (kod się zmienia między sesjami):
 
 ---
 
-## 🟨 FAZA 15 — Import ofert Allegro na żądanie/cyklicznie: tani delta-check
+## 🟩 FAZA 15 — Import ofert Allegro na żądanie/cyklicznie: tani delta-check
 
 Cel: dziś `wp qutlet-allegro import-offers` (P-6.1b) to WYŁĄCZNIE ręczna
 komenda — pobiera `GET /sale/offers` (wszystkie oferty `ACTIVE`) i dla
@@ -5299,7 +5302,7 @@ zależnościami — gotowy do realizacji w KOLEJNEJ, osobnej sesji.
 - **Zależności:** P-6.1b (`ImportOffersCommand`, `ProductWriter`), qutlet-core
   (`AllegroLinkMeta::META_OFFER_ID` — bez zmian, tylko odczyt).
 
-### P-15.3 — Harmonogram delta-checku + aktualizacja dokumentacji crona — punkt wielorepowy → P-15.3a + P-15.3b
+### 🟢 P-15.3 — Harmonogram delta-checku + aktualizacja dokumentacji crona — punkt wielorepowy → P-15.3a + P-15.3b
 - **Repo:** qutlet-allegro (P-15.3a) + qutlet-meta (P-15.3b)
 - **Zakres (całość):** nowy `OfferSync\ImportOffersScheduler` cyklicznie
   odpalający `import-offers --new-only` (D-15.5) + odzwierciedlenie nowego
@@ -5343,7 +5346,7 @@ zależnościami — gotowy do realizacji w KOLEJNEJ, osobnej sesji.
   --due-now` (Local, handoff już ustanowiony w P-6.2b); nowy hook jest łapany
   automatycznie przez ten sam tick, bez dodatkowej konfiguracji Local.
 
-#### 🟡 P-15.3b — Aktualizacja `docs/wp-cli-commands.md` (qutlet-meta)
+#### 🟢 P-15.3b — Aktualizacja `docs/wp-cli-commands.md` (qutlet-meta)
 - **Repo:** qutlet-meta
 - **Zakres:** dopisać `ImportOffersScheduler` do sekcji „WP-Cron" (P-14.1) —
   nazwa hooka, interwał, odpalana komenda, zależność od `DISABLE_WP_CRON`;
