@@ -5870,6 +5870,134 @@ mechanizm ze szkicu planu, nie to co P-16.2a faktycznie zaimplementowało.
 
 ---
 
+## 🟦 FAZA 17 — Kreator (wizard) przeglądu świeżo zaimportowanego produktu — DO ROZPISANIA
+
+**Zgłoszenie (2026-08-16):** sześć aspektów świeżo zaimportowanego z Allegro
+produktu wymaga uwagi redaktora — nazwa (+ ewentualna podnazwa), opis
+generowany AI, cena (rabat globalny z możliwością nadpisania), kategoria
+(mapowanie), cena rynkowa nowego, „Co w przesyłce". Wg zgłoszenia wszystkie
+mechanizmy JUŻ ISTNIEJĄ i działają — problem to UX: dzisiejszy ekran edycji
+produktu jest „mało przydatny" (rozrzucony po wielu metaboxach), do
+skonsolidowania w jakiś **kreator (wizard)**.
+
+**Ground-truth PEŁNY (sesja 2026-08-16, ta sesja — POTWIERDZONY, nie
+zakładany):** świeżo zaimportowany produkt wystawia na ekranie edycji **co
+najmniej 5 odrębnych, pionowo ułożonych powierzchni interaktywnych**, z DWIEMA
+strukturalnie różnymi wzorcami UX generowania AI współistniejącymi
+ŚWIADOMIE (`D-13.G2`, `qutlet-ai/src/AiRewrite/TitleGenerationMetaBox.php:20-33`):
+
+1. **Nazwa + podnazwa** — `TitleGenerationMetaBox` (`qutlet-ai`, box `side`,
+   sidebar) — **JUŻ AJAX, BEZ przeładowania**: `admin-ajax.php`
+   (`wp_ajax_qutlet_ai_generate_title`/`_reset_title`), JS
+   (`assets/js/title-generator.js`) podmienia `#title` i pole ACF `podnazwa`
+   (`RewrittenFields`, `field_qutlet_podnazwa`) wprost w DOM. Zapis
+   NATYCHMIASTOWY (`TitleWriter::accept()`), zabezpieczenie to WYŁĄCZNIE
+   `window.confirm()` w JS, zero podglądu przed zapisem. Znacznik nieświeżości
+   `_qutlet_ai_title_source_raw` pokazuje banner „Nowy", gdy surowa nazwa
+   Allegro zmieniła się od ostatniego generowania.
+   **KOREKTA vs. zgłoszenie:** to jest DOKŁADNIE ten mechanizm, o który
+   pytało zgłoszenie („generowanie nazwy... bez przeładowania tak samo jak
+   opisu") — JUŻ istnieje, nie trzeba go budować. To ODWROTNOŚĆ zgłoszenia:
+   nazwa jest AJAX, **opis NIE JEST**.
+2. **Opis** — `GenerationMetaBox` (`qutlet-ai`, box `normal`/`high`, główna
+   kolumna, renderowany NAD natywnym „Product data") — klasyczny
+   `<form method="post">` przez `admin-post.php`
+   (`qutlet_ai_generate_rewrite`/`_accept_rewrite`/`_discard_rewrite`), PEŁNE
+   przeładowanie po KAŻDEJ z trzech akcji („Generuj"/„Zaakceptuj"/„Odrzuć").
+   Generowanie zapisuje WYNIK do transienta (`qutlet_ai_pending_{id}`, 30 min)
+   jako PODGLĄD — dopiero „Zaakceptuj" pisze realną wartość
+   (`RewriteWriter::accept()`). Ta trójstopniowość (generuj→podgląd→akceptuj)
+   to ŚWIADOMY dodatkowy stopień bezpieczeństwa, którego generator nazwy NIE MA.
+   Pole `prompt_ai` (override, `PromptOverrideField`) renderuje się WEWNĄTRZ
+   tego metaboksa (własny metabox jawnie zdjęty, `remove_own_metabox()`).
+3. **Cena** — `_qutlet_stawka_rabatu` (nadpisanie per produkt,
+   `ProductDiscountRateField`) to zwykłe pole tekstowe w natywnej zakładce
+   WooCommerce **Product data → General** (hook
+   `woocommerce_product_options_general_product_data`); globalna stawka
+   `qutlet_stawka_rabatu` to OSOBNA strona ustawień pod menu WooCommerce
+   (`DiscountRateSettingsPage`), poza ekranem produktu. Efektywna wartość:
+   `DiscountRate::effective_percent()` (override → fallback global).
+4. **Kategoria** — mapowanie (`CategoryMapRules`/`CategoryResolver`,
+   `qutlet-allegro`) jest **W 100% AUTOMATYCZNE przy sync**
+   (`ProductWriter::wp_set_object_terms()`, bezwarunkowo) — **ZERO ekranu
+   admina do potwierdzenia/korekty** poza generycznym natywnym boxem
+   taksonomii `product_cat` (checkbox picker WordPressa/WooCommerce, nie
+   coś zbudowanego przez te wtyczki) i komendą WP-CLI
+   `wp qutlet-allegro category-report --apply` (raport + bulk-reapply,
+   narzędzie terminalowe, nie ekran). **Do rozstrzygnięcia na sesji
+   planistycznej:** czy kreator w ogóle dotyka kategorii (skoro dziś
+   świadomie automatyczna, bez człowieka w pętli) — czy zgłoszenie chce
+   TYLKO podgląd/potwierdzenie w kreatorze, czy realną możliwość korekty.
+5. **Cena rynkowa nowego** — `cena_rynkowa_nowego` (`MarketPriceField`) —
+   zwykłe pole w natywnej zakładce **Product data → General**, tuż pod ceną
+   promocyjną (hook `woocommerce_product_options_pricing`, D-13.5.1).
+6. **Co w przesyłce** — `zawartosc_zestawu_pozycje` (repeater ACF,
+   `ProductConditionFields`) — zwykły natywny metabox ACF (`position:
+   normal`), część większej grupy pól „Qutlet — stan i zawartość produktu"
+   (dzieli metabox z `klasa_stanu` i komunikatami gwarancji/reklamacji).
+
+Pełna inwentaryzacja wszystkiego, co widzi redaktor na ekranie edycji świeżo
+zaimportowanego produktu (od góry): natywny tytuł → metabox „nazwa (AI)"
+(sidebar) → natywny edytor treści → metabox „generacja AI (przeróbka)" →
+natywny „Product data" (z wstrzykniętymi polami ceny/rabatu/ceny rynkowej w
+zakładce General) → metabox „warstwa surowa z Allegro" (tylko odczyt) →
+metabox ACF „stan i zawartość produktu" (+ Co w przesyłce) → metabox ACF
+„nazwa produktu (przerobiona)" [tylko `podnazwa`, bo tytuł ma już własny box
+wyżej] → metabox ACF „kanał Allegro" → natywne boxy taksonomii/tagów/obrazka/
+publikacji w sidebarze. **Żaden z tych elementów nie jest dziś zbudowany
+przez `qutlet-theme`** — cały ekran edycji to `qutlet-core` + `qutlet-ai`
+(motyw nie ma zasięgu adminowego w tym projekcie, potwierdzone: zero trafień
+w `qutlet-theme` dla żadnego z powyższych mechanizmów).
+
+Grep `docs/plan.md`/`docs/kontrakt-danych.md` pod „wizard"/„kreator" — **zero
+trafień**. To całkowicie nowy temat, nie kontynuacja czegoś zaczętego.
+
+**Otwarte pytania na sesję planistyczną (celowo NIE rozstrzygnięte tutaj —
+to jest zawartość PEŁNEGO planowania, patrz prompt startowy niżej):**
+- **Kształt kreatora** — nowy, dedykowany ekran/URL (osobny od natywnego
+  `post.php?action=edit`) z krokami następnymi/poprzednimi, CZY nakładka
+  (modal/panel) NAD dzisiejszym ekranem edycji, spinająca istniejące pola w
+  jedną narrację, CZY coś trzeciego. WP-owy model zapisu (jeden wielki
+  formularz `post.php`, submit na końcu) NIE jest naturalnie „wizardowy" —
+  do przemyślenia, jak to pogodzić (per-krok zapis AJAX-em jak tytuł, czy
+  końcowy zbiorczy submit jak reszta).
+- **Ujednolicenie AJAX vs. przeładowanie** — czy opis dostaje AJAX (wzorem
+  nazwy, z zachowaniem kroku podglądu/akceptacji, D-13.G2 pozostaje
+  aktualne czy zrewidowane), czy nazwa traci bezpośredni zapis na rzecz
+  wspólnego kroku podglądu (wzorem opisu) — dwa różne kierunki
+  ujednolicenia, żaden nie jest z góry słuszny.
+- **Zakres kategorii w kreatorze** — dotyka czy nie (patrz pkt 4 ground-truthu
+  wyżej); jeśli tak, to czy kreator DODAJE pierwszy w historii projektu krok
+  ręcznej korekty automatycznego mapowania, czy tylko pokazuje wynik
+  read-only.
+- **Zakres tego, co kreator FAKTYCZNIE zmienia vs. tylko porządkuje layout**
+  — czy to głównie zmiana UI/UX (te same mechanizmy zapisu, nowy układ
+  wizualny) czy też realna zmiana mechanizmów zapisu (patrz punkt wyżej).
+- **Granica artefaktów** — kreator dotyka pól/metaboxów z DWÓCH repo
+  (`qutlet-core`: cena/kategoria-readonly/co-w-przesyłce/kanał Allegro;
+  `qutlet-ai`: nazwa+opis) — prawdopodobnie punkt wielorepowy (wzorem
+  P-16.2), do potwierdzenia i rozbicia PO ground-truth tej sesji, nie z góry.
+- **Trigger kreatora** — automatyczny (np. redirect po imporcie na kreator
+  zamiast na zwykły ekran edycji) czy ręczny (przycisk „Otwórz kreator" na
+  liście produktów/ekranie edycji)?
+
+**Zależności:** FAZA 7 (przeróbka AI, `qutlet-ai`), FAZA 13 (strona produktu:
+edytor admina + Allegro, `MarketPriceField`/`RawLayerMetaBox`), P-9.1
+(własność pól przy sync — ryzyko nadpisania ręcznych edycji, istotne przy
+projektowaniu kroków kreatora), P-6.1 (`qutlet_stawka_rabatu`), P-6.8b
+(mapowanie kategorii).
+
+**Status:** faza otwarta (🟦), BEZ rozpisania na punkty P-17.x — to celowe,
+zgodnie z zasadą „ground-truth NAJPIERW" (CLAUDE.md). Następna sesja robi
+PEŁNE planowanie (decyzje D-17.x + podział na P-17.x, w tym ewentualny
+rozpad wielorepowy core+ai), NIE implementację. Wyjście TEJ sesji (zamiast
+punktu do implementacji) = gotowy prompt startowy na sesję planistyczną,
+przekazany użytkownikowi w rozmowie (wzorzec „Realizacja punktu planu" →
+„Prompt startowy na następną sesję", CLAUDE.md) — nie jako osobny plik w
+`docs/`.
+
+---
+
 ## Materiał referencyjny i kandydaci do dalszych faz
 
 ### Inwentarz endpointów Allegro (dostarczony przez użytkownika)
