@@ -2439,14 +2439,149 @@ rozpada się na dwa pod-punkty / dwa PR-y z jawną zależnością (`P-8.3c-theme
   `! is_product_category()` — D-8.3c.2); chip/licznik aktywnych filtrów
   uwzględnia kategorię.
 - **Zależności:** P-8.3c-core, P-8.3a.
-### P-8.3d — Filtr AJAX (progressive enhancement)
-- Podmiana klasycznego przeładowania strony (P-8.3b, D-8.3b.1) na JS/fetch:
-  formularz filtrów wysyła żądanie do tego samego URL-a (lub dedykowanego
-  REST endpointu), podmienia fragment siatki + toolbar bez przeładowania,
-  aktualizuje URL przez `pushState`. Bliżej płynności UX prototypu
-  (`design/vanilla/js/app.js` `initDeals()`). Someday maybe — dopisane na
-  wyraźną prośbę użytkownika (sesja 2026-07-29) jako kolejny etap NAD
-  fundamentem z P-8.3b, nie jego zamiennik. **Zależności:** P-8.3b.
+### 🟡 P-8.3d — Filtr AJAX (progressive enhancement, punkt wielorepowy → P-8.3d-meta + P-8.3d-theme)
+
+Kod (D-8.3d.1-5 niżej) jest WYŁĄCZNIE w `qutlet-theme` — core nie potrzebuje
+żadnej zmiany (patrz bullet „Repo" pod koniec sekcji). Punkt i tak rozpada się
+na dwa pod-punkty/dwa PR-y, bo SAMO to rozpisanie (ground-truth + decyzje
+D-8.3d.x poniżej) żyje w `qutlet-meta` (`docs/plan.md`) — innym repo/originie
+niż kod. Flip 🟡 (już ustawiony wyżej) jedzie pierwszym commitem
+`P-8.3d-meta` (ten plik), NIE brancha `qutlet-theme` — zgodnie z regułą
+punktów wielorepowych (CLAUDE.md) i konwencją już użytą w P-8.3b/P-8.3c
+(tam core/theme, tutaj meta/theme).
+
+Ground-truth (sesja 2026-08-16) potwierdził przesłankę D-8.3b.1: nadal brak
+jakiegokolwiek REST endpointu w projekcie. Ujawnił też, że `initDeals()`
+(`design/vanilla/js/app.js:380-429`), cytowane w pierwotnym opisie punktu jako
+źródło prawdy UX, wcale NIE robi realnego `fetch`/AJAX ani `pushState` —
+filtruje w 100% po stronie klienta statyczną tablicę `QT.CATALOG` w pamięci
+(zero zapytania do serwera, zero wywołania `pushState`/`history` dla
+filtrów). Prototyp jest więc źródłem prawdy dla WZORCA zdarzeń JS
+(delegowane listenery na `document`, natychmiastowy refresh przy `change`
+checkboxa/suwaka) — NIE dla mechanizmu transportu (nie ma czego kopiować
+1:1, bo mechanizm sieciowy w prototypie po prostu nie istnieje).
+
+- **D-8.3d.1 (mechanizm: AJAX do TEGO SAMEGO URL-a, NIE dedykowany REST
+  endpoint) [USTALONE — sesja 2026-08-16, decyzja użytkownika po
+  ground-truth]:** `ProductFilterQuery::init()` (core) hookuje
+  `woocommerce_product_query` na GŁÓWNYM zapytaniu realnego żądania strony
+  (WooCommerce sam sprawdza `is_main_query()` przy rejestracji tego hooka w
+  `WC_Query`, a `discount_order_clauses()` dodatkowo sam weryfikuje
+  `is_main_query()`) — dedykowany REST endpoint musiałby SYMULOWAĆ kontekst
+  archiwum (kategoria/Shop, tax_query, `is_main_query()`), żeby w ogóle
+  zadziałały te same hooki, z realnym ryzykiem rozjazdu z zachowaniem
+  zwykłego przeładowania. AJAX strzela więc `fetch()`-em do DOKŁADNIE tego
+  samego URL-a co formularz przy zwykłym submicie (te same query args:
+  `qutlet_brand[]`/`qutlet_category[]`/`klasa_stanu[]`/`min_price`/
+  `max_price`/`orderby`) — ta sama główna kwerenda, te same hooki, zero
+  duplikacji logiki. Serwer rozpoznaje żądanie AJAX po nagłówku
+  `X-Qutlet-Ajax-Filters` (custom header, same-origin GET → bez CORS
+  preflight) na `template_redirect` (po sparsowaniu query, `is_shop()`/
+  `is_product_category()` już dostępne). **Odrzucona alternatywa:**
+  dedykowany REST endpoint (`register_rest_route`) — czystszy interfejs, ale
+  musiałby ręcznie odtwarzać kontekst głównego zapytania, którego core
+  świadomie NIE udostępnia poza `is_main_query()` (D-8.3b.2/D-8.3b.3); realna
+  szansa na cichy rozjazd wyniku AJAX vs. reload.
+- **D-8.3d.2 (zakres podmiany: cały fragment toolbar+chipy+szuflada+siatka+
+  paginacja, NIE sama siatka) [USTALONE]:** żeby uniknąć regresu względem
+  dzisiejszego zachowania (liczniki facetów w szufladzie muszą się
+  aktualizować przy cross-filteringu — dokładnie to, co robi już
+  `brand_facets()`/`category_facets()`/`condition_facets()` przy zwykłym
+  przeładowaniu), fragment wymieniany przez AJAX to WSZYSTKO między
+  `woocommerce_before_shop_loop` a `woocommerce_after_shop_loop`
+  (`archive-product.php`, rdzeń WooCommerce) — toolbar/chipy/szuflada
+  (`filters-and-sort.php`), siatka (`loop-start.php`…`content-product.php`
+  ×N…`loop-end.php`), paginacja (`loop/pagination.php`, P-9.4). Theme dostaje
+  TRWAŁY punkt zaczepienia w DOM na obie ścieżki (AJAX i zwykłe
+  przeładowanie): `<div id="qutlet-archive-results">` echo'owany na
+  `woocommerce_before_shop_loop` (priorytet -10, przed notices/toolbarem) /
+  `woocommerce_after_shop_loop` (priorytet 1000, po paginacji) — jeden
+  stabilny węzeł do podmiany `outerHTML` niezależnie od trybu.
+  `.woocommerce-products-header` (hardkodowany przez WooCommerce Blocks,
+  ground-truth P-8.3a) zostaje POZA tym fragmentem — nie zależy od filtrów,
+  nie ma potrzeby go podmieniać.
+- **D-8.3d.3 (przechwycenie: PODWÓJNY output buffer na `template_redirect`,
+  NIE `template_include`) [USTALONE]:** dla żądania AJAX na obsługiwanym
+  archiwum, `template_redirect` startuje ZEWNĘTRZNY bufor (połyka
+  header/breadcrumb/`woocommerce_shop_loop_header` — nic z tego nie trafia
+  do odpowiedzi), a `woocommerce_before_shop_loop` (priorytet -20, PRZED echo
+  otwierającego `<div id="qutlet-archive-results">` na -10) startuje
+  WEWNĘTRZNY, zagnieżdżony bufor. `woocommerce_after_shop_loop` (priorytet
+  1001, PO echo zamykającego `</div>` na 1000) kończy wewnętrzny bufor
+  (`ob_get_clean()` — dokładnie fragment z D-8.3d.2, bez potrzeby
+  parsowania/wycinania HTML-a), odrzuca zewnętrzny (`ob_end_clean()`), wysyła
+  JSON (`{success:true, data:{html: "..."}}`, `Content-Type:
+  application/json`) i `exit` — reszta `archive-product.php`
+  (`woocommerce_after_main_content`/sidebar/`get_footer()`) nigdy się nie
+  wykonuje. Zero nonce (żądanie WYŁĄCZNIE do odczytu, ten sam wzorzec co
+  istniejące GET filtry — `ProductFilterQuery` już czyta `$_GET` bez nonce).
+  **Odrzucona alternatywa:** przechwycenie na `template_include` (podmiana
+  ścieżki pliku szablonu) — dla motywu blokowego oznaczałoby ręczne
+  odtwarzanie renderu bloku `wp:woocommerce/legacy-template` zamiast użycia
+  gotowych, już istniejących akcji WooCommerce (`woocommerce_before_shop_loop`/
+  `_after_shop_loop`) — więcej kodu, większe ryzyko rozjazdu przy przyszłych
+  zmianach szablonu archiwum.
+- **D-8.3d.4 (JS: zdarzenia delegowane na `document`, wzorzec z
+  `initDeals()`) [USTALONE]:** `assets/js/product-filters-ajax.js` (nowy
+  plik, ładowany PO `product-filters.js`, WYŁĄCZNIE na obsługiwanych
+  archiwach — `ProductFilters::is_supported_archive()`, teraz `public`) —
+  checkbox facetów (`change`, natychmiastowy fetch — jak `initDeals()`),
+  suwak ceny (`change`, NIE `input` — inaczej niż prototyp, który filtrował
+  za darmo w pamięci; tu każde zdarzenie to realny SQL, `change` odpala się
+  dopiero przy puszczeniu suwaka, więc naturalnie zastępuje debouncing bez
+  timera), sort (`change`, jak dziś, ale zamiast `form.submit()` → fetch),
+  linki paginacji/chipów/„Wyczyść" (przechwycenie `click` na `<a href>` w
+  obrębie `#qutlet-archive-results`). Centralna funkcja
+  `loadArchive(url, {pushState})`: anuluje poprzedni w locie fetch
+  (`AbortController` — bez tego szybkie kolejne zmiany filtra mogłyby
+  nadpisać DOM starszą, później-przychodzącą odpowiedzią), podmienia
+  `outerHTML` węzła `#qutlet-archive-results`, `window.scrollTo` na górę
+  fragmentu. **Fallback bez wyjątków:** brak `fetch`/`history.pushState` w
+  przeglądarce, błąd sieci, odpowiedź nie-2xx → `window.location.href = url`
+  (prawdziwa nawigacja, identyczna z dzisiejszym zachowaniem bez JS) —
+  feature jest WYŁĄCZNIE nakładką, bazowy GET+reload (D-8.3b.1) działa
+  dokładnie tak samo, jeśli cokolwiek w warstwie AJAX zawiedzie.
+- **D-8.3d.5 (pushState + popstate: WYMAGANE, mimo że prototyp tego nie
+  robi) [USTALONE]:** klasyczny mechanizm (D-8.3b.1) ma stan filtrów
+  zakodowany w URL-u (bookmarkowalny, działa wstecz/dalej w przeglądarce) —
+  wersja AJAX BEZ aktualizacji adresu byłaby REGRESEM względem tego, co już
+  działa dziś, nie tylko „mniej płynną" alternatywą. `loadArchive()` woła
+  `history.pushState(null, '', url)` po udanej podmianie;
+  `window.addEventListener('popstate', ...)` re-fetch'uje `location.href`
+  (bez ponownego pushState) — bez tego wstecz/dalej zmieniałoby adres w
+  pasku, ale zostawiało nieaktualną siatkę na ekranie.
+- **Poprawka runtime przy okazji (istniejący `assets/js/product-filters.js`,
+  P-8.3b):** listenery drawer/suwak-readout łapały węzły `[data-drawer]`/
+  `[data-range-min]` JEDNORAZOWO przy `DOMContentLoaded` — po pierwszej
+  podmianie AJAX-em stare referencje wskazywałyby na usunięte węzły (ten sam
+  rodzaj błędu co D-8.3b.3, tylko ujawniony teraz przez nowy tryb renderu,
+  nie przez runtime test w przeglądarce). Naprawione: `setDrawer()`/readout
+  suwaka odpytują DOM na bieżąco (delegacja), nie z domkniętej zmiennej.
+- **Core NIE jest dotykany:** `ProductFilterQuery` już udostępnia wszystko
+  potrzebne przez publiczne metody wołane dziś z `ProductFilters::render()`
+  (D-8.3b.2); AJAX-owa ścieżka ponownie uruchamia DOKŁADNIE tę samą główną
+  kwerendę (ten sam URL, ten sam request lifecycle), więc te same hooki
+  core'a odpalają się automatycznie — zero nowej logiki zapytania. Stąd
+  rozpad WYJĄTKOWO na `-meta`/`-theme` (dokumentacja/kod), NIE
+  `-core`/`-theme` jak w P-8.3b/P-8.3c.
+
+#### P-8.3d-meta — Ground-truth i decyzje (qutlet-meta)
+- **Zakres:** to rozpisanie (nagłówek sekcji + D-8.3d.1-5 + ta lista
+  pod-punktów) w `docs/plan.md`, wraz z flipem 🟡 na nagłówku punktu.
+- **Zależności:** brak nowych — czyste udokumentowanie ground-truth przed
+  implementacją (patrz CLAUDE.md → „Realizacja punktu planu").
+
+#### P-8.3d-theme — Implementacja AJAX (qutlet-theme)
+- **Zakres:** `inc/features/ProductFilters/ProductFiltersAjax.php` (nowa
+  klasa: wrapper-div hooki + podwójny output buffer + JSON response, D-8.3d.2/
+  D-8.3d.3), `ProductFilters::is_supported_archive()` → `public` (reużyte),
+  `assets/js/product-filters-ajax.js` (nowy plik, D-8.3d.4/D-8.3d.5),
+  poprawka runtime w `assets/js/product-filters.js` (delegacja zamiast
+  jednorazowego querySelector, patrz bullet wyżej), `functions.php` (boot +
+  bump `VERSION`).
+- **Zależności:** P-8.3d-meta (to rozpisanie musi istnieć jako punkt
+  odniesienia — kod czyta stąd decyzje, nie z pamięci), P-8.3b-core/theme,
+  P-8.3c-core/theme, P-9.4.
 ### 🟢 P-8.4 — Blog
 - Lista/artykuł/kategoria/tag + czas czytania (meta z P-1.4). **Zależności:** F1 (P-1.4).
   Realizacja: `qutlet-theme` PR #11 (`feature/faza-8-4-blog`).
