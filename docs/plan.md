@@ -2532,16 +2532,16 @@ checkboxa/suwaka) — NIE dla mechanizmu transportu (nie ma czego kopiować
   `_after_shop_loop`) — więcej kodu, większe ryzyko rozjazdu przy przyszłych
   zmianach szablonu archiwum.
 - **D-8.3d.4 (JS: zdarzenia delegowane na `document`, wzorzec z
-  `initDeals()`) [USTALONE]:** `assets/js/product-filters-ajax.js` (nowy
-  plik, ładowany PO `product-filters.js`, WYŁĄCZNIE na obsługiwanych
-  archiwach — `ProductFilters::is_supported_archive()`, teraz `public`) —
-  checkbox facetów (`change`, natychmiastowy fetch — jak `initDeals()`),
-  suwak ceny (`change`, NIE `input` — inaczej niż prototyp, który filtrował
-  za darmo w pamięci; tu każde zdarzenie to realny SQL, `change` odpala się
-  dopiero przy puszczeniu suwaka, więc naturalnie zastępuje debouncing bez
-  timera), sort (`change`, jak dziś, ale zamiast `form.submit()` → fetch),
-  linki paginacji/chipów/„Wyczyść" (przechwycenie `click` na `<a href>` w
-  obrębie `#qutlet-archive-results`). Centralna funkcja
+  `initDeals()`) [USTALONE, SKORYGOWANE runtime — sesja 2026-08-16, patrz
+  akapit niżej]:** `assets/js/product-filters-ajax.js` (nowy plik, ładowany
+  PO `product-filters.js`, WYŁĄCZNIE na obsługiwanych archiwach —
+  `ProductFilters::is_supported_archive()`, teraz `public`) — sort (`change`,
+  jak dziś, ale zamiast `form.submit()` → fetch; JEDYNY element auto-submitujący
+  na `change` — żyje w `.toolbar`, poza szufladą), submit formularza (przycisk
+  „Pokaż wyniki" w `drawer-foot` — obejmuje WSZYSTKIE zaznaczone naraz checkboxy
+  facetów + suwak ceny, jeden fetch), linki paginacji/chipów/„Wyczyść"
+  (przechwycenie `click` na `<a href>` w obrębie `#qutlet-archive-results`).
+  Centralna funkcja
   `loadArchive(url, {pushState})`: anuluje poprzedni w locie fetch
   (`AbortController` — bez tego szybkie kolejne zmiany filtra mogłyby
   nadpisać DOM starszą, później-przychodzącą odpowiedzią), podmienia
@@ -2551,6 +2551,15 @@ checkboxa/suwaka) — NIE dla mechanizmu transportu (nie ma czego kopiować
   (prawdziwa nawigacja, identyczna z dzisiejszym zachowaniem bez JS) —
   feature jest WYŁĄCZNIE nakładką, bazowy GET+reload (D-8.3b.1) działa
   dokładnie tak samo, jeśli cokolwiek w warstwie AJAX zawiedzie.
+  **Korekta (zgłoszenie użytkownika, sesja 2026-08-16):** pierwsza wersja
+  auto-submitowała też checkbox facetów i suwak ceny na `change` (wzorem
+  `initDeals()`) — w praktyce szuflada renderuje się w świeżym fragmencie
+  DOMYŚLNIE zamknięta (`<aside class="drawer" hidden>`), więc natychmiastowy
+  fetch po KAŻDYM zaznaczeniu wyglądał jak szuflada „znika" w trakcie
+  zaznaczania kolejnych opcji, zanim użytkownik zdążył zaznaczyć więcej niż
+  jedną. Cofnięte: WYŁĄCZNIE sort (poza szufladą) auto-submituje; checkboxy/
+  suwak czekają na jawny submit („Pokaż wyniki") — dokładnie jak dziś w
+  wersji bez JS, tylko przez fetch zamiast przeładowania.
 - **D-8.3d.5 (pushState + popstate: WYMAGANE, mimo że prototyp tego nie
   robi) [USTALONE]:** klasyczny mechanizm (D-8.3b.1) ma stan filtrów
   zakodowany w URL-u (bookmarkowalny, działa wstecz/dalej w przeglądarce) —
