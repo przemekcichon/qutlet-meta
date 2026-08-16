@@ -5535,7 +5535,7 @@ merge'u.
 
 ---
 
-## 🟦 FAZA 16 — Nagłówek: dwa menu (nawigacja + kategorie z mega menu) — ROZPISANA
+## 🟨 FAZA 16 — Nagłówek: dwa menu (nawigacja + kategorie z mega menu) — ROZPISANA
 
 **Zgłoszenie (2026-08-16):** nagłówek ma dziś DWA odrębne menu, oba w 100%
 zaszyte na sztywno w kodzie, zero powiązania z jakimkolwiek menu WordPressa:
@@ -5718,7 +5718,7 @@ w projekcie wzorzec `register_nav_menu`/rozwiązywania przez lokalizację).
   `qutlet-theme` może zapisywać wartości pól core-owych (`update_field()`/
   `wp_set_object_terms()` nie sprawdzają, kto zarejestrował pole/taksonomię).
 
-### P-16.1 — Menu nawigacyjne (`.header-nav`, proste)
+### 🟢 P-16.1 — Menu nawigacyjne (`.header-nav`, proste)
 
 - Lokalizacja menu `nawigacja` (`register_nav_menu()`, `qutlet-theme`, slice
   `HeaderMenu/`) + render 4 linków przez `wp_nav_menu()` (klasa `nav-link` per
@@ -5728,6 +5728,16 @@ w projekcie wzorzec `register_nav_menu`/rozwiązywania przez lokalizację).
   `<a class="nav-link">`. Reszta `<nav class="header-nav">` (dropdown
   koszyka/konta, mobile toggle) zostaje statycznym markupem template parta —
   BEZ zmian, poza zakresem tego punktu.
+  **Zrealizowano (`qutlet-theme` #33) inaczej niż mechanizm szkicowany wyżej:**
+  render przez pętlę po `wp_get_nav_menu_items()` (wzorem
+  `Help::render_help_nav()`, P-1.5), NIE `wp_nav_menu()` — własny
+  `Walker_Nav_Menu` + `wp_nav_menu(['container' => false])` uderzały w dwie
+  luki typowania w stubach PHPStan (`WP_Post` bez `url`/`title` odziedziczone
+  po `Walker_Nav_Menu::start_el()`; `container?: string` bez `false`).
+  Potwierdzone niezależną recenzją jako zgodne z kontraktem §14.1 (który i tak
+  cytuje `Help::MENU_LOCATION` jako wzorzec renderu) — istotne przy
+  ground-truth P-16.2b, który szkicuje analogiczny render przez
+  `wp_get_nav_menu_items()` (już zgodnie z tym precedensem).
 - **Wyłącznie `qutlet-theme`** — zero pól, zero core (temat prosty, wzorem
   `Help::MENU_LOCATION`, P-1.5 — jedyna różnica: `Help` czyta menu treściowe
   boczne, tu menu renderuje się w nagłówku strony głównej/każdej podstrony).
@@ -5804,12 +5814,11 @@ najpierw zarejestrować core).
   przykładowe nazwy z prototypu.
 - **Zależności:** P-16.2a (pola/taksonomia muszą istnieć przed renderem), P-8.1.
 
-**Status:** faza rozpisana na punkty (P-16.1, P-16.2a, P-16.2b) — ŻADEN jeszcze
-nie zbudowany (0% realizacji, kolor 🟦 bez zmian; flip na 🟨/🟡 nastąpi przy
-starcie realizacji pierwszego punktu, zgodnie z „Realizacja punktu planu",
-CLAUDE.md). Ta sesja była WYŁĄCZNIE planistyczna — zero kodu, zero brancha
-implementacyjnego. Prompt startowy na sesję realizującą P-16.1 (pierwszy,
-niezależny punkt) przekazany użytkownikowi w rozmowie kończącej tę sesję.
+**Status:** P-16.1 zrealizowany i zmergowany (`qutlet-theme` #33, sesja
+2026-08-16) — pierwszy z trzech punktów fazy. P-16.2a/P-16.2b (punkt
+wielorepowy `qutlet-core` + `qutlet-theme`) jeszcze nie zbudowane. Prompt
+startowy na sesję realizującą P-16.2a przekazany użytkownikowi w rozmowie
+kończącej sesję P-16.1.
 
 ---
 
