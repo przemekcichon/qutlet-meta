@@ -935,9 +935,23 @@ semantycznie poprawny (realna relacja przez pole ACF §14.2), ale
 `meta_box_cb => false` (jak `klasa_stanu_definicja`): przypisanie pozycji do
 grupy dzieje się WYŁĄCZNIE przez pole `grupa_mega_menu` w Wygląd → Menu, NIE
 przez natywny metabox taksonomii (nav_menu_item nie ma standardowego ekranu
-edycji, więc taki metabox i tak by się nie pokazał — admin screen zarządzania
-LISTĄ grup to `show_in_menu => 'nav-menus.php'`, zagnieżdżony pod Wygląd, obok
-Menu — nie pod Produkty jak `klasa_stanu_definicja`).
+edycji, więc taki metabox i tak by się nie pokazał).
+
+**REWIZJA vs. szkic wyżej (P-16.2a, `qutlet-core` #25 + poprawka po merge'u):**
+`register_taxonomy()` dostaje `show_in_menu => true` (bool), NIE string
+`'nav-menus.php'` — WP typuje `show_in_menu` taksonomii ściśle jako `bool` (w
+odróżnieniu od CPT, gdzie `bool|string` jest poprawne), więc string tu nie ma
+żadnego efektu. Faktyczne umieszczenie ekranu „Grupy mega menu" pod Wygląd,
+obok Menu — nie pod Produkty jak `klasa_stanu_definicja` — realizuje osobny,
+ręczny `add_submenu_page()` w tym samym slice
+(`MegaMenuGroupTaxonomy::register_admin_submenu()`), z top-level slugiem
+`themes.php` jako rodzicem. **Pierwsza wersja P-16.2a błędnie użyła
+`nav-menus.php`** jako rodzica — to NIE jest top-level slug (to sam slug
+submenu „Menu" zarejestrowanego pod `themes.php`), więc `add_submenu_page()`
+dopisywał wpis do tablicy, której admin sidebar nigdy nie renderuje: link był
+niewidoczny, zero błędu. Znalezisko użytkownika (ręczna inspekcja Wygląd w
+adminie) po merge'u P-16.2a, poprawione osobnym fixem — patrz `docs/plan.md`
+P-16.2a.
 
 **D-16.G3 (limit 6 grup = wskazówka, NIE twardy limit) [USTALONE — decyzja
 użytkownika, sesja 2026-08-16]:** brak walidacji blokującej 7. termin. CSS
