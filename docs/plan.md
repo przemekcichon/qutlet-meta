@@ -5870,6 +5870,245 @@ mechanizm ze szkicu planu, nie to co P-16.2a faktycznie zaimplementowało.
 
 ---
 
+## 🟦 FAZA 17 — Kreator (wizard) przeglądu świeżo zaimportowanego produktu — ROZPISANA
+
+**Zgłoszenie (2026-08-16):** sześć aspektów świeżo zaimportowanego z Allegro
+produktu wymaga uwagi redaktora — nazwa (+ ewentualna podnazwa), opis
+generowany AI, cena (rabat globalny z możliwością nadpisania), kategoria
+(mapowanie), cena rynkowa nowego, „Co w przesyłce". Wg zgłoszenia wszystkie
+mechanizmy JUŻ ISTNIEJĄ i działają — problem to UX: dzisiejszy ekran edycji
+produktu jest „mało przydatny" (rozrzucony po wielu metaboxach), do
+skonsolidowania w jakiś **kreator (wizard)**.
+
+**Ground-truth PEŁNY (sesja 2026-08-16, ta sesja — POTWIERDZONY, nie
+zakładany):** świeżo zaimportowany produkt wystawia na ekranie edycji **co
+najmniej 5 odrębnych, pionowo ułożonych powierzchni interaktywnych**, z DWIEMA
+strukturalnie różnymi wzorcami UX generowania AI współistniejącymi
+ŚWIADOMIE (`D-13.G2`, `qutlet-ai/src/AiRewrite/TitleGenerationMetaBox.php:20-33`):
+
+1. **Nazwa + podnazwa** — `TitleGenerationMetaBox` (`qutlet-ai`, box `side`,
+   sidebar) — **JUŻ AJAX, BEZ przeładowania**: `admin-ajax.php`
+   (`wp_ajax_qutlet_ai_generate_title`/`_reset_title`), JS
+   (`assets/js/title-generator.js`) podmienia `#title` i pole ACF `podnazwa`
+   (`RewrittenFields`, `field_qutlet_podnazwa`) wprost w DOM. Zapis
+   NATYCHMIASTOWY (`TitleWriter::accept()`), zabezpieczenie to WYŁĄCZNIE
+   `window.confirm()` w JS, zero podglądu przed zapisem. Znacznik nieświeżości
+   `_qutlet_ai_title_source_raw` pokazuje banner „Nowy", gdy surowa nazwa
+   Allegro zmieniła się od ostatniego generowania.
+   **KOREKTA vs. zgłoszenie:** to jest DOKŁADNIE ten mechanizm, o który
+   pytało zgłoszenie („generowanie nazwy... bez przeładowania tak samo jak
+   opisu") — JUŻ istnieje, nie trzeba go budować. To ODWROTNOŚĆ zgłoszenia:
+   nazwa jest AJAX, **opis NIE JEST**.
+2. **Opis** — `GenerationMetaBox` (`qutlet-ai`, box `normal`/`high`, główna
+   kolumna, renderowany NAD natywnym „Product data") — klasyczny
+   `<form method="post">` przez `admin-post.php`
+   (`qutlet_ai_generate_rewrite`/`_accept_rewrite`/`_discard_rewrite`), PEŁNE
+   przeładowanie po KAŻDEJ z trzech akcji („Generuj"/„Zaakceptuj"/„Odrzuć").
+   Generowanie zapisuje WYNIK do transienta (`qutlet_ai_pending_{id}`, 30 min)
+   jako PODGLĄD — dopiero „Zaakceptuj" pisze realną wartość
+   (`RewriteWriter::accept()`). Ta trójstopniowość (generuj→podgląd→akceptuj)
+   to ŚWIADOMY dodatkowy stopień bezpieczeństwa, którego generator nazwy NIE MA.
+   Pole `prompt_ai` (override, `PromptOverrideField`) renderuje się WEWNĄTRZ
+   tego metaboksa (własny metabox jawnie zdjęty, `remove_own_metabox()`).
+3. **Cena** — `_qutlet_stawka_rabatu` (nadpisanie per produkt,
+   `ProductDiscountRateField`) to zwykłe pole tekstowe w natywnej zakładce
+   WooCommerce **Product data → General** (hook
+   `woocommerce_product_options_general_product_data`); globalna stawka
+   `qutlet_stawka_rabatu` to OSOBNA strona ustawień pod menu WooCommerce
+   (`DiscountRateSettingsPage`), poza ekranem produktu. Efektywna wartość:
+   `DiscountRate::effective_percent()` (override → fallback global).
+4. **Kategoria** — mapowanie (`CategoryMapRules`/`CategoryResolver`,
+   `qutlet-allegro`) jest **W 100% AUTOMATYCZNE przy sync**
+   (`ProductWriter::wp_set_object_terms()`, bezwarunkowo) — **ZERO ekranu
+   admina do potwierdzenia/korekty** poza generycznym natywnym boxem
+   taksonomii `product_cat` (checkbox picker WordPressa/WooCommerce, nie
+   coś zbudowanego przez te wtyczki) i komendą WP-CLI
+   `wp qutlet-allegro category-report --apply` (raport + bulk-reapply,
+   narzędzie terminalowe, nie ekran). **Do rozstrzygnięcia na sesji
+   planistycznej:** czy kreator w ogóle dotyka kategorii (skoro dziś
+   świadomie automatyczna, bez człowieka w pętli) — czy zgłoszenie chce
+   TYLKO podgląd/potwierdzenie w kreatorze, czy realną możliwość korekty.
+5. **Cena rynkowa nowego** — `cena_rynkowa_nowego` (`MarketPriceField`) —
+   zwykłe pole w natywnej zakładce **Product data → General**, tuż pod ceną
+   promocyjną (hook `woocommerce_product_options_pricing`, D-13.5.1).
+6. **Co w przesyłce** — `zawartosc_zestawu_pozycje` (repeater ACF,
+   `ProductConditionFields`) — zwykły natywny metabox ACF (`position:
+   normal`), część większej grupy pól „Qutlet — stan i zawartość produktu"
+   (dzieli metabox z `klasa_stanu` i komunikatami gwarancji/reklamacji).
+
+Pełna inwentaryzacja wszystkiego, co widzi redaktor na ekranie edycji świeżo
+zaimportowanego produktu (od góry): natywny tytuł → metabox „nazwa (AI)"
+(sidebar) → natywny edytor treści → metabox „generacja AI (przeróbka)" →
+natywny „Product data" (z wstrzykniętymi polami ceny/rabatu/ceny rynkowej w
+zakładce General) → metabox „warstwa surowa z Allegro" (tylko odczyt) →
+metabox ACF „stan i zawartość produktu" (+ Co w przesyłce) → metabox ACF
+„nazwa produktu (przerobiona)" [tylko `podnazwa`, bo tytuł ma już własny box
+wyżej] → metabox ACF „kanał Allegro" → natywne boxy taksonomii/tagów/obrazka/
+publikacji w sidebarze. **Żaden z tych elementów nie jest dziś zbudowany
+przez `qutlet-theme`** — cały ekran edycji to `qutlet-core` + `qutlet-ai`
+(motyw nie ma zasięgu adminowego w tym projekcie, potwierdzone: zero trafień
+w `qutlet-theme` dla żadnego z powyższych mechanizmów).
+
+Grep `docs/plan.md`/`docs/kontrakt-danych.md` pod „wizard"/„kreator" — **zero
+trafień** (przed tą sesją). To całkowicie nowy temat, nie kontynuacja czegoś
+zaczętego.
+
+**Ground-truth potwierdzony PONOWNIE tą sesją (sesja planistyczna
+2026-08-16, druga sesja):** czytanie na dysku `TitleGenerationMetaBox.php`,
+`GenerationMetaBox.php` (qutlet-ai), `ProductDiscountRateField.php`,
+`MarketPriceField.php`, `ProductConditionFields.php` (qutlet-core) i
+`ProductWriter.php` (qutlet-allegro) — **zero rozbieżności** z inwentaryzacją
+wyżej. Dodatkowo potwierdzone: metabox ACF „nazwa produktu (przerobiona)"
+(tylko `podnazwa`) i metabox ACF kanału Allegro rejestruje `qutlet-core`
+(`RewrittenFields`/`AllegroChannelFields`) — istotne dla granicy artefaktów
+niżej, bo to jeszcze dwa punkty ekranu należące do core, nie do ai.
+
+**Literały:** FAZA 17 nie wprowadza ŻADNYCH nowych meta keys/pól ACF/
+taksonomii — kreator to nakładka nad polami zarejestrowanymi w FAZACH
+1/5/6/7/12/13. Jedyna zmiana mechanizmu (P-17.1) zamienia transport
+`admin-post.php` → `admin-ajax.php`, zachowując te same klucze transientu
+(`qutlet_ai_pending_{id}`) i meta. `docs/kontrakt-danych.md` bez zmian w
+tej fazie.
+
+**Decyzje użytkownika (pytania zadane wprost na tej sesji, rozstrzygnięte
+PRZED spisaniem punktów P-17.x):**
+
+- **D-17.1 (kształt kreatora = nakładka nad dzisiejszym
+  `post.php?action=edit`, NIE osobny ekran/URL) [USTALONE — decyzja
+  użytkownika, sesja 2026-08-16]:** kreator to modal/panel spinający
+  ISTNIEJĄCE metaboxy w jedną narrację krokową (Dalej/Wstecz), otwierany NAD
+  natywnym ekranem edycji produktu. Zachowuje dzisiejszy model zapisu WP
+  (jeden zbiorczy submit `post.php` dla pól bez własnego AJAX-a) — nie
+  wymaga nowego routingu/URL-a ani przepisania zapisu na per-krok AJAX dla
+  WSZYSTKICH pól, tylko tam, gdzie już jest (nazwa) albo dochodzi (opis,
+  D-17.2). **Odrzucona alternatywa:** dedykowany ekran/URL z krokami —
+  droższy (nowy routing, nowy model zapisu per krok dla pól, które dziś żyją
+  w jednym wielkim formularzu Woo) bez wyraźnej korzyści, skoro nakładka
+  daje tę samą narrację UX taniej.
+- **D-17.2 (opis dostaje AJAX, wzorem nazwy — kierunek ujednolicenia)
+  [USTALONE — decyzja użytkownika, sesja 2026-08-16]:** `GenerationMetaBox`
+  (qutlet-ai) przechodzi z `admin-post.php` + pełne przeładowanie na
+  `admin-ajax.php`, analogicznie do `TitleGenerationMetaBox` (P-13.2c) —
+  ZACHOWUJE trójstopniowy flow (generuj→podgląd→akceptuj/odrzuć — D-13.G2
+  pozostaje aktualne co do KROKU), zmienia się WYŁĄCZNIE transport (bez
+  przeładowania strony). **Odrzucona alternatywa:** nazwa traci bezpośredni
+  zapis na rzecz wspólnego kroku podglądu (wzorem opisu) — odrzucone, bo
+  cofnęłoby istniejący, świadomie zaprojektowany szybki flow z
+  `window.confirm()` (P-13.2c) bez wyraźnej korzyści.
+- **D-17.3 (kategoria — kreator dotyka, ale WYŁĄCZNIE podgląd read-only)
+  [USTALONE — decyzja użytkownika, sesja 2026-08-16]:** kreator dokłada krok
+  informacyjny pokazujący wynik automatycznego mapowania (term `product_cat`
+  przypisany + ścieżka `AllegroLinkMeta::META_CATEGORY_PATH`, kontrakt
+  §10.1) — BEZ możliwości korekty w kreatorze. Mechanizm mapowania
+  (`CategoryMapRules`/`ProductWriter::upsert()`, w pełni automatyczny przy
+  sync) NIE zmienia się. **Odrzucona alternatywa:** ręczna korekta w
+  kreatorze (pierwszy tego typu mechanizm w projekcie) — odrzucone jako poza
+  zakresem tej fazy, zgłoszenie dotyczy UX przeglądu, nie zmiany modelu
+  kategoryzacji.
+- **D-17.4 (trigger — ręczny przycisk, NIE automatyczny redirect po
+  imporcie) [USTALONE — decyzja użytkownika, sesja 2026-08-16]:** redaktor
+  otwiera kreator ręcznie (przycisk na liście produktów i/lub ekranie
+  edycji) — import (P-6.1) zostaje bez zmian zachowania. **Odrzucona
+  alternatywa:** automatyczny redirect po imporcie na kreator zamiast
+  zwykłego ekranu edycji — odrzucone, zmieniałoby zachowanie istniejącego,
+  dziś masowego mechanizmu importu (setki produktów na przebieg) bez
+  wyraźnej potrzeby.
+- **D-17.5 (zakres = głównie reorganizacja UI + JEDNA realna zmiana
+  mechanizmu) [wynika z D-17.1/D-17.2/D-17.3, USTALONE]:** FAZA 17 to w
+  większości zmiana warstwy prezentacji (te same mechanizmy zapisu, nowy
+  układ wizualny/nawigacyjny), z JEDNYM wyjątkiem — konwersją transportu
+  generowania opisu na AJAX (D-17.2), realną zmianą mechanizmu w
+  `qutlet-ai`. Kategoria (D-17.3) i cena/stan/kanał Allegro dostają
+  WYŁĄCZNIE nowe umiejscowienie w narracji kroków, bez zmiany zapisu.
+
+**Granica artefaktów [USTALONE na podstawie ground-truthu i
+D-17.1–D-17.4]:** punkt wielorepowy — ale, inaczej niż P-16.2 (jeden punkt
+rozbity na a/b z twardą zależnością sekwencyjną „render czyta to, co
+rejestruje core"), tutaj DWA NIEZALEŻNE JEDNOREPOZYTORYJNE punkty z jedną
+zależnością kolejności: **P-17.1** (`qutlet-ai`, samodzielna konwersja opisu
+na AJAX) i **P-17.2** (`qutlet-core`, nakładka-kreator spinająca metaboxy
+obu pluginów + podgląd kategorii). Uzasadnienie podziału: kreator (D-17.1)
+to JS/CSS-owa orkiestracja WIDOCZNOŚCI/KOLEJNOŚCI już istniejących
+metaboxów na TYM SAMYM ekranie `post.php` — nie wymaga zmiany PHP po
+stronie `qutlet-ai` poza tym, co i tak robi P-17.1 (AJAX). Naturalny
+właściciel orkiestracji to `qutlet-core`: dziś już właściciel WIĘKSZOŚCI
+dotykanych pól/metaboxów (cena, cena rynkowa, rabat, stan i zawartość,
+kanał Allegro, `podnazwa`, podgląd kategorii) i jedyny plugin z zasięgiem
+admina obok `qutlet-ai` (`qutlet-theme` ma zero zasięgu admina w tym
+projekcie — ground-truth wyżej). `qutlet-ai` renderuje swoje DWA metaboxy
+(nazwa, opis) bez zmian strukturalnych poza P-17.1 — kreator tylko
+przenosi je wizualnie w DOM/CSS, nie przejmuje ich logiki.
+
+**Zależności:** FAZA 7 (przeróbka AI, `qutlet-ai`), FAZA 13 (strona produktu:
+edytor admina + Allegro, `MarketPriceField`/`RawLayerMetaBox`), P-9.1
+(własność pól przy sync — ryzyko nadpisania ręcznych edycji, istotne przy
+projektowaniu kroków kreatora), P-6.1 (`qutlet_stawka_rabatu`), P-6.8b
+(mapowanie kategorii).
+
+### P-17.1 — qutlet-ai: opis generowany AJAX-em (bez przeładowania), z zachowanym podglądem
+
+- Zamienia `GenerationMetaBox::handle_generate/_accept/_discard` z
+  `admin-post.php` (`<form>` + `wp_safe_redirect`) na `wp_ajax_*` (wzorem
+  `TitleGenerationMetaBox`, P-13.2c) — ten sam transient podglądu
+  (`qutlet_ai_pending_{id}`), ta sama trójstopniowość
+  (generuj→podgląd→akceptuj/odrzuć, D-13.G2/D-17.2).
+- Nowy JS (`assets/js/rewrite-generator.js`, wzorem `title-generator.js`)
+  podmienia kolumnę „Wygenerowane (podgląd)" i (po akceptacji) `post_content`
+  w DOM bez przeładowania strony.
+- Nonce + `current_user_can('edit_post', $product_id)` per żądanie (wzorem
+  `TitleGenerationMetaBox::authorized_product_id()`).
+- **Do ustalenia przy realizacji (ground-truth NAJPIERW):**
+  - czy transient komunikatu (`qutlet_ai_notice_{id}_{user}` +
+    `render_notice()`) staje się zbędny po przejściu na AJAX — prawdopodobnie
+    TAK (komunikat wraca bezpośrednio w odpowiedzi JSON, jak przy tytule),
+    do potwierdzenia;
+  - czy `render_footer_forms()`/trzy niewidoczne formularze w stopce (dziś
+    obejście zagnieżdżonego `<form>`, patrz docblock `GenerationMetaBox`)
+    stają się martwym kodem po przejściu na AJAX — prawdopodobnie TAK
+    (AJAX nie potrzebuje żadnego `<form>`), do potwierdzenia i usunięcia.
+- **Zależności:** brak (samodzielny — mechanizm-wzorzec już istnieje w tym
+  samym repo, `TitleGenerationMetaBox`, P-13.2c). Może ruszyć jako pierwszy.
+
+### P-17.2 — qutlet-core: kreator (wizard) — nakładka spinająca metaboksy w kroki
+
+- Nakładka (modal/panel, D-17.1) nad ekranem edycji produktu — JS/CSS
+  orkiestrujący WIDOCZNOŚĆ istniejących metaboxów (bez przejmowania ich
+  logiki zapisu) w kroki:
+  1. **Nazwa** — metabox `qutlet-ai` `TitleGenerationMetaBox` (bez zmian) +
+     metabox ACF core `RewrittenFields` (`podnazwa`) — oba wizualnie w
+     kroku 1.
+  2. **Opis** — metabox `qutlet-ai` `GenerationMetaBox` PO P-17.1 (AJAX),
+     krok 2.
+  3. **Cena** — pola natywne Woo z zakładki Product Data → General
+     (`_qutlet_stawka_rabatu`, `cena_rynkowa_nowego`), przeniesione
+     wizualnie do kroku 3 — BEZ zmiany zapisu (nadal część głównego
+     `<form id="post">`/Woo save).
+  4. **Stan i zawartość** — metabox ACF `ProductConditionFields`
+     (`klasa_stanu` + „Co w przesyłce"), krok 4.
+  5. **Kanał Allegro** — metabox ACF `AllegroChannelFields`, krok 5.
+  6. **Kategoria (podgląd, D-17.3)** — NOWY, mały panel informacyjny:
+     term `product_cat` przypisany produktowi + `AllegroLinkMeta::
+     META_CATEGORY_PATH` (ścieżka liść→korzeń), READ-ONLY, krok 6.
+- Trigger (D-17.4): przycisk „Otwórz kreator" — dokładne miejsce (lista
+  produktów / ekran edycji / oba) do ustalenia przy realizacji.
+- Zapis: BEZ zmiany dla kroków 3–5 (nadal jeden zbiorczy submit Woo na
+  końcu, jak dziś) — kreator to WYŁĄCZNIE warstwa nawigacji/prezentacji nad
+  tym samym formularzem. Kroki 1–2 zachowują swój niezależny AJAX
+  (natychmiastowy zapis, poza głównym submitem).
+- **Otwarte pytanie do ground-truthu realizującej sesji [OTWARTE]:** czy
+  „krok" w sensie UI wymaga fizycznego ukrycia pozostałych metaboxów (JS
+  `display:none` + pasek postępu) czy wystarczy pasek nawigacji/kotwic
+  (scroll-to) bez ukrywania — wpływa na złożoność JS, nie na zakres danych.
+- **Zależności:** P-17.1 (opis musi być AJAX, żeby zmieścić się w kroku
+  nakładki bez przeładowania całej strony pod modałem).
+
+**Status:** faza rozpisana (🟦), BEZ realizacji — dwa punkty
+jednorepozytoryjne (`qutlet-ai`, `qutlet-core`) z jedną zależnością
+kolejności (P-17.2 → P-17.1). P-17.1 może ruszyć od razu jako osobna
+sesja/branch/PR; P-17.2 czeka na jego merge.
+
+---
+
 ## Materiał referencyjny i kandydaci do dalszych faz
 
 ### Inwentarz endpointów Allegro (dostarczony przez użytkownika)
