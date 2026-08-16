@@ -5870,7 +5870,7 @@ mechanizm ze szkicu planu, nie to co P-16.2a faktycznie zaimplementowało.
 
 ---
 
-## 🟦 FAZA 17 — Kreator (wizard) przeglądu świeżo zaimportowanego produktu — ROZPISANA
+## 🟨 FAZA 17 — Kreator (wizard) przeglądu świeżo zaimportowanego produktu — ROZPISANA
 
 **Zgłoszenie (2026-08-16):** sześć aspektów świeżo zaimportowanego z Allegro
 produktu wymaga uwagi redaktora — nazwa (+ ewentualna podnazwa), opis
@@ -6067,7 +6067,7 @@ edytor admina + Allegro, `MarketPriceField`/`RawLayerMetaBox`), P-9.1
 projektowaniu kroków kreatora), P-6.1 (`qutlet_stawka_rabatu`), P-6.8b
 (mapowanie kategorii).
 
-### P-17.1 — qutlet-ai: opis generowany AJAX-em (bez przeładowania), z zachowanym podglądem
+### 🟢 P-17.1 — qutlet-ai: opis generowany AJAX-em (bez przeładowania), z zachowanym podglądem
 
 - Zamienia `GenerationMetaBox::handle_generate/_accept/_discard` z
   `admin-post.php` (`<form>` + `wp_safe_redirect`) na `wp_ajax_*` (wzorem
@@ -6128,10 +6128,31 @@ projektowaniu kroków kreatora), P-6.1 (`qutlet_stawka_rabatu`), P-6.8b
 - **Zależności:** P-17.1 (opis musi być AJAX, żeby zmieścić się w kroku
   nakładki bez przeładowania całej strony pod modałem).
 
-**Status:** faza rozpisana (🟦), BEZ realizacji — dwa punkty
-jednorepozytoryjne (`qutlet-ai`, `qutlet-core`) z jedną zależnością
-kolejności (P-17.2 → P-17.1). P-17.1 może ruszyć od razu jako osobna
-sesja/branch/PR; P-17.2 czeka na jego merge.
+**Zrealizowano (`qutlet-ai` #11, sesja 2026-08-16/17):** `GenerationMetaBox`
+przeszedł z `admin-post.php` na `wp_ajax_*`, dokładnie wg planu — trójstopniowy
+flow generuj→podgląd→akceptuj/odrzuć bez zmian, ten sam transient
+(`qutlet_ai_pending_{id}`), nowy `assets/js/rewrite-generator.js`. Oba "do
+ustalenia" z opisu punktu potwierdzone jako TAK i usunięte: transient
+komunikatu (`qutlet_ai_notice_{id}_{user}`) i trzy niewidoczne formularze w
+stopce (`render_footer_forms`) okazały się martwym kodem po konwersji.
+Zweryfikowane end-to-end (LocalWP MCP + Playwright, produkt sandbox z
+zseedowaną ofertą Allegro): generuj (błąd 503 z realnego upstream AI i
+sukces), zaakceptuj (zapis `post_content`, transient wyczyszczony), odrzuć
+(transient wyczyszczony, bieżący opis nietknięty) — wszystko bez
+przeładowania strony. Niezależna recenzja (`docs/review.md`): 🟡 WARUNKOWO
+(drobne — nieaktualny docblock w `TitleGenerationMetaBox` po zmianie,
+naprawiony w tym samym PR-ze). Przy okazji: `CLAUDE.md` dostał nowy,
+skodyfikowany wyjątek dla flipu 🟡 punktów czysto-kodowych w jednym repo bez
+pracy w `qutlet-meta` (`qutlet-meta` #90) — ten punkt jest jego pierwszym
+zastosowaniem (stąd brak 🟡 przed 🟢 tutaj). D-17.6 (styl wizualny P-17.2,
+referencja WC Setup Wizard) dopisany do planu tą samą sesją (`qutlet-meta`
+#91).
+
+**Status:** P-17.1 zrealizowany i zmergowany. P-17.2 (`qutlet-core`: nakładka
+spinająca metaboksy w kroki, wizualnie wg D-17.6) jeszcze nie zbudowany —
+ostatni punkt fazy, zależny od P-17.1 (już zmergowany, może ruszyć). Prompt
+startowy na sesję realizującą P-17.2 przekazany użytkownikowi w rozmowie
+kończącej tę sesję.
 
 ---
 
