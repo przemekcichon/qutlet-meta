@@ -2496,7 +2496,17 @@ checkboxa/suwaka) — NIE dla mechanizmu transportu (nie ma czego kopiować
   przeładowanie): `<div id="qutlet-archive-results">` echo'owany na
   `woocommerce_before_shop_loop` (priorytet -10, przed notices/toolbarem) /
   `woocommerce_after_shop_loop` (priorytet 1000, po paginacji) — jeden
-  stabilny węzeł do podmiany `outerHTML` niezależnie od trybu.
+  stabilny węzeł do podmiany `outerHTML` niezależnie od trybu. **Wyjątek
+  ujawniony niezależną recenzją PR-a (sesja 2026-08-16):** przy ZERO
+  wyników filtra, `archive-product.php` w ogóle nie odpala
+  `before/after_shop_loop` (idzie gałęzią `woocommerce_no_products_found`
+  zamiast — patrz P-9.7), więc na klasycznym przeładowaniu wrapper/formularz
+  w tym przypadku NIE istnieje (pre-existing luka P-8.3b/P-8.3c, poza
+  zakresem P-8.3d — zgłoszona jako P-9.7). AJAX-owa gałąź
+  (`ProductFiltersAjax::send_no_products_fragment_and_exit()`) buduje
+  wrapper ręcznie wokół realnego komunikatu `wc_no_products_found()`, żeby
+  przynajmniej NIE regresować względem klasycznej ścieżki (pusty, martwy
+  panel zamiast komunikatu — must-fix z tej samej recenzji).
   `.woocommerce-products-header` (hardkodowany przez WooCommerce Blocks,
   ground-truth P-8.3a) zostaje POZA tym fragmentem — nie zależy od filtrów,
   nie ma potrzeby go podmieniać.
@@ -3445,6 +3455,39 @@ w ogóle ładować te arkusze?
 - **Zależności:** brak formalnej zależności od P-8.6c (dotyka innych,
   już zmergowanych stron), ale znaleziony PRZY OKAZJI tej sesji — oba PR-y
   mogą się zmergować w dowolnej kolejności.
+
+### P-9.7 — Formularz filtrów znika przy zerowym wyniku (archiwum kategorii/Shop)
+
+**Zgłoszenie (2026-08-16, niezależna recenzja PR #32 `qutlet-theme`, sesja
+P-8.3d):** recenzent PR-a wykrył, że gdy aktywny zestaw filtrów
+(`ProductFilterQuery`, P-8.3b/P-8.3c) zwraca ZERO produktów, formularz
+filtrów (`filters-and-sort.php` — toolbar/chipy/szuflada), a nie tylko
+siatka, znika CAŁKOWICIE ze strony — użytkownik utyka bez możliwości
+zdjęcia filtra przez UI (musi ręcznie edytować URL). Dotyczy WYŁĄCZNIE
+klasycznego przeładowania (D-8.3b.1) — analogiczny przypadek w P-8.3d/AJAX
+został naprawiony w tej samej sesji (`ProductFiltersAjax::send_no_products_fragment_and_exit()`),
+ale klasyczna ścieżka (i strona bez włączonego JS) ma ten sam problem od
+P-8.3b/P-8.3c, sprzed P-8.3d.
+
+- **Przyczyna (potwierdzona w kodzie WooCommerce na dysku,
+  `wc-template-functions.php:295-297`):** `woocommerce_product_loop()` =
+  `have_posts() || 'products' !== woocommerce_get_loop_display_mode()` —
+  fałsz przy KAŻDYM zestawie filtrów bez trafień (nie tylko gdy cały sklep
+  jest pusty). `archive-product.php` (rdzeń WC) w tej gałęzi w ogóle NIE
+  odpala `woocommerce_before_shop_loop`/`_after_shop_loop` — a to na nich
+  wisi `ProductFilters::render()` (formularz filtrów), więc formularz
+  znika razem z siatką, zamiast zostać z komunikatem „brak produktów"
+  obok.
+- **Repo:** qutlet-theme, slice `ProductFilters/` — do ustalenia przy
+  realizacji, czy naprawa to osobny hook na `woocommerce_no_products_found`
+  wołający `ProductFilters::render()` (ten sam wzorzec, którym
+  `ProductFiltersAjax` już łapie komunikat w tej gałęzi dla ścieżki AJAX),
+  czy inny mechanizm.
+- **Poza zakresem P-8.3d:** świadomie NIE naprawione w PR #32 (decyzja
+  użytkownika, sesja 2026-08-16) — P-8.3d naprawił WYŁĄCZNIE regres, który
+  sam wprowadził (pusty JSON zamiast komunikatu), nie przedrzeźnia
+  istniejącego zakresu P-8.3b/P-8.3c.
+- **Zależności:** P-8.3b-core/theme, P-8.3c-core/theme.
 
 ---
 
