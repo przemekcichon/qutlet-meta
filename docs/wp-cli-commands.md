@@ -85,11 +85,16 @@ kierunek jest jednostronny (produkcja → snapshot → sandbox). Wznawialna, ide
 względem stanu sandboksa.
 **Repo/klasa:** `qutlet-allegro`, `Qutlet\Allegro\SandboxSeed\SandboxSeedCommand`.
 
-### `wp qutlet-allegro import-offers [--environment=<env>=sandbox|production] [--offer=<id>] [--limit=<n>=100] [--max-offers=<n>=0] [--skip-images] [--status=<status>=pending|publish|draft]`
+### `wp qutlet-allegro import-offers [--environment=<env>=sandbox|production] [--offer=<id>] [--new-only] [--limit=<n>=100] [--max-offers=<n>=0] [--skip-images] [--status=<status>=pending|publish|draft]`
 Pobiera oferty `ACTIVE`/`BUY_NOW` z Allegro i tworzy/aktualizuje produkty WooCommerce
 wg mappingu (kontrakt danych) — jedyna komenda, którą realnie zasila się katalog
-produktów. Idempotentna po `_qutlet_allegro_offer_id`. Slot `read`. **Bez WP-Cron —
-wyłącznie ręczna.**
+produktów. `--new-only` (FAZA 15, D-15.1/D-15.2): tani delta-check — zamiast pełnej
+listy ACTIVE importuje WYŁĄCZNIE oferty nieobecne jeszcze w zbiorze znanych
+`offer_id` (`ProductWriter::known_offer_ids()`); wykrywa tylko nowe oferty, zmiany
+treści już zaimportowanych wymagają pełnego przebiegu bez tej flagi. Wyklucza się
+wzajemnie z `--offer`. Idempotentna po `_qutlet_allegro_offer_id`. Slot `read`.
+**Napędzana przez WP-Cron w wariancie `--new-only`** — patrz sekcja niżej; pełny
+przebieg (bez flagi) pozostaje wyłącznie ręczny.
 **Repo/klasa:** `qutlet-allegro`, `Qutlet\Allegro\OfferSync\ImportOffersCommand`.
 
 ### `wp qutlet-allegro sync-stock [--environment=<env>=sandbox|production] [--full]`
@@ -132,10 +137,12 @@ przeoczenie.
 
 ## WP-Cron
 
-Wszystkie trzy schedulery żyją w `qutlet-allegro` (zero w `qutlet-core`/`qutlet-ai`
+Wszystkie cztery schedulery żyją w `qutlet-allegro` (zero w `qutlet-core`/`qutlet-ai`
 — grep `wp_schedule_event` bez dopasowań w obu). Weryfikacja: `wp cron event list`
-(zdarzenia `qutlet_allegro_*`; potwierdzone na Local 2026-08-13 — wszystkie pięć
-hooków obecne z opisanymi niżej interwałami).
+(zdarzenia `qutlet_allegro_*`; trzy schedulery + pięć hooków potwierdzone na Local
+2026-08-13, szósty hook — `qutlet_allegro_import_offers_delta`, doszły w P-15.3a —
+potwierdzony `wp cron event list` na Local 2026-08-16, wszystkie sześć hooków
+obecnych z opisanymi niżej interwałami).
 
 ### `qutlet_allegro_refresh_tokens` — `Auth\RefreshScheduler`
 - **Interwał:** `hourly` (wbudowany harmonogram WP).
@@ -173,12 +180,28 @@ hooków obecne z opisanymi niżej interwałami).
 - **Rejestracja:** `( new OrderSync\OrderSyncScheduler() )->register()` w
   `bootstrap()`, **WEWNĄTRZ** guardu `WP_CLI` — ten sam powód co `StockSyncScheduler`.
 
+### `qutlet_allegro_import_offers_delta` — `OfferSync\ImportOffersScheduler`
+- **Interwał:** co 15 minut (własny harmonogram `qutlet_allegro_fifteen_minutes`) —
+  JEDEN hook, bez odpowiednika `_full`: delta-check importu z natury już jest
+  pełnym skanem listy `GET /sale/offers` za każdym przebiegiem, więc nie ma czego
+  dzielić na tor przyrostowy/pełny (inaczej niż `sync-stock`/`sync-orders`).
+- **Co odpala:** dla każdego środowiska z listy skonfigurowanej stałą
+  `QUTLET_ALLEGRO_IMPORT_OFFERS_ENVIRONMENTS` (CSV; niezdefiniowana → fallback =
+  oba, `production`+`sandbox` — OSOBNA stała od `sync-stock`/`sync-orders`, ten
+  sam motyw co D-6.9.2) woła `wp qutlet-allegro import-offers --new-only
+  --environment=<env>`, przez `WP_CLI::runcommand()` w tym samym procesie, z
+  izolacją błędów per środowisko.
+- **Rejestracja:** `( new OfferSync\ImportOffersScheduler() )->register()` w
+  `bootstrap()`, **WEWNĄTRZ** guardu `WP_CLI` — ten sam powód co
+  `StockSyncScheduler`/`OrderSyncScheduler`. Dodany w P-15.3a.
+
 ### Zależność od `DISABLE_WP_CRON` i triggera (Local vs produkcja)
 Na Local `DISABLE_WP_CRON=true` (potwierdzone `read_wp_config` 2026-08-13) — pseudo-cron
 WP (odpalany przy pageview) jest wyłączony. Ma to konsekwencję poza samym „rzadziej
-tyka": `StockSyncScheduler`/`OrderSyncScheduler` rejestrują swoje hooki/filtry
-WYŁĄCZNIE pod guardem `WP_CLI` (patrz wyżej) — na zwykłym żądaniu HTTP (gdzie stała
-`WP_CLI` nie jest zdefiniowana) `bootstrap()` w ogóle nie wywołuje ich `register()`,
+tyka": `StockSyncScheduler`/`OrderSyncScheduler`/`ImportOffersScheduler` rejestrują
+swoje hooki/filtry WYŁĄCZNIE pod guardem `WP_CLI` (patrz wyżej) — na zwykłym
+żądaniu HTTP (gdzie stała `WP_CLI` nie jest zdefiniowana) `bootstrap()` w ogóle
+nie wywołuje ich `register()`,
 więc nawet gdyby pseudo-cron odpalił zdarzenie, nie miałoby podpiętego callbacku.
 Jedynym realnym triggerem na Local jest zadanie Windows `qutlet-wp-cron-tick`
 wołające `wp cron event run --due-now` (WP-CLI, ~1 min) — środowisko Local jest
@@ -202,9 +225,11 @@ dokument nie duplikuje szczegółów produkcyjnych.
 - `wp qutlet-allegro snapshot-offers`
 - `wp qutlet-allegro sandbox-preflight`
 - `wp qutlet-allegro seed-sandbox`
-- `wp qutlet-allegro import-offers`
 - `wp qutlet-allegro category-report`
 - `wp qutlet-allegro backfill-order-attribution`
 
-`sync-stock` i `sync-orders` NIE są na tej liście — mają scheduler (sekcja „WP-Cron"
-wyżej), ale idą też odpalić ręcznie (debug/testy), niezależnie od crona.
+`sync-stock`, `sync-orders` i `import-offers` NIE są na tej liście — mają scheduler
+(sekcja „WP-Cron" wyżej), ale idą też odpalić ręcznie (debug/testy), niezależnie od
+crona. Dla `import-offers` scheduler napędza WYŁĄCZNIE wariant `--new-only` — pełny
+przebieg (bez flagi) pozostaje dostępny tylko ręcznie, bez żadnego automatycznego
+triggera.
