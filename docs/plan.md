@@ -5529,6 +5529,123 @@ decyzja o odblokowaniu — to osobna, przyszła sesja + branch + PR w
 
 ---
 
+## 🟦 FAZA 14 — Automatyczny import nowych ofert Allegro (harmonogram)
+
+Cel: dziś `wp qutlet-allegro import-offers` (jedyna ścieżka tworząca NOWE
+produkty z ofert Allegro — potwierdzone ground-truth w P-13.1) jest
+WYŁĄCZNIE ręczną komendą WP-CLI, bez żadnego harmonogramu WP-Cron — w
+przeciwieństwie do stanu magazynowego (`StockSyncScheduler`, P-6.2b) i
+zamówień (scheduler `OrderSync`, P-6.9), które mają automatyczny,
+samonaprawialny tick. Realny objaw (sesja 2026-08-07): nowy produkt
+wystawiony na Allegro nie pojawia się w sklepie, dopóki ktoś ręcznie nie
+odpali importu. Ten punkt domyka dla NOWYCH ofert dokładnie tę samą lukę,
+którą P-6.9 domknęło dla zamówień (tam odłożoną jako D-6.3.3) — import
+katalogu zostaje jedynym mechanizmem synchronizacji bez harmonogramu.
+
+**Ground-truth bieżącego stanu (sesja 2026-08-07):**
+- `ImportOffersCommand` zarejestrowana WYŁĄCZNIE jako komenda WP-CLI
+  (`qutlet-allegro.php:153`, `\WP_CLI::add_command('qutlet-allegro
+  import-offers', ...)`) — zero hooka `wp_schedule_event`/`init` w całym
+  repo dla tej komendy (sprawdzone grep-em). `wp cron event list` na
+  Localu potwierdza: zaplanowane są WYŁĄCZNIE `qutlet_allegro_sync_stock`
+  (~1 min), `qutlet_allegro_sync_stock_full` (~30 min),
+  `qutlet_allegro_sync_orders` (~5 min), `qutlet_allegro_sync_orders_full`
+  (~4h) i `qutlet_allegro_refresh_tokens` (~1h) — brak jakiegokolwiek
+  hooka importu nowych ofert.
+- `ImportOffersCommand::offer_index()` (paginowany `GET /sale/offers`,
+  BEZ pobierania pełnej treści oferty) jest już TANIM sposobem na
+  wylistowanie wszystkich `offerId => publication.status` konta — dziś
+  wykorzystywanym tylko jako krok WEWNĄTRZ pełnego przebiegu: po nim i
+  tak leci DROGIE `GET /sale/product-offers/{id}` dla KAŻDEJ aktywnej
+  oferty, także już dawno zaimportowanych — pełny przebieg nie
+  rozróżnia „nowa" od „znana". To naturalny punkt zaczepienia dla taniego
+  kroku „sprawdź czy jest coś nowego" z żądania użytkownika.
+- `ProductWriter::find_product_id()` (klucz `_qutlet_allegro_offer_id`,
+  `AllegroLinkMeta::META_OFFER_ID`) to już istniejący, gotowy sposób
+  sprawdzenia „czy ta oferta ma już produkt" — bez niego trzeba by
+  wymyślać nowy mechanizm dopasowania od zera.
+
+### Decyzje globalne fazy
+
+- **D-14.G1 (dwuetapowy harmonogram: tani „czy jest coś nowego" + drogi
+  „zaciągnij i zapisz" TYLKO dla nowości) [USTALONE — żądanie
+  użytkownika, sesja 2026-08-07]:** w przeciwieństwie do
+  `StockSyncScheduler` (gdzie „przyrostowe" i „pełne" to dwie kadencje
+  TEGO SAMEGO kosztownego zapisu), tu rozdział jest wg KOSZTU ODCZYTU:
+  (1) tani tick listuje `GET /sale/offers` (jak `offer_index()` dziś) i
+  PORÓWNUJE z lokalnymi `_qutlet_allegro_offer_id` — jeśli nic nowego,
+  koniec, brak zapisów; (2) TYLKO gdy znaleziono offer_id bez lokalnego
+  produktu, drogi krok robi `GET /sale/product-offers/{id}` +
+  `ProductWriter::upsert()` WYŁĄCZNIE dla tych nowych ofert (nie dla
+  całego katalogu). Cel: częsty tick (szybkie wykrycie nowego produktu)
+  bez kosztu pełnego re-importu setek już znanych ofert za każdym razem.
+  **Odrzucona alternatywa:** po prostu zaplanować dzisiejszy pełny
+  `import-offers` cyklicznie (jak `sync-stock --full`) — działałoby, ale
+  marnotrawnie: re-pobierałoby PEŁNĄ treść (włącznie ze zdjęciami, o ile
+  nie `--skip-images`) każdej z ~500+ ofert przy KAŻDYM tyknięciu, mimo
+  że zdecydowana większość z nich nie zmieniła się od ostatniego importu.
+- **D-14.G2 (status nowo tworzonych produktów = `pending`) [USTALONE —
+  konsekwencja P-13.1]:** harmonogram korzysta z tego samego domyślnego
+  `--status=pending` co ręczny import (P-13.1) — automatyczne tworzenie
+  BEZ ludzkiej weryfikacji przed publikacją byłoby dokładnie problemem,
+  który P-13.1 rozwiązało dla ścieżki ręcznej; harmonogram nie powinien
+  cicho tego obchodzić.
+
+### P-14.1 — Scheduler „nowe oferty" (qutlet-allegro)
+- **Repo:** `qutlet-allegro` (nowa klasa w slice `OfferSync/`, np.
+  `NewOfferScheduler` — wzorzec `OfferSync/StockSyncScheduler` z P-6.2b:
+  self-healing `wp_schedule_event()` na `init`, `wp_clear_scheduled_hook`
+  przy dezaktywacji, `WP_CLI::runcommand()` z `exit_error=>false` +
+  łapanie `\Throwable` per środowisko, stała `wp-config.php` do zawężenia
+  środowisk jak `ENVIRONMENTS_CONSTANT`, rejestracja pod guardem
+  `WP_CLI`).
+- **Zakres (szkic — do rozpisania po ground-truth przy realizacji):**
+  1. Krok tani: odpowiednik `offer_index()` (albo nowa, lżejsza
+     komenda/metoda, jeśli `ImportOffersCommand` wymaga refaktoru, żeby
+     to wydzielić) → lista `offerId` ze statusem `ACTIVE`.
+  2. Diff z lokalnym stanem: dla każdego `offerId` z listy —
+     `ProductWriter::find_product_id()` (albo jedno zapytanie po
+     WSZYSTKIE lokalne `_qutlet_allegro_offer_id` naraz, jeśli
+     per-oferta byłoby zbyt wolne przy setkach ofert — do zmierzenia
+     przy realizacji).
+  3. Krok drogi: WYŁĄCZNIE dla offer_id bez dopasowania — pełny
+     `GET /sale/product-offers/{id}` + `ProductWriter::upsert(...,
+     $status = 'pending', ...)` (albo wywołanie istniejącego
+     `import-offers --offer=<id>` per nowa oferta, jeśli to prostsze niż
+     duplikować logikę kategorii/mappingu z `ImportOffersCommand`) — DO
+     ROZSTRZYGNIĘCIA przy realizacji; prawdopodobnie prościej refaktorować
+     `ImportOffersCommand` tak, żeby przyjmował JAWNĄ listę `offerId` do
+     przetworzenia, zamiast tylko `--offer=<pojedynczy>` albo „wszystkie
+     ACTIVE").
+- **Pod-decyzje [OTWARTE]:**
+  - kadencja taniego ticku (świeższość wykrycia nowego produktu vs koszt
+    częstego `GET /sale/offers` — prawdopodobnie tak tanio jak
+    `sync-stock` ~1 min, do potwierdzenia zmierzeniem realnego czasu
+    przebiegu na sandboksie);
+  - limit nowych ofert przetwarzanych w JEDNYM tyknięciu (ochrona przed
+    zalewem — np. import 50 nowych ofert naraz po dłuższej przerwie
+    schedulera — analogia `--max-offers` z `ImportOffersCommand`);
+  - `--skip-images` w automatycznym przebiegu: side-load zdjęć jest
+    najwolniejszą częścią importu — dla samego wykrycia „coś nowego jest,
+    admin zobaczy je jako `pending`" może być akceptowalne pominąć zdjęcia
+    w automatycznym tyknięciu i dociągnąć je osobno (np. przy pierwszej
+    ręcznej edycji produktu), ALBO pogodzić się z wolniejszym tyknięciem
+    — decyzja użytkownika przy realizacji;
+  - wspólna stała środowisk (`QUTLET_ALLEGRO_SYNC_STOCK_ENVIRONMENTS`,
+    P-6.2c) czy osobna dla tego schedulera (to samo pytanie otwarte, co w
+    P-6.9 dla zamówień) — prawdopodobnie WSPÓLNA wystarcza (import i sync
+    stanów mają to samo pytanie „które środowisko obserwować"), ale do
+    potwierdzenia przy realizacji;
+  - kolizja/kolejność z `sync-stock` na tym samym systemowym ticku
+    (`wp cron event run --due-now`) — osobne locki (wzorem
+    `StockSyncLock`/`OrderSyncLock`) czy wystarczy, że oba przebiegi są
+    idempotentne i niezależne.
+- **Zależności:** P-13.1 (status `pending` dla nowo tworzonych — D-14.G2),
+  wzorzec `StockSyncScheduler` (P-6.2b), systemowy tick crona (D-6.G1,
+  handoff — już istnieje).
+
+---
+
 ## Materiał referencyjny i kandydaci do dalszych faz
 
 ### Inwentarz endpointów Allegro (dostarczony przez użytkownika)
