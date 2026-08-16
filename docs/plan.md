@@ -5535,6 +5535,284 @@ merge'u.
 
 ---
 
+## 🟦 FAZA 16 — Nagłówek: dwa menu (nawigacja + kategorie z mega menu) — ROZPISANA
+
+**Zgłoszenie (2026-08-16):** nagłówek ma dziś DWA odrębne menu, oba w 100%
+zaszyte na sztywno w kodzie, zero powiązania z jakimkolwiek menu WordPressa:
+
+1. **Menu nawigacyjne** (`.header-nav` — 4 stałe linki: Strefa okazji / Jak to
+   działa? / Blog / Pomoc). Prosty temat.
+2. **Menu kategorii z mega menu** (`.subnav-band` — 6 sztywnych „pigułek" +
+   przycisk „Więcej"; `.mega` — 4 sztywne kolumny z nagłówkami „Mobile i
+   noszone" / „Komputery" / „Audio i Foto" / „Dom i gaming", po 4 linki każda).
+   Temat WIĘKSZY, bo pozycja menu potrzebuje DWÓCH właściwości, których
+   natywne menu WP nie mają:
+   - **checkbox „widoczna od razu na belce"** — czy pozycja ląduje jako stała
+     pigułka w `.subnav-band`, czy tylko w rozwijanym mega menu pod „Więcej";
+   - **etykieta grupy mega menu** — do której z (docelowo) **maksymalnie 6**
+     kolumn (dziś 4, na sztywno w kodzie) pozycja należy w rozwiniętym widoku.
+
+**Ground-truth wstępny (sesja 2026-08-16, sesja poprzednia — potwierdzony
+poniżej, bez zmian):**
+- `register_nav_menu()`/`wp_nav_menu()` NIE występuje NIGDZIE w `qutlet-theme`
+  poza `Help::render_help_nav()` (menu `pomoc`, P-1.5, `inc/features/Help/Help.php`)
+  — jedyny istniejący w projekcie wzorzec: lokalizacja rozwiązywana przez
+  `get_nav_menu_locations()` (NIE po nazwie/slugu menu). Cały nagłówek
+  (`parts/header.html`, port 1:1 `design/vanilla/partials/header.html`) to
+  dziś zwykły, statyczny HTML — `href="#"` na WSZYSTKICH linkach
+  `.subnav-band`/`.mega`, zero pętli `wp_nav_menu()`/`WP_Query`.
+- ACF Pro ma NATYWNĄ lokalizację pola „Menu Item" — prawdopodobny mechanizm
+  dla dwóch dodatkowych pól per-pozycja. Potwierdzone poniżej (ta sesja).
+
+**Ground-truth PEŁNY (sesja 2026-08-16, TA sesja — planistyczna, bez kodu):**
+- **ACF Pro 6.8.7** (`acf.php:12`) na tej instalacji. Lokalizacja „Menu Item"
+  realnie działa: `class-acf-location-nav-menu-item.php` (`name=nav_menu_item`,
+  `object_type=menu_item`) deleguje matching do `class-acf-location-nav-menu.php`
+  — reguła `nav_menu_item == location/{slug}` scope'uje grupę pól WYŁĄCZNIE do
+  pozycji menu przypisanego do konkretnej **lokalizacji** (`get_nav_menu_locations()`
+  w tle), nie do konkretnego menu-terminu — dokładnie mechanizm potrzebny tutaj
+  (grupa pól ma się pojawiać na pozycjach menu `kategorie`, niezależnie jak
+  redaktor nazwie samo menu w Wygląd → Menu).
+- **`product_cat` jest `public => true`** (zweryfikowane `wp taxonomy get
+  product_cat --format=json` na tej instalacji) — WordPress natywnie dokłada
+  panel „Kategorie produktów" w Wygląd → Menu dla KAŻDEJ publicznej taksonomii,
+  za darmo, bez żadnego kodu z naszej strony. Redaktor dodaje pozycję kategorii
+  przez ten panel (checkbox picker), a `$item->url` rozwiązuje WordPress sam
+  (`get_term_link()` w tle) — **rozstrzyga otwarte pytanie „skąd link"**: nie
+  ma potrzeby żadnego custom-linku ani nowego pola.
+- **`parts/header.html` to prawdziwy blokowy template part** (referencje
+  `<!-- wp:template-part {"slug":"header"} /-->` w ośmiu plikach `templates/*.html`)
+  — CAŁY dzisiejszy nagłówek to jeden statyczny blok `<!-- wp:html -->`.
+  Template party w motywach blokowych **NIE wykonują PHP** — to czysty odczyt
+  pliku jako markup bloków, w odróżnieniu od `patterns/*.php` (które WYKONUJĄ
+  się jako PHP przy każdej rejestracji na `init`, potwierdzone już istniejącym
+  wzorcem w tym motywie, np. `patterns/home-categories.php` z pętlą
+  `foreach`/`get_term_link()`/`WP_Term`). Block Bindings API (mechanizm WP na
+  dynamiczne wartości WEWNĄTRZ deklaratywnych bloków) nie wspiera pętli o
+  zmiennej długości (dowolna liczba pigułek/kolumn/pozycji) — **rozstrzyga
+  otwarte pytanie „mechanizm renderu"**: potrzebny własny blok DYNAMICZNY
+  (`register_block_type` + `render.php`), osadzony w miejscu dzisiejszych
+  statycznych fragmentów wewnątrz `parts/header.html` (D-16.G4).
+- **`parts/header-cart.html` (minimalny nagłówek koszyka/kasy, P-8.6a.2) NIE
+  ma żadnej nawigacji/menu kategorii** — świadomie wyłącznie logo + link
+  powrotu. FAZA 16 dotyka WYŁĄCZNIE `parts/header.html`, zero podwójnej pracy.
+- **`assets/js/header-nav.js` (interakcje dropdown/mega/mobile nav/hide-on-scroll)
+  jest już w 100% sterowany atrybutami `data-*`**, bez żadnej zależności od
+  LICZBY pigułek/kolumn/pozycji (`document.querySelectorAll('.dropdown')`,
+  `[data-mega]`, `[data-mnav]` — generyczne selektory). Port z
+  `design/vanilla/js/app.js` jest wierny 1:1 (zweryfikowane linia po linii —
+  zero pominiętej logiki). **JS nie wymaga ŻADNEJ zmiany w tej fazie** —
+  wystarczy, że render PHP wyprodukuje te same atrybuty/klasy w dowolnej
+  liczbie.
+- **Wszystkie istniejące rejestracje ACF w `qutlet-core`** (`AllegroChannelFields`,
+  `ProductConditionFields`, `RewrittenFields`, `PromptOverrideField`) celują
+  WYŁĄCZNIE w `post_type == product` lub taksonomię `klasa_stanu_definicja`
+  (przypiętą do `product` po to, żeby dostać darmowy ekran admina) — **żadna
+  dzisiejsza rejestracja core NIE dotyczy pozycji menu**. P-16.2a (niżej) jest
+  pierwszym tego typu przypadkiem w projekcie.
+- **CSS `.mega-grid` ma dziś sztywne `grid-template-columns:repeat(4,1fr)`**
+  (`style.css`, oba: `design/vanilla/css/style.css:199` i port
+  `qutlet-theme/style.css:368`), z osobnym sztywnym mobilnym breakpointem
+  `repeat(2,1fr)` (`style.css:1044`/`:1650`). Musi przejść na elastyczną liczbę
+  kolumn (1–6, docelowo, D-16.G3) — patrz P-16.2b.
+- **Struktura danych mega menu w prototypie** (`design/vanilla/partials/header.html:44-90`):
+  6 pigułek `.subnav-band` (Smartfony/Laptopy/Audio/Gaming/Foto/Konsole) —
+  WSZYSTKIE 6 występują TAKŻE wewnątrz swojej kolumny `.mega-col` (Smartfony →
+  „Mobile i noszone", Laptopy → „Komputery", Audio → „Audio i Foto", Gaming →
+  „Dom i gaming"; Foto/Konsole też w odpowiednich kolumnach), PLUS 10 dalszych
+  linków WYŁĄCZNIE w mega menu, bez pigułki (Tablety, Smartwatche, Akcesoria,
+  Monitory, Komponenty, Peryferia, Słuchawki, Kamery, Telewizory, Smart home).
+  **Potwierdza semantykę zgłoszenia**: checkbox „widoczna na belce" DOKŁADA
+  pigułkę-skrót NAD istnieniem w kolumnie — nie jest alternatywą dla niej.
+  Każda pozycja menu kategorii ZAWSZE należy do dokładnie jednej kolumny
+  (pole `grupa_mega_menu` **wymagane**), a checkbox `widoczna_na_belce` jest
+  NIEZALEŻNYM, opcjonalnym dodatkiem (domyślnie `false`). Sekcja „Kategorie" w
+  mobilnym `.mnav-panel` (`header.html:100-104`) pokazuje TEN SAM zestaw co
+  pigułki (4 z 6 w prototypie, realnie: wszystkie `widoczna_na_belce=true`) +
+  jeden statyczny catch-all „Wszystkie kategorie" (link do archiwum/strefy
+  okazji, poza zakresem tej fazy, już istnieje) — mobile NIE pokazuje pełnych
+  16 pozycji ze wszystkich kolumn.
+
+**Literały PEŁNE (nazwy pól/taksonomii/lokalizacji, VERBATIM):**
+`docs/kontrakt-danych.md` §14.
+
+**Decyzje użytkownika potwierdzone na starcie tej sesji (pytania z listy
+niżej, rozstrzygnięte PRZED spisaniem punktów — patrz „Decyzje globalne
+fazy"):** granica core/theme dla dodatkowych pól menu, model listy grup mega
+menu (rozszerzalna taksonomia vs. hardkodowany select), twardość limitu 6
+grup, mechanizm renderu w blokowym template parcie.
+
+**Zależności:** P-8.1 (istniejący `parts/header.html`), P-1.5 (jedyny istniejący
+w projekcie wzorzec `register_nav_menu`/rozwiązywania przez lokalizację).
+
+### Decyzje globalne fazy
+
+- **D-16.G1 (core rejestruje dodatkowe pola pozycji menu, NIE theme) [USTALONE
+  — decyzja użytkownika, sesja 2026-08-16]:** dwa dodatkowe pola pozycji menu
+  kategorii (`widoczna_na_belce`, `grupa_mega_menu` — §14.2) rejestruje
+  `qutlet-core` (ACF, lokalizacja „Menu Item"), zgodnie z ogólną regułą
+  projektu „rejestrujesz pole → core" (CLAUDE.md), MIMO że to pierwszy
+  przypadek rejestracji ACF w core NIE na `product`/`klasa_stanu_definicja`.
+  **Odrzucona alternatywa:** trzymać cały mechanizm w `qutlet-theme` (wzorem
+  `Help::MENU_LOCATION`, P-1.5, który jest czysto theme'owy) — argument za
+  odrzuceniem: `Help`/P-1.5 NIE rejestruje żadnych dodatkowych PÓL (tylko
+  lokalizację istniejącego, natywnego menu), więc precedens nie obejmuje
+  sytuacji, gdy menu potrzebuje własnych, nowych pól danych — tu reguła
+  ogólna („rejestrujesz pole → core") ma pierwszeństwo przed precedensem
+  bliższym z pozoru (ten sam plik/slice), nie odwrotnie. Konsekwencja:
+  `qutlet-theme` rejestruje WYŁĄCZNIE same lokalizacje menu (`nawigacja`,
+  `kategorie`) i renderuje; `qutlet-core` rejestruje pola i taksonomię grup —
+  **punkt jest wielorepowy** (P-16.2, niżej), z literałem-mostem `kategorie`
+  między lokalizacją (theme) a regułą lokalizacji ACF (core) — patrz
+  `docs/kontrakt-danych.md` §14, akapit „Literał-most między repo".
+- **D-16.G2 (grupy mega menu = rozszerzalna taksonomia `mega_menu_grupa`) [USTALONE
+  — decyzja użytkownika, sesja 2026-08-16]:** wzorem `klasa_stanu_definicja`
+  (§2.2, P-12.1a) — admin zarządza nazwami/kolejnością kolumn przez ekran WP
+  (`show_in_menu => 'nav-menus.php'`, zagnieżdżony pod Wygląd, obok Menu), bez
+  zmiany kodu. Pole na pozycji menu (`grupa_mega_menu`) to prawdziwa relacja
+  (ACF typ `taxonomy`, `save_terms`/`load_terms`), analogicznie do `klasa_stanu`
+  po cutoverze P-12.2a (§2). **Odrzucona alternatywa:** zwykłe pole ACF
+  `select` z zahardkodowanymi opcjami (Grupa 1..6 lub 6 konkretnych nazw) —
+  taniej i szybciej (brak nowej taksonomii + admin UI), ale nazwa kolumny
+  wraca do kodu: zmiana „Mobile i noszone" na inną nazwę wymagałaby deploya,
+  nie edycji w adminie — niespójne z już przyjętym w projekcie wzorcem
+  rozszerzalności (D-12.1a.1 odrzuciło dokładnie ten sam kompromis dla klas
+  stanu z tego samego powodu).
+- **D-16.G3 (limit 6 grup = wskazówka, NIE twardy limit) [USTALONE — decyzja
+  użytkownika, sesja 2026-08-16]:** brak walidacji blokującej powstanie 7.
+  grupy. Render (P-16.2b) liczy liczbę FAKTYCZNIE użytych grup i renderuje
+  tyle kolumn, ile jest — CSS `.mega-grid` (dziś sztywne `repeat(4,1fr)`,
+  ground-truth wyżej) przechodzi na elastyczną liczbę kolumn (np. custom
+  property `--mega-cols` ustawiana inline przez render + `repeat(var(--mega-cols,4),1fr)`
+  w arkuszu; mobilny breakpoint na `repeat(auto-fit,minmax(…))`, żeby dowolna
+  liczba grup zawinęła się bez łamania layoutu). Tekst pomocniczy przy
+  ekranie zarządzania grupami: „docelowo maks. 6 grup dla czytelności menu".
+  **Odrzucona alternatywa:** twardy limit (blokada zapisu 7. termu) — droższy
+  (własna walidacja przy tworzeniu termu) bez proporcjonalnej korzyści, skoro
+  elastyczny CSS i tak nie „łamie się" przy 7+ kolumnach (tylko robi się
+  ciaśniej) — ryzyko layoutu niższe niż koszt dodatkowego kodu walidującego.
+- **D-16.G4 (render dynamicznej treści w `parts/header.html` = własne bloki
+  dynamiczne) [USTALONE — decyzja użytkownika, sesja 2026-08-16]:** wzorem
+  standardowego mechanizmu FSE — `register_block_type()` + `render.php` —
+  osadzone w miejscu dzisiejszych statycznych fragmentów `<!-- wp:html -->`
+  wewnątrz `parts/header.html` (template part zostaje deklaratywny dookoła;
+  tylko fragmenty zależne od danych menu stają się blokami dynamicznymi).
+  Jedyny mechanizm, który obsłuży zmienną liczbę pigułek/kolumn/pozycji
+  mobilnych bez restrukturyzacji CSS/DOM — Block Bindings API nie wspiera
+  pętli (ground-truth wyżej). **Odrzucone alternatywy:** (1) przepisanie
+  całego `parts/header.html` na klasyczny plik PHP (`header.php` +
+  `block_header_area()`, wzorem D-8.4.1) — nieproporcjonalny nakład, skoro
+  99% nagłówka (logo/szukajka/dropdown koszyka-konta/mobile toggle/mnav
+  overlay poza sekcją kategorii) zostaje bez zmian i już działa jako
+  template part; (2) REST endpoint + hydration JS po stronie klienta — brak
+  precedensu w projekcie (zero client-fetchowanego contentu gdziekolwiek),
+  niepotrzebna złożoność (opóźnienie renderu, migotanie) dla treści, która
+  jest identyczna dla każdego odwiedzającego (brak personalizacji per-user).
+- **D-16.G5 (migracja dzisiejszej zaszytej treści = seed przez WP-CLI) [USTALONE
+  — wzorzec przyjęty, sesja 2026-08-16]:** jednorazowa komenda WP-CLI
+  odtwarza dzisiejszy stan (2 menu, 4 proste linki + 16 pozycji kategorii w 4
+  grupach, 6 z checkboxem `widoczna_na_belce=true`) — wzorem D-8.4.3/D-8.5.3
+  (stan BAZY tej instalacji, NIE migracja/kod; nowe środowisko wystartuje z
+  pustymi menu do czasu ręcznego powtórzenia seeda, jak reszta zasiewów w
+  projekcie). Podział core/theme (D-16.G1) NIE przeszkadza — komenda w
+  `qutlet-theme` może zapisywać wartości pól core-owych (`update_field()`/
+  `wp_set_object_terms()` nie sprawdzają, kto zarejestrował pole/taksonomię).
+
+### P-16.1 — Menu nawigacyjne (`.header-nav`, proste)
+
+- Lokalizacja menu `nawigacja` (`register_nav_menu()`, `qutlet-theme`, slice
+  `HeaderMenu/`) + render 4 linków przez `wp_nav_menu()` (klasa `nav-link` per
+  pozycja — `nav_menu_css_class`/`items_wrap`/custom walker, do ustalenia przy
+  realizacji) wewnątrz dynamicznego bloku `qutlet/header-nav` (D-16.G4),
+  osadzonego w `parts/header.html` w miejscu dzisiejszych czterech statycznych
+  `<a class="nav-link">`. Reszta `<nav class="header-nav">` (dropdown
+  koszyka/konta, mobile toggle) zostaje statycznym markupem template parta —
+  BEZ zmian, poza zakresem tego punktu.
+- **Wyłącznie `qutlet-theme`** — zero pól, zero core (temat prosty, wzorem
+  `Help::MENU_LOCATION`, P-1.5 — jedyna różnica: `Help` czyta menu treściowe
+  boczne, tu menu renderuje się w nagłówku strony głównej/każdej podstrony).
+- Seed WP-CLI (D-16.G5, część tego samego punktu): 4 pozycje (Strefa okazji →
+  `/strefa-okazji/` gdy istnieje po P-8.3/inaczej placeholder zgodnie ze
+  stanem P-8.3 w momencie realizacji, Jak to działa? → `/jak-to-dziala/`,
+  Blog → `/blog/`, Pomoc → `/pomoc/`), przypisanie do lokalizacji `nawigacja`.
+- **Zależności:** P-8.1 (`parts/header.html`); NIEZALEŻNY od P-16.2 (może być
+  zrealizowany w dowolnej kolejności względem niego, oddzielny branch/PR).
+
+### P-16.2 — Menu kategorii + mega menu (punkt wielorepowy → P-16.2a + P-16.2b)
+
+Rozbity na dwa repo zgodnie z D-16.G1 (core rejestruje pola/taksonomię, theme
+rejestruje lokalizację i renderuje) — dwa osobne `origin`, dwa branche, dwa
+PR-y, z jawną zależnością P-16.2b → P-16.2a (render czyta pola, które musi
+najpierw zarejestrować core).
+
+### P-16.2a — core: taksonomia grup + pola ACF na pozycji menu (`qutlet-core`)
+
+- Nowy slice `HeaderMenu/` (ta sama nazwa co w theme, D-16.G1 + konwencja
+  „ta sama nazwa slice'a w kilku repo", CLAUDE.md).
+- Rejestruje (literały pełne: `docs/kontrakt-danych.md` §14.2/§14.3):
+  - taksonomię `mega_menu_grupa` (`register_taxonomy`, object_type
+    `nav_menu_item`, `meta_box_cb => false`, `show_in_menu => 'nav-menus.php'`
+    — wzorem `ClassDefinitionsTaxonomy`, §2.2) + grupę pól ACF term-meta
+    (`kolejnosc`, number, wymagane — porządek wizualny kolumn, taksonomia
+    nie ma natywnego porządku).
+  - grupę pól ACF „Menu Item" (lokalizacja `nav_menu_item == location/kategorie`
+    — literał `kategorie` MUSI być identyczny z lokalizacją rejestrowaną w
+    P-16.2b, patrz „Literał-most między repo" w kontrakcie): `widoczna_na_belce`
+    (true_false, domyślnie `false`) + `grupa_mega_menu` (typ `taxonomy`,
+    target `mega_menu_grupa`, `field_type=select`, single value, `save_terms`/
+    `load_terms` włączone, **wymagane** — każda pozycja menu kategorii musi
+    trafić do dokładnie jednej kolumny, ground-truth struktury danych wyżej).
+- **Zależności:** brak (punkt startowy — P-16.2b czyta to, co tu powstaje).
+  ACF Pro 6.8.7 (środowiskowa, już zainstalowana, potwierdzona ground-truthem).
+
+### P-16.2b — theme: lokalizacja + render dynamiczny + CSS + seed (`qutlet-theme`)
+
+- Lokalizacja menu `kategorie` (`register_nav_menu()`, slice `HeaderMenu/`) —
+  literał MUSI być zgodny z regułą lokalizacji ACF w P-16.2a (kontrakt §14,
+  „Literał-most między repo").
+- Render — trzy fragmenty dzisiejszego statycznego HTML w `parts/header.html`
+  zastąpione blokami dynamicznymi (D-16.G4), zasilanymi wspólnym odczytem
+  `wp_get_nav_menu_items()` dla lokalizacji `kategorie` (jeden odczyt per
+  request, memoizowany w helperze slice'a — dokładny podział na ile bloków
+  [2 czy 3] i nazwy klas PHP to szczegół implementacyjny, do ustalenia przez
+  ground-truth realizującej sesji, nie sztywna decyzja tej sesji):
+  - `.subnav-band` (pigułki) — pozycje z `widoczna_na_belce == true`, w
+    kolejności natywnego porządku pozycji menu (drag-drop w Wygląd → Menu).
+  - `.mega` / `.mega-grid` (kolumny) — WSZYSTKIE pozycje, grupowane po
+    `grupa_mega_menu` (relacja, §14.2), kolumny posortowane po term-meta
+    `kolejnosc` (§14.3), pozycje w kolumnie w natywnym porządku menu.
+  - sekcja „Kategorie" w `.mnav-panel` (mobile) — TEN SAM zestaw co pigułki
+    (`widoczna_na_belce == true`), ground-truth struktury danych wyżej
+    potwierdza że mobile NIE pokazuje pełnych 16 pozycji. Statyczny catch-all
+    „Wszystkie kategorie" (już istniejący link) zostaje bez zmian.
+- CSS `.mega-grid` — sztywne `repeat(4,1fr)` → elastyczna liczba kolumn
+  (D-16.G3): custom property ustawiana inline przez render + fallback w
+  arkuszu; mobilny breakpoint (dziś też sztywne `repeat(2,1fr)`) →
+  `repeat(auto-fit,minmax(…))` żeby dowolna liczba grup zawinęła się bez
+  łamania layoutu. `assets/js/header-nav.js` — BEZ zmian (ground-truth
+  wyżej: już generyczny, atrybutowy).
+- Seed WP-CLI (D-16.G5): menu `kategorie` + 16 pozycji (wzorem dzisiejszej
+  zaszytej struktury: 6 z `widoczna_na_belce=true`, 4 grupy `mega_menu_grupa`
+  z `kolejnosc` 1-4 i nazwami „Mobile i noszone"/„Komputery"/„Audio i Foto"/
+  „Dom i gaming"), przypisanie lokalizacji `kategorie`. Pozycje kategorii —
+  do ustalenia przy realizacji, czy mapują 1:1 na dzisiejsze etykiety
+  prototypu (Smartfony/Tablety/…) czy na ustabilizowany zestaw `product_cat`
+  (kontrakt §1.1, 18 slugów) — GROUND-TRUTH TEJ SESJI NIE ROZSTRZYGA tego
+  mapowania (nazwy prototypu ≠ 1:1 z realnymi slugami P-6.8b), zostawione
+  jako otwarta decyzja realizującej sesji, z domyślną rekomendacją: mapować
+  na realny, ustabilizowany zestaw kategorii (kontrakt §1.1), nie na
+  przykładowe nazwy z prototypu.
+- **Zależności:** P-16.2a (pola/taksonomia muszą istnieć przed renderem), P-8.1.
+
+**Status:** faza rozpisana na punkty (P-16.1, P-16.2a, P-16.2b) — ŻADEN jeszcze
+nie zbudowany (0% realizacji, kolor 🟦 bez zmian; flip na 🟨/🟡 nastąpi przy
+starcie realizacji pierwszego punktu, zgodnie z „Realizacja punktu planu",
+CLAUDE.md). Ta sesja była WYŁĄCZNIE planistyczna — zero kodu, zero brancha
+implementacyjnego. Prompt startowy na sesję realizującą P-16.1 (pierwszy,
+niezależny punkt) przekazany użytkownikowi w rozmowie kończącej tę sesję.
+
+---
+
 ## Materiał referencyjny i kandydaci do dalszych faz
 
 ### Inwentarz endpointów Allegro (dostarczony przez użytkownika)
