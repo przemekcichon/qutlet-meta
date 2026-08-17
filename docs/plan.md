@@ -6156,6 +6156,80 @@ kończącej tę sesję.
 
 ---
 
+## 🟦 FAZA 18 — Wielodostawcowa AI: kompatybilność schematu + wybór modelu w adminie
+
+**Zgłoszenie (2026-08-17):** podczas testów kreatora P-17.2 użytkownik
+skonfigurował dodatkowych dostawców AI (Anthropic, OpenAI) obok istniejącego
+Google/Gemini (FAZA 7, WP core AI Client). Ujawniło to dwa powiązane, ale
+osobne tematy w warstwie dostawców AI:
+
+1. **Bug kompatybilności schematu z OpenAI [POTWIERDZONE ground-truthem tej
+   sesji]:** `RewriteGenerator::response_schema()` i
+   `TitleGenerator::response_schema()` (`qutlet-ai`) nie ustawiają
+   `additionalProperties: false` na obiekcie schematu JSON. Gemini toleruje
+   brak tego klucza (`GoogleTextGenerationModel::removeAdditionalPropertiesKey()`
+   usuwa go przed wysyłką) — dlatego bug nie był dotąd widoczny — ale OpenAI's
+   Structured Outputs (`strict: true`,
+   `ai-provider-for-openai\src\Models\OpenAiTextGenerationModel.php`) odrzuca
+   żądanie błędem 400: „Invalid schema for response_format 'response_schema':
+   ... 'additionalProperties' is required to be supplied and to be false."
+   Fix jest mały i zlokalizowany (dodanie jednego klucza w dwóch tablicach
+   schematu) — do potwierdzenia przy realizacji, że dodanie go nie psuje
+   Gemini (prawdopodobnie bezpieczne, skoro Google i tak usuwa ten klucz przed
+   wysyłką).
+2. **Wybór dostawcy/modelu AI z poziomu admina produktu [NOWY temat, NIE
+   zatwierdzony]:** dziś WP core AI Client wybiera dostawcę AUTOMATYCZNIE i
+   DETERMINISTYCZNIE — pierwszy SKONFIGUROWANY provider w kolejności
+   rejestracji pluginów (`ProviderRegistry::findModelsMetadataForSupport()`),
+   bez świadomości limitów/rate-limitów, bez round-robin, bez fallbacku na
+   429/500 na kolejnego dostawcę. Ekran „Ustawienia → Łączniki" (WP core, poza
+   zasięgiem `qutlet-ai`) NIE ma żadnego przełącznika „domyślny dostawca" —
+   potwierdzone ground-truthem tej sesji (`connectors.php`/
+   `options-connectors.php`, zero trafień na coś takiego). Kurator dziś nie ma
+   ŻADNEGO wpływu z poziomu adminowego UI na to, który dostawca/model
+   faktycznie odpowiada na „Generuj" w metaboxach AI — jedyna dzisiejsza
+   dźwignia to ręczne włączanie/wyłączanie kluczy w `wp-config.php`
+   (operacyjne, poza UI). Użytkownik chce możliwość przełączania modelu z
+   poziomu interfejsu ekranu edycji produktu. Częściowy plumbing już istnieje:
+   `TextGenerationService::generate_text()/generate_json()` przyjmuje
+   parametr `$model_preference` (`string|list<string>|null`), ale ŻADEN z
+   dzisiejszych wywołujących (`RewriteGenerator.php`, `TitleGenerator.php`) go
+   nie przekazuje — brakuje (a) faktycznego przekazania wartości i (b) UI do
+   jej ustawienia.
+
+**Do ustalenia na sesji planistycznej [OTWARTE, wszystkie]:**
+- Czy punkt 1 (bug) i punkt 2 (feature) to jeden punkt planu czy dwa osobne —
+  bug jest mały/pilny/niekontrowersyjny, feature jest większy i ma otwarte
+  pytania projektowe; rozdzielenie pozwoliłoby zmergować fix niezależnie i
+  szybko, bez czekania na rozstrzygnięcie feature'u.
+- Zakres przełącznika: globalny (jedna opcja, wzorem `PromptSettingsPage`/
+  `qutlet_ai_prompt_global`) czy per-produkt (wzorem `PromptOverrideField`,
+  override + fallback globalny)?
+- Kształt wyboru: pojedynczy „zablokowany" provider
+  (`PromptBuilder::usingProvider()`) czy uporządkowana lista preferencji z
+  fallbackiem (`PromptBuilder::usingModelPreference()`, próbuje po kolei)?
+- Czy przełącznik dotyczy OBU generatorów (`GenerationMetaBox` opis +
+  `TitleGenerationMetaBox` nazwa) razem, czy mają mieć niezależne ustawienia?
+- Gdzie dokładnie w UI: nowe pole w istniejącej sekcji promptu
+  (`GenerationMetaBox::render_prompt_section()`), osobny mini-metabox, czy
+  strona ustawień pod WooCommerce (wzorem `PromptSettingsPage`)?
+- Czy listę dostawców wystawiać na sztywno w kodzie (`google`/`anthropic`/
+  `openai`), czy odczytywać dynamicznie z rejestru core (którzy dostawcy są
+  SKONFIGUROWANI teraz) — jeśli tak, jaki jest stabilny, publiczny sposób
+  odpytania tego z poziomu wtyczki (bez zależności od wewnętrznych klas core
+  bez gwarancji API)?
+
+**Zakres (wstępny, do potwierdzenia przy realizacji):** prawdopodobnie
+wyłącznie `qutlet-ai` (oba tematy dotyczą wyłącznie generacji AI — schemat i
+wybór modelu, nie danych/renderu) — do potwierdzenia, czy rzeczywiście zero
+dotknięcia `qutlet-core`/`qutlet-theme`.
+
+**Zależności:** FAZA 7 (przeróbka AI, adopcja WP AI Client), FAZA 17
+(kreator — miejsce, w którym bug i brak przełącznika ujawniły się w
+praktyce podczas testów, sesja 2026-08-17).
+
+---
+
 ## Materiał referencyjny i kandydaci do dalszych faz
 
 ### Inwentarz endpointów Allegro (dostarczony przez użytkownika)
