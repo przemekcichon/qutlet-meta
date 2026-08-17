@@ -6156,7 +6156,7 @@ kończącej tę sesję.
 
 ---
 
-## 🟨 FAZA 18 — Wielodostawcowa AI: kompatybilność schematu + wybór modelu w adminie — ROZPISANA
+## 🟩 FAZA 18 — Wielodostawcowa AI: kompatybilność schematu + wybór modelu w adminie — ROZPISANA
 
 **Zgłoszenie (2026-08-17):** podczas testów kreatora P-17.2 użytkownik
 skonfigurował dodatkowych dostawców AI (Anthropic, OpenAI) obok istniejącego
@@ -6320,7 +6320,7 @@ praktyce podczas testów, sesja 2026-08-17).
 - **Zależności:** brak — samodzielny, może ruszyć jako pierwszy, niezależnie
   od P-18.2.
 
-### 🟦 P-18.2 — qutlet-ai: globalna lista priorytetów dostawców AI + runtime failover
+### 🟢 P-18.2 — qutlet-ai: globalna lista priorytetów dostawców AI + runtime failover
 
 - Nowa opcja globalna `qutlet_ai_provider_priority` (literał ustalony i
   spisany w `docs/kontrakt-danych.md` §13 tą sesją planistyczną — array<string>
