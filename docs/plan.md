@@ -5870,7 +5870,7 @@ mechanizm ze szkicu planu, nie to co P-16.2a faktycznie zaimplementowało.
 
 ---
 
-## 🟨 FAZA 17 — Kreator (wizard) przeglądu świeżo zaimportowanego produktu — ROZPISANA
+## 🟩 FAZA 17 — Kreator (wizard) przeglądu świeżo zaimportowanego produktu — ROZPISANA
 
 **Zgłoszenie (2026-08-16):** sześć aspektów świeżo zaimportowanego z Allegro
 produktu wymaga uwagi redaktora — nazwa (+ ewentualna podnazwa), opis
@@ -6091,7 +6091,7 @@ projektowaniu kroków kreatora), P-6.1 (`qutlet_stawka_rabatu`), P-6.8b
 - **Zależności:** brak (samodzielny — mechanizm-wzorzec już istnieje w tym
   samym repo, `TitleGenerationMetaBox`, P-13.2c). Może ruszyć jako pierwszy.
 
-### P-17.2 — qutlet-core: kreator (wizard) — nakładka spinająca metaboksy w kroki
+### 🟢 P-17.2 — qutlet-core: kreator (wizard) — nakładka spinająca metaboksy w kroki
 
 - Nakładka (modal/panel, D-17.1) nad ekranem edycji produktu — JS/CSS
   orkiestrujący WIDOCZNOŚĆ istniejących metaboxów (bez przejmowania ich
@@ -6148,11 +6148,14 @@ zastosowaniem (stąd brak 🟡 przed 🟢 tutaj). D-17.6 (styl wizualny P-17.2,
 referencja WC Setup Wizard) dopisany do planu tą samą sesją (`qutlet-meta`
 #91).
 
-**Status:** P-17.1 zrealizowany i zmergowany. P-17.2 (`qutlet-core`: nakładka
-spinająca metaboksy w kroki, wizualnie wg D-17.6) jeszcze nie zbudowany —
-ostatni punkt fazy, zależny od P-17.1 (już zmergowany, może ruszyć). Prompt
-startowy na sesję realizującą P-17.2 przekazany użytkownikowi w rozmowie
-kończącej tę sesję.
+**Status:** P-17.1 i P-17.2 zrealizowane i zmergowane — FAZA 17 domknięta.
+P-17.2 (`qutlet-core` PR #27) zmergowany RAZEM z towarzyszącym mu fixem
+(`qutlet-ai` PR #12 — synchronizacja zaakceptowanego opisu z natywnym
+edytorem treści, `#content`/TinyMCE, ujawniona testami kreatora), w kolejności
+ai #12 → core #27 (sesja 2026-08-17/18). Oba PR-y przeszły niezależną
+recenzję (`docs/review.md`, werdykt 🟡 WARUNKOWO, 0 must-fix) i świeżą
+weryfikację ground-truth + PHPStan + end-to-end (LocalWP MCP + Playwright,
+produkt 3810) tuż przed merge'em — zero rozbieżności z planem.
 
 ---
 
