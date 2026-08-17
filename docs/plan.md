@@ -6362,7 +6362,7 @@ praktyce podczas testów, sesja 2026-08-17).
 
 ---
 
-## 🟦 FAZA 19 — Reklasyfikacja klasy stanu na żądanie (aktualizacja CONDITION_MAP → backfill) — ROZPISANA
+## 🟩 FAZA 19 — Reklasyfikacja klasy stanu na żądanie (aktualizacja CONDITION_MAP → backfill) — ROZPISANA
 
 **Zgłoszenie (2026-08-17):** przy testowaniu nowej klasy „Po zwrocie" (dodanej
 przez użytkownika do `OfferMapper::CONDITION_MAP`, qutlet-allegro) puszczono
@@ -6495,7 +6495,7 @@ P-19.1 przy realizacji jest punktem czysto-kodowym w jednym repo (patrz
 **Zależności:** FAZA 12 (P-12.1a/P-12.2a/P-12.2b — cutover taksonomii klasy
 stanu na relację, D-6.1.4/D-12.2.1/D-12.2.4). Bez zależności od FAZY 18.
 
-### 🟦 P-19.1 — qutlet-allegro: komenda WP-CLI `reclassify-klasa-stanu`
+### 🟢 P-19.1 — qutlet-allegro: komenda WP-CLI `reclassify-klasa-stanu`
 
 - Nowa klasa `ReclassifyKlasaStanuCommand`
   (`qutlet-allegro/src/OfferSync/ReclassifyKlasaStanuCommand.php`),
