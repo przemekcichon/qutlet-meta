@@ -467,7 +467,7 @@ Uwagi do kształtu:
 | Pole (znaczenie)       | Literał              | Miejsce | Typ                 | Opcjonalne? | Uwagi |
 |------------------------|----------------------|---------|---------------------|-------------|-------|
 | Opis (przerobiony)     | `post_content` (natywne) | Woo/WP | HTML (post_content) | tak     | user-facing opis produktu pokazywany na stronie; wypełniany przez AI (FAZA 7, P-13.3b) i redagowany ręcznie w natywnym edytorze treści; **NIE nadpisywany przez sync**. **BYŁO ACF `opis`** (WYSIWYG, P-5.1b) — **WYCOFANE w P-13.3a** (FAZA 13, sesja 2026-08-09): pole usunięte z rejestracji `RewrittenFields`, cel zapisu/odczytu = natywne `post_content`. Historyczne wartości `opis` zmigrowane jednorazową komendą WP-CLI `wp qutlet-core backfill-opis-to-content` (`BackfillOpisToContentCommand`, D-13.G3) — bez fallbacku, migracja poprzedzała przełączenie odczytu motywu. Puste → motyw ukrywa/fallback (FAZA 8). Odczyt: `$product->get_description()` / `the_content()`. |
-| Podnazwa (przerobiona) | `podnazwa`           | ACF     | text (jedna linia)  | tak         | druga część nazwy, gdy AI rozbije zbyt długą `_qutlet_allegro_nazwa_raw` (§9.1) na tytuł (→ `post_title`) + podnazwę — AI decyduje GDZIE dzielić (FAZA 13, P-13.2c). **NIE** WYSIWYG — krótka linia tekstu; jedyne pole w grupie ACF `group_qutlet_product_info` (dawniej „Qutlet — opis produktu…", retitled „Qutlet — nazwa produktu (warstwa przerobiona)" w P-13.3a po wycofaniu `opis` z tej grupy). Redagowalna ręcznie; **NIE nadpisywana przez sync** (sync dotyka tylko `post_title` i `_qutlet_allegro_nazwa_raw`, P-13.2b). Puste → motyw renderuje sam tytuł, bez podnazwy. Odczyt: `get_field('podnazwa')` / `get_post_meta($id,'podnazwa',true)`. |
+| Druga linia nazwy produktu (przerobiona, dawniej „Podnazwa") | `podnazwa` | ACF | text (jedna linia) | tak | druga część nazwy, gdy AI rozbije zbyt długą `_qutlet_allegro_nazwa_raw` (§9.1) na tytuł (→ `post_title`) + tę drugą linię — AI decyduje GDZIE dzielić (FAZA 13, P-13.2c). **NIE** WYSIWYG — krótka linia tekstu. Literał (`name`/meta_key) `podnazwa` BEZ ZMIAN od P-13.2a-core — zmienia się WYŁĄCZNIE etykieta widoczna w adminie (FAZA 20, P-20.4a, D-20.G3: „Podnazwa" → „Druga linia nazwy produktu"). Jedyne pole w grupie ACF `group_qutlet_product_info` — grupa PRZESTAJE renderować WŁASNY auto-metabox od FAZY 20 (`remove_meta_box()`, wzorem `PromptOverrideField`/D-13.6.1); renderuje się WEWNĄTRZ scalonego metaboksu `qutlet-ai` „Nazwa produktu (AI)" (dawniej dwa osobne metaboksy — `TitleGenerationMetaBox` + auto-box ACF tej grupy), wołaniem publicznej `RewrittenFields::render_field( $product_id )` — patrz D-20.G3. Redagowalna ręcznie; **NIE nadpisywana przez sync** (sync dotyka tylko `post_title` i `_qutlet_allegro_nazwa_raw`, P-13.2b). Puste → motyw renderuje sam tytuł. Odczyt: `get_field('podnazwa')` / `get_post_meta($id,'podnazwa',true)` — literał odczytu bez zmian, motyw (`qutlet-theme`) nie jest dotknięty tą fazą (renderuje tylko wartość, nigdy etykietę). |
 | Specyfikacja (przerob.)| **atrybuty WooCommerce** (`_product_attributes`) | Woo | atrybuty produktu (custom, per-produkt, lokalne — `id=0`, NIE taksonomia) | tak | **natywny mechanizm Woo** — `qutlet-core` NIE rejestruje dla niej pola (D-5.1.1). Od FAZY 13 (P-13.4a, D-13.G1) pisze je BEZPOŚREDNIO sync Allegro (`Qutlet\Allegro\OfferSync\ProductWriter::upsert()`), tłumacząc `_qutlet_allegro_specification_raw` (§9.1) 1:1, BEZ udziału AI; **nadpisywane przy KAŻDYM sync** (sync-owned, D-13.4a.1 — jedyny wyjątek od reguły „przerobiona nigdy nie nadpisywana przez sync" powyżej). Do FAZY 13 pisała je AI (`RewriteWriter::build_attributes()`, D-5.1.1/D-5.1.2) — mechanizm USUNIĘTY (P-13.4b). Motyw renderuje natywnie (zakładka „Informacje dodatkowe" / własny render FAZA 8). Odczyt: `$product->get_attributes()`. Puste → brak tabeli spec. |
 
 **Dlaczego opis i specyfikacja to oba natywne mechanizmy WP/Woo, nie ACF (od
@@ -832,6 +832,7 @@ rozproszony, ta sama nazwa slice'a `AiRewrite/` w obu repo. Prompt efektywny
 | Prompt AI (nadpisanie per produkt)   | `prompt_ai`   | ACF (meta na produkcie) | textarea (plain text) | tak | Rejestruje `qutlet-core` (P-7.2a). Treść wysyłana do core AI Client (`using_system_instruction()` / dołączona do promptu) ZAMIAST globalnego promptu, gdy niepuste. Puste → `qutlet-ai` używa globalnego promptu. Wejściem do generacji jest surowy JSON pojedynczego produktu (D-7.G5/D-5.G4) — to pole tylko dostarcza instrukcję/styl, NIE dane produktu. Odczyt cross-plugin: `get_post_meta( $product_id, 'prompt_ai', true )` (wzorzec §9.2 — `get_field()`/`get_post_meta()` równoważne dla prostych pól tekstowych ACF). **Render (P-13.6, D-13.G4/D-13.6.1):** BEZ własnego metaboxu ACF — `qutlet-core` (`PromptOverrideField::remove_own_metabox()`) zdejmuje go z ekranu produktu; renderuje się WEWNĄTRZ metaboxu „Qutlet — generacja AI" (`qutlet-ai`), wołaniem publicznej metody `PromptOverrideField::render_field( $product_id )` (rejestracja i wywołania ACF zostają w core — `qutlet-ai` nie ma twardej zależności na ACF Pro, D-G5). |
 | Prompt AI (globalny)                | `qutlet_ai_prompt_global` | option (Settings API) | string (textarea, plain text) | tak (brak/puste → brak instrukcji systemowej — core AI Client generuje bez `using_system_instruction()`) | Rejestruje `qutlet-ai` (P-7.2b): strona ustawień pod menu WooCommerce (wzorzec `DiscountRateSettingsPage`, §11), sanityzacja `sanitize_textarea_field()`. Odczyt: `get_option( 'qutlet_ai_prompt_global', '' )`, ale wołający NIE czyta opcji bezpośrednio — używa `Qutlet\Ai\AiRewrite\PromptSettings::effective_prompt( $product_id )` (override per-produkt ?? opcja globalna ?? `null`), analogicznie do `DiscountRate::effective_percent()` (§11). |
 | Kolejność priorytetów dostawców AI (globalna, FAZA 18) | `qutlet_ai_provider_priority` | option (Settings API) | `array<string>` (ID dostawców AI Client w kolejności priorytetu) | tak (brak/pusta lista → fallback na dzisiejsze zachowanie AI Client, pierwszy skonfigurowany provider wg kolejności rejestracji pluginów) | Rejestruje `qutlet-ai` (P-18.2, do zbudowania): nowa sekcja na `PromptSettingsPage`, obok promptu globalnego. ID potwierdzone w kodzie: `'google'`, `'openai'`, `'anthropic'`. UI listuje wyłącznie dostawców, dla których `AiClient::defaultRegistry()->isProviderConfigured( $id )` zwraca `true` (D-18.6, `docs/plan.md`). Odczyt przez nowy helper (nazwa do ustalenia przy realizacji), NIE bezpośrednio `get_option()` — zwraca listę przefiltrowaną do aktualnie skonfigurowanych dostawców. Używana przez WŁASNĄ pętlę runtime failover w `TextGenerationService` (D-18.7) — próbuje kolejnych dostawców z listy na KAŻDY błąd wywołania, w jednym kliknięciu „Generuj". Pełne decyzje: `docs/plan.md` → FAZA 18, D-18.1–D-18.7. |
+| Prompt AI nazwy produktu (globalny, FAZA 20)  | `qutlet_ai_prompt_title_global` | option (Settings API) | string (textarea, plain text) | technicznie zawsze ma wartość (patrz D-20.G1 niżej — seed = dzisiejsza stała `TitleGenerator::SYSTEM_INSTRUCTION`), więc nigdy nie jest „puste znaczące" jak `qutlet_ai_prompt_global` | Rejestruje `qutlet-ai` (FAZA 20, P-20.1, do zbudowania): nowe pole na TEJ SAMEJ stronie ustawień (`PromptSettingsPage`, przemianowanej na „Prompty globalne"), obok promptu opisu. CAŁKOWICIE zastępuje dzisiejszą stałą PHP `TitleGenerator::SYSTEM_INSTRUCTION` jako `$system_instruction` przekazywaną do `TextGenerationService::generate_json()` — bez nadpisania per-produkt (D-20.G1 — świadomie różni się od `qutlet_ai_prompt_global`/`prompt_ai`: to ustawienie jest global-only, użytkownik nie prosił o override per produkt). Odczyt: `get_option( 'qutlet_ai_prompt_title_global', TitleGenerator::SYSTEM_INSTRUCTION )` — domyślna wartość opcji (WP `register_setting()` → `'default'`) to dzisiejsza stała, więc dopóki admin nie zapisze formularza, generator zachowuje się identycznie jak dziś; zapis (nawet pustego stringa) świadomie i całkowicie zastępuje dzisiejsze reguły algorytmiczne. |
 
 **D-7.2a.1 [USTALONE]:** mechanizm rejestracji pola per-produkt = `acf_add_local_field_group()`
 (wzorzec `ProductConditionFields`/`AllegroChannelFields`/`RewrittenFields` — pole
@@ -896,12 +897,72 @@ helper (nazwa do ustalenia przy realizacji) analogiczny do
 skonfigurowanych dostawców. Pełne decyzje (D-18.1–D-18.7, w tym runtime
 failover na KAŻDY błąd wywołania) — `docs/plan.md` → FAZA 18.
 
+**D-20.G1 [USTALONE — decyzja użytkownika, sesja planistyczna FAZY 20,
+2026-08-18]:** generator nazwy (`TitleGenerator`, P-13.2c) traci swoją
+dotychczasową izolację od mechanizmu promptu — świadomą decyzję sesji
+2026-08-08 realizującej P-13.2c („zadanie algorytmiczne — te same reguły za
+każdym razem, nie stylistyczne jak ton opisu — więc świadomie NIE korzysta z
+`PromptSettings`"). Nowy globalny prompt nazwy (`qutlet_ai_prompt_title_global`,
+tabela wyżej) CAŁKOWICIE PODMIENIA `SYSTEM_INSTRUCTION` — nie dokłada się do
+niej jako dodatkowa wskazówka (odrzucona alternatywa, wprost odrzucona przez
+użytkownika). Żeby nie zepsuć dzisiejszego, przetestowanego zachowania w dniu
+wdrożenia: domyślna wartość opcji (`register_setting()` → `'default'`) to
+DOKŁADNY tekst dzisiejszej stałej — dopóki administrator nie zapisze
+formularza (nawet nie otwierając strony), generator zachowuje się identycznie
+jak dziś; sam formularz pokazuje ten tekst jako przykład/punkt startowy do
+edycji. Stała `TitleGenerator::SYSTEM_INSTRUCTION` zmienia widoczność z
+`private` na `public`, żeby `PromptSettingsPage` (ten sam plugin, `qutlet-ai`
+— zero granicy repo do przekroczenia) mogła się do niej odwołać jako do
+wartości domyślnej, bez duplikowania tekstu jako osobny literał w dwóch
+miejscach. **Brak nadpisania per-produkt** (w odróżnieniu od
+`prompt_ai`/`qutlet_ai_prompt_global` wyżej) — nie było o to proszone, więc
+nie jest dodawane (najmniejszy uzasadniony zakres, D-20.G2 niżej).
+
+**D-20.G2 [USTALONE — decyzja z sesji planistycznej FAZY 20, 2026-08-18,
+wynika z zakresu zgłoszenia]:** trzy zmiany nazw pozycji menu WooCommerce
+(„Prompty globalne", „Mapowanie stanów", „Stawka rabatu") dotyczą WYŁĄCZNIE
+etykiet widocznych w UI (`add_submenu_page()` `$page_title`/`$menu_title` +
+`<h1>` renderu strony, dla spójności — inaczej pasek boczny i nagłówek strony
+pokazywałyby dwie różne nazwy tej samej strony) — **`PAGE_SLUG` (URL każdej
+strony) ZOSTAJE bez zmian** (nikt nie prosił o zmianę adresu, a zmiana
+złamałaby ewentualne zakładki/linki). Pole ACF `prompt_ai` (nadpisanie
+per-produkt opisu, metabox „Qutlet — generacja AI") też ZOSTAJE bez zmian —
+zgłoszenie dotyczy tylko strony ustawień globalnych, nie tego pola.
+
+**D-20.G3 [USTALONE — wynika z ground-truthu sesji planistycznej FAZY 20,
+2026-08-18, brak realnej alternatywy przy zachowanych granicach repo]:**
+scalenie dwóch metaboksów nazwy produktu („Qutlet — nazwa produktu (AI)",
+`qutlet-ai`, i auto-metabox ACF grupy `group_qutlet_product_info`,
+`qutlet-core`, §9.2 wyżej) w JEDEN widoczny box używa DOKŁADNIE tego samego
+wzorca, którym `GenerationMetaBox`/`PromptOverrideField` już rozwiązały
+identyczny problem dla `prompt_ai` (D-13.6.1 wyżej): `qutlet-core`
+(`RewrittenFields`) zdejmuje własny auto-metabox (`remove_meta_box()`,
+wzorem `PromptOverrideField::remove_own_metabox()`) i wystawia publiczną
+`render_field( int $product_id ): void`; `qutlet-ai`
+(`TitleGenerationMetaBox`, jedyny właściciel scalonego boksu — ID zostaje
+`qutlet_ai_title_generator` bez zmian, kreator P-17.2 dalej go znajduje pod
+tym samym selektorem) woła tę metodę wprost, bez nowego hooka WP — ten sam
+kierunek zależności co dziś (`qutlet-ai` hard-dependuje na core, D-G5).
+**Skutek uboczny wymagający poprawki w TYM SAMYM punkcie (`qutlet-core`,
+P-20.4a):** `ProductReviewWizard::steps()` (P-17.2) krok 1 traci jeden z
+dwóch selektorów (`RewrittenFields::metabox_id()` przestaje wskazywać
+istniejący box) — lista selektorów kroku 1 redukuje się do samego
+`#qutlet_ai_title_generator`; `metabox_id()` staje się martwym kodem
+(jedyny wołający potwierdzony gruntownie) i jest usuwana w tym samym
+punkcie. **Odrzucona alternatywa:** `qutlet-core` przejmuje właścicielstwo
+scalonego boksu (odwrotny kierunek) — odrzucona, wymagałaby przeniesienia
+AJAX-owej logiki Generuj/Reset do core, łamiąc granicę „AI mieszka w
+qutlet-ai" (`CLAUDE.md` → „Struktura").
+
 ### Odnośniki (§13)
 - Plan: `docs/plan.md` → FAZA 7 (D-7.G1–G7), P-7.2a (pole per-produkt + rejestracja
   core), P-7.2b (ten kontrakt: ustawienie globalne + odczyt efektywnego promptu w
   `qutlet-ai`), P-13.6a/P-13.6b (D-13.G4/D-13.6.1 — render przeniesiony do metaboxu
   `qutlet-ai`), FAZA 18 (D-18.G1 wyżej: `qutlet_ai_provider_priority`, P-18.1
-  fix schematu OpenAI, P-18.2 lista priorytetów dostawców + runtime failover).
+  fix schematu OpenAI, P-18.2 lista priorytetów dostawców + runtime failover),
+  FAZA 20 (D-20.G1/D-20.G2/D-20.G3 wyżej: `qutlet_ai_prompt_title_global` +
+  zmiany nazw trzech pozycji menu WooCommerce + scalenie metaboksów nazwy
+  produktu, P-20.1/P-20.2/P-20.3/P-20.4a/P-20.4b).
 
 ---
 

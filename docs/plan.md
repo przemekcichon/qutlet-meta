@@ -6552,6 +6552,228 @@ stanu na relację, D-6.1.4/D-12.2.1/D-12.2.4). Bez zależności od FAZY 18.
 
 ---
 
+## 🟦 FAZA 20 — Porządki w edytorze produktu i menu WooCommerce: nazewnictwo, scalenie metaboksów, prompt nazwy — ROZPISANA
+
+**Zgłoszenie (2026-08-18, dwuczęściowe — druga część dopisana w trakcie tej
+samej sesji planistycznej):**
+
+Część 1 — cztery zmiany w menu WooCommerce (ustawienia sklepowe Qutlet):
+1. Podmenu „Qutlet — prompt AI" → **„Prompty globalne"**; etykieta pola
+   „Globalny prompt AI" → **„Globalny prompt opisu produktu"**.
+2. Na TEJ SAMEJ stronie: nowe pole **„Globalny prompt nazwy produktu"**,
+   stosowane przy generatorze nazwy (`TitleGenerator`).
+3. Podmenu „Qutlet — mapowanie stanu Allegro" → **„Mapowanie stanów"**.
+4. Podmenu „Qutlet — stawka rabatu" → **„Stawka rabatu"**.
+
+Część 2 — dopisana w trakcie tej samej sesji, po zrzucie ekranu ekranu edycji
+produktu (świeżo zaimportowany produkt, dwa metaboksy „Qutlet — nazwa
+produktu (AI)" i „Qutlet — nazwa produktu (warstwa przerobiona)" jeden pod
+drugim w bocznej kolumnie):
+5. Scalić oba metaboksy nazwy produktu w JEDEN. Usunąć słowo „Qutlet" z
+   tytułów/opisów TEGO metaboksa. „Podnazwa" → **„Druga linia nazwy
+   produktu"**. Kolejność wewnątrz scalonego boksu: tytuł wpisu (natywny,
+   niezmieniony, nad boksem) → „Druga linia nazwy produktu" (edytowalne) →
+   „Nazwa oryginalna (Allegro)" (read-only) → przyciski Generuj/Reset.
+   Przycisk „Generuj" ma przestać być wstrzymywany oknem potwierdzenia
+   (`window.confirm()`) przed wysłaniem żądania.
+
+**Ground-truth (ta sesja, 2026-08-18):** przeczytany realny kod wszystkich
+dotykanych plików — `PromptSettingsPage`/`PromptSettings`/`TitleGenerator`/
+`RewriteGenerator`/`TitleGenerationMetaBox`/`title-generator.js` (qutlet-ai),
+`ConditionMapPage` (qutlet-allegro), `DiscountRateSettingsPage`/
+`RewrittenFields`/`ProductReviewWizard` (qutlet-core). Kluczowe znaleziska:
+
+- **Generator nazwy dziś ŚWIADOMIE izolowany od mechanizmu promptu.**
+  `TitleGenerator::SYSTEM_INSTRUCTION` to `private const` — stały tekst PHP,
+  nieedytowalny w adminie. Docblock klasy dokumentuje wprost decyzję sesji
+  2026-08-08 (realizacja P-13.2c): zadanie tytułu jest „algorytmiczne" (te
+  same reguły za każdym razem — czyszczenie kapitalików, obcinanie
+  fragmentów, rozbicie na tytuł+podnazwę), nie „stylistyczne" jak ton opisu,
+  więc świadomie NIE korzysta z `PromptSettings::effective_prompt()`. Punkt
+  2 tego zgłoszenia WPROST ODWRACA tę decyzję — rozstrzygnięte niżej (D-20.1,
+  pytanie zadane użytkownikowi wprost tą sesją).
+- **Scalenie metaboksów (część 2) to PRAWDZIWY punkt wielorepowy z twardą
+  zależnością**, nie tylko kosmetyka jednego repo: `TitleGenerationMetaBox`
+  (metabox „Qutlet — nazwa produktu (AI)", `qutlet-ai`, `side`) to inny
+  mechanizm niż `RewrittenFields` (ACF, grupa „Qutlet — nazwa produktu
+  (warstwa przerobiona)", `qutlet-core`, `normal`, jedno pole `podnazwa`).
+  Scalenie w JEDEN metabox wymaga DOKŁADNIE tego samego wzorca, którym
+  `GenerationMetaBox`/`PromptOverrideField` już rozwiązały identyczny problem
+  dla `prompt_ai` (D-13.6.1, P-13.6a/b): właściciel pola (core) **zdejmuje
+  własny auto-metabox ACF** (`remove_meta_box()`, wzorem
+  `PromptOverrideField::remove_own_metabox()`) i wystawia publiczną metodę
+  statyczną `render_field( int $product_id ): void`; plugin renderujący
+  scalony box (`qutlet-ai`, bo to on ma AJAX/JS tego ekranu) woła tę metodę
+  wprost — bez nowego hooka WP, bez twardej zależności `qutlet-ai` na ACF Pro
+  (`qutlet-ai` i tak hard-dependuje na core, D-G5).
+- **Scalenie ZEPSUJE FAZĘ 17 bez poprawki w tym samym punkcie.**
+  `ProductReviewWizard::steps()` (P-17.2, `qutlet-core`) krok 1 „Nazwa"
+  wskazuje DWA selektory: `#qutlet_ai_title_generator` ORAZ
+  `#{RewrittenFields::metabox_id()}` — po zdjęciu auto-metaboksu `RewrittenFields`
+  ten drugi selektor przestaje istnieć (kreator po prostu nie znajdzie węzła,
+  `document.querySelector()` zwróci `null`, JS ma na to gałąź — box
+  wtedy po prostu nie trafia do kroku, ale krok 1 STRACI pole „Druga linia
+  nazwy produktu" mimo że ono nadal istnieje na ekranie, tylko już wewnątrz
+  DRUGIEGO selektora tej samej listy). Wymaga poprawki selektorów kroku 1 W
+  TYM SAMYM PR-ze, co zdjęcie auto-metaboksu (ten sam repo, `qutlet-core`).
+  Grep potwierdza: `RewrittenFields::metabox_id()` ma dziś JEDYNEGO
+  wołającego — `ProductReviewWizard.php:156` — więc po poprawce selektora ta
+  metoda staje się martwym kodem, do usunięcia w tym samym punkcie.
+- **Podnazwa na froncie (`qutlet-theme`) nie jest dotknięta.** Grep
+  `content-single-product.php` — motyw czyta WYŁĄCZNIE wartość pola
+  (`ProductPage::acf_field('podnazwa', …)`), nigdzie nie renderuje etykiety
+  „Podnazwa" jako tekstu widocznego dla klienta sklepu. Zmiana etykiety w
+  adminie nie wymaga żadnej zmiany w `qutlet-theme`.
+- **`window.confirm()` na „Generuj" to dziś udokumentowane, świadome
+  zabezpieczenie** (D-13.G2, docblock `title-generator.js`) — zastępcze za
+  brak ochrony `admin-post.php` przy przejściu tego mechanizmu na AJAX. Punkt
+  5 zgłoszenia wprost je znosi (wyłącznie dla „Generuj" — „Reset" nie był
+  wspomniany, zostaje z potwierdzeniem).
+
+**Decyzje użytkownika (sesja 2026-08-18):**
+
+- **D-20.1 (globalny prompt nazwy CAŁKOWICIE ZASTĘPUJE dzisiejszą stałą
+  algorytmiczną, nie dokłada się do niej) [USTALONE — decyzja użytkownika,
+  pytanie zadane wprost tą sesją]:** gdy administrator zapisze pole „Globalny
+  prompt nazwy produktu", jego treść w całości zastępuje
+  `TitleGenerator::SYSTEM_INSTRUCTION` jako `$system_instruction` przekazywaną
+  do `TextGenerationService::generate_json()` — bez łączenia z dzisiejszymi
+  regułami. Żeby nie zepsuć dzisiejszego zachowania w dniu wdrożenia:
+  **domyślna wartość opcji = dokładny tekst dzisiejszej stałej** (decyzja
+  użytkownika: „pod polem wpisujemy aktualną SYSTEM_INSTRUCTION jako przykład
+  prompta globalnego") — dopóki admin nie zapisze formularza, generator
+  zachowuje się identycznie jak dziś; formularz pokazuje ten tekst jako
+  gotowy punkt startowy do edycji, nie jako oddzielny, statyczny przykład
+  obok pustego pola. **Odrzucona alternatywa:** prompt globalny jako
+  DODATKOWA instrukcja obok stałych reguł (dokładanie, nie zastępowanie) —
+  odrzucona wprost przez użytkownika. Literał opcji i pełna specyfikacja:
+  `docs/kontrakt-danych.md` §13, `qutlet_ai_prompt_title_global` (D-20.G1,
+  zapisane tą samą sesją). **Brak nadpisania per-produkt** — nie było o nie
+  proszone (najmniejszy uzasadniony zakres, D-20.G1/D-20.G2).
+- **D-20.2 (trzy zmiany nazw menu = WYŁĄCZNIE etykiety UI, adresy stron i
+  pole ACF `prompt_ai` bez zmian) [USTALONE]:** `add_submenu_page()`
+  `$page_title`/`$menu_title` + `<h1>` renderu strony zmieniają się dla
+  spójności (inaczej pasek boczny i nagłówek strony pokazywałyby dwie różne
+  nazwy tej samej strony) — `PAGE_SLUG` (adres URL) każdej z trzech stron
+  ZOSTAJE bez zmian (nikt nie prosił o zmianę adresu, zmiana złamałaby
+  ewentualne zakładki). Pełne uzasadnienie: `docs/kontrakt-danych.md` §13,
+  D-20.G2.
+- **D-20.3 (scalenie metaboksów nazwy = wzorzec 1:1 z
+  `GenerationMetaBox`/`PromptOverrideField`, D-13.6.1) [USTALONE — wynika z
+  ground-truthu, brak realnej alternatywy przy zachowanych granicach
+  repo]:** `qutlet-ai` (`TitleGenerationMetaBox`) staje się JEDYNYM
+  właścicielem scalonego metaboksa (ID zostaje `qutlet_ai_title_generator`,
+  bez zmiany — kreator P-17.2 dalej go znajduje pod tym samym selektorem);
+  `qutlet-core` (`RewrittenFields`) zdejmuje własny auto-metabox ACF i
+  wystawia `render_field( int $product_id ): void`, wołaną wprost przez
+  `qutlet-ai` (ta sama zależność kierunkowa co dziś, D-G5 — `qutlet-ai` już
+  hard-dependuje na core). **Odrzucona alternatywa:** core przejmuje
+  właścicielstwo scalonego boksu (odwrotny kierunek) — odrzucona, bo
+  wymagałaby przeniesienia AJAX-owej logiki Generuj/Reset (dziś w
+  `qutlet-ai`) do core, łamiąc granicę „AI mieszka w qutlet-ai" (`CLAUDE.md`
+  → „Struktura").
+- **D-20.4 (`window.confirm()` znika WYŁĄCZNIE dla „Generuj", „Reset"
+  zostaje) [USTALONE — decyzja użytkownika, sesja 2026-08-18]:** świadomie
+  odwraca część rozstrzygnięcia D-13.G2 (zabezpieczenie zastępcze za brak
+  `admin-post.php`) — zgłoszenie dotyczyło wyłącznie przycisku „Generuj";
+  „Reset" (operacja bardziej destrukcyjna — czyści `podnazwa` i nadpisuje
+  `post_title`) zachowuje `window.confirm()` bez zmian. Nieużywany po tej
+  zmianie string i18n `confirmGenerate` do usunięcia z
+  `enqueue_script()` (martwy kod).
+
+**Zakres [USTALONE tą sesją]:** wszystkie nowe literały (opcja
+`qutlet_ai_prompt_title_global`) i decyzje nazewnicze tej fazy zostały
+ustalone i spisane DO `docs/kontrakt-danych.md` (§9.2, §13) W TEJ SESJI
+PLANISTYCZNEJ — analogicznie do FAZY 18 (P-18.2): praca `qutlet-meta` dla
+KAŻDEGO z punktów P-20.1–P-20.4b jest skonsumowana w planowaniu, więc
+wszystkie są przy realizacji punktami czysto-kodowymi (P-20.1/P-20.2/P-20.3 w
+jednym repo; P-20.4a/P-20.4b w dwóch repo, ale bez ŻADNEJ dodatkowej pracy w
+`qutlet-meta` ponad to, co już tu zapisane) — flip 🟡 pomijamy wszędzie w tej
+fazie (`CLAUDE.md` → „Realizacja punktu planu" → wyjątek), flip 🟢 wchodzi
+normalnie po merge'u każdego punktu.
+
+### P-20.1 — qutlet-ai: „Prompty globalne" — rename + nowy prompt nazwy
+
+- **Repo:** qutlet-ai
+- `PromptSettingsPage`: `add_submenu_page()` (`$page_title`/`$menu_title`) i
+  `<h1>` w `render_page()` — „Qutlet — prompt AI" → „Prompty globalne"
+  (`PAGE_SLUG`/`OPTION_GROUP` bez zmian, D-20.2). Etykieta pierwszego pola —
+  „Globalny prompt AI" → „Globalny prompt opisu produktu" (`OPTION_NAME`,
+  `qutlet_ai_prompt_global`, bez zmian — zmienia się TYLKO widoczna
+  etykieta).
+- Nowe pole „Globalny prompt nazwy produktu" na TEJ SAMEJ stronie/grupie
+  opcji (`register_setting()`, `qutlet_ai_prompt_title_global`, D-20.G1) —
+  `'default' => TitleGenerator::SYSTEM_INSTRUCTION` (stała zmienia
+  widoczność z `private` na `public`, żeby `PromptSettingsPage` mogła się do
+  niej odwołać bez duplikowania tekstu jako osobny literał).
+- `TitleGenerator::generate()` czyta efektywną instrukcję przez
+  `get_option( 'qutlet_ai_prompt_title_global', self::SYSTEM_INSTRUCTION )`
+  zamiast wprost `self::SYSTEM_INSTRUCTION` (D-20.1 — całkowite zastąpienie,
+  bez łączenia z regułami algorytmicznymi).
+- **Zależności:** brak. Może ruszyć niezależnie od pozostałych punktów fazy.
+
+### P-20.2 — qutlet-allegro: „Mapowanie stanów" — rename
+
+- **Repo:** qutlet-allegro
+- `ConditionMapPage`: `add_submenu_page()` + `<h1>` w `render_page()` —
+  „Qutlet — mapowanie stanu Allegro" → „Mapowanie stanów" (`PAGE_SLUG` bez
+  zmian, D-20.2).
+- **Zależności:** brak.
+
+### P-20.3 — qutlet-core: „Stawka rabatu" — rename
+
+- **Repo:** qutlet-core
+- `DiscountRateSettingsPage`: `add_submenu_page()` + `<h1>` w
+  `render_page()` — „Qutlet — stawka rabatu" → „Stawka rabatu" (`PAGE_SLUG`
+  bez zmian, D-20.2). Pole „Globalna stawka rabatu (%)" NIE jest dotknięte —
+  zgłoszenie dotyczyło wyłącznie nazwy pozycji menu.
+- **Zależności:** brak.
+
+### P-20.4a — qutlet-core: przygotowanie scalenia metaboksów nazwy
+
+- **Repo:** qutlet-core
+- `RewrittenFields`: etykieta pola `field_qutlet_podnazwa` — „Podnazwa" →
+  „Druga linia nazwy produktu" (`instructions` też przeredagowane pod nową
+  terminologię, ten sam string i tak trzeba dotknąć). `name`/meta_key
+  (`podnazwa`) BEZ ZMIAN.
+- Zdjęcie własnego auto-metaboksu ACF (`remove_meta_box( 'acf-' .
+  self::GROUP_KEY, self::SCREEN, 'normal' )` na `add_meta_boxes` priorytet
+  20 — wzorem `PromptOverrideField::remove_own_metabox()`, D-20.3) + nowa
+  publiczna `render_field( int $product_id ): void` (wzorem
+  `PromptOverrideField::render_field()`).
+- `ProductReviewWizard::steps()` krok 1 „Nazwa" — usunąć z listy selektorów
+  martwy `'#' . RewrittenFields::metabox_id()` (box już nie istnieje po
+  zdjęciu auto-metaboksu), zostaje wyłącznie `'#qutlet_ai_title_generator'`.
+  Usunąć `RewrittenFields::metabox_id()` (martwy kod po tej zmianie —
+  potwierdzone gruntownie: jedyny wołający to właśnie ten selektor).
+- **Zależności:** brak (może ruszyć jako pierwszy — P-20.4b go konsumuje).
+
+### P-20.4b — qutlet-ai: scalony metaboks „Nazwa produktu (AI)"
+
+- **Repo:** qutlet-ai
+- `TitleGenerationMetaBox` staje się jedynym metaboksem — tytuł „Qutlet —
+  nazwa produktu (AI)" → **„Nazwa produktu (AI)"** (usunięte słowo „Qutlet",
+  D-20 zgłoszenie pkt 5; dokładne brzmienie do potwierdzenia przy
+  realizacji, drobna kosmetyka). `render()` w nowej kolejności: status →
+  `RewrittenFields::render_field( $post->ID )` („Druga linia nazwy
+  produktu") → banner „Nowy" (gdy stale) → „Nazwa oryginalna (Allegro)" →
+  przyciski Generuj/Reset.
+- `title-generator.js`: `runAction()` pomija `window.confirm()`, gdy
+  `confirmMessage` jest puste/`null` — wywołanie dla „Generuj" przechodzi
+  bez potwierdzenia, wywołanie dla „Reset" zachowuje `confirmReset` bez
+  zmian (D-20.4). Nieużywany i18n `confirmGenerate` usunięty z
+  `enqueue_script()`.
+- **Zależności:** P-20.4a (`RewrittenFields::render_field()` musi istnieć —
+  merge core PRZED merge ai).
+
+**Zależności (całej fazy):** FAZA 7 (prompt globalny opisu, mechanizm do
+przemianowania), FAZA 13 (P-13.2c generator nazwy, P-13.6a/b wzorzec
+`render_field()`), FAZA 17 (P-17.2 kreator — krok 1 wymaga poprawki
+selektorów przy scaleniu), FAZA 18 (P-18.2 sekcja „Kolejność dostawców AI"
+żyje na tej samej stronie „Prompty globalne", bez zmian w tej fazie).
+
+---
+
 ## Materiał referencyjny i kandydaci do dalszych faz
 
 ### Inwentarz endpointów Allegro (dostarczony przez użytkownika)
