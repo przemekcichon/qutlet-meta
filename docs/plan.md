@@ -6362,6 +6362,73 @@ praktyce podczas testów, sesja 2026-08-17).
 
 ---
 
+## 🟦 FAZA 19 — Reklasyfikacja klasy stanu na żądanie (aktualizacja CONDITION_MAP → backfill) — SZKIC (do rozpisania w osobnej sesji)
+
+**Zgłoszenie (2026-08-17):** przy testowaniu nowej klasy „Po zwrocie" (dodanej
+przez użytkownika do `OfferMapper::CONDITION_MAP`, qutlet-allegro) puszczono
+`wp qutlet-core backfill-klasa-stanu-relacja`, potem `wp qutlet-allegro
+import-offers --skip-images`, potem znowu backfill — zero produktów dostało
+nową klasę. Ground-truth tej sesji: to NIE bug tego konkretnego uruchomienia —
+sandbox nie miał w tym momencie ŻADNEJ oferty z surowym parametrem `Stan` =
+„Po zwrocie" (zweryfikowane `wp db query` po `_qutlet_allegro_offer` i po
+historycznym postmeta `klasa_stanu` — 0 trafień na obu). Ujawniło to jednak
+trwały fakt architektoniczny, niezależny od tego konkretnego przypadku: OBIE
+komendy z zasady NIE reklasyfikują już zaimportowanych produktów.
+- `BackfillKlasaStanuRelationCommand` (qutlet-core, P-12.2a) to JEDNORAZOWA
+  migracja cutoverowa — pomija KAŻDY produkt, który ma już jakąkolwiek relację
+  z `ClassDefinitionsTaxonomy`, niezależnie czy zgodną z aktualną mapą.
+- `ProductWriter::upsert()` (qutlet-allegro, `klasa_stanu`, D-6.1.4) ustawia
+  klasę TYLKO gdy produkt NIE MA jeszcze relacji — świadoma ochrona ręcznej
+  oceny sprzedawcy przed nadpisaniem kolejnym importem.
+- Konsekwencja: zmiana `CONDITION_MAP` w kodzie działa TYLKO dla nowych
+  produktów (pierwszy import, zero relacji) — nigdy retroaktywnie dla już
+  zaimportowanych, bez względu na to, ile razy puścimy backfill/import.
+
+**Cel [do potwierdzenia w sesji planistycznej]:** użytkownik chce mieć
+możliwość ŚWIADOMEGO, powtarzalnego przeliczenia klasy stanu istniejących
+produktów z surowej oferty Allegro (`_qutlet_allegro_offer`,
+`OfferMapper::condition_class()`) wg AKTUALNEJ `CONDITION_MAP`, na żądanie
+(„kiedy przyjdzie ochota" — nie automatycznie przy każdym imporcie) — czyli
+deliberatne, punktowe odstępstwo od D-6.1.4 dla tej jednej, ręcznie wywołanej
+operacji, zmiana w kodzie (`CONDITION_MAP`) + nowa komenda WP-CLI.
+
+**Otwarte pytania [OTWARTE, do rozpisania]:**
+- Zakres nadpisania: WSZYSTKIE produkty (przelicz z surowej oferty i nadpisz,
+  gdy wynik różni się od obecnej relacji) vs. TYLKO produkty, których surowy
+  `Stan` odpowiada konkretnemu kodowi wskazanemu przy wywołaniu (węższe,
+  bezpieczniejsze — nie dotyka produktów niezwiązanych z bieżącą zmianą mapy).
+  Rozważane na sesji 2026-08-17, NIE rozstrzygnięte — użytkownik odłożył
+  decyzję do pełnej sesji planistycznej.
+- Brak dziś jakiegokolwiek śladu „to ustawił auto-map" vs „to ręcznie
+  zaklasyfikował kurator" na relacji (`ClassDefinitionsTaxonomy::for_product()`
+  czyta płaski fakt, bez pochodzenia) — więc KAŻDE nadpisanie na ślepo ryzykuje
+  odrzucenie realnej ręcznej korekty. Do rozstrzygnięcia: zaakceptować ryzyko
+  (analogicznie do D-18.6 dla `ProviderRegistry`) czy dodać ślad pochodzenia
+  (nowe pole/meta) przed pociągnięciem za spust.
+- `--dry-run` obowiązkowy (wzorzec `BackfillKlasaStanuRelationCommand`) — do
+  potwierdzenia, czy to wystarczające zabezpieczenie, czy potrzeba też
+  potwierdzenia interaktywnego / limitu liczby produktów na uruchomienie.
+- Nazwa/umiejscowienie komendy: nowa, osobna komenda WP-CLI w `qutlet-core`
+  (slice `ProductCondition`, wzorem `BackfillKlasaStanuRelationCommand`) — do
+  potwierdzenia przy realizacji.
+
+**Ground-truth do wykorzystania w sesji planistycznej (już ustalony tą sesją,
+NIE odtwarzać z pamięci):**
+- `qutlet-core/src/ProductCondition/BackfillKlasaStanuRelationCommand.php` —
+  wzorzec komendy WP-CLI (paginacja, `--dry-run`, liczniki, bezpiecznik stron).
+- `qutlet-core/src/ProductCondition/ClassDefinitionsTaxonomy.php` —
+  `for_product()`/`get()`/`all()`, D-12.2.1/D-12.2.4 (semantyka „puste").
+- `qutlet-allegro/src/OfferSync/ProductWriter.php` (~linie 295–321) — guard
+  D-6.1.4 (`if ( null === ClassDefinitionsTaxonomy::for_product( $product_id ) )`),
+  jedyne miejsce, gdzie sync dziś dotyka `klasa_stanu`.
+- `qutlet-allegro/src/OfferSync/OfferMapper.php` — `CONDITION_MAP`,
+  `condition_class()`/`condition_raw()` (czysta funkcja, testowalna bez WP).
+
+**Zależności:** FAZA 12 (P-12.1a/P-12.2a/P-12.2b — cutover taksonomii klasy
+stanu na relację, D-6.1.4/D-12.2.1/D-12.2.4). Bez zależności od FAZY 18.
+
+---
+
 ## Materiał referencyjny i kandydaci do dalszych faz
 
 ### Inwentarz endpointów Allegro (dostarczony przez użytkownika)
