@@ -6156,7 +6156,7 @@ kończącej tę sesję.
 
 ---
 
-## 🟦 FAZA 18 — Wielodostawcowa AI: kompatybilność schematu + wybór modelu w adminie — ROZPISANA
+## 🟨 FAZA 18 — Wielodostawcowa AI: kompatybilność schematu + wybór modelu w adminie — ROZPISANA
 
 **Zgłoszenie (2026-08-17):** podczas testów kreatora P-17.2 użytkownik
 skonfigurował dodatkowych dostawców AI (Anthropic, OpenAI) obok istniejącego
@@ -6294,7 +6294,7 @@ FAZIE 17, patrz `CLAUDE.md` → „Realizacja punktu planu" → wyjątek od flip
 (kreator — miejsce, w którym bug i brak przełącznika ujawniły się w
 praktyce podczas testów, sesja 2026-08-17).
 
-### 🟦 P-18.1 — qutlet-ai: fix schematu JSON dla OpenAI Structured Outputs
+### 🟢 P-18.1 — qutlet-ai: fix schematu JSON dla OpenAI Structured Outputs
 
 - `RewriteGenerator::response_schema()` (`RewriteGenerator.php:104-112`) i
   `TitleGenerator::response_schema()` (`TitleGenerator.php:139-148`) dostają
