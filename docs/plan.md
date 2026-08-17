@@ -6156,7 +6156,7 @@ kończącej tę sesję.
 
 ---
 
-## 🟦 FAZA 18 — Wielodostawcowa AI: kompatybilność schematu + wybór modelu w adminie
+## 🟦 FAZA 18 — Wielodostawcowa AI: kompatybilność schematu + wybór modelu w adminie — ROZPISANA
 
 **Zgłoszenie (2026-08-17):** podczas testów kreatora P-17.2 użytkownik
 skonfigurował dodatkowych dostawców AI (Anthropic, OpenAI) obok istniejącego
@@ -6197,36 +6197,168 @@ osobne tematy w warstwie dostawców AI:
    nie przekazuje — brakuje (a) faktycznego przekazania wartości i (b) UI do
    jej ustawienia.
 
-**Do ustalenia na sesji planistycznej [OTWARTE, wszystkie]:**
-- Czy punkt 1 (bug) i punkt 2 (feature) to jeden punkt planu czy dwa osobne —
-  bug jest mały/pilny/niekontrowersyjny, feature jest większy i ma otwarte
-  pytania projektowe; rozdzielenie pozwoliłoby zmergować fix niezależnie i
-  szybko, bez czekania na rozstrzygnięcie feature'u.
-- Zakres przełącznika: globalny (jedna opcja, wzorem `PromptSettingsPage`/
-  `qutlet_ai_prompt_global`) czy per-produkt (wzorem `PromptOverrideField`,
-  override + fallback globalny)?
-- Kształt wyboru: pojedynczy „zablokowany" provider
-  (`PromptBuilder::usingProvider()`) czy uporządkowana lista preferencji z
-  fallbackiem (`PromptBuilder::usingModelPreference()`, próbuje po kolei)?
-- Czy przełącznik dotyczy OBU generatorów (`GenerationMetaBox` opis +
-  `TitleGenerationMetaBox` nazwa) razem, czy mają mieć niezależne ustawienia?
-- Gdzie dokładnie w UI: nowe pole w istniejącej sekcji promptu
-  (`GenerationMetaBox::render_prompt_section()`), osobny mini-metabox, czy
-  strona ustawień pod WooCommerce (wzorem `PromptSettingsPage`)?
-- Czy listę dostawców wystawiać na sztywno w kodzie (`google`/`anthropic`/
-  `openai`), czy odczytywać dynamicznie z rejestru core (którzy dostawcy są
-  SKONFIGUROWANI teraz) — jeśli tak, jaki jest stabilny, publiczny sposób
-  odpytania tego z poziomu wtyczki (bez zależności od wewnętrznych klas core
-  bez gwarancji API)?
+**Ground-truth dodatkowy [POTWIERDZONE sesją planistyczną 2026-08-17] — brak
+runtime failover w AI Client core:** kluczowe odkrycie tej sesji, rozstrzygające
+D-18.7 niżej. `PromptBuilder::generateResult()`
+(`wp-includes\php-ai-client\src\Builders\PromptBuilder.php:812-837`) wybiera
+model DOKŁADNIE RAZ, PRZED wywołaniem (`getConfiguredModel()`, linie
+1148–1186) — wybór opiera się WYŁĄCZNIE na tym, czy provider jest
+`isProviderConfigured()` (ma klucz API) i czy pasuje do zapisanej listy
+`usingModelPreference()`/`usingModelPreferenceKeys`, NIGDY na wyniku
+faktycznego wywołania. `executeModelGeneration()` (linie 849–883) woła model
+DOKŁADNIE RAZ, bez żadnego try/catch obejmującego więcej niż jedną próbę.
+Grep całego `php-ai-client\src` pod `retry|fallback|backoff` — zero trafień
+poza niezwiązanym cache PSR-16. Żaden z trzech AKTYWNYCH pluginów-connectorów
+w tej instalacji (`ai-provider-for-openai`, `ai-provider-for-anthropic`,
+`ai-provider-for-google` — wszystkie `active`, `wp plugin list`) nie ma
+własnego retry/backoff na 429/5xx. Skutek: nawet RĘCZNE ponowienie („kliknij
+Generuj drugi raz") nie przełącza dostawcy dziś — wybór jest deterministyczny
+względem konfiguracji, nie historii błędów (potwierdzone wprost pytaniem
+użytkownika w tej sesji). Provider ID potwierdzone w kodzie (`createProviderMetadata()`
+każdej klasy `*Provider.php`): `'google'`, `'anthropic'`, `'openai'`.
 
-**Zakres (wstępny, do potwierdzenia przy realizacji):** prawdopodobnie
-wyłącznie `qutlet-ai` (oba tematy dotyczą wyłącznie generacji AI — schemat i
-wybór modelu, nie danych/renderu) — do potwierdzenia, czy rzeczywiście zero
-dotknięcia `qutlet-core`/`qutlet-theme`.
+**Decyzje użytkownika (pytania zadane wprost na tej sesji, rozstrzygnięte
+PRZED spisaniem punktów P-18.x):**
+
+- **D-18.1 (bug i feature = DWA osobne punkty planu) [USTALONE — decyzja
+  użytkownika, sesja 2026-08-17]:** P-18.1 = fix schematu (mały, izolowany,
+  może zmergować się niezależnie i szybko). P-18.2 = wybór dostawcy/modelu
+  (większy, z otwartymi wtedy pytaniami projektowymi, teraz rozstrzygniętymi
+  niżej). **Odrzucona alternatywa:** jeden punkt — odrzucone, bo wiązałoby
+  merge prostego, pilnego fixa z rozstrzygnięciem całego, większego feature'u.
+- **D-18.2 (zakres = GLOBALNY, nie per-produkt) [USTALONE — decyzja
+  użytkownika, sesja 2026-08-17]:** jedna opcja ustawień dla całej instalacji,
+  wzorem `qutlet_ai_prompt_global` (§13 kontraktu) — NIE override per-produkt
+  wzorem `prompt_ai`. **Odrzucona alternatywa:** per-produkt z fallbackiem do
+  globalnego (wzorem promptu) — odrzucone, temat dotyczy infrastruktury/kosztów/
+  limitów API, nie stylu treści per produkt.
+- **D-18.3 (kształt = uporządkowana LISTA PRIORYTETÓW dostawców, z realnym
+  failoverem) [USTALONE — decyzja użytkownika, sesja 2026-08-17, rozstrzygana
+  razem z D-18.7]:** NIE pojedynczy zablokowany provider
+  (`usingProvider()` bez fallbacku) — użytkownik chce, żeby system SAM
+  próbował kolejnych dostawców z zapisanej kolejności priorytetu przy awarii
+  (np. Gemini → OpenAI → płatny Claude jako ostatnia deska ratunku).
+- **D-18.4 (jeden WSPÓLNY przełącznik dla obu generatorów) [USTALONE —
+  decyzja użytkownika, sesja 2026-08-17]:** ta sama, jedna lista priorytetów
+  stosowana i do `TitleGenerator`, i do `RewriteGenerator` — NIE osobne
+  ustawienia per generator.
+- **D-18.5 (miejsce UI = rozszerzenie `PromptSettingsPage`) [USTALONE —
+  decyzja użytkownika, sesja 2026-08-17]:** nowa sekcja „Kolejność dostawców
+  AI" na istniejącej stronie ustawień `qutlet-ai` (podmenu WooCommerce,
+  `qutlet-ai-prompt`, obok globalnego promptu) — NIE nowa, osobna strona menu,
+  NIE pole w metaboksie produktu (`GenerationMetaBox::render_prompt_section()`)
+  — to ostatnie odrzucone jako mylące: ustawienie jest GLOBALNE, pokazanie go
+  per-produkt sugerowałoby override, którego nie ma (D-18.2).
+- **D-18.6 (lista dostawców w UI = DYNAMICZNA z rejestru core) [USTALONE —
+  decyzja użytkownika, sesja 2026-08-17, z zaakceptowanym ryzykiem]:**
+  UI odpytuje w runtime `AiClient::defaultRegistry()->isProviderConfigured($id)`
+  (`ProviderRegistry`, `wp-includes\php-ai-client\src\Providers\ProviderRegistry.php`)
+  — do ułożenia w priorytecie trafiają WYŁĄCZNIE dostawcy ze skonfigurowanym
+  kluczem API. **Świadomie zaakceptowane ryzyko:** `ProviderRegistry` nie ma
+  adnotacji `@internal` (formalnie dostępna z zewnątrz), ale NIE jest
+  udokumentowanym, stabilnym kontraktem WP dla pluginów — sam
+  `wp-includes\connectors.php` traktuje ją jako wewnętrzny silnik, eksponując
+  status konfiguracji na zewnątrz tylko przez prywatną, poprzedzoną `_`
+  `_wp_connectors_get_connector_script_module_data()`. Może się zmienić między
+  wersjami rdzenia WP bez wpisu w publicznym changelogu API. **Odrzucona
+  alternatywa:** statyczna lista `google`/`anthropic`/`openai` na sztywno w
+  kodzie — bezpieczniejsza, ale wymagałaby ręcznej zmiany kodu `qutlet-ai` przy
+  każdym nowym dostawcy; użytkownik wybrał wygodę dynamicznego odpytania mimo
+  ryzyka niestabilności.
+- **D-18.7 (runtime failover = WŁASNA pętla retry w `qutlet-ai`, na KAŻDY
+  błąd) [USTALONE — decyzja użytkownika, sesja 2026-08-17, kluczowa decyzja
+  tej sesji]:** skoro AI Client core NIE robi failoveru sam (ground-truth
+  wyżej) — `qutlet-ai` buduje WŁASNĄ logikę: dla JEDNEGO kliknięcia „Generuj",
+  iteruje po zapisanej liście priorytetów dostawców (D-18.3), dla każdego
+  wywołuje AI Client z `using_provider( $provider_id )`, łapie **KAŻDY**
+  wyjątek/`WP_Error` z tej próby (nie tylko 429/5xx — decyzja użytkownika
+  wprost, świadomie szersza) i przechodzi do kolejnego dostawcy z listy. Błąd
+  wraca do UI wyłącznie, gdy WSZYSCY dostawcy z listy zawiodą — bez udziału
+  użytkownika (nie wymaga ręcznego ponowienia). **Odrzucona alternatywa:**
+  poleganie na `usingModelPreference()` core (który wybiera statycznie, raz,
+  przed wywołaniem, na podstawie konfiguracji — NIE na podstawie sukcesu
+  wywołania) — odrzucone, bo NIE realizuje żądanego zachowania, co potwierdziło
+  wprost pytanie kontrolne użytkownika w tej sesji („skąd wiadomo kiedy zacząć
+  próbę z drugim [dostawcą]?" — odpowiedź: bez własnej pętli, wcale, nawet przy
+  ręcznym powtórzeniu).
+
+**Zakres [USTALONE tą sesją]:** wyłącznie `qutlet-ai` — zero dotknięcia
+`qutlet-core`/`qutlet-theme`/`qutlet-allegro`. Jedyny ślad w `qutlet-meta` to
+literał opcji (`qutlet_ai_provider_priority`, ustalony i spisany DO
+`docs/kontrakt-danych.md` §13 w TEJ sesji planistycznej, patrz niżej) — praca
+`qutlet-meta` dla tego punktu skonsumowana w planowaniu, więc P-18.2 przy
+realizacji jest punktem czysto-kodowym w jednym repo (analogicznie do D-17.6 w
+FAZIE 17, patrz `CLAUDE.md` → „Realizacja punktu planu" → wyjątek od flipu 🟡).
 
 **Zależności:** FAZA 7 (przeróbka AI, adopcja WP AI Client), FAZA 17
 (kreator — miejsce, w którym bug i brak przełącznika ujawniły się w
 praktyce podczas testów, sesja 2026-08-17).
+
+### 🟦 P-18.1 — qutlet-ai: fix schematu JSON dla OpenAI Structured Outputs
+
+- `RewriteGenerator::response_schema()` (`RewriteGenerator.php:104-112`) i
+  `TitleGenerator::response_schema()` (`TitleGenerator.php:139-148`) dostają
+  klucz `'additionalProperties' => false` na obiekcie root schematu (jedyny
+  poziom zagnieżdżenia w obu dzisiejszych schematach — brak zagnieżdżonych
+  obiektów, więc bez potrzeby rekurencji).
+- Bezpieczne dla Google/Gemini: `GoogleTextGenerationModel::removeAdditionalPropertiesKey()`
+  (`ai-provider-for-google\src\Models\GoogleTextGenerationModel.php:512-538`)
+  rekurencyjnie i cicho (`unset`, bez wyjątku) usuwa ten klucz z `outputSchema`
+  PRZED wysyłką do Google AI API (linia 205) — dodanie klucza jest no-opem dla
+  tego providera.
+- Naprawia wymóg OpenAI: `OpenAiTextGenerationModel::prepareGenerateTextParams()`
+  (`ai-provider-for-openai\src\Models\OpenAiTextGenerationModel.php:130-141`)
+  ustawia `'strict' => true` na sztywno przy każdym `outputSchema` — API OpenAI
+  wymaga wtedy `additionalProperties: false` na KAŻDYM obiekcie schematu,
+  inaczej 400. Provider NIE dopisuje tego automatycznie (zero wystąpień w
+  kodzie pluginu) — odpowiedzialność leży po stronie wołającego (`qutlet-ai`).
+- **Nie sprawdzone w tej sesji (poza zakresem ground-truthu):** analogiczny
+  kod Anthropic-providera (`ai-provider-for-anthropic`) — do potwierdzenia przy
+  realizacji, czy Claude wymaga/toleruje ten klucz identycznie jak OpenAI/Google.
+- **Zakres:** wyłącznie 2 pliki `qutlet-ai`; zero nowych meta keys/pól/opcji —
+  `docs/kontrakt-danych.md` bez zmian z tego punktu.
+- **Zależności:** brak — samodzielny, może ruszyć jako pierwszy, niezależnie
+  od P-18.2.
+
+### 🟦 P-18.2 — qutlet-ai: globalna lista priorytetów dostawców AI + runtime failover
+
+- Nowa opcja globalna `qutlet_ai_provider_priority` (literał ustalony i
+  spisany w `docs/kontrakt-danych.md` §13 tą sesją planistyczną — array<string>
+  ID dostawców w kolejności priorytetu, np. `['google','openai','anthropic']`),
+  Settings API, nowa sekcja „Kolejność dostawców AI" na `PromptSettingsPage`
+  (D-18.5) — UI listuje do ułożenia WYŁĄCZNIE dostawców, dla których
+  `AiClient::defaultRegistry()->isProviderConfigured( $id )` zwraca `true`
+  (D-18.6).
+- Nowy helper odczytu (np. `ProviderPrioritySettings::ordered_configured_provider_ids()`
+  — dokładna nazwa/miejsce do ustalenia przy realizacji) zwraca zapisaną listę
+  przefiltrowaną do aktualnie skonfigurowanych dostawców.
+- `TextGenerationService` dostaje pętlę failover (D-18.7): dla KAŻDEGO
+  wywołania generacji, iteruje po liście priorytetów, dla każdego elementu
+  buduje builder z `using_provider( $provider_id )` i próbuje wywołania;
+  łapie KAŻDY wyjątek/`WP_Error`, przechodzi do kolejnego; zwraca błąd
+  wołającemu tylko gdy WSZYSCY zawiodą. Wspólne dla `RewriteGenerator` i
+  `TitleGenerator` (D-18.4) — przez wspólny helper w `TextGenerationService`,
+  żeby obaj wołający nie duplikowali pętli.
+- **Do ustalenia przy realizacji (ground-truth NAJPIERW):**
+  - dokładny kształt UI listy priorytetów (drag&drop JS vs numerowane
+    selecty) — nierozstrzygnięte w tej sesji, czysto implementacyjne;
+  - zachowanie, gdy zapisana lista zawiera dostawcę, który PRZESTAŁ być
+    skonfigurowany (klucz usunięty z `wp-config.php` po zapisaniu priorytetu)
+    — prawdopodobnie pomiń cicho i przejdź do kolejnego, do potwierdzenia;
+  - zachowanie, gdy lista jest PUSTA (żaden dostawca skonfigurowany, albo
+    ustawienie nigdy nie zapisane) — prawdopodobnie fallback na dzisiejsze
+    zachowanie AI Client (`findModelsMetadataForSupport()`, pierwszy
+    skonfigurowany wg kolejności rejestracji pluginów), do potwierdzenia;
+  - dokładna sygnatura/umiejscowienie pętli retry (metoda w
+    `TextGenerationService` vs nowa dedykowana klasa) — decyzja
+    implementacyjna.
+- **Zakres:** wyłącznie `qutlet-ai` — praca `qutlet-meta` (literał opcji,
+  decyzje D-18.x) skonsumowana już w tej sesji planistycznej (patrz „Zakres"
+  wyżej) — realizacja NIE wymaga osobnego pod-punktu/PR-a w `qutlet-meta`.
+- **Zależności:** P-18.1 niewymagane technicznie (inny fragment kodu w tych
+  samych plikach), ale logicznie sensowne zrobić PO nim — oba punkty dotykają
+  `RewriteGenerator.php`/`TitleGenerator.php`, robienie P-18.1 najpierw
+  unika konfliktów merge'a.
 
 ---
 

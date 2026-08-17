@@ -831,6 +831,7 @@ rozproszony, ta sama nazwa slice'a `AiRewrite/` w obu repo. Prompt efektywny
 |--------------------------------------|---------------|---------|------------------------|-------------|-------|
 | Prompt AI (nadpisanie per produkt)   | `prompt_ai`   | ACF (meta na produkcie) | textarea (plain text) | tak | Rejestruje `qutlet-core` (P-7.2a). Treść wysyłana do core AI Client (`using_system_instruction()` / dołączona do promptu) ZAMIAST globalnego promptu, gdy niepuste. Puste → `qutlet-ai` używa globalnego promptu. Wejściem do generacji jest surowy JSON pojedynczego produktu (D-7.G5/D-5.G4) — to pole tylko dostarcza instrukcję/styl, NIE dane produktu. Odczyt cross-plugin: `get_post_meta( $product_id, 'prompt_ai', true )` (wzorzec §9.2 — `get_field()`/`get_post_meta()` równoważne dla prostych pól tekstowych ACF). **Render (P-13.6, D-13.G4/D-13.6.1):** BEZ własnego metaboxu ACF — `qutlet-core` (`PromptOverrideField::remove_own_metabox()`) zdejmuje go z ekranu produktu; renderuje się WEWNĄTRZ metaboxu „Qutlet — generacja AI" (`qutlet-ai`), wołaniem publicznej metody `PromptOverrideField::render_field( $product_id )` (rejestracja i wywołania ACF zostają w core — `qutlet-ai` nie ma twardej zależności na ACF Pro, D-G5). |
 | Prompt AI (globalny)                | `qutlet_ai_prompt_global` | option (Settings API) | string (textarea, plain text) | tak (brak/puste → brak instrukcji systemowej — core AI Client generuje bez `using_system_instruction()`) | Rejestruje `qutlet-ai` (P-7.2b): strona ustawień pod menu WooCommerce (wzorzec `DiscountRateSettingsPage`, §11), sanityzacja `sanitize_textarea_field()`. Odczyt: `get_option( 'qutlet_ai_prompt_global', '' )`, ale wołający NIE czyta opcji bezpośrednio — używa `Qutlet\Ai\AiRewrite\PromptSettings::effective_prompt( $product_id )` (override per-produkt ?? opcja globalna ?? `null`), analogicznie do `DiscountRate::effective_percent()` (§11). |
+| Kolejność priorytetów dostawców AI (globalna, FAZA 18) | `qutlet_ai_provider_priority` | option (Settings API) | `array<string>` (ID dostawców AI Client w kolejności priorytetu) | tak (brak/pusta lista → fallback na dzisiejsze zachowanie AI Client, pierwszy skonfigurowany provider wg kolejności rejestracji pluginów) | Rejestruje `qutlet-ai` (P-18.2, do zbudowania): nowa sekcja na `PromptSettingsPage`, obok promptu globalnego. ID potwierdzone w kodzie: `'google'`, `'openai'`, `'anthropic'`. UI listuje wyłącznie dostawców, dla których `AiClient::defaultRegistry()->isProviderConfigured( $id )` zwraca `true` (D-18.6, `docs/plan.md`). Odczyt przez nowy helper (nazwa do ustalenia przy realizacji), NIE bezpośrednio `get_option()` — zwraca listę przefiltrowaną do aktualnie skonfigurowanych dostawców. Używana przez WŁASNĄ pętlę runtime failover w `TextGenerationService` (D-18.7) — próbuje kolejnych dostawców z listy na KAŻDY błąd wywołania, w jednym kliknięciu „Generuj". Pełne decyzje: `docs/plan.md` → FAZA 18, D-18.1–D-18.7. |
 
 **D-7.2a.1 [USTALONE]:** mechanizm rejestracji pola per-produkt = `acf_add_local_field_group()`
 (wzorzec `ProductConditionFields`/`AllegroChannelFields`/`RewrittenFields` — pole
@@ -873,11 +874,34 @@ samodzielnie — `qutlet-ai` ma twardą zależność WYŁĄCZNIE na core + Woo (
 ACF Pro, więc bezpośrednie wywołanie funkcji ACF przez `qutlet-ai` byłoby
 niezadeklarowaną twardą zależnością (fatal przy wyłączonym ACF).
 
+**D-18.G1 [USTALONE — decyzja użytkownika, sesja planistyczna FAZY 18,
+2026-08-17]:** literał nowej opcji globalnej = `qutlet_ai_provider_priority`
+(analogia do `qutlet_ai_prompt_global` wyżej — prefiks `qutlet_ai_`, bo mieszka
+w `qutlet-ai`). Typ: `array<string>` — lista ID dostawców AI Client w
+kolejności priorytetu, np. `['google', 'openai', 'anthropic']`. ID dostawców
+potwierdzone w kodzie (`createProviderMetadata()` w `GoogleProvider.php`/
+`OpenAiProvider.php`/`AnthropicProvider.php`, pierwszy argument
+`ProviderMetadata`): `'google'`, `'openai'`, `'anthropic'`. Mechanizm: Settings
+API, nowa sekcja „Kolejność dostawców AI" na `PromptSettingsPage` (obok
+globalnego promptu) — UI listuje do ułożenia WYŁĄCZNIE dostawców, dla których
+`AiClient::defaultRegistry()->isProviderConfigured( $id )` zwraca `true` w
+danym momencie (dynamicznie, nie statyczna lista w kodzie — ryzyko akceptowane
+świadomie, `ProviderRegistry` nie jest udokumentowanym stabilnym API dla
+pluginów, patrz `docs/plan.md` D-18.6). Opcjonalne: brak/pusta lista → fallback
+na dzisiejsze zachowanie AI Client (pierwszy skonfigurowany provider wg
+kolejności rejestracji pluginów) — dokładna semantyka do potwierdzenia przy
+realizacji P-18.2. Odczyt: NIE bezpośrednio `get_option()` — przez nowy
+helper (nazwa do ustalenia przy realizacji) analogiczny do
+`PromptSettings::effective_prompt()`, przefiltrowany do aktualnie
+skonfigurowanych dostawców. Pełne decyzje (D-18.1–D-18.7, w tym runtime
+failover na KAŻDY błąd wywołania) — `docs/plan.md` → FAZA 18.
+
 ### Odnośniki (§13)
 - Plan: `docs/plan.md` → FAZA 7 (D-7.G1–G7), P-7.2a (pole per-produkt + rejestracja
   core), P-7.2b (ten kontrakt: ustawienie globalne + odczyt efektywnego promptu w
   `qutlet-ai`), P-13.6a/P-13.6b (D-13.G4/D-13.6.1 — render przeniesiony do metaboxu
-  `qutlet-ai`).
+  `qutlet-ai`), FAZA 18 (D-18.G1 wyżej: `qutlet_ai_provider_priority`, P-18.1
+  fix schematu OpenAI, P-18.2 lista priorytetów dostawców + runtime failover).
 
 ---
 
