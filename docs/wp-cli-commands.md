@@ -113,6 +113,21 @@ gdzie wynik się zmienił. `--resolve-missing` opcjonalnie dociąga z API ście�
 nierozwiązane przy imporcie (slot `read`, wtedy używa `--environment`).
 **Repo/klasa:** `qutlet-allegro`, `Qutlet\Allegro\OfferSync\CategoryReportCommand`.
 
+### `wp qutlet-allegro reclassify-klasa-stanu [--dry-run] [--stan=<wartosc>]`
+Świadoma, powtarzalna reklasyfikacja `klasa_stanu` już zaimportowanych produktów z
+surowej oferty (`OfferMapper::condition_class()`) wg AKTUALNEJ `CONDITION_MAP` — na
+żądanie operatora, NIE automatycznie. Adresuje trwały fakt architektoniczny (FAZA 19):
+`ProductWriter::upsert()` (D-6.1.4) i `qutlet-core backfill-klasa-stanu-relacja`
+ustawiają klasę TYLKO gdy produkt jeszcze żadnej nie ma — zmiana `CONDITION_MAP` w
+kodzie sama z siebie działa wyłącznie dla nowych ofert, nigdy retroaktywnie. `--dry-run`
+liczy i loguje zmiany bez zapisu; opcjonalne `--stan=<wartosc>` zawęża do produktów,
+których surowy parametr „Stan" DOKŁADNIE odpowiada podanej wartości (case-sensitive) —
+do punktowej korekty jednej klasy (np. świeżo dodanej) bez ruszania reszty katalogu.
+Zapis relacji przez `wp_set_object_terms()` bezpośrednio (wzorem
+`backfill-klasa-stanu-relacja`), nie przez ACF. Idempotentna — produkt z już zgodną
+relacją jest pomijany.
+**Repo/klasa:** `qutlet-allegro`, `Qutlet\Allegro\OfferSync\ReclassifyKlasaStanuCommand`.
+
 ### `wp qutlet-allegro sync-orders [--environment=<env>=sandbox|production] [--full]`
 Import oraz synchronizacja statusów zamówień Allegro → natywne `WC_Order`: tor
 przyrostowy po `GET /order/events` (własny kursor, osobny od `sync-stock`),
@@ -226,6 +241,7 @@ dokument nie duplikuje szczegółów produkcyjnych.
 - `wp qutlet-allegro sandbox-preflight`
 - `wp qutlet-allegro seed-sandbox`
 - `wp qutlet-allegro category-report`
+- `wp qutlet-allegro reclassify-klasa-stanu`
 - `wp qutlet-allegro backfill-order-attribution`
 
 `sync-stock`, `sync-orders` i `import-offers` NIE są na tej liście — mają scheduler
