@@ -7371,7 +7371,7 @@ tekstu wyżej ustalone PRZY REALIZACJI, nie domyślnie:**
 - PR: `qutlet-core`#34.
 - **Zależności:** brak (patrz P-21.1a).
 
-### 🟡 P-21.2 — Ground-truth: atrybuty wagowe/wymiarowe z Allegro (punkt wielorepowy → P-21.2a + P-21.2b)
+### 🟢 P-21.2 — Ground-truth: atrybuty wagowe/wymiarowe z Allegro (punkt wielorepowy → P-21.2a + P-21.2b)
 
 Cel: sprawdzić w realnych danych, jakie parametry oferty
 (`productSet[0].product.parameters[]`, `docs/mapping-allegro.md` §4b) niosą wagę i
@@ -7407,7 +7407,7 @@ tabela i uzasadnienie: `docs/kontrakt-danych.md` §15):**
   `nazwa → jednostka` (391 różnych nazw parametrów w całej próbce ofert, tu
   sprawdzony tylko ułamek).
 
-### 🟡 P-21.2a — qutlet-allegro: rozszerzenie `sample-categories` o słownik parametrów
+### 🟢 P-21.2a — qutlet-allegro: rozszerzenie `sample-categories` o słownik parametrów
 - **Repo:** qutlet-allegro (slice `ApiSamples/`)
 - **Zakres:** nowa opcjonalna flaga `--parameter-category-ids=<id1,id2,…>` w
   `CategorySamplesCommand` — dla każdego id pobiera `GET /sale/categories/{id}/parameters`
@@ -7417,7 +7417,7 @@ tabela i uzasadnienie: `docs/kontrakt-danych.md` §15):**
 - **Zależności:** FAZA 2 (slot `production/read`, ważny token — wymagał reconnectu
   tej sesji).
 
-### 🟡 P-21.2b — qutlet-meta: próbka + kontrakt jednostek
+### 🟢 P-21.2b — qutlet-meta: próbka + kontrakt jednostek
 - **Repo:** qutlet-meta (`docs/allegro-api-samples/`, `docs/kontrakt-danych.md`)
 - **Zakres:** z surowego wyjścia P-21.2a złożono przycięty plik-próbkę
   (`GET_sale-categories-id-parameters.json` — 16 parametrów wagowo-wymiarowych z 6
