@@ -1278,8 +1278,121 @@ konwersji.
 - Ground-truth i decyzja: `docs/plan.md` → FAZA 21, P-21.3 (+ rozbicie
   P-21.3a/P-21.3b).
 - Jednostki per `id`/kategoria: §15 (D-21.2.1).
-- Konsument: P-21.4 (kopiowanie do natywnych pól wysyłki Woo
+- Konsument: §17 (P-21.4a/P-21.4b, kopiowanie do natywnych pól wysyłki Woo
   `_weight`/`_length`/`_width`/`_height`).
+
+---
+
+## 17. Mapowanie kandydatów wagowo-wymiarowych na pola natywne Woo (FAZA 21 — P-21.4)
+
+Konsument §16: `OfferMapper::weight_dimension_attributes()` (D-21.3.1) daje
+gotowe pary etykieta→"wartość jednostka" dla atrybutu WC, ale ProductWriter
+NIGDY nie woła `$product->set_weight()`/`set_length()`/`set_width()`/`set_height()`
+(potwierdzone ground-truthem sesji 2026-08-18 — zero wystąpień w
+`ProductWriter.php`) — pola natywne „Wysyłka" (`_weight`/`_length`/`_width`/`_height`)
+zostają dziś puste niezależnie od tego, co niesie atrybut.
+
+**Zasada nadrzędna (decyzja użytkownika, sesja 2026-08-18):** pola natywne mają
+odzwierciedlać wymiary/wagę **PRZESYŁKI** (kluczowe dla wyceny paczkomatów), nie
+gołego produktu — użytkownik: „chodzi o wymiary i wagę opakowania, bo chodzi o
+wysyłkę, przede wszystkim paczkomaty". Żaden z 13 kandydatów D-21.3.1 nie nazywa
+się wprost „wymiary/waga paczki" — dla WAGI najbliższym dostępnym proxy jest
+`Waga produktu z opakowaniem jednostkowym` (jedyny kandydat explicite niosący
+opakowanie); dla WYMIARÓW liniowych żaden kandydat nie niesie opakowania wprost,
+więc przyjęto wariant „z podstawą" (cała bryła faktycznie pakowana razem z
+akcesorium, np. monitor+podstawka) jako najbliższe dostępne przybliżenie, z
+wariantami „produktu"/„grilla" jako fallback. **To ocena wykonawcy zastosowana
+wg zasady użytkownika (użytkownik: „sam oceń kierując się tą zasadą"), nie
+osobno zweryfikowana dla każdej kategorii — do rewizji, gdyby realne dane
+(kolejne kategorie, D-21.3.1 pkt 1 „lista nie jest zamknięta") pokazały lepszy
+kandydat.**
+
+**D-21.4.1 (USTALONE, sesja 2026-08-18 — pkt 1: ocena wykonawcy wg zasady
+użytkownika, patrz akapit wyżej; pkt 2/3: decyzje inżynierskie wykonawcy,
+niezależne od tej zasady — kształt zwrotki i polityka zapisu wynikają z
+istniejącego mechanizmu D-21.3.1, nie z oceny „opakowanie > goły produkt"):**
+
+1. **Rozszerzenie identyfikacji kandydata o oś fizyczną** (dziś
+   `WEIGHT_DIMENSION_CANDIDATES` zna tylko rodzaj `dimension`/`weight`, D-21.3.1
+   — bez rozróżnienia szerokość/wysokość/głębokość). Mapowanie nazwa→oś (oś
+   dotyczy tylko rodzaju `dimension`; `weight` nie ma osi, jedno pole `_weight`):
+
+   | Oś (pole natywne Woo) | Kandydaci (VERBATIM z §15/§16, w kolejności PRIORYTETU) |
+   |---|---|
+   | `_width` | `Szerokość produktu z podstawą` › `Szerokość grilla` › `Szerokość produktu` |
+   | `_height` | `Wysokość produktu z podstawą` › `Wysokość grilla` › `Wysokość produktu` |
+   | `_length` | `Głębokość produktu z podstawą` › `Głębokość grilla` › `Głębokość produktu` |
+   | `_weight` | `Waga produktu z opakowaniem jednostkowym` › `Waga z podstawą` › `Waga produktu` › `Waga` |
+
+   `_length` = głębokość (wymiar przód-tył), NIE wysokość — konwencja
+   WooCommerce/kurierska: `length`/`width`/`height` to trzy krawędzie kartonu,
+   `length` to zwyczajowo najdłuższa/frontowa krawędź (odpowiednik „głębokości"
+   w nazewnictwie Allegro). Potwierdzone przez użytkownika.
+
+   Priorytet „z podstawą" > „produktu" wynika z realnej kolizji w próbce §15:
+   kategoria `260041` (akcesoria monitora) niesie JEDNOCZEŚNIE `Szerokość
+   produktu` (id `223333`) i `Szerokość produktu z podstawą` (id `206642`) na
+   tej samej ofercie — do wysyłki liczy się bryła z podstawą, bo to ONA trafia
+   do kartonu. Warianty „grilla" i „produktu"/„z podstawą" nie współwystępują w
+   próbce (rozłączne rodziny kategorii) — kolejność między nimi ustalona
+   formalnie (total order), nie zweryfikowana na kolizji.
+   Priorytet wagi: `Waga produktu z opakowaniem jednostkowym` (decyzja
+   użytkownika wprost, id `17448`, jedyny id spójny globalnie §15) > `Waga z
+   podstawą` (analogicznie do wymiarów — cała bryła) > `Waga produktu` > `Waga`
+   (bez słowa „produktu", tylko kategoria grilli). W odróżnieniu od kolizji
+   wymiarowej (pkt wyżej), ta kolejność JEST potwierdzona realną kolizją w tej
+   samej próbce §15: kategoria `260041` niesie jednocześnie `Waga z podstawą`
+   (`5.59` kg), `Waga produktu` (`0.15` kg) i `Waga produktu z opakowaniem
+   jednostkowym` (`8.61` kg) na TEJ SAMEJ ofercie — wartości rosną w kolejności
+   zgodnej z wybranym priorytetem (opakowanie ciężarem opakowania/gabarytu
+   zbiorczego > sama podstawa > goły produkt). Kategoria `260556` (grill) niesie
+   jednocześnie `Waga` (`6.9` kg) i `Waga produktu z opakowaniem jednostkowym`
+   (`10.2` kg) — również zgodnie z kierunkiem priorytetu. „Grilla"/„produktu"/
+   „z podstawą" jako RODZINY wciąż się nie krzyżują w próbce (rozłączne
+   kategorie) — total order między nimi pozostaje formalny, nie zweryfikowany.
+
+2. **Kształt zwrotki — nowa metoda, nie parsowanie stringa.**
+   `weight_dimension_attributes()` (D-21.3.1) zwraca `"wartość jednostka"` jako
+   string dla atrybutu WC — w gałęzi degradacji D-21.3.1 pkt 3 (jednostka
+   Allegro znana, ale nierozpoznana przez tabelę konwersji) ta wartość jest w
+   **oryginalnej jednostce Allegro**, nie sklepu. Sparsowanie samej liczby z
+   tego stringa i zapisanie jej wprost do pola natywnego (bez etykiety
+   jednostki — WC bierze jednostkę z ustawienia globalnego) byłoby w tym
+   przypadku cichym błędem zakazanym przez D-21.3.1 pkt 3. Wymagana NOWA
+   metoda `OfferMapper` zwracająca floaty PO zastosowaniu priorytetu z pkt 1 i
+   PO udanej konwersji do jednostki sklepu — pomijająca kandydatów w gałęzi
+   degradacji (dla tej osi/wagi tak, jakby ich nie było — priorytet spada na
+   kolejnego kandydata w kolejności, a gdy brak — pole zostaje nierozstrzygnięte).
+   Nazwa metody i dokładna sygnatura — do implementacji (P-21.4b).
+
+3. **Zapis: TYLKO gdy wartość rozstrzygnięta, nigdy zerowanie.** Gdy dla danej
+   osi/wagi mechanizm z pkt 2 zwraca wartość → `ProductWriter::upsert()` woła
+   odpowiedni `set_weight()`/`set_length()`/`set_width()`/`set_height()`
+   (sync-owned, nadpisuje przy każdym przebiegu — spójne z `build_attributes()`).
+   Gdy mechanizm NIE zwraca wartości (brak jakiegokolwiek kandydata danej
+   osi/wagi w ofercie ALBO wszyscy kandydaci tej osi w gałęzi degradacji) →
+   pole natywne pozostaje NIETKNIĘTE (żaden `set_*()`, zero wywołania) — w
+   odróżnieniu od atrybutów WC (tam cały zestaw jest bezwarunkowo nadpisywany
+   listą), bo pole natywne to pojedynczy skalar, który mógł zostać ręcznie
+   skorygowany przez administratora; brak danych z Allegro w danym przebiegu
+   nie powinien kasować tej korekty. Warning w logu TYLKO gdy kandydat był
+   obecny w ofercie, ale trafił w degradację (spójne z istniejącym
+   mechanizmem warningów `ProductWriter::upsert()` dla D-21.3.1 pkt 3) —
+   zwykły brak kandydata w ofercie (np. oferta bez żadnego wymiaru) nie jest
+   warningiem.
+
+4. **Warstwa surowa nietknięta.** Jak D-21.3.1 pkt 2 —
+   `_qutlet_allegro_specification_raw` i atrybut WC nie zmieniają się przez
+   ten punkt; to osobny, dodatkowy zapis do czterech pól natywnych Woo z TYCH
+   SAMYCH danych źródłowych (parametry produktowe oferty + słownik jednostek
+   kategorii), nie migracja/zamiana istniejącego mechanizmu.
+
+### Odnośniki (§17)
+- Ground-truth i decyzja: `docs/plan.md` → FAZA 21, P-21.4 (+ rozbicie
+  P-21.4a/P-21.4b).
+- Kandydaci i jednostki: §15 (D-21.2.1), §16 (D-21.3.1).
+- Pola natywne Woo: `_weight`/`_length`/`_width`/`_height` (Product Data →
+  zakładka „Wysyłka").
 
 ---
 

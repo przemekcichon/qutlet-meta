@@ -7492,12 +7492,46 @@ w jednym repo” (`CLAUDE.md` → „Realizacja punktu planu”).
   dopiero po ponownym imporcie/syncu tej konkretnej oferty.
 - **Zależności:** P-21.3a (kontrakt D-21.3.1 jako źródło literałów nazw).
 
-### P-21.4 — Kopiowanie atrybutów wymiary/waga do zakładki „Wysyłka" [OTWARTE, zależne od P-21.2/P-21.3]
+### 🟡 P-21.4 — Kopiowanie atrybutów wymiary/waga do zakładki „Wysyłka" (punkt wielorepowy → P-21.4a + P-21.4b)
 WooCommerce ma natywne pola wysyłki (`_weight`/`_length`/`_width`/`_height`,
-zakładka „Wysyłka" w Product Data) — dziś dane wagi/wymiarów z Allegro
-prawdopodobnie NIE trafiają tam automatycznie (do potwierdzenia ground-truthem
-`ProductWriter`, `qutlet-allegro`). Cel: sync pisze bezpośrednio w te pola
-natywne (zamiast/obok pozostawienia ich tylko jako atrybut/specyfikacja).
+zakładka „Wysyłka" w Product Data) — dziś dane wagi/wymiarów z Allegro NIE
+trafiają tam automatycznie (potwierdzone ground-truthem `ProductWriter::upsert()`,
+sesja 2026-08-18 — zero wywołań `set_weight()`/`set_length()`/`set_width()`/
+`set_height()` w całym pliku). Cel: sync pisze bezpośrednio w te pola natywne,
+obok pozostawienia specyfikacji/atrybutu bez zmian (D-21.3.1 pkt 2, kontrakt §16).
+
+**Realizacja (sesja 2026-08-18):** ground-truth ujawnił dwie realne decyzje
+biznesowe (nie tylko kod) — które z 13 kandydatów D-21.3.1 mają zasilać które
+z czterech pól natywnych, i priorytet, gdy oferta niesie kilka kandydatów tego
+samego rodzaju naraz (potwierdzona kolizja w próbce §15: kategoria `260041` ma
+jednocześnie `Szerokość produktu` i `Szerokość produktu z podstawą`). Zasadę
+nadrzędną ustalił użytkownik („chodzi o wymiary i wagę **opakowania**, bo
+chodzi o wysyłkę, przede wszystkim paczkomaty") i delegował ocenę konkretnego
+mapowania wykonawcy („sam oceń kierując się tą zasadą") — stąd D-21.4.1
+(`docs/kontrakt-danych.md` §17) to ocena wykonawcy, nie osobno zweryfikowana
+decyzja użytkownika per kandydat; oznaczona w kontrakcie jako otwarta na
+rewizję. Punkt wielorepowy wg reguły z `CLAUDE.md`: D-21.4.1 to realna praca
+po stronie `qutlet-meta` (kontrakt), więc NIE kwalifikuje się do wyjątku
+„czysto-kodowy w jednym repo".
+
+### P-21.4a — qutlet-meta: kontrakt mapowania kandydat→pole natywne (D-21.4.1)
+- **Repo:** qutlet-meta (`docs/kontrakt-danych.md`)
+- **Zakres:** nowa sekcja §17 — D-21.4.1 (mapowanie nazwa kandydata → oś/pole
+  natywne + priorytet wewnątrz osi, kształt nowej metody `OfferMapper`, zasada
+  „zapis tylko gdy rozstrzygnięte, nigdy zerowanie").
+- **Zależności:** brak (decyzja podjęta tą sesją, tu spisana); P-21.3a/P-21.3b
+  (kandydaci i mechanizm jednostek, których to mapowanie konsumuje).
+
+### P-21.4b — qutlet-allegro: implementacja zapisu do pól natywnych
+- **Repo:** qutlet-allegro (slice `OfferSync/`)
+- **Zakres:** `OfferMapper` (rozszerzenie `WEIGHT_DIMENSION_CANDIDATES` o oś +
+  priorytet, nowa metoda zwracająca floaty per pole natywne PO priorytecie i
+  udanej konwersji jednostki — bez parsowania stringa
+  `weight_dimension_attributes()`, D-21.4.1 pkt 2), `ProductWriter::upsert()`
+  (wywołania `set_weight()`/`set_length()`/`set_width()`/`set_height()` TYLKO
+  gdy wartość rozstrzygnięta, warning przy degradacji kandydata obecnego w
+  ofercie).
+- **Zależności:** P-21.4a (kontrakt D-21.4.1 jako źródło mapowania i priorytetu).
 
 ### P-21.5 — Dodanie „stanu opakowania" do atrybutów [OTWARTE]
 Nowe pole, analogiczne do `klasa_stanu` (FAZA 12), ale dla stanu OPAKOWANIA,
