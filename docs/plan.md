@@ -7218,7 +7218,7 @@ P-20.7a), FAZA 13 (P-13.5, `MarketPriceField` — wzorzec dla P-20.7b), P-9.2
 
 ---
 
-## 🟦 FAZA 21 — Atrybuty wysyłki (waga/wymiary), stan opakowania, porządki edytora (fala 2)
+## 🟨 FAZA 21 — Atrybuty wysyłki (waga/wymiary), stan opakowania, porządki edytora (fala 2)
 
 Cel: kontynuacja porządków w edytorze produktu (FAZA 20, zamknięta) — układ
 metaboksów po scaleniach tamtej fazy nie został jeszcze świadomie ustalony —
@@ -7305,6 +7305,71 @@ sesją):**
   metaboksów, nie po pozycji — reorder sam w sobie prawdopodobnie NIE
   wymaga zmian w kreatorze, ale zweryfikować (zasada #2 „Zasad przewodnich"
   FAZY 20, obowiązująca też tutaj mimo że to już FAZA 21).
+
+**Realizacja (sesja 2026-08-18) — ground-truth potwierdzony, odstępstwa od
+tekstu wyżej ustalone PRZY REALIZACJI, nie domyślnie:**
+- Wszystkie tytuły „do potwierdzenia" potwierdzone VERBATIM w kodzie.
+  Zgodne z parafrazą D-21.1.1 poza `RawLayerMetaBox`, którego dzisiejszy
+  tytuł brzmiał pełniej: „Qutlet — warstwa surowa z Allegro (podgląd, tylko
+  do odczytu)" — rename i tak na „Podgląd opisu z Allegro" bez zmian.
+- **Mechanizm wymuszenia kolejności [USTALONE]:** same priorytety
+  `add_meta_box()` NIE wystarczają — 3 z 4 boxów kolumny `normal` (Kanał
+  Allegro/Stan produktu/Zawartość przesyłki) to grupy ACF rejestrowane w
+  JEDNYM przebiegu jednej pętli ACF Pro (nierozdzielne priorytetem); boxy
+  natywne WooCommerce mają WŁASNY mechanizm — domyślny układ pinowany do
+  usermeta `meta-box-order_product` (priorytet `sorted` rdzenia WP,
+  renderuje się PRZED zwykłymi priorytetami). Wybrany mechanizm: seed TEGO
+  SAMEGO usermeta (ten sam klucz, którego używa WooCommerce dla swojego
+  domyślnego układu) PEŁNYM, docelowym porządkiem obu kolumn — NIE JS-owy
+  reorder DOM (odrzucone — działałby, ale fightowałby z natywnym
+  przeciąganiem myszką zamiast go użyć). Pełne uzasadnienie i cytaty źródeł
+  w docbloku `ProductEditorLayout\MetaBoxOrder` (`qutlet-core`).
+  - **Poprawka po niezależnej recenzji:** pierwsza wersja ograniczała seed
+    do ekranu produktu (`$post_type === 'product'`) — ale
+    `WC_Admin_Meta_Boxes::add_product_boxes_sort_order()` (WooCommerce)
+    wpina się na GENERYCZNYM `add_meta_boxes`, BEZ sprawdzania typu posta,
+    więc jedno wejście na DOWOLNY inny ekran edycji (strona/wpis/zamówienie)
+    PRZED pierwszym wejściem na produkt wygrywało wyścig o usermeta na
+    stałe — D-21.1.1 nigdy by się nie zastosowało. Naprawione: seed jest
+    równie generyczny, bez guardu ekranu. Zweryfikowane na żywo (świeże
+    konto → edycja strony → dopiero potem produkt → pełna docelowa
+    kolejność).
+- **D-21.1.2 (uzupełnienie — dodatkowy natywny box + decyzja użytkownika,
+  2026-08-18):** ground-truth ujawnił jeszcze jeden WIDOCZNY, nieukryty
+  natywny box WooCommerce w kolumnie `normal` — „Krótki opis produktu"
+  (`postexcerpt`) — którego D-21.1.1 nie wymieniała. Decyzja: trafia na SAM
+  KONIEC lewej kolumny, pozycja #9 (po „Podgląd opisu z Allegro").
+- Krok kreatora `ProductReviewWizard::steps()` — potwierdzone, selektory to
+  czyste `#id`, reorder nic nie psuje.
+- Punkt wielorepowy — rozbity na P-21.1a (qutlet-ai) / P-21.1b
+  (qutlet-core), bez zależności między nimi (id metaboksa `qutlet-ai` się
+  nie zmienia, więc mechanizm kolejności w P-21.1b działa niezależnie od
+  kolejności merge'a).
+
+### 🟡 P-21.1a — qutlet-ai: rename metaboksu „Generacja AI (przeróbka)"
+
+- **Repo:** qutlet-ai
+- `GenerationMetaBox::register()` — tytuł widoczny w adminie: „Generacja AI
+  (przeróbka)" → „Opis produktu (AI)" (D-21.1.1, pozycja #4 lewej kolumny).
+  `id` metaboksa (`qutlet_ai_generation`), `name`/meta_key, logika
+  renderu/zapisu bez zmian.
+- PR: `qutlet-ai`#18.
+- **Zależności:** brak (patrz „Realizacja" wyżej).
+
+### 🟡 P-21.1b — qutlet-core: docelowa kolejność metaboxów + 2 rename'y
+
+- **Repo:** qutlet-core
+- Nowy slice `ProductEditorLayout\MetaBoxOrder` — seed usermeta
+  `meta-box-order_product` PEŁNYM, docelowym porządkiem obu kolumn
+  (D-21.1.1 + D-21.1.2), TYLKO gdy bieżący user go jeszcze nie ma (priorytet
+  hooka 35, przed domyślnym seedem WooCommerce, priorytet 40 — generyczny
+  hook, bez guardu ekranu, patrz „Realizacja" wyżej).
+- `RawLayerMetaBox`: rename → „Podgląd opisu z Allegro" + nowy publiczny
+  `metabox_id()` (wzorem `AllegroChannelFields`/`ProductConditionFields`/
+  `ShipmentContentsFields`).
+- `CategoryPreviewMetaBox`: rename → „Mapowanie kategorii".
+- PR: `qutlet-core`#34.
+- **Zależności:** brak (patrz P-21.1a).
 
 ### P-21.2 — Ground-truth: atrybuty wagowe/wymiarowe z Allegro [OTWARTE]
 Sprawdzić w realnych próbkach (`docs/allegro-api-samples/`) i/lub w kodzie
