@@ -6990,7 +6990,7 @@ P-20.7a/b — kolejność zalecana, nie wymuszona jednoczesność, patrz D-20.9)
   zmian, D-20.2).
 - **Zależności:** brak.
 
-### P-20.3 — qutlet-core: „Stawka rabatu" — rename
+### 🟢 P-20.3 — qutlet-core: „Stawka rabatu" — rename
 
 - **Repo:** qutlet-core
 - `DiscountRateSettingsPage`: `add_submenu_page()` + `<h1>` w
