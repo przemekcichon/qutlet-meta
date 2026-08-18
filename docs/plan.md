@@ -7234,16 +7234,77 @@ ground-truthu ani decyzji — do zrobienia przy realizacji KAŻDEGO punktu
 Repo/zakres niżej są WSTĘPNYMI przypuszczeniami do potwierdzenia, NIE
 ustaleniami — pytać/weryfikować, nie zgadywać, przy realizacji.
 
-### P-21.1 — Ustalenie kolejności metaboksów w edytorze produktu [OTWARTE]
+### P-21.1 — Ustalenie kolejności metaboksów w edytorze produktu
 Po FAZIE 20 (scalenia/rename/podziały metaboksów) układ ekranu edycji
-produktu zmienił się istotnie — nie ustalono jeszcze docelowej, świadomej
+produktu zmienił się istotnie — nie było jeszcze docelowej, świadomej
 kolejności metaboksów (dziś kolejność to efekt uboczny priorytetów hooków
 `add_meta_boxes` ustalanych punktowo przy każdej zmianie, nie decyzja o
-całości ekranu). Do ustalenia przy realizacji: pożądana kolejność (pytać
-użytkownika, NIE zgadywać) i mechanizm (priorytety `add_meta_box()` w
-core/ai, ewentualnie ręczny reorder `$wp_meta_boxes`). Prawdopodobnie punkt
-wielorepowy (core i ai rejestrują różne metaboksy tego ekranu) — rozbić na
-pod-punkty przy realizacji, jeśli się potwierdzi.
+całości ekranu).
+
+**D-21.1.1 (docelowa kolejność + dwa dodatkowe rename'y) [USTALONE —
+decyzja użytkownika, 2026-08-18]:**
+
+Lewa kolumna (`normal`/`acf_after_title`, z góry na dół):
+1. „Nazwa produktu (AI)" (`qutlet-ai`, `TitleGenerationMetaBox`, kontekst
+   `acf_after_title` od P-20.4b — już renderuje się jako pierwszy element,
+   PRZED obszarem zwykłych metaboksów `normal`; potwierdzić ground-truthem,
+   że to nadal wystarcza samo z siebie, bez dodatkowej pracy).
+2. Bezpośredni odnośnik (`#edit-slug-box` — od P-20.4b już przeniesiony JS-em
+   POD CAŁY box „Nazwa produktu (AI)"; prawdopodobnie już w tym miejscu, do
+   potwierdzenia, nie zmiany).
+3. „Kanał Allegro" (`qutlet-core`, `AllegroChannelFields`).
+4. „Generacja AI (przeróbka)" (`qutlet-ai`, `GenerationMetaBox`) — **RENAME
+   OD RAZU na „Opis produktu (AI)"** (nowa decyzja tej sesji, poza samym
+   porządkiem — `name`/meta_key/ID metaboksa `qutlet_ai_generation` BEZ
+   ZMIAN, zmienia się wyłącznie tytuł widoczny w adminie, wzorem
+   dotychczasowych rename'ów FAZY 20).
+5. „Stan produktu" (`qutlet-core`, `ProductConditionFields`).
+6. „Zawartość przesyłki" (`qutlet-core`, `ShipmentContentsFields`).
+7. „Dane produktu" (natywny WooCommerce „Product data" — panel zakładkowy,
+   NIE nasz kod; jego priorytet/pozycja dziś ustalona względem
+   `GenerationMetaBox` przez świadomą kolejność hooków, patrz docblock
+   `GenerationMetaBox::register()` — do przeanalizowania, czy nowa pozycja
+   #7 wymaga zmiany tej relacji).
+8. „Qutlet — warstwa surowa z Allegro" (`qutlet-core`, `RawLayerMetaBox`,
+   P-5.3 — **dokładny dzisiejszy tytuł DO POTWIERDZENIA ground-truthem**,
+   powyższy zapis to parafraza zgłoszenia użytkownika, nie zweryfikowany
+   literał) — **RENAME OD RAZU na „Podgląd opisu z Allegro"**.
+
+Prawa kolumna (`side`, z góry na dół):
+1. „Opublikuj" (natywny box Publish — `context=side`, `priority=core`,
+   zwykle i tak zawsze na górze; potwierdzić, że nic tego nie zaburza).
+2. „Obrazek produktu" (natywny/Woo box głównego zdjęcia produktu — dokładny
+   dzisiejszy tytuł do potwierdzenia, nie zakładać nazwy).
+3. „Galeria produktu" (natywny Woo box galerii).
+4. „Kategorie produktów" (natywny box taksonomii `product_cat`).
+5. „Qutlet — kategoria (podgląd)" (`qutlet-core`,
+   `ProductReviewWizard\CategoryPreviewMetaBox`, P-17.3 — **dokładny
+   dzisiejszy tytuł DO POTWIERDZENIA ground-truthem**) — **RENAME OD RAZU na
+   „Mapowanie kategorii"**.
+6. „Znaczniki produktu" (natywny box taksonomii `product_tag`).
+7. „Marki" (box taksonomii marki, `product_brand` czy jak faktycznie się
+   nazywa — do potwierdzenia).
+
+**Do ustalenia PRZY REALIZACJI (ground-truth NAJPIERW, nierozstrzygnięte tą
+sesją):**
+- Dokładne dzisiejsze tytuły wszystkich boxów oznaczonych wyżej „do
+  potwierdzenia" — VERBATIM z kodu, nie z parafrazy w tym punkcie planu.
+- Mechanizm wymuszenia kolejności: priorytety `add_meta_box()` (w obrębie
+  tego samego kontekstu/priorytetu WP sortuje po kolejności DOPISANIA do
+  `$wp_meta_boxes`, czyli po kolejności wykonania callbacków hooka
+  `add_meta_boxes` — patrz precedens w docblocku `GenerationMetaBox::register()`)
+  vs ręczny reorder `$wp_meta_boxes` w JS/PHP. Prawdopodobnie NIE jeden
+  mechanizm dla całego ekranu — natywne boxy Woo/WP mają własne,
+  zakorzenione priorytety, które mogą wymagać INNEGO podejścia niż nasze
+  custom boxy.
+- Punkt jest wielorepowy (core rejestruje większość, ai rejestruje
+  „Nazwa produktu (AI)"/„Opis produktu (AI)") — rozbić na pod-punkty
+  (P-21.1a/P-21.1b, kolejność wg zależności) przy realizacji, zgodnie z
+  regułą punktów wielorepowych (`CLAUDE.md` → „Struktura").
+- Krok kreatora `ProductReviewWizard::steps()` używa selektorów PO ID
+  metaboksów, nie po pozycji — reorder sam w sobie prawdopodobnie NIE
+  wymaga zmian w kreatorze, ale zweryfikować (zasada #2 „Zasad przewodnich"
+  FAZY 20, obowiązująca też tutaj mimo że to już FAZA 21).
 
 ### P-21.2 — Ground-truth: atrybuty wagowe/wymiarowe z Allegro [OTWARTE]
 Sprawdzić w realnych próbkach (`docs/allegro-api-samples/`) i/lub w kodzie
