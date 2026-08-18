@@ -6982,7 +6982,7 @@ P-20.7a/b — kolejność zalecana, nie wymuszona jednoczesność, patrz D-20.9)
   bez łączenia z regułami algorytmicznymi).
 - **Zależności:** brak. Może ruszyć niezależnie od pozostałych punktów fazy.
 
-### P-20.2 — qutlet-allegro: „Mapowanie stanów" — rename
+### 🟢 P-20.2 — qutlet-allegro: „Mapowanie stanów" — rename
 
 - **Repo:** qutlet-allegro
 - `ConditionMapPage`: `add_submenu_page()` + `<h1>` w `render_page()` —
