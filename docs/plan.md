@@ -6884,7 +6884,11 @@ Kluczowe znaleziska:
   ACF) — `qutlet-core` (P-20.7b) wchodzi po nim. **Odrzucona alternatywa:**
   zostawić `update_field()` po kluczu i tylko USUNĄĆ pole z ACF — odrzucona
   jako cichy bug (opisany wyżej), niemożliwy do zaakceptowania w kodzie
-  odpowiedzialnym za pieniądze (cena).
+  odpowiedzialnym za pieniądze (cena). **Rozwiązanie w skrócie:**
+  `qutlet-allegro` najpierw przechodzi na zwykły `update_post_meta()`
+  (P-20.7a), dopiero potem core usuwa pola z ACF (P-20.7b) — bez presji
+  czasowej, bo zapis przez nazwę działa tak samo niezależnie od tego, czy
+  ACF jeszcze widzi to pole, czy już nie.
 - **D-20.10 („URL oferty Allegro" → pole `message` z klikalnym linkiem,
   wzorem `allegro_stan_raw_display`) [USTALONE — zgłoszenie wprost, pkt 11,
   wzorzec z ground-truthu]:** realna wartość (`allegro_url` meta) NIE
