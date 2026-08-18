@@ -6962,7 +6962,7 @@ flip 🟢 wchodzi normalnie po merge'u każdego punktu (dla P-20.4a/b i
 P-20.6a/b — po merge'u OBU PR-ów pary, patrz ryzyko operacyjne wyżej; dla
 P-20.7a/b — kolejność zalecana, nie wymuszona jednoczesność, patrz D-20.9).
 
-### P-20.1 — qutlet-ai: „Prompty globalne" — rename + nowy prompt nazwy
+### 🟢 P-20.1 — qutlet-ai: „Prompty globalne" — rename + nowy prompt nazwy
 
 - **Repo:** qutlet-ai
 - `PromptSettingsPage`: `add_submenu_page()` (`$page_title`/`$menu_title`) i
