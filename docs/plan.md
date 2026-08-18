@@ -7492,7 +7492,7 @@ w jednym repo” (`CLAUDE.md` → „Realizacja punktu planu”).
   dopiero po ponownym imporcie/syncu tej konkretnej oferty.
 - **Zależności:** P-21.3a (kontrakt D-21.3.1 jako źródło literałów nazw).
 
-### 🟡 P-21.4 — Kopiowanie atrybutów wymiary/waga do zakładki „Wysyłka" (punkt wielorepowy → P-21.4a + P-21.4b)
+### 🟢 P-21.4 — Kopiowanie atrybutów wymiary/waga do zakładki „Wysyłka" (punkt wielorepowy → P-21.4a + P-21.4b)
 WooCommerce ma natywne pola wysyłki (`_weight`/`_length`/`_width`/`_height`,
 zakładka „Wysyłka" w Product Data) — dziś dane wagi/wymiarów z Allegro NIE
 trafiają tam automatycznie (potwierdzone ground-truthem `ProductWriter::upsert()`,
@@ -7514,15 +7514,17 @@ rewizję. Punkt wielorepowy wg reguły z `CLAUDE.md`: D-21.4.1 to realna praca
 po stronie `qutlet-meta` (kontrakt), więc NIE kwalifikuje się do wyjątku
 „czysto-kodowy w jednym repo".
 
-### P-21.4a — qutlet-meta: kontrakt mapowania kandydat→pole natywne (D-21.4.1)
+### 🟢 P-21.4a — qutlet-meta: kontrakt mapowania kandydat→pole natywne (D-21.4.1)
 - **Repo:** qutlet-meta (`docs/kontrakt-danych.md`)
 - **Zakres:** nowa sekcja §17 — D-21.4.1 (mapowanie nazwa kandydata → oś/pole
   natywne + priorytet wewnątrz osi, kształt nowej metody `OfferMapper`, zasada
   „zapis tylko gdy rozstrzygnięte, nigdy zerowanie").
+- PR: `qutlet-meta`#101 (+ ewidencja kolizji wagowej w §15 i doprecyzowanie
+  nagłówka D-21.4.1, po niezależnej recenzji, ten sam PR).
 - **Zależności:** brak (decyzja podjęta tą sesją, tu spisana); P-21.3a/P-21.3b
   (kandydaci i mechanizm jednostek, których to mapowanie konsumuje).
 
-### P-21.4b — qutlet-allegro: implementacja zapisu do pól natywnych
+### 🟢 P-21.4b — qutlet-allegro: implementacja zapisu do pól natywnych
 - **Repo:** qutlet-allegro (slice `OfferSync/`)
 - **Zakres:** `OfferMapper` (rozszerzenie `WEIGHT_DIMENSION_CANDIDATES` o oś +
   priorytet, nowa metoda zwracająca floaty per pole natywne PO priorytecie i
@@ -7531,6 +7533,16 @@ po stronie `qutlet-meta` (kontrakt), więc NIE kwalifikuje się do wyjątku
   (wywołania `set_weight()`/`set_length()`/`set_width()`/`set_height()` TYLKO
   gdy wartość rozstrzygnięta, warning przy degradacji kandydata obecnego w
   ofercie).
+- PR: `qutlet-allegro`#38 (+ rozszerzone pokrycie testowe kolizji priorytetu
+  na osiach `height`/`length` i na wadze, po niezależnej recenzji, ten sam PR).
+- **Weryfikacja runtime (sesja 2026-08-18):** re-import produktu 3810 (Silver
+  Monkey X, oferta sandbox `7781985897`, ten sam produkt co P-21.3b) — `_weight`
+  postmeta ustawione na `3` (kandydat „Waga produktu z opakowaniem
+  jednostkowym", już `kg` w sklepie, bez przeliczenia). Ta oferta nie niesie
+  żadnego kandydata wymiarowego — ścieżka `_length`/`_width`/`_height` (w tym
+  priorytet „z podstawą") NIE zweryfikowana runtime w lokalnym sandboksie
+  (brak takich ofert w danych), pokryta wyłącznie testami jednostkowymi z
+  realnymi id z próbki §15.
 - **Zależności:** P-21.4a (kontrakt D-21.4.1 jako źródło mapowania i priorytetu).
 
 ### P-21.5 — Dodanie „stanu opakowania" do atrybutów [OTWARTE]
