@@ -6605,6 +6605,41 @@ kanał Allegro" i „Qutlet — stan i zawartość produktu":
 13. Po podziale z pkt 12 — pozostały metabox „Qutlet — stan i zawartość
     produktu" zmienia nazwę na „Stan produktu".
 
+**Zasady przewodnie tej fazy (dopisane wprost przez użytkownika, rządzą
+interpretacją WSZYSTKICH punktów wyżej i KAŻDEGO kolejnego podobnego
+zgłoszenia w tym obszarze — nie tylko czterech części spisanych powyżej):**
+
+1. **Cel nadrzędny = klarowność interfejsu edycji produktu dla redaktora.**
+   Nazwy pól, metaboksów i opisów muszą być klarowne i NIE NADMIAROWE.
+   Przedrostek „Qutlet" jest przykładem nadmiarowości (redaktor pracuje w
+   JEDNYM, firmowym WordPressie — nie ma potrzeby odróżniać „nasze" pola od
+   cudzych, bo nie ma czyichś innych w tym kontekście) — to STOSUJE SIĘ
+   WSZĘDZIE w tym obszarze, nie tylko do konkretnych metaboksów wymienionych
+   w zgłoszeniu. Ta sama zasada uzasadnia usunięcie listy atrybutów spod
+   „Surowe (Allegro)" (pkt 8) i zamianę „URL oferty Allegro" na zwykły link
+   (pkt 11) — to NIE są cztery niezależne, przypadkowe uproszczenia, tylko
+   jedna zasada zastosowana konsekwentnie. Przy realizacji KAŻDEGO punktu tej
+   fazy (i przy ewentualnych kolejnych, podobnych zgłoszeniach w przyszłości)
+   warto pytać wprost: „czy ta nazwa/opis niesie realną informację redaktorowi,
+   czy jest tylko brandingiem/szumem wewnętrznym?" — jeśli to drugie, usunąć.
+2. **Zmiana układu metaboksów SIŁĄ RZECZY pociąga za sobą przeróbkę kreatora
+   (P-17.2, `ProductReviewWizard`).** Kreator identyfikuje kroki po
+   SELEKTORACH DOM konkretnych metaboksów (`ProductReviewWizard::steps()`) —
+   to nie logiczna abstrakcja niezależna od struktury ekranu, tylko fizyczne
+   przenoszenie węzłów po ID/klasie. Scalenie, podział albo usunięcie
+   metaboksu w tej fazie ZAWSZE wymaga sprawdzenia i — w razie potrzeby —
+   poprawki odpowiedniego kroku kreatora W TYM SAMYM PUNKCIE (nie osobnym,
+   późniejszym), analogicznie do tego, jak D-20.G3 (scalenie metaboksów
+   nazwy) i D-20.11 (podział „stan i zawartość") już to wymusiły. Przy
+   realizacji KAŻDEGO punktu tej fazy dotykającego metaboksów — stała
+   checklista: „czy ten metabox/pole jest dziś selektorem w
+   `ProductReviewWizard::steps()`? jeśli tak, czy po zmianie nadal wskazuje
+   właściwy, kompletny element?" Wyjątek potwierdzający regułę: P-20.6a/b
+   (scalenie edytora treści z metaboksem generacji AI) NIE wymaga zmiany
+   selektora kroku 2, bo ID metaboksu (`#qutlet_ai_generation`) zostaje bez
+   zmian — ale to SZCZĘŚLIWY PRZYPADEK tej konkretnej zmiany, nie dowód, że
+   reguła nie obowiązuje ogólnie.
+
 **Ground-truth (ta sesja, 2026-08-18):** przeczytany realny kod wszystkich
 dotykanych plików — `PromptSettingsPage`/`PromptSettings`/`TitleGenerator`/
 `RewriteGenerator`/`TitleGenerationMetaBox`/`title-generator.js` (qutlet-ai),
