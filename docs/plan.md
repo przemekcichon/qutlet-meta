@@ -6554,7 +6554,7 @@ stanu na relację, D-6.1.4/D-12.2.1/D-12.2.4). Bez zależności od FAZY 18.
 
 ## 🟦 FAZA 20 — Porządki w edytorze produktu i menu WooCommerce: nazewnictwo, scalenie metaboksów, prompt nazwy — ROZPISANA
 
-**Zgłoszenie (2026-08-18, dwuczęściowe — druga część dopisana w trakcie tej
+**Zgłoszenie (2026-08-18, trzyczęściowe — część 2 i 3 dopisane w trakcie tej
 samej sesji planistycznej):**
 
 Część 1 — cztery zmiany w menu WooCommerce (ustawienia sklepowe Qutlet):
@@ -6576,6 +6576,16 @@ drugim w bocznej kolumnie):
    „Nazwa oryginalna (Allegro)" (read-only) → przyciski Generuj/Reset.
    Przycisk „Generuj" ma przestać być wstrzymywany oknem potwierdzenia
    (`window.confirm()`) przed wysłaniem żądania.
+
+Część 3 — dopisana w trakcie tej samej sesji, dotyczy DRUGIEGO metaboksu AI
+na ekranie edycji produktu (metabox „Qutlet — generacja AI (przeróbka)"):
+6. Usunąć słowo „Qutlet" z tytułu/opisów tego metaboksa (analogicznie do
+   części 2).
+7. Etykieta pola „Prompt AI (nadpisanie)" → **„Prompt lokalny"**.
+8. Spod nagłówka „Surowe (Allegro)" usunąć listę atrybutów/parametrów z
+   Allegro (zostaje sam opis tekstowy oferty).
+9. „Jeśli to możliwe" — scalić natywny metabox „Opis produktu" (edytor
+   treści) z metaboksem „Generacja AI (przeróbka)" w jeden.
 
 **Ground-truth (ta sesja, 2026-08-18):** przeczytany realny kod wszystkich
 dotykanych plików — `PromptSettingsPage`/`PromptSettings`/`TitleGenerator`/
@@ -6629,6 +6639,40 @@ dotykanych plików — `PromptSettingsPage`/`PromptSettings`/`TitleGenerator`/
   brak ochrony `admin-post.php` przy przejściu tego mechanizmu na AJAX. Punkt
   5 zgłoszenia wprost je znosi (wyłącznie dla „Generuj" — „Reset" nie był
   wspomniany, zostaje z potwierdzeniem).
+- **„Surowe (Allegro)" pokazuje DWIE rzeczy pod jednym nagłówkiem** —
+  `GenerationMetaBox::render_raw_column()`: opis tekstowy oferty
+  (`RawLayerMeta::META_DESCRIPTION_RAW`) ORAZ listę par etykieta→wartość z
+  surowej specyfikacji (`render_pairs_list()`, `META_SPECIFICATION_RAW`) —
+  to druga z nich jest „atrybutami z Allegro" ze zgłoszenia (pkt 8).
+  Docblock metody już dziś nazywa to zjawisko wprost: specyfikacja zostaje
+  wyświetlana „jako kontekst wejścia AI… mimo że od P-13.4b/D-13.G1 nie ma
+  już z czym jej porównać" — czyli lista jest znanym reliktem po wcześniejszej
+  fazie, nie świeżo dodaną funkcją. `render_pairs_list()` ma dziś JEDYNEGO
+  konsumenta (potwierdzone docblockiem metody) — po usunięciu wywołania
+  staje się martwym kodem.
+- **Scalenie natywnego edytora treści z metaboksem (pkt 9) jest TECHNICZNIE
+  MOŻLIWE i bezpieczne** — ground-truth wprost w rdzeniu WordPressa
+  (`wp-admin/edit-form-advanced.php` linia ok. 609, `wp-admin/includes/post.php`
+  linia 47) potwierdza, że render natywnego edytora i ZAPIS `post_content` to
+  DWIE NIEZALEŻNE ścieżki: render jest bramkowany przez
+  `post_type_supports( $post_type, 'editor' )`, zapis (`_wp_translate_postdata()`,
+  `$_POST['content']` → `post_content`) NIE JEST bramkowany niczym — usunięcie
+  wsparcia edytora dla CPT nie psuje zapisu, o ile GDZIEŚ INDZIEJ na stronie
+  nadal renderuje się pole o tym samym `id`/`name` (`content`). WooCommerce też
+  nigdzie nie odpytuje tej flagi (grep `includes/` — zero trafień poza
+  jednorazową deklaracją przy rejestracji CPT). Pełna specyfikacja i
+  zaakceptowane ryzyko: `docs/kontrakt-danych.md` §13, D-20.G4 (zapisane tą
+  samą sesją).
+- **Scalenie NAPRAWDĘ OPŁACA SIĘ już zaimplementowanemu mechanizmowi z FAZY
+  17.** `rewrite-generator.js::setContentField()` (PR `qutlet-ai`#12,
+  zmergowany tego samego dnia co ta sesja) już dziś celuje w edytor przez ID
+  (`#content`/`tinymce.get('content')`), NIE przez pozycję w DOM — przeniesienie
+  fizycznego miejsca renderu edytora do wnętrza metaboksu AI nie wymaga w nim
+  ŻADNEJ zmiany. Dodatkowa korzyść uboczna: krok 2 kreatora (P-17.2,
+  `#qutlet_ai_generation`) zacznie NIEŚĆ ze sobą też sam edytor (dziś edytor
+  zostaje POZA modałem, niewidoczny tylko dzięki pełnoekranowej nakładce
+  `position:fixed`, ale wciąż osobno w DOM) — spójniejsze UX kreatora bez
+  dodatkowej pracy.
 
 **Decyzje użytkownika (sesja 2026-08-18):**
 
@@ -6680,17 +6724,42 @@ dotykanych plików — `PromptSettingsPage`/`PromptSettings`/`TitleGenerator`/
   `post_title`) zachowuje `window.confirm()` bez zmian. Nieużywany po tej
   zmianie string i18n `confirmGenerate` do usunięcia z
   `enqueue_script()` (martwy kod).
+- **D-20.5 (usunięcie listy atrybutów spod „Surowe (Allegro)" — czysta
+  redukcja, bez zamiennika) [USTALONE — zgłoszenie wprost, pkt 8]:** zostaje
+  wyłącznie opis tekstowy oferty pod tym nagłówkiem; `render_pairs_list()`
+  (martwa po usunięciu jedynego wywołania) usuwana w tym samym punkcie.
+- **D-20.6 (scalenie edytora treści z metaboksem AI = usunięcie wsparcia
+  edytora dla CPT `product` + ręczny `wp_editor()` wewnątrz metaboksu)
+  [USTALONE — wynika z ground-truthu, D-20.G4]:** `qutlet-core` wywołuje
+  `remove_post_type_support( 'product', 'editor' )` (Woo/CPT-glue, granica
+  `CLAUDE.md` → „Struktura"); `qutlet-ai` (`GenerationMetaBox::render()`)
+  renderuje `wp_editor( $post->post_content, 'content', … )` jako PIERWSZĄ
+  sekcję scalonego metaboksu, przed dzisiejszym zestawieniem
+  surowe/przerobione/podgląd. **Ryzyko operacyjne świadomie zaakceptowane:**
+  okno czasowe między merge'em `qutlet-core` a merge'em `qutlet-ai`
+  zostawiłoby ekran BEZ ŻADNEGO edytora treści — oba PR-y MUSZĄ wejść
+  razem/bezpośrednio po sobie (wzorem FAZY 17, `qutlet-ai`#12 +
+  `qutlet-core`#27). **Otwarte, NIE rozstrzygnięte tą sesją:** czy kolumna
+  „Przerobione (bieżące, na stronie)" staje się redundantna obok żywego
+  edytora w tym samym boksie — do rozważenia PRZY REALIZACJI P-20.6b, patrz
+  D-20.G4. Pełna specyfikacja: `docs/kontrakt-danych.md` §9.2/§13, D-20.G4.
+- **D-20.7 (etykieta „Prompt lokalny" — WYŁĄCZNIE `label`, `name`/meta_key
+  `prompt_ai` bez zmian) [USTALONE — zgłoszenie wprost, pkt 7]:** ten sam
+  wzorzec co P-20.4a dla `podnazwa` — zmienia się tylko tekst widoczny w
+  adminie.
 
 **Zakres [USTALONE tą sesją]:** wszystkie nowe literały (opcja
-`qutlet_ai_prompt_title_global`) i decyzje nazewnicze tej fazy zostały
-ustalone i spisane DO `docs/kontrakt-danych.md` (§9.2, §13) W TEJ SESJI
-PLANISTYCZNEJ — analogicznie do FAZY 18 (P-18.2): praca `qutlet-meta` dla
-KAŻDEGO z punktów P-20.1–P-20.4b jest skonsumowana w planowaniu, więc
-wszystkie są przy realizacji punktami czysto-kodowymi (P-20.1/P-20.2/P-20.3 w
-jednym repo; P-20.4a/P-20.4b w dwóch repo, ale bez ŻADNEJ dodatkowej pracy w
-`qutlet-meta` ponad to, co już tu zapisane) — flip 🟡 pomijamy wszędzie w tej
-fazie (`CLAUDE.md` → „Realizacja punktu planu" → wyjątek), flip 🟢 wchodzi
-normalnie po merge'u każdego punktu.
+`qutlet_ai_prompt_title_global`) i decyzje nazewnicze/architektoniczne tej
+fazy zostały ustalone i spisane DO `docs/kontrakt-danych.md` (§9.2, §13) W
+TEJ SESJI PLANISTYCZNEJ — analogicznie do FAZY 18 (P-18.2): praca
+`qutlet-meta` dla KAŻDEGO z punktów P-20.1–P-20.6b jest skonsumowana w
+planowaniu, więc wszystkie są przy realizacji punktami czysto-kodowymi
+(P-20.1/P-20.2/P-20.3/P-20.5 w jednym repo; P-20.4a/P-20.4b i P-20.6a/P-20.6b
+w dwóch repo, ale bez ŻADNEJ dodatkowej pracy w `qutlet-meta` ponad to, co już
+tu zapisane) — flip 🟡 pomijamy wszędzie w tej fazie (`CLAUDE.md` →
+„Realizacja punktu planu" → wyjątek), flip 🟢 wchodzi normalnie po merge'u
+każdego punktu (dla P-20.4a/b i P-20.6a/b — po merge'u OBU PR-ów pary, patrz
+ryzyko operacyjne wyżej).
 
 ### P-20.1 — qutlet-ai: „Prompty globalne" — rename + nowy prompt nazwy
 
@@ -6766,11 +6835,59 @@ normalnie po merge'u każdego punktu.
 - **Zależności:** P-20.4a (`RewrittenFields::render_field()` musi istnieć —
   merge core PRZED merge ai).
 
+### P-20.5 — qutlet-core: „Prompt lokalny" — rename etykiety
+
+- **Repo:** qutlet-core
+- `PromptOverrideField`: etykieta pola `field_qutlet_prompt_ai` — „Prompt AI
+  (nadpisanie)" → „Prompt lokalny" (D-20.7). `name`/meta_key (`prompt_ai`)
+  BEZ ZMIAN. Własny (suppressed) tytuł grupy ACF „Qutlet — prompt AI
+  (nadpisanie per produkt)" NIE jest dotknięty — nigdy się nie renderuje
+  (`remove_own_metabox()`, wzorem `RewrittenFields`/P-20.4a).
+- **Zależności:** brak. Niezależny od P-20.6a/P-20.6b (inny plik, ten sam
+  ekran) — może ruszyć osobno w dowolnej kolejności.
+
+### P-20.6a — qutlet-core: zdjęcie natywnego wsparcia edytora dla `product`
+
+- **Repo:** qutlet-core
+- Nowe wywołanie `remove_post_type_support( 'product', 'editor' )` — hook
+  `init` (PO rejestracji CPT `product` przez WooCommerce, wzorem kolejności
+  hooków innych glue'ów Woo w core), miejsce w bootstrapie/nowej małej
+  klasie do ustalenia przy realizacji (jedna linia — prawdopodobnie nie
+  wymaga osobnej klasy, do potwierdzenia przy pisaniu kodu czy istnieje już
+  pasujący plik `OfferSync`/glue, żeby nie tworzyć jednolinijkowego pliku
+  bez potrzeby).
+- **Zależności:** brak w sensie technicznym, ale **MUSI wejść razem z
+  P-20.6b** (D-20.6, ryzyko operacyjne — okno bez edytora treści na
+  ekranie). Merge core i ai bezpośrednio po sobie, wzorem FAZY 17.
+
+### P-20.6b — qutlet-ai: scalony metaboks „Generacja AI (przeróbka)" + edytor
+
+- **Repo:** qutlet-ai
+- `GenerationMetaBox`: tytuł „Qutlet — generacja AI (przeróbka)" →
+  **„Generacja AI (przeróbka)"** (usunięte słowo „Qutlet", zgłoszenie pkt 6).
+- `render()` dostaje NOWĄ pierwszą sekcję — `wp_editor( $post->post_content,
+  'content', […] )` (opcje edytora skopiowane z dzisiejszego wywołania w
+  `edit-form-advanced.php`, do potwierdzenia przy realizacji które dokładnie
+  — `teeny`/`media_buttons`/`textarea_rows` itd.) — PRZED dzisiejszym
+  zestawieniem surowe/przerobione/podgląd (D-20.6). Kolumna „Przerobione
+  (bieżące, na stronie)" zostaje bez zmian tą sesją (D-20.G4 — otwarte, nie
+  rozstrzygnięte).
+- `render_raw_column()`: usunięcie wywołania `render_pairs_list( $specification,
+  … )` spod „Surowe (Allegro)" (D-20.5/zgłoszenie pkt 8) — zostaje tylko opis
+  tekstowy. Usunięcie samej metody `render_pairs_list()` (martwy kod po tej
+  zmianie, potwierdzone ground-truthem — jedyny konsument).
+- **Zależności:** P-20.6a (musi wejść razem/bezpośrednio po, D-20.6) —
+  niezależny od P-20.4a/P-20.4b (inny metabox, inny plik).
+
 **Zależności (całej fazy):** FAZA 7 (prompt globalny opisu, mechanizm do
 przemianowania), FAZA 13 (P-13.2c generator nazwy, P-13.6a/b wzorzec
 `render_field()`), FAZA 17 (P-17.2 kreator — krok 1 wymaga poprawki
-selektorów przy scaleniu), FAZA 18 (P-18.2 sekcja „Kolejność dostawców AI"
-żyje na tej samej stronie „Prompty globalne", bez zmian w tej fazie).
+selektorów przy scaleniu P-20.4a/b; krok 2 automatycznie zyskuje edytor po
+P-20.6a/b, bez zmian w samym kreatorze — ten sam DOM-id `#qutlet_ai_generation`;
+PR `qutlet-ai`#12 — mechanizm synchronizacji edytora po „Zaakceptuj" musi
+przetrwać bez zmian, potwierdzone ground-truthem D-20.G4), FAZA 18 (P-18.2
+sekcja „Kolejność dostawców AI" żyje na tej samej stronie „Prompty globalne",
+bez zmian w tej fazie).
 
 ---
 
