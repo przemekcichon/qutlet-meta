@@ -7160,7 +7160,7 @@ P-20.7a/b — kolejność zalecana, nie wymuszona jednoczesność, patrz D-20.9)
   zalecana dla zera ryzyka, nie twarda blokada techniczna jak przy
   P-20.6a/b).
 
-### P-20.8 — qutlet-core: „Zawartość przesyłki" jako osobny metabox + rename „Stan produktu"
+### 🟢 P-20.8 — qutlet-core: „Zawartość przesyłki" jako osobny metabox + rename „Stan produktu"
 
 - **Repo:** qutlet-core
 - Nowa klasa (np. `ProductCondition\ShipmentContentsFields`) — nowa grupa
