@@ -1210,8 +1210,76 @@ wynik: `docs/allegro-api-samples/GET_sale-categories-id-parameters.json`.
 - Próbki: `docs/allegro-api-samples/GET_sale-product-offers.json` (realne
   wartości liczbowe per oferta), `docs/allegro-api-samples/GET_sale-categories-id-parameters.json`
   (słownik jednostek, ten kontrakt), `docs/allegro-api-samples/SOURCES.md` §P-21.2b.
-- Konsument: P-21.3 (jednostki vs `woocommerce_dimension_unit`/`woocommerce_weight_unit`),
+- Konsument: §16 (P-21.3, jednostki vs `woocommerce_dimension_unit`/`woocommerce_weight_unit`),
   P-21.4 (zapis do natywnych pól wysyłki Woo `_weight`/`_length`/`_width`/`_height`).
+
+---
+
+## 16. Konwersja jednostek wagowo-wymiarowych w atrybutach WC (FAZA 21 — P-21.3)
+
+Konsument §15: gdy jednostka Allegro (rozstrzygnięta per `id` parametru ze
+słownika kategorii, §15) różni się od ustawienia sklepu
+(`woocommerce_dimension_unit`/`woocommerce_weight_unit`, WooCommerce →
+Ustawienia → Ogólne — lokalnie `cm`/`kg`), sync **PRZELICZA** wartość i
+podpisuje atrybut jednostką sklepu — nie tylko dopisuje etykietę. Dotyczy
+WYŁĄCZNIE warstwy przerobionej (atrybuty WC,
+`ProductWriter::build_attributes()`, D-13.G1) — warstwa surowa
+(`_qutlet_allegro_specification_raw`, §9.1, D-6.G4) zostaje VERBATIM, bez
+konwersji.
+
+**D-21.3.1 (USTALONE — decyzja użytkownika, sesja 2026-08-18):**
+
+1. **Identyfikacja kandydatów jest po NAZWIE (kuratorska lista), jednostka
+   WYŁĄCZNIE po `id`.** Rozstrzygnięcie „czy ten wiersz specyfikacji w ogóle
+   jest wymiarem/wagą produktu/paczki” jest kuratorską listą nazw
+   (rozszerzalną, wzorem `OfferMapper::CONDITION_MAP`, D-4.1.1) — NIE
+   generycznym „każdy parametr, którego jednostka ze słownika wygląda jak
+   długość/waga”. Powód: taki generyczny mechanizm wciągnąłby `Długość
+   przewodu` (`m`, §15) i podobne cechy TECHNICZNE, niemające nic wspólnego
+   z wymiarem/wagą produktu do wysyłki, w tę samą obróbkę. Sama jednostka i
+   przelicznik pozostają rozstrzygane WYŁĄCZNIE przez `id` ze słownika
+   kategorii (§15) — lista decyduje tylko, ŻE dany wiersz jest kandydatem,
+   nigdy jaka jest jego jednostka.
+
+   Lista kandydatów (nazwy VERBATIM z §15): `Szerokość produktu`, `Wysokość
+   produktu`, `Głębokość produktu`, `Szerokość produktu z podstawą`,
+   `Wysokość produktu z podstawą`, `Głębokość produktu z podstawą`,
+   `Szerokość grilla`, `Głębokość grilla`, `Wysokość grilla` → rodzaj
+   `dimension`; `Waga`, `Waga produktu`, `Waga produktu z opakowaniem
+   jednostkowym`, `Waga z podstawą` → rodzaj `weight`. Lista NIE jest
+   zamknięta — 391 różnych nazw parametrów w całej próbce ofert (`mapping`
+   §4b), tu sprawdzony tylko ułamek (§15) — nowe nazwy dopisywane przy
+   kolejnych kategoriach, tak jak `CONDITION_MAP`.
+
+2. **Miejsce zapisu: tylko atrybut WC, bez nowych pól meta.** Wartość
+   atrybutu (dziś goła liczba) dostaje dopisaną jednostkę SKLEPU (nie
+   Allegro), z przeliczeniem liczby, gdy jednostka Allegro się różni (np.
+   Allegro `g` → sklep `kg`: `830` → `0.83 kg`). Bez osobnych pól liczbowych
+   (`_qutlet_allegro_waga_kg` itp.) — P-21.4 czyta TĘ SAMĄ etykietę atrybutu
+   po nazwie, żeby wypełnić natywne pola wysyłki Woo.
+
+3. **Degradacja przy nierozstrzygniętej jednostce.** Gdy kandydat jest
+   obecny w ofercie, ale jego `id` nie ma jednostki w pobranym słowniku
+   kategorii (błąd HTTP, `id` nieobecny w zwrotce) ALBO jednostka
+   źródłowa/docelowa nie jest rozpoznana przez tabelę konwersji — atrybut
+   zostaje zapisany z ORYGINALNĄ wartością i jednostką Allegro (bez
+   przeliczenia), sync loguje ostrzeżenie. Nigdy: cichy błąd, zgadywanie
+   jednostki, odrzucenie wiersza.
+
+4. **Tabela konwersji — jednostki kanoniczne.** Długość → `cm` jako baza
+   (`mm`=0.1, `cm`=1, `m`=100, `in`=2.54, `yd`=91.44); waga → `g` jako baza
+   (`g`=1, `kg`=1000, `oz`≈28.3495, `lbs`≈453.592 — literał `lbs`, VERBATIM
+   z `WC_Enums\WeightUnit::POUND`, NIE `lb`) — pełny zestaw jednostek
+   dostępnych w ustawieniach WooCommerce (nie tylko `cm`/`kg` widziane dziś
+   lokalnie), żeby mechanizm nie wymagał zmiany przy zmianie ustawienia
+   sklepu.
+
+### Odnośniki (§16)
+- Ground-truth i decyzja: `docs/plan.md` → FAZA 21, P-21.3 (+ rozbicie
+  P-21.3a/P-21.3b).
+- Jednostki per `id`/kategoria: §15 (D-21.2.1).
+- Konsument: P-21.4 (kopiowanie do natywnych pól wysyłki Woo
+  `_weight`/`_length`/`_width`/`_height`).
 
 ---
 

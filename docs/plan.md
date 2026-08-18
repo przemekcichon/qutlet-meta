@@ -7427,12 +7427,58 @@ tabela i uzasadnienie: `docs/kontrakt-danych.md` §15):**
   oferty, per-id nie per-nazwa).
 - **Zależności:** P-21.2a (dostarcza surowe dane).
 
-### P-21.3 — Dodanie jednostek do wymiarów i wagi [OTWARTE, zależne od P-21.2]
-Prawdopodobnie do pogodzenia z globalnymi ustawieniami jednostek WooCommerce
-(`woocommerce_dimension_unit`/`woocommerce_weight_unit`, Ustawienia → Ogólne)
-— jeśli Allegro przekazuje w innych jednostkach niż ustawienie sklepu,
-potrzebna konwersja przy zapisie, nie tylko dopisanie etykiety jednostki w
-UI. Zakres/repo do ustalenia po P-21.2.
+### 🟡 P-21.3 — Dodanie jednostek do wymiarów i wagi (punkt wielorepowy → P-21.3a + P-21.3b)
+
+Cel: gdy Allegro przekazuje wartość wagi/wymiaru w innej jednostce niż
+ustawienie sklepu (`woocommerce_dimension_unit`/`woocommerce_weight_unit`,
+WooCommerce → Ustawienia → Ogólne — lokalnie `cm`/`kg`), sync PRZELICZA
+wartość i podpisuje atrybut jednostką sklepu — nie tylko dopisuje etykietę w
+UI. Konsument ground-truthu P-21.2 (`docs/kontrakt-danych.md` §15,
+D-21.2.1): jednostka rozstrzygana WYŁĄCZNIE per `id` parametru ze słownika
+kategorii (`GET /sale/categories/{id}/parameters`), nigdy z nazwy.
+
+**D-21.3.1 (USTALONE — decyzja użytkownika, sesja 2026-08-18, pełna treść i
+uzasadnienie: `docs/kontrakt-danych.md` §16):**
+- Identyfikacja KANDYDATÓW (które wiersze specyfikacji w ogóle dostają
+  obróbkę jednostki) jest po NAZWIE — kuratorska, rozszerzalna lista wzorem
+  `OfferMapper::CONDITION_MAP` — NIE generyczne „każdy parametr, którego
+  jednostka wygląda jak długość/waga” (wciągnęłoby np. `Długość przewodu`,
+  `m`, kontrprzykład z §15, w obróbkę zarezerwowaną dla wymiarów/wagi
+  produktu/paczki). Sama JEDNOSTKA i przelicznik nadal wyłącznie z `id` ze
+  słownika kategorii.
+- Miejsce zapisu: TYLKO istniejący atrybut WC (`ProductWriter::build_attributes()`,
+  D-13.G1) — wartość dostaje dopisaną jednostkę sklepu + konwersję liczby.
+  Bez nowych pól meta liczbowych; P-21.4 sparsuje etykietę atrybutu po
+  nazwie. Warstwa surowa (`_qutlet_allegro_specification_raw`, D-6.G4)
+  zostaje VERBATIM, konwersji nie widzi.
+- Nierozstrzygnięta jednostka (błąd HTTP/`id` nieobecny w słowniku/jednostka
+  nierozpoznana) → atrybut zapisany z ORYGINALNĄ wartością i jednostką
+  Allegro (bez przeliczenia) + ostrzeżenie w logu syncu — nigdy cichy błąd
+  ani zgadywanie.
+
+Punkt wielorepowy — decyzja D-21.3.1 to realna praca po stronie
+`qutlet-meta` (kontrakt), więc NIE kwalifikuje się do wyjątku „czysto-kodowy
+w jednym repo” (`CLAUDE.md` → „Realizacja punktu planu”).
+
+### 🟡 P-21.3a — qutlet-meta: kontrakt konwersji jednostek (D-21.3.1)
+- **Repo:** qutlet-meta (`docs/kontrakt-danych.md`)
+- **Zakres:** nowa sekcja §16 — D-21.3.1 (lista kandydatów VERBATIM,
+  mechanizm resolucji jednostki per `id`, miejsce zapisu, degradacja przy
+  nierozstrzygniętej jednostce, tabela konwersji jednostek kanonicznych
+  `cm`/`g` jako baza).
+- **Zależności:** brak (decyzja podjęta tą sesją, tu spisana).
+
+### P-21.3b — qutlet-allegro: implementacja konwersji jednostek
+- **Repo:** qutlet-allegro (slice `OfferSync/`)
+- **Zakres:** `OfferMapper` (lista kandydatów + `weight_dimension_param_ids()`/
+  `weight_dimension_attributes()` + tabele konwersji, pure/bez WP), nowa
+  klasa `CategoryParameterUnits` (wzorem `CategoryResolver` — transport
+  wstrzyknięty, cache per przebieg) do pobrania słownika parametrów
+  kategorii, `ProductWriter::upsert()` (nowe parametry + `apply_unit_overrides()`
+  + warning przy nierozstrzygniętej jednostce), `ImportOffersCommand`
+  (wiring: `woocommerce_dimension_unit`/`woocommerce_weight_unit`,
+  warunkowe zapytanie o słownik kategorii TYLKO gdy oferta ma kandydata).
+- **Zależności:** P-21.3a (kontrakt D-21.3.1 jako źródło literałów nazw).
 
 ### P-21.4 — Kopiowanie atrybutów wymiary/waga do zakładki „Wysyłka" [OTWARTE, zależne od P-21.2/P-21.3]
 WooCommerce ma natywne pola wysyłki (`_weight`/`_length`/`_width`/`_height`,
