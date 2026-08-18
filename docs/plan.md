@@ -7119,7 +7119,7 @@ P-20.7a/b — kolejność zalecana, nie wymuszona jednoczesność, patrz D-20.9)
 - **Zależności:** P-20.6a (musi wejść razem/bezpośrednio po, D-20.6) —
   niezależny od P-20.4a/P-20.4b (inny metabox, inny plik).
 
-### P-20.7a — qutlet-allegro: write-path `cena_allegro`/`allegro_url` bez ACF
+### 🟢 P-20.7a — qutlet-allegro: write-path `cena_allegro`/`allegro_url` bez ACF
 
 - **Repo:** qutlet-allegro
 - `ProductWriter::upsert()` (import) i `ProductWriter::apply_stock_and_price()`
