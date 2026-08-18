@@ -6552,7 +6552,7 @@ stanu na relację, D-6.1.4/D-12.2.1/D-12.2.4). Bez zależności od FAZY 18.
 
 ---
 
-## 🟦 FAZA 20 — Porządki w edytorze produktu i menu WooCommerce: nazewnictwo, scalenie metaboksów, prompt nazwy — ROZPISANA
+## 🟩 FAZA 20 — Porządki w edytorze produktu i menu WooCommerce: nazewnictwo, scalenie metaboksów, prompt nazwy — ROZPISANA
 
 **Zgłoszenie (2026-08-18, trzyczęściowe — część 2 i 3 dopisane w trakcie tej
 samej sesji planistycznej):**
@@ -7086,7 +7086,7 @@ P-20.7a/b — kolejność zalecana, nie wymuszona jednoczesność, patrz D-20.9)
 - **Zależności:** brak. Niezależny od P-20.6a/P-20.6b (inny plik, ten sam
   ekran) — może ruszyć osobno w dowolnej kolejności.
 
-### P-20.6a — qutlet-core: zdjęcie natywnego wsparcia edytora dla `product`
+### 🟢 P-20.6a — qutlet-core: zdjęcie natywnego wsparcia edytora dla `product`
 
 - **Repo:** qutlet-core
 - Nowe wywołanie `remove_post_type_support( 'product', 'editor' )` — hook
@@ -7099,8 +7099,25 @@ P-20.7a/b — kolejność zalecana, nie wymuszona jednoczesność, patrz D-20.9)
 - **Zależności:** brak w sensie technicznym, ale **MUSI wejść razem z
   P-20.6b** (D-20.6, ryzyko operacyjne — okno bez edytora treści na
   ekranie). Merge core i ai bezpośrednio po sobie, wzorem FAZY 17.
+- **Realizacja (sesja 2026-08-18, `qutlet-core`#33) — odstępstwo od tekstu
+  wyżej, znalezisko niezależnej recenzji, nie sesji planistycznej:** klasa
+  `AiRewrite\ContentEditorSupport` (nowy plik, jak przewidziano). Ground-truth
+  planistyczny sprawdził tylko `_wp_translate_postdata()`/WooCommerce — recenzja
+  PR-a znalazła DODATKOWO, że `WP_REST_Posts_Controller::get_item_schema()`/
+  `prepare_item_for_database()` bramkują pole `content` tą samą flagą dla
+  KAŻDEGO typu postu spoza `$fixed_schemas` (tylko `post`/`page`/`attachment`
+  mają `editor` na sztywno) — `product` (domyślny kontroler REST,
+  `show_in_rest=true`, brak własnej `rest_controller_class`) tracił więc
+  całkowicie `content` z `wp/v2/product` (odczyt I zapis, bez błędu). Po decyzji
+  użytkownika: **dodana mitygacja**, nie akceptacja ryzyka —
+  `ContentEditorSupport::register_content_rest_field()` przywraca pole 1:1 z
+  natywnym kształtem (`raw`/`rendered`/`block_version`/`protected`), zweryfikowane
+  live (`GET /wp-json/wp/v2/product/{id}` zwraca `content.rendered`). Wniosek na
+  przyszłość: ground-truth dla zmian `post_type_supports`/CPT capabilities
+  powinien od razu obejmować REST (`WP_REST_Posts_Controller`/`$fixed_schemas`),
+  nie tylko klasyczny ekran edycji i zapytania samych pluginów Qutlet.
 
-### P-20.6b — qutlet-ai: scalony metaboks „Generacja AI (przeróbka)" + edytor
+### 🟢 P-20.6b — qutlet-ai: scalony metaboks „Generacja AI (przeróbka)" + edytor
 
 - **Repo:** qutlet-ai
 - `GenerationMetaBox`: tytuł „Qutlet — generacja AI (przeróbka)" →
@@ -7118,6 +7135,17 @@ P-20.7a/b — kolejność zalecana, nie wymuszona jednoczesność, patrz D-20.9)
   zmianie, potwierdzone ground-truthem — jedyny konsument).
 - **Zależności:** P-20.6a (musi wejść razem/bezpośrednio po, D-20.6) —
   niezależny od P-20.4a/P-20.4b (inny metabox, inny plik).
+- **Realizacja (sesja 2026-08-18, `qutlet-ai`#17) — odstępstwa od tekstu wyżej:**
+  opcje `wp_editor()` skopiowane z `edit-form-advanced.php` — `drag_drop_upload`,
+  `editor_height:300`, `tinymce.resize:false`/`tinymce.add_unload_trigger:false`
+  (te dwa NIEZALEŻNE od DFW, przywrócone po tym, że recenzja złapała ich
+  omyłkowe pominięcie w pierwszym przebiegu) — Z WYJĄTKIEM opcji „distraction
+  free writing" (`_content_editor_dfw`/`tinymce.wp_autoresize_on`/skrypt
+  `editor-expand`, nieadekwatne w wąskim metaboksie, i tak przestają się
+  ładować dla `product` po zdjęciu wsparcia edytora). **D-20.G4 „otwarte" NADAL
+  nierozstrzygnięte** — kolumna „Przerobione (bieżące, na stronie)" zostawiona
+  bez zmian, decyzja czy jest redundantna obok żywego edytora czeka na
+  użytkownika (nie było części tej sesji merge'a).
 
 ### 🟢 P-20.7a — qutlet-allegro: write-path `cena_allegro`/`allegro_url` bez ACF
 
