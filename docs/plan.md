@@ -7427,7 +7427,7 @@ tabela i uzasadnienie: `docs/kontrakt-danych.md` §15):**
   oferty, per-id nie per-nazwa).
 - **Zależności:** P-21.2a (dostarcza surowe dane).
 
-### 🟡 P-21.3 — Dodanie jednostek do wymiarów i wagi (punkt wielorepowy → P-21.3a + P-21.3b)
+### 🟢 P-21.3 — Dodanie jednostek do wymiarów i wagi (punkt wielorepowy → P-21.3a + P-21.3b)
 
 Cel: gdy Allegro przekazuje wartość wagi/wymiaru w innej jednostce niż
 ustawienie sklepu (`woocommerce_dimension_unit`/`woocommerce_weight_unit`,
@@ -7460,15 +7460,17 @@ Punkt wielorepowy — decyzja D-21.3.1 to realna praca po stronie
 `qutlet-meta` (kontrakt), więc NIE kwalifikuje się do wyjątku „czysto-kodowy
 w jednym repo” (`CLAUDE.md` → „Realizacja punktu planu”).
 
-### 🟡 P-21.3a — qutlet-meta: kontrakt konwersji jednostek (D-21.3.1)
+### 🟢 P-21.3a — qutlet-meta: kontrakt konwersji jednostek (D-21.3.1)
 - **Repo:** qutlet-meta (`docs/kontrakt-danych.md`)
 - **Zakres:** nowa sekcja §16 — D-21.3.1 (lista kandydatów VERBATIM,
   mechanizm resolucji jednostki per `id`, miejsce zapisu, degradacja przy
   nierozstrzygniętej jednostce, tabela konwersji jednostek kanonicznych
   `cm`/`g` jako baza).
+- PR: `qutlet-meta`#100 (+ poprawka literału `lb`→`lbs` po niezależnej
+  recenzji, ten sam PR).
 - **Zależności:** brak (decyzja podjęta tą sesją, tu spisana).
 
-### P-21.3b — qutlet-allegro: implementacja konwersji jednostek
+### 🟢 P-21.3b — qutlet-allegro: implementacja konwersji jednostek
 - **Repo:** qutlet-allegro (slice `OfferSync/`)
 - **Zakres:** `OfferMapper` (lista kandydatów + `weight_dimension_param_ids()`/
   `weight_dimension_attributes()` + tabele konwersji, pure/bez WP), nowa
@@ -7478,6 +7480,16 @@ w jednym repo” (`CLAUDE.md` → „Realizacja punktu planu”).
   + warning przy nierozstrzygniętej jednostce), `ImportOffersCommand`
   (wiring: `woocommerce_dimension_unit`/`woocommerce_weight_unit`,
   warunkowe zapytanie o słownik kategorii TYLKO gdy oferta ma kandydata).
+- PR: `qutlet-allegro`#37.
+- **Weryfikacja runtime (sesja 2026-08-18):** re-import produktu 3810
+  (Silver Monkey X, oferta sandbox `7781985897`) — atrybut „Waga produktu z
+  opakowaniem jednostkowym" `3` → `3 kg` po re-syncu, warstwa surowa
+  (`_qutlet_allegro_specification_raw`) pozostała `"3"` (D-6.G4). Potwierdza
+  pełny mechanizm end-to-end (żywe wywołanie `GET /sale/categories/{id}/parameters`).
+  Frontend renderuje TĘ SAMĄ wartość atrybutu (`ProductPage::specification_rows()`
+  w `qutlet-theme` czyta `$product->get_attributes()` — ten sam mechanizm,
+  bez dodatkowego formatowania) — istniejące produkty pokażą jednostki
+  dopiero po ponownym imporcie/syncu tej konkretnej oferty.
 - **Zależności:** P-21.3a (kontrakt D-21.3.1 jako źródło literałów nazw).
 
 ### P-21.4 — Kopiowanie atrybutów wymiary/waga do zakładki „Wysyłka" [OTWARTE, zależne od P-21.2/P-21.3]
