@@ -119,11 +119,14 @@ tylko ustabilizowana LISTA slugów + nazwa czytelna.
 | Pole (design)      | Literał ACF            | Miejsce | Typ                     | Opcjonalne? | Prototyp                       | Kształt / wartości |
 |--------------------|------------------------|---------|-------------------------|-------------|--------------------------------|--------------------|
 | Klasa stanu        | `klasa_stanu`          | ACF     | **taxonomy** (single-value, od P-12.2a; wcześniej `select`) | nie | `data.js` `.cls`; `produkt.html:13,46` | **REWIZJA P-12.2a (cutover, D-12.2.1):** pole zapisuje REALNĄ relację `wp_set_object_terms()` z taksonomią §2.2 (`save_terms`/`load_terms` włączone, `return_format=id`, `add_term=0`). Nowy odczyt pełnej definicji: `ClassDefinitionsTaxonomy::for_product(int $product_id): ?array` (§2.2, czyta przez `get_the_terms()`). `get_field('klasa_stanu')` NADAL zwraca historyczny kod string (`A`-`D`/`Nowe`) — kompatybilność wsteczna przez filtr `acf/format_value` ({@see \Qutlet\Core\ProductCondition\ProductConditionFields::format_condition_as_kod()}), mapujący `term_id` z powrotem na `kod`. **`get_post_meta($id, 'klasa_stanu', true)` (odczyt POZA ACF) NIE jest już wiarygodny** — ACF nadpisuje ten wiersz na `term_id` (int) przy KAŻDYM zapisie ekranu edycji produktu (wewnętrzne bookkeeping ACF, `acf_update_metadata_by_field()`), niezależnie od tego, czy admin dotknął tego pola. Konsumenci MUSZĄ czytać przez `get_field()` (kompatybilne) albo `for_product()` (relacja), NIGDY przez `get_post_meta()` wprost od tej rewizji. |
-| Co w przesyłce (pozycje) | `zawartosc_zestawu_pozycje` | ACF | repeater          | tak         | `produkt.html:13,142-173`      | **Zastępuje wcześniejsze pole WYSIWYG `zawartosc_zestawu` (D-9.2.1)** — patrz uzasadnienie niżej. Wiersz repeatera = jedna pozycja zestawu; kształt niżej. Pusty repeater → motyw nie renderuje zakładki „Co w przesyłce" (ani karuzeli, ani checklisty) |
+| Co w przesyłce (pozycje) | `zawartosc_zestawu_pozycje` | ACF | repeater          | tak         | `produkt.html:13,142-173`      | **Zastępuje wcześniejsze pole WYSIWYG `zawartosc_zestawu` (D-9.2.1)** — patrz uzasadnienie niżej. Wiersz repeatera = jedna pozycja zestawu; kształt niżej. Pusty repeater → motyw nie renderuje zakładki „Co w przesyłce" (ani karuzeli, ani checklisty). **Od FAZY 20 (P-20.8, D-20.11):** WŁASNA grupa ACF/metabox „Zawartość przesyłki" (wcześniej: jedno z czterech pól grupy „Qutlet — stan i zawartość produktu", razem z `klasa_stanu`) — ten sam `key`/`name`/sub-pola, bez migracji danych (grep potwierdza zero zapisów cross-plugin do tego pola, więc podział jest niskiego ryzyka, w odróżnieniu od `cena_allegro`/`allegro_url` niżej §4). |
 
 „Cena rynkowa nowego" NIE jest już w tej tabeli — od P-13.5 to NIE pole ACF,
 patrz §2.1. Definicje klas stanu (kolor/opisy/gwarancja/reklamacja) NIE są już
-hardkodowane w PHP — od P-12.1a to byt opisany w §2.2.
+hardkodowane w PHP — od P-12.1a to byt opisany w §2.2. Grupa ACF `klasa_stanu`
++ pola-komunikaty (dawniej „Qutlet — stan i zawartość produktu", razem z
+`zawartosc_zestawu_pozycje` wyżej) zmienia nazwę na „Stan produktu" od FAZY 20
+(P-20.8, D-20.11) — samo pole `klasa_stanu` i mechanizm zapisu bez zmian.
 
 ### 2.2 Definicja klasy stanu — taksonomia + term meta (P-12.1a, cutover P-12.2a)
 
@@ -306,13 +309,34 @@ zostanie usunięty. Slice `AllegroChannel/` (ta sama nazwa w core i theme).
 | Pole (design)       | Literał ACF        | Miejsce | Typ           | Opcjonalne? | Prototyp                   | Uwagi |
 |---------------------|--------------------|---------|---------------|-------------|----------------------------|-------|
 | Kanał Allegro wł.   | `allegro_wlaczone` | ACF     | true/false    | nie (def. false) | `produkt.html:52-53`   | `false` → motyw NIE renderuje żadnego elementu `[data-allegro-only]` |
-| URL oferty Allegro  | `allegro_url`      | ACF     | url           | tak         | `produkt.html:219-220,129,264,295` | link do oferty (`data-allegro-url`). Puste → wariant 2-kolumnowy (`.info-2col`), bez karty „Zwrot — Allegro" |
-| Cena Allegro        | `cena_allegro`     | ACF     | number (PLN)  | tak         | `produkt.html:63,108,129` (wartość „199,00 zł") | cena kanału Allegro pokazywana na stronie produktu. Nota „~X% wyższa" liczona z `cena_allegro` vs cena sprzedaży (patrz §6) |
+| URL oferty Allegro  | `allegro_url`      | meta (ACF `message`-display od FAZY 20) | url (string) | tak | `produkt.html:219-220,129,264,295` | link do oferty (`data-allegro-url`). Puste → wariant 2-kolumnowy (`.info-2col`), bez karty „Zwrot — Allegro". **Od FAZY 20 (P-20.7b, D-20.10):** w adminie NIE jest już edytowalnym polem `url` — grupa `qutlet-core` renderuje pole `message` (klikalny link, treść wstrzykiwana na `acf/pre_render_field` z `get_post_meta( $id, 'allegro_url', true )`), bo pole jest sync-owned (nigdy nie było zamierzone do ręcznej edycji). Zapis: `qutlet-allegro\OfferSync\ProductWriter` przez `update_post_meta()` (D-20.9 — NIE `update_field()` po kluczu ACF od P-20.7a, żeby uniknąć cichego zapisu pod błędnym meta_key po usunięciu pola z rejestracji, patrz log decyzji FAZY 20). Odczyt motywu (`get_field('allegro_url')`) bez zmian — degraduje się bezpiecznie do `get_post_meta()` po nazwie. |
+| Cena Allegro        | `cena_allegro`     | meta (natywne Product Data od FAZY 20) | number (PLN) | tak | `produkt.html:63,108,129` (wartość „199,00 zł") | cena kanału Allegro pokazywana na stronie produktu. Nota „~X% wyższa" liczona z `cena_allegro` vs cena sprzedaży (patrz §6). **Od FAZY 20 (P-20.7b, D-20.8):** NIE jest już polem ACF — przeniesione do zakładki **General** panelu danych produktu Woo, hook `woocommerce_product_options_pricing` (priorytet NIŻSZY niż `MarketPriceField`, żeby renderować się nad nim, ten sam mechanizm co `cena_rynkowa_nowego`/§2.1, P-13.5). Meta_key BEZ ZMIAN, zero migracji. Zapis: `qutlet-allegro\OfferSync\ProductWriter` przez `update_post_meta()`/`update_meta_data()` (D-20.9 — patrz `allegro_url` wyżej, ta sama pułapka i to samo rozwiązanie). |
 
 **D-1.3.1 [ROZSTRZYGNIĘTE — decyzja użytkownika]:** cena Allegro to **osobne pole
-ACF `cena_allegro`** (number). Prototyp pokazuje konkretną, nie-wyprowadzalną
+`cena_allegro`** (number). Prototyp pokazuje konkretną, nie-wyprowadzalną
 wartość (199,00 zł przy cenie sklepu 179,10 zł), więc musi być przechowywana.
 Nota „Cena wyższa o ~10%" jest **liczona** przez motyw, nie przechowywana.
+(Pierwotnie pole ACF — od FAZY 20 natywne Product Data, patrz tabela wyżej i
+D-20.8/D-20.9/D-20.10 w logu decyzji FAZY 20.)
+
+**D-20.8/D-20.9/D-20.10 [USTALONE — sesja planistyczna FAZY 20, 2026-08-18
+— pełna specyfikacja w `docs/plan.md` → FAZA 20]:** `cena_allegro` i
+`allegro_url` przestają być polami ACF (pierwsze → natywne Product Data,
+drugie → pole `message` read-only) — **KRYTYCZNE odkrycie tej sesji**:
+`qutlet-allegro\OfferSync\ProductWriter`/`SyncStockCommand` piszą OBA pola
+przez `update_field()` **PO KLUCZU ACF** (`field_qutlet_cena_allegro`/
+`field_qutlet_allegro_url`), nie po nazwie. Ground-truth wprost w ACF Pro
+(`includes/api/api-template.php::update_field()`/`acf_maybe_get_field()`):
+selektor zaczynający się od `field_` jest traktowany jako klucz i szukany
+WYŁĄCZNIE przez `acf_get_field()`, bez fallbacku po nazwie — gdyby pole
+zniknęło z rejestracji ACF bez zmiany tych wywołań, `update_field()` cicho
+utworzyłby „dummy field" z `name` równym SAMEMU KLUCZOWI i zapisał wartość
+pod BŁĘDNYM meta_key. Naprawa: `qutlet-allegro` migruje na zwykłe
+`update_post_meta()`/`update_meta_data()` (bezpieczne niezależnie od stanu
+rejestracji ACF) — ta migracja (P-20.7a) POWINNA wejść PRZED usunięciem pól
+z ACF w core (P-20.7b), choć — w odróżnieniu od D-20.6/D-20.G4 — nie ma tu
+twardego okna ryzyka wymagającego jednoczesnego merge'a (postmeta po nazwie
+działa identycznie niezależnie od stanu ACF).
 
 **Brak pola „perks/korzyści":** korzyści kanału Allegro (14 dni na zwrot,
 gwarancja, ochrona kupujących, darmowe zwroty Smart) są **statyczną treścią

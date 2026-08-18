@@ -6593,11 +6593,27 @@ na ekranie edycji produktu (metabox „Qutlet — generacja AI (przeróbka)"):
 9. „Jeśli to możliwe" — scalić natywny metabox „Opis produktu" (edytor
    treści) z metaboksem „Generacja AI (przeróbka)" w jeden.
 
+Część 4 — dopisana w trakcie tej samej sesji, dotyczy metaboksów „Qutlet —
+kanał Allegro" i „Qutlet — stan i zawartość produktu":
+10. Pole „Cena Allegro (PLN)" przenieść z metaboksu „Qutlet — kanał Allegro"
+    do natywnego „Dane produktu" (Product Data), tuż NAD polem „Cena
+    rynkowa nowego (zł)".
+11. Usunąć słowo „Qutlet" z metaboksu „kanał Allegro". Pole „URL oferty
+    Allegro" ma być klikalnym linkiem, NIE edytowalnym polem tekstowym.
+12. Wyodrębnić „Co w przesyłce" do OSOBNEGO metaboksu — nazwa „Zawartość
+    przesyłki" (bez „Qutlet").
+13. Po podziale z pkt 12 — pozostały metabox „Qutlet — stan i zawartość
+    produktu" zmienia nazwę na „Stan produktu".
+
 **Ground-truth (ta sesja, 2026-08-18):** przeczytany realny kod wszystkich
 dotykanych plików — `PromptSettingsPage`/`PromptSettings`/`TitleGenerator`/
 `RewriteGenerator`/`TitleGenerationMetaBox`/`title-generator.js` (qutlet-ai),
 `ConditionMapPage` (qutlet-allegro), `DiscountRateSettingsPage`/
-`RewrittenFields`/`ProductReviewWizard` (qutlet-core). Kluczowe znaleziska:
+`RewrittenFields`/`ProductReviewWizard`/`AllegroChannelFields`/
+`ProductConditionFields`/`MarketPriceField` (qutlet-core),
+`ProductWriter`/`SyncStockCommand` (qutlet-allegro), oraz ACF Pro
+(`includes/api/api-template.php`, `update_field()`/`acf_maybe_get_field()`).
+Kluczowe znaleziska:
 
 - **Generator nazwy dziś ŚWIADOMIE izolowany od mechanizmu promptu.**
   `TitleGenerator::SYSTEM_INSTRUCTION` to `private const` — stały tekst PHP,
@@ -6707,6 +6723,61 @@ dotykanych plików — `PromptSettingsPage`/`PromptSettings`/`TitleGenerator`/
   zostaje POZA modałem, niewidoczny tylko dzięki pełnoekranowej nakładce
   `position:fixed`, ale wciąż osobno w DOM) — spójniejsze UX kreatora bez
   dodatkowej pracy.
+- **KRYTYCZNE odkrycie tej sesji: `cena_allegro` i `allegro_url` mają
+  UKRYTĄ pułapkę, której `cena_rynkowa_nowego` (precedens P-13.5) NIE
+  MIAŁO.** `qutlet-allegro\OfferSync\ProductWriter::upsert()`/
+  `apply_stock_and_price()` zapisują OBA pola przez `update_field( self::
+  ACF_KEY_ALLEGRO_PRICE, …)`/`update_field( self::ACF_KEY_ALLEGRO_URL, …)`
+  — WOŁANE PO KLUCZU ACF (`field_qutlet_…`), NIE po nazwie (`cena_allegro`/
+  `allegro_url`). Ground-truth wprost w ACF Pro
+  (`includes/api/api-template.php::update_field()`, linia ok. 1153;
+  `acf_maybe_get_field()`, linia ok. 306): selektor zaczynający się od
+  `field_` jest traktowany jako KLUCZ i szukany WYŁĄCZNIE przez
+  `acf_get_field()` — bez fallbacku na loose lookup po nazwie (ten fallback
+  istnieje tylko dla selektorów, które NIE wyglądają jak klucz). Gdyby pole
+  zniknęło z rejestracji ACF (`AllegroChannelFields`) BEZ zmiany tych dwóch
+  wołań w `qutlet-allegro`, `update_field()` nie zwróci błędu — cicho
+  utworzy „dummy field" z `name` RÓWNYM SAMEMU KLUCZOWI
+  (`acf_get_valid_field(['name' => $selector, …])`, linia ok. 1157) i
+  zapisze wartość pod BŁĘDNYM meta_key (`field_qutlet_cena_allegro` zamiast
+  `cena_allegro`) — CICHE ZEPSUCIE synchronizacji ceny/URL-a Allegro, bez
+  żadnego widocznego błędu. To ZASADNICZO różni ten punkt od precedensu
+  P-13.5 (`cena_rynkowa_nowego`), gdzie nic innego nigdy nie pisało przez
+  `update_field()` po kluczu ACF — tamten precedens dotyczył WYŁĄCZNIE
+  odczytu (`get_field()` degraduje bezpiecznie po NAZWIE), nie zapisu po
+  kluczu.
+- **Bezpieczna kolejność ISTNIEJE (w odróżnieniu od scalenia edytora,
+  D-20.6) — bez okna ryzyka.** Przełączenie `qutlet-allegro` na zwykły
+  `update_post_meta()`/`$product->update_meta_data()` (po NAZWIE, nie po
+  kluczu ACF) działa IDENTYCZNIE niezależnie od tego, czy pole jest jeszcze
+  zarejestrowane w ACF, czy już nie — zapis pod tym samym meta_key trafia
+  tam, gdzie trafiał zawsze, a ACF (dopóki pole jeszcze zarejestrowane) i tak
+  czyta ten sam surowy meta_key przy renderze formularza. Można więc
+  bezpiecznie zmergować `qutlet-allegro` NA DŁUGO PRZED `qutlet-core` —
+  ZERO okna z ryzykiem, w przeciwieństwie do D-20.6 (edytor treści), gdzie
+  kolejność MUSIAŁA być ścisła i merge'e blisko siebie.
+- **`allegro_url` jest i tak sync-owned (D-9.1, `ProductPage.php`/
+  `ProductWriter.php` docblocki) — nigdy nie było zamierzone do ręcznej
+  edycji.** Zamiana na pole tylko-do-odczytu (klikalny link) NIE odbiera
+  żadnej realnej funkcji — usuwa tylko MYLĄCY, edytowalny wygląd pola,
+  którego edycja i tak zostałaby nadpisana kolejnym syncem. Wzorzec
+  identyczny do już istniejących pól-komunikatów w `ProductConditionFields`
+  (`allegro_stan_raw_display`/`klasa_stanu_terminy_display`, typ ACF
+  `message`, treść dopisywana dynamicznie na `acf/pre_render_field`) — NIE
+  nowy mechanizm, reużycie istniejącego wzorca w tym samym repo.
+- **„Co w przesyłce" (`zawartosc_zestawu_pozycje`) NIE ma żadnego zapisu
+  cross-plugin** — grep całego katalogu `Local Sites/qutlet` poza
+  `ProductConditionFields.php` (rejestracja) i motywem (odczyt renderu)
+  daje zero trafień. Wydzielenie do osobnego metaboksu jest więc NISKIEGO
+  RYZYKA — sama reorganizacja kodu, bez pułapki analogicznej do
+  `cena_allegro`/`allegro_url`.
+- **Podział metaboksa zepsuje krok 4 kreatora (P-17.2) bez poprawki w tym
+  samym punkcie** — `ProductReviewWizard::steps()` krok „Stan i zawartość"
+  wskazuje dziś JEDEN selektor (`'#' . ProductConditionFields::metabox_id()`)
+  obejmujący WSZYSTKIE cztery pola. Po wydzieleniu repeatera do nowej klasy
+  ten selektor przestaje obejmować „Co w przesyłce" — krok wymaga DRUGIEGO
+  selektora (nowy `ShipmentContentsFields::metabox_id()`), wzorem tego, jak
+  krok 1 (przed P-20.4) już dziś obsługuje dwa selektory dla jednego kroku.
 
 **Decyzje użytkownika (sesja 2026-08-18):**
 
@@ -6792,19 +6863,65 @@ dotykanych plików — `PromptSettingsPage`/`PromptSettings`/`TitleGenerator`/
   `prompt_ai` bez zmian) [USTALONE — zgłoszenie wprost, pkt 7]:** ten sam
   wzorzec co P-20.4a dla `podnazwa` — zmienia się tylko tekst widoczny w
   adminie.
+- **D-20.8 („Cena Allegro" przenosi się do natywnego Product Data —
+  DOKŁADNIE ten sam mechanizm co `MarketPriceField`) [USTALONE — zgłoszenie
+  wprost, pkt 10]:** nowa klasa w `qutlet-core` renderuje pole przez
+  `woocommerce_wp_text_input()` na hooku `woocommerce_product_options_pricing`,
+  z priorytetem NIŻSZYM niż `MarketPriceField` (domyślny 10) — np. 9 — żeby
+  wyrenderować się PRZED nim w obrębie tego samego hooka („tuż nad" =
+  kolejność rejestracji na wspólnym hooku, ten sam mechanizm pozycjonowania
+  co `MarketPriceField` względem natywnych pól ceny, D-13.5.1). Meta_key
+  `cena_allegro` ZOSTAJE bez zmian (bez podkreślnika, jak `cena_rynkowa_nowego`
+  po P-13.5, D-13.5.2) — zero migracji danych.
+- **D-20.9 (write-path `cena_allegro`/`allegro_url` migruje z
+  `update_field()`-po-kluczu na zwykły `update_post_meta()`/
+  `update_meta_data()` W `qutlet-allegro`, PRZED usunięciem pól z ACF w
+  core) [USTALONE — wynika z ground-truthu, KRYTYCZNE odkrycie tej sesji]:**
+  patrz ground-truth wyżej — `update_field()` wołane po KLUCZU ACF wobec
+  pola, które przestało być zarejestrowane, cicho zapisuje pod BŁĘDNYM
+  meta_key. Kolejność merge'y: `qutlet-allegro` (P-20.7a) MOŻE i POWINIEN
+  wejść jako pierwszy, bez presji czasowej (bezpieczny niezależnie od stanu
+  ACF) — `qutlet-core` (P-20.7b) wchodzi po nim. **Odrzucona alternatywa:**
+  zostawić `update_field()` po kluczu i tylko USUNĄĆ pole z ACF — odrzucona
+  jako cichy bug (opisany wyżej), niemożliwy do zaakceptowania w kodzie
+  odpowiedzialnym za pieniądze (cena).
+- **D-20.10 („URL oferty Allegro" → pole `message` z klikalnym linkiem,
+  wzorem `allegro_stan_raw_display`) [USTALONE — zgłoszenie wprost, pkt 11,
+  wzorzec z ground-truthu]:** realna wartość (`allegro_url` meta) NIE
+  znika — dalej pisze ją sync (P-20.7a, teraz przez `update_post_meta()`);
+  w adminie renderuje się jako pole `message` (typ ACF), treść wstrzykiwana
+  dynamicznie na `acf/pre_render_field` (ten sam mechanizm co
+  `ProductConditionFields::inject_condition_raw_message()`) jako
+  `<a href="…">…</a>`. Edytowalne pole `url` znika z rejestracji grupy
+  całkowicie (nie tylko wizualnie/CSS) — bez ryzyka utraty danych, bo
+  odczyt motywu (`get_field('allegro_url')`) i tak degraduje się
+  bezpiecznie do `get_post_meta()` po NAZWIE (nie po kluczu — inny
+  mechanizm niż D-20.9, bezpieczny od zawsze, patrz precedens P-13.5).
+- **D-20.11 („Zawartość przesyłki" jako osobny metabox + rename „Stan
+  produktu" + poprawka selektorów kroku 4 kreatora) [USTALONE — zgłoszenie
+  wprost, pkt 12/13]:** nowa klasa `qutlet-core` (nazwa do ustalenia przy
+  realizacji, np. `ProductCondition\ShipmentContentsFields`) rejestruje
+  NOWĄ grupę ACF z samym `zawartosc_zestawu_pozycje` (ten sam `key`/`name`,
+  bez migracji — repeater nie ma pułapki D-20.9, patrz ground-truth).
+  `ProductConditionFields` traci to pole ze swojej listy i zmienia tytuł
+  „Qutlet — stan i zawartość produktu" → „Stan produktu". Krok 4 kreatora
+  (P-17.2, `ProductReviewWizard::steps()`) dostaje DRUGI selektor dla tego
+  samego kroku (wzorem kroku 1 przed P-20.4) — w TYM SAMYM punkcie
+  (`qutlet-core`), bo to jeden plik/repo.
 
 **Zakres [USTALONE tą sesją]:** wszystkie nowe literały (opcja
 `qutlet_ai_prompt_title_global`) i decyzje nazewnicze/architektoniczne tej
-fazy zostały ustalone i spisane DO `docs/kontrakt-danych.md` (§9.2, §13) W
-TEJ SESJI PLANISTYCZNEJ — analogicznie do FAZY 18 (P-18.2): praca
-`qutlet-meta` dla KAŻDEGO z punktów P-20.1–P-20.6b jest skonsumowana w
+fazy zostały ustalone i spisane DO `docs/kontrakt-danych.md` (§2, §4, §9.2,
+§13) W TEJ SESJI PLANISTYCZNEJ — analogicznie do FAZY 18 (P-18.2): praca
+`qutlet-meta` dla KAŻDEGO z punktów P-20.1–P-20.8 jest skonsumowana w
 planowaniu, więc wszystkie są przy realizacji punktami czysto-kodowymi
-(P-20.1/P-20.2/P-20.3/P-20.5 w jednym repo; P-20.4a/P-20.4b i P-20.6a/P-20.6b
-w dwóch repo, ale bez ŻADNEJ dodatkowej pracy w `qutlet-meta` ponad to, co już
-tu zapisane) — flip 🟡 pomijamy wszędzie w tej fazie (`CLAUDE.md` →
-„Realizacja punktu planu" → wyjątek), flip 🟢 wchodzi normalnie po merge'u
-każdego punktu (dla P-20.4a/b i P-20.6a/b — po merge'u OBU PR-ów pary, patrz
-ryzyko operacyjne wyżej).
+(P-20.1/P-20.2/P-20.3/P-20.5/P-20.8 w jednym repo; P-20.4a/P-20.4b,
+P-20.6a/P-20.6b i P-20.7a/P-20.7b w dwóch repo, ale bez ŻADNEJ dodatkowej
+pracy w `qutlet-meta` ponad to, co już tu zapisane) — flip 🟡 pomijamy
+wszędzie w tej fazie (`CLAUDE.md` → „Realizacja punktu planu" → wyjątek),
+flip 🟢 wchodzi normalnie po merge'u każdego punktu (dla P-20.4a/b i
+P-20.6a/b — po merge'u OBU PR-ów pary, patrz ryzyko operacyjne wyżej; dla
+P-20.7a/b — kolejność zalecana, nie wymuszona jednoczesność, patrz D-20.9).
 
 ### P-20.1 — qutlet-ai: „Prompty globalne" — rename + nowy prompt nazwy
 
@@ -6940,15 +7057,74 @@ ryzyko operacyjne wyżej).
 - **Zależności:** P-20.6a (musi wejść razem/bezpośrednio po, D-20.6) —
   niezależny od P-20.4a/P-20.4b (inny metabox, inny plik).
 
+### P-20.7a — qutlet-allegro: write-path `cena_allegro`/`allegro_url` bez ACF
+
+- **Repo:** qutlet-allegro
+- `ProductWriter::upsert()` (import) i `ProductWriter::apply_stock_and_price()`
+  (lekki sync P-6.2b): `update_field( self::ACF_KEY_ALLEGRO_PRICE, … )` →
+  `$product->update_meta_data( 'cena_allegro', … )` (ten sam wzorzec co
+  `MarketPriceField::save()`/`ProductDiscountRateField::save()` w core, D-20.9)
+  — **BEZ ZMIANY** dla `allegro_wlaczone` (`ACF_KEY_ALLEGRO_ENABLED`, zostaje
+  ACF, `OfferEndedMarker.php` też się tego nie tyka). `allegro_url` w
+  `upsert()`: `update_field( self::ACF_KEY_ALLEGRO_URL, … )` →
+  `update_post_meta( $product_id, 'allegro_url', … )` (analogicznie).
+- `SyncStockCommand.php`: komunikat błędu przy braku `update_field()`
+  („sync ceny wymaga aktywnego ACF…") staje się NIEAKTUALNY po tym punkcie
+  (cena już nie przechodzi przez ACF) — do przeglądu/przeredagowania przy
+  realizacji. Po P-20.7b (`allegro_url` też przestaje być polem `url` ACF)
+  jedynym polem kanału Allegro nadal wymagającym ACF zostaje
+  `allegro_wlaczone` — dokładna treść komunikatu/ewentualnego guardu do
+  ponownego ustalenia ground-truthem przy realizacji, nie przesądzone tu.
+- **Zależności:** brak — może (i powinien, D-20.9) wejść PRZED P-20.7b, bez
+  presji czasowej (bezpieczny niezależnie od stanu ACF w core).
+
+### P-20.7b — qutlet-core: „Cena Allegro" → natywne Product Data, „URL oferty Allegro" → link
+
+- **Repo:** qutlet-core
+- `AllegroChannelFields`: usunięcie pola `cena_allegro` z `fields` (D-20.8);
+  tytuł grupy „Qutlet — kanał Allegro" → **„Kanał Allegro"** (usunięte słowo
+  „Qutlet", zgłoszenie pkt 11). Pole `allegro_url` (typ `url`, edytowalne) →
+  ZASTĄPIONE nowym polem `message` (np. `allegro_url_display`), treść
+  wstrzykiwana na `acf/pre_render_field` jako `<a href="…">…</a>` z
+  `get_post_meta( $product_id, 'allegro_url', true )` (wzorzec
+  `ProductConditionFields::inject_condition_raw_message()`, D-20.10). Pole
+  `allegro_wlaczone` bez zmian.
+- Nowa klasa (np. `AllegroChannel\AllegroPriceField`, wzorem
+  `MarketPriceField`) — `woocommerce_wp_text_input()` na hooku
+  `woocommerce_product_options_pricing`, priorytet NIŻSZY niż
+  `MarketPriceField` (np. 9, żeby renderować się PRZED nim — D-20.8), zapis
+  `woocommerce_admin_process_product_object` → `update_meta_data( 'cena_allegro', … )`.
+- **Zależności:** P-20.7a POWINIEN wejść pierwszy (D-20.9 — kolejność
+  zalecana dla zera ryzyka, nie twarda blokada techniczna jak przy
+  P-20.6a/b).
+
+### P-20.8 — qutlet-core: „Zawartość przesyłki" jako osobny metabox + rename „Stan produktu"
+
+- **Repo:** qutlet-core
+- Nowa klasa (np. `ProductCondition\ShipmentContentsFields`) — nowa grupa
+  ACF z samym `zawartosc_zestawu_pozycje` (ten sam `key`/`name`/sub-pola,
+  bez migracji, D-20.11), tytuł „Zawartość przesyłki" (bez „Qutlet").
+- `ProductConditionFields`: usunięcie `zawartosc_zestawu_pozycje` z `fields`;
+  tytuł grupy „Qutlet — stan i zawartość produktu" → **„Stan produktu"**.
+- `ProductReviewWizard::steps()` krok „Stan i zawartość" — dopisanie
+  DRUGIEGO selektora (`'#' . ShipmentContentsFields::metabox_id()`) obok
+  istniejącego `ProductConditionFields::metabox_id()` (D-20.11).
+- **Zależności:** brak.
+
 **Zależności (całej fazy):** FAZA 7 (prompt globalny opisu, mechanizm do
 przemianowania), FAZA 13 (P-13.2c generator nazwy, P-13.6a/b wzorzec
 `render_field()`), FAZA 17 (P-17.2 kreator — krok 1 wymaga poprawki
 selektorów przy scaleniu P-20.4a/b; krok 2 automatycznie zyskuje edytor po
 P-20.6a/b, bez zmian w samym kreatorze — ten sam DOM-id `#qutlet_ai_generation`;
 PR `qutlet-ai`#12 — mechanizm synchronizacji edytora po „Zaakceptuj" musi
-przetrwać bez zmian, potwierdzone ground-truthem D-20.G4), FAZA 18 (P-18.2
+przetrwać bez zmian, potwierdzone ground-truthem D-20.G4; krok 4 wymaga
+poprawki selektorów przy podziale P-20.8, wzorem kroku 1), FAZA 18 (P-18.2
 sekcja „Kolejność dostawców AI" żyje na tej samej stronie „Prompty globalne",
-bez zmian w tej fazie).
+bez zmian w tej fazie), FAZA 1/1.3 (`AllegroChannelFields`, pola `cena_allegro`/
+`allegro_url`/`allegro_wlaczone` — P-20.7a/P-20.7b), FAZA 6/P-6.2b
+(`ProductWriter`/`SyncStockCommand` — konsumenci write-path zmienianego w
+P-20.7a), FAZA 13 (P-13.5, `MarketPriceField` — wzorzec dla P-20.7b), P-9.2
+(`ProductConditionFields`/`zawartosc_zestawu_pozycje` — P-20.8).
 
 ---
 
