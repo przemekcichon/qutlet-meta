@@ -119,11 +119,14 @@ tylko ustabilizowana LISTA slugów + nazwa czytelna.
 | Pole (design)      | Literał ACF            | Miejsce | Typ                     | Opcjonalne? | Prototyp                       | Kształt / wartości |
 |--------------------|------------------------|---------|-------------------------|-------------|--------------------------------|--------------------|
 | Klasa stanu        | `klasa_stanu`          | ACF     | **taxonomy** (single-value, od P-12.2a; wcześniej `select`) | nie | `data.js` `.cls`; `produkt.html:13,46` | **REWIZJA P-12.2a (cutover, D-12.2.1):** pole zapisuje REALNĄ relację `wp_set_object_terms()` z taksonomią §2.2 (`save_terms`/`load_terms` włączone, `return_format=id`, `add_term=0`). Nowy odczyt pełnej definicji: `ClassDefinitionsTaxonomy::for_product(int $product_id): ?array` (§2.2, czyta przez `get_the_terms()`). `get_field('klasa_stanu')` NADAL zwraca historyczny kod string (`A`-`D`/`Nowe`) — kompatybilność wsteczna przez filtr `acf/format_value` ({@see \Qutlet\Core\ProductCondition\ProductConditionFields::format_condition_as_kod()}), mapujący `term_id` z powrotem na `kod`. **`get_post_meta($id, 'klasa_stanu', true)` (odczyt POZA ACF) NIE jest już wiarygodny** — ACF nadpisuje ten wiersz na `term_id` (int) przy KAŻDYM zapisie ekranu edycji produktu (wewnętrzne bookkeeping ACF, `acf_update_metadata_by_field()`), niezależnie od tego, czy admin dotknął tego pola. Konsumenci MUSZĄ czytać przez `get_field()` (kompatybilne) albo `for_product()` (relacja), NIGDY przez `get_post_meta()` wprost od tej rewizji. |
-| Co w przesyłce (pozycje) | `zawartosc_zestawu_pozycje` | ACF | repeater          | tak         | `produkt.html:13,142-173`      | **Zastępuje wcześniejsze pole WYSIWYG `zawartosc_zestawu` (D-9.2.1)** — patrz uzasadnienie niżej. Wiersz repeatera = jedna pozycja zestawu; kształt niżej. Pusty repeater → motyw nie renderuje zakładki „Co w przesyłce" (ani karuzeli, ani checklisty) |
+| Co w przesyłce (pozycje) | `zawartosc_zestawu_pozycje` | ACF | repeater          | tak         | `produkt.html:13,142-173`      | **Zastępuje wcześniejsze pole WYSIWYG `zawartosc_zestawu` (D-9.2.1)** — patrz uzasadnienie niżej. Wiersz repeatera = jedna pozycja zestawu; kształt niżej. Pusty repeater → motyw nie renderuje zakładki „Co w przesyłce" (ani karuzeli, ani checklisty). **Od FAZY 20 (P-20.8, D-20.11):** WŁASNA grupa ACF/metabox „Zawartość przesyłki" (wcześniej: jedno z czterech pól grupy „Qutlet — stan i zawartość produktu", razem z `klasa_stanu`) — ten sam `key`/`name`/sub-pola, bez migracji danych (grep potwierdza zero zapisów cross-plugin do tego pola, więc podział jest niskiego ryzyka, w odróżnieniu od `cena_allegro`/`allegro_url` niżej §4). |
 
 „Cena rynkowa nowego" NIE jest już w tej tabeli — od P-13.5 to NIE pole ACF,
 patrz §2.1. Definicje klas stanu (kolor/opisy/gwarancja/reklamacja) NIE są już
-hardkodowane w PHP — od P-12.1a to byt opisany w §2.2.
+hardkodowane w PHP — od P-12.1a to byt opisany w §2.2. Grupa ACF `klasa_stanu`
++ pola-komunikaty (dawniej „Qutlet — stan i zawartość produktu", razem z
+`zawartosc_zestawu_pozycje` wyżej) zmienia nazwę na „Stan produktu" od FAZY 20
+(P-20.8, D-20.11) — samo pole `klasa_stanu` i mechanizm zapisu bez zmian.
 
 ### 2.2 Definicja klasy stanu — taksonomia + term meta (P-12.1a, cutover P-12.2a)
 
@@ -306,13 +309,34 @@ zostanie usunięty. Slice `AllegroChannel/` (ta sama nazwa w core i theme).
 | Pole (design)       | Literał ACF        | Miejsce | Typ           | Opcjonalne? | Prototyp                   | Uwagi |
 |---------------------|--------------------|---------|---------------|-------------|----------------------------|-------|
 | Kanał Allegro wł.   | `allegro_wlaczone` | ACF     | true/false    | nie (def. false) | `produkt.html:52-53`   | `false` → motyw NIE renderuje żadnego elementu `[data-allegro-only]` |
-| URL oferty Allegro  | `allegro_url`      | ACF     | url           | tak         | `produkt.html:219-220,129,264,295` | link do oferty (`data-allegro-url`). Puste → wariant 2-kolumnowy (`.info-2col`), bez karty „Zwrot — Allegro" |
-| Cena Allegro        | `cena_allegro`     | ACF     | number (PLN)  | tak         | `produkt.html:63,108,129` (wartość „199,00 zł") | cena kanału Allegro pokazywana na stronie produktu. Nota „~X% wyższa" liczona z `cena_allegro` vs cena sprzedaży (patrz §6) |
+| URL oferty Allegro  | `allegro_url`      | meta (ACF `message`-display od FAZY 20) | url (string) | tak | `produkt.html:219-220,129,264,295` | link do oferty (`data-allegro-url`). Puste → wariant 2-kolumnowy (`.info-2col`), bez karty „Zwrot — Allegro". **Od FAZY 20 (P-20.7b, D-20.10):** w adminie NIE jest już edytowalnym polem `url` — grupa `qutlet-core` renderuje pole `message` (klikalny link, treść wstrzykiwana na `acf/pre_render_field` z `get_post_meta( $id, 'allegro_url', true )`), bo pole jest sync-owned (nigdy nie było zamierzone do ręcznej edycji). Zapis: `qutlet-allegro\OfferSync\ProductWriter` przez `update_post_meta()` (D-20.9 — NIE `update_field()` po kluczu ACF od P-20.7a, żeby uniknąć cichego zapisu pod błędnym meta_key po usunięciu pola z rejestracji, patrz log decyzji FAZY 20). Odczyt motywu (`get_field('allegro_url')`) bez zmian — degraduje się bezpiecznie do `get_post_meta()` po nazwie. |
+| Cena Allegro        | `cena_allegro`     | meta (natywne Product Data od FAZY 20) | number (PLN) | tak | `produkt.html:63,108,129` (wartość „199,00 zł") | cena kanału Allegro pokazywana na stronie produktu. Nota „~X% wyższa" liczona z `cena_allegro` vs cena sprzedaży (patrz §6). **Od FAZY 20 (P-20.7b, D-20.8):** NIE jest już polem ACF — przeniesione do zakładki **General** panelu danych produktu Woo, hook `woocommerce_product_options_pricing` (priorytet NIŻSZY niż `MarketPriceField`, żeby renderować się nad nim, ten sam mechanizm co `cena_rynkowa_nowego`/§2.1, P-13.5). Meta_key BEZ ZMIAN, zero migracji. Zapis: `qutlet-allegro\OfferSync\ProductWriter` przez `update_post_meta()`/`update_meta_data()` (D-20.9 — patrz `allegro_url` wyżej, ta sama pułapka i to samo rozwiązanie). |
 
 **D-1.3.1 [ROZSTRZYGNIĘTE — decyzja użytkownika]:** cena Allegro to **osobne pole
-ACF `cena_allegro`** (number). Prototyp pokazuje konkretną, nie-wyprowadzalną
+`cena_allegro`** (number). Prototyp pokazuje konkretną, nie-wyprowadzalną
 wartość (199,00 zł przy cenie sklepu 179,10 zł), więc musi być przechowywana.
 Nota „Cena wyższa o ~10%" jest **liczona** przez motyw, nie przechowywana.
+(Pierwotnie pole ACF — od FAZY 20 natywne Product Data, patrz tabela wyżej i
+D-20.8/D-20.9/D-20.10 w logu decyzji FAZY 20.)
+
+**D-20.8/D-20.9/D-20.10 [USTALONE — sesja planistyczna FAZY 20, 2026-08-18
+— pełna specyfikacja w `docs/plan.md` → FAZA 20]:** `cena_allegro` i
+`allegro_url` przestają być polami ACF (pierwsze → natywne Product Data,
+drugie → pole `message` read-only) — **KRYTYCZNE odkrycie tej sesji**:
+`qutlet-allegro\OfferSync\ProductWriter`/`SyncStockCommand` piszą OBA pola
+przez `update_field()` **PO KLUCZU ACF** (`field_qutlet_cena_allegro`/
+`field_qutlet_allegro_url`), nie po nazwie. Ground-truth wprost w ACF Pro
+(`includes/api/api-template.php::update_field()`/`acf_maybe_get_field()`):
+selektor zaczynający się od `field_` jest traktowany jako klucz i szukany
+WYŁĄCZNIE przez `acf_get_field()`, bez fallbacku po nazwie — gdyby pole
+zniknęło z rejestracji ACF bez zmiany tych wywołań, `update_field()` cicho
+utworzyłby „dummy field" z `name` równym SAMEMU KLUCZOWI i zapisał wartość
+pod BŁĘDNYM meta_key. Naprawa: `qutlet-allegro` migruje na zwykłe
+`update_post_meta()`/`update_meta_data()` (bezpieczne niezależnie od stanu
+rejestracji ACF) — ta migracja (P-20.7a) POWINNA wejść PRZED usunięciem pól
+z ACF w core (P-20.7b), choć — w odróżnieniu od D-20.6/D-20.G4 — nie ma tu
+twardego okna ryzyka wymagającego jednoczesnego merge'a (postmeta po nazwie
+działa identycznie niezależnie od stanu ACF).
 
 **Brak pola „perks/korzyści":** korzyści kanału Allegro (14 dni na zwrot,
 gwarancja, ochrona kupujących, darmowe zwroty Smart) są **statyczną treścią
@@ -466,8 +490,8 @@ Uwagi do kształtu:
 
 | Pole (znaczenie)       | Literał              | Miejsce | Typ                 | Opcjonalne? | Uwagi |
 |------------------------|----------------------|---------|---------------------|-------------|-------|
-| Opis (przerobiony)     | `post_content` (natywne) | Woo/WP | HTML (post_content) | tak     | user-facing opis produktu pokazywany na stronie; wypełniany przez AI (FAZA 7, P-13.3b) i redagowany ręcznie w natywnym edytorze treści; **NIE nadpisywany przez sync**. **BYŁO ACF `opis`** (WYSIWYG, P-5.1b) — **WYCOFANE w P-13.3a** (FAZA 13, sesja 2026-08-09): pole usunięte z rejestracji `RewrittenFields`, cel zapisu/odczytu = natywne `post_content`. Historyczne wartości `opis` zmigrowane jednorazową komendą WP-CLI `wp qutlet-core backfill-opis-to-content` (`BackfillOpisToContentCommand`, D-13.G3) — bez fallbacku, migracja poprzedzała przełączenie odczytu motywu. Puste → motyw ukrywa/fallback (FAZA 8). Odczyt: `$product->get_description()` / `the_content()`. |
-| Podnazwa (przerobiona) | `podnazwa`           | ACF     | text (jedna linia)  | tak         | druga część nazwy, gdy AI rozbije zbyt długą `_qutlet_allegro_nazwa_raw` (§9.1) na tytuł (→ `post_title`) + podnazwę — AI decyduje GDZIE dzielić (FAZA 13, P-13.2c). **NIE** WYSIWYG — krótka linia tekstu; jedyne pole w grupie ACF `group_qutlet_product_info` (dawniej „Qutlet — opis produktu…", retitled „Qutlet — nazwa produktu (warstwa przerobiona)" w P-13.3a po wycofaniu `opis` z tej grupy). Redagowalna ręcznie; **NIE nadpisywana przez sync** (sync dotyka tylko `post_title` i `_qutlet_allegro_nazwa_raw`, P-13.2b). Puste → motyw renderuje sam tytuł, bez podnazwy. Odczyt: `get_field('podnazwa')` / `get_post_meta($id,'podnazwa',true)`. |
+| Opis (przerobiony)     | `post_content` (natywne) | Woo/WP | HTML (post_content) | tak     | user-facing opis produktu pokazywany na stronie; wypełniany przez AI (FAZA 7, P-13.3b) i redagowany ręcznie w natywnym edytorze treści; **NIE nadpisywany przez sync**. **BYŁO ACF `opis`** (WYSIWYG, P-5.1b) — **WYCOFANE w P-13.3a** (FAZA 13, sesja 2026-08-09): pole usunięte z rejestracji `RewrittenFields`, cel zapisu/odczytu = natywne `post_content`. Historyczne wartości `opis` zmigrowane jednorazową komendą WP-CLI `wp qutlet-core backfill-opis-to-content` (`BackfillOpisToContentCommand`, D-13.G3) — bez fallbacku, migracja poprzedzała przełączenie odczytu motywu. Puste → motyw ukrywa/fallback (FAZA 8). Odczyt: `$product->get_description()` / `the_content()`. **Miejsce edycji w adminie zmienia się w FAZIE 20 (D-20.G4, P-20.6a/P-20.6b):** `qutlet-core` zdejmuje natywne wsparcie edytora dla CPT `product` (`remove_post_type_support( 'product', 'editor' )`) — natywny box „Opis produktu" (`#postdivrich`, `edit-form-advanced.php`) przestaje się renderować OSOBNO; `qutlet-ai` renderuje `wp_editor( $post->post_content, 'content', … )` WEWNĄTRZ scalonego metaboksu „Generacja AI (przeróbka)" — te same ID pola (`content`)/mechanizm zapisu (`$_POST['content']` → `post_content` w `_wp_translate_postdata()`, WP core `wp-admin/includes/post.php` — potwierdzone ground-truthem: ta ścieżka NIE jest bramkowana przez `post_type_supports( $post_type, 'editor' )`, więc przeniesienie miejsca renderu nie zmienia zapisu). |
+| Druga linia nazwy produktu (przerobiona, dawniej „Podnazwa") | `podnazwa` | ACF | text (jedna linia) | tak | druga część nazwy, gdy AI rozbije zbyt długą `_qutlet_allegro_nazwa_raw` (§9.1) na tytuł (→ `post_title`) + tę drugą linię — AI decyduje GDZIE dzielić (FAZA 13, P-13.2c). **NIE** WYSIWYG — krótka linia tekstu. Literał (`name`/meta_key) `podnazwa` BEZ ZMIAN od P-13.2a-core — zmienia się WYŁĄCZNIE etykieta widoczna w adminie (FAZA 20, P-20.4a, D-20.G3: „Podnazwa" → „Druga linia nazwy produktu"). Jedyne pole w grupie ACF `group_qutlet_product_info` — grupa PRZESTAJE renderować WŁASNY auto-metabox od FAZY 20 (`remove_meta_box()`, wzorem `PromptOverrideField`/D-13.6.1); renderuje się WEWNĄTRZ scalonego metaboksu `qutlet-ai` „Nazwa produktu (AI)" (dawniej dwa osobne metaboksy — `TitleGenerationMetaBox` + auto-box ACF tej grupy), wołaniem publicznej `RewrittenFields::render_field( $product_id )` — patrz D-20.G3. Redagowalna ręcznie; **NIE nadpisywana przez sync** (sync dotyka tylko `post_title` i `_qutlet_allegro_nazwa_raw`, P-13.2b). Puste → motyw renderuje sam tytuł. Odczyt: `get_field('podnazwa')` / `get_post_meta($id,'podnazwa',true)` — literał odczytu bez zmian, motyw (`qutlet-theme`) nie jest dotknięty tą fazą (renderuje tylko wartość, nigdy etykietę). |
 | Specyfikacja (przerob.)| **atrybuty WooCommerce** (`_product_attributes`) | Woo | atrybuty produktu (custom, per-produkt, lokalne — `id=0`, NIE taksonomia) | tak | **natywny mechanizm Woo** — `qutlet-core` NIE rejestruje dla niej pola (D-5.1.1). Od FAZY 13 (P-13.4a, D-13.G1) pisze je BEZPOŚREDNIO sync Allegro (`Qutlet\Allegro\OfferSync\ProductWriter::upsert()`), tłumacząc `_qutlet_allegro_specification_raw` (§9.1) 1:1, BEZ udziału AI; **nadpisywane przy KAŻDYM sync** (sync-owned, D-13.4a.1 — jedyny wyjątek od reguły „przerobiona nigdy nie nadpisywana przez sync" powyżej). Do FAZY 13 pisała je AI (`RewriteWriter::build_attributes()`, D-5.1.1/D-5.1.2) — mechanizm USUNIĘTY (P-13.4b). Motyw renderuje natywnie (zakładka „Informacje dodatkowe" / własny render FAZA 8). Odczyt: `$product->get_attributes()`. Puste → brak tabeli spec. |
 
 **Dlaczego opis i specyfikacja to oba natywne mechanizmy WP/Woo, nie ACF (od
@@ -829,9 +853,10 @@ rozproszony, ta sama nazwa slice'a `AiRewrite/` w obu repo. Prompt efektywny
 
 | Ustawienie (znaczenie)              | Literał       | Miejsce | Typ                    | Opcjonalne? | Uwagi |
 |--------------------------------------|---------------|---------|------------------------|-------------|-------|
-| Prompt AI (nadpisanie per produkt)   | `prompt_ai`   | ACF (meta na produkcie) | textarea (plain text) | tak | Rejestruje `qutlet-core` (P-7.2a). Treść wysyłana do core AI Client (`using_system_instruction()` / dołączona do promptu) ZAMIAST globalnego promptu, gdy niepuste. Puste → `qutlet-ai` używa globalnego promptu. Wejściem do generacji jest surowy JSON pojedynczego produktu (D-7.G5/D-5.G4) — to pole tylko dostarcza instrukcję/styl, NIE dane produktu. Odczyt cross-plugin: `get_post_meta( $product_id, 'prompt_ai', true )` (wzorzec §9.2 — `get_field()`/`get_post_meta()` równoważne dla prostych pól tekstowych ACF). **Render (P-13.6, D-13.G4/D-13.6.1):** BEZ własnego metaboxu ACF — `qutlet-core` (`PromptOverrideField::remove_own_metabox()`) zdejmuje go z ekranu produktu; renderuje się WEWNĄTRZ metaboxu „Qutlet — generacja AI" (`qutlet-ai`), wołaniem publicznej metody `PromptOverrideField::render_field( $product_id )` (rejestracja i wywołania ACF zostają w core — `qutlet-ai` nie ma twardej zależności na ACF Pro, D-G5). |
+| Prompt lokalny (nadpisanie per produkt, dawniej „Prompt AI (nadpisanie)") | `prompt_ai` | ACF (meta na produkcie) | textarea (plain text) | tak | Rejestruje `qutlet-core` (P-7.2a). Treść wysyłana do core AI Client (`using_system_instruction()` / dołączona do promptu) ZAMIAST globalnego promptu, gdy niepuste. Puste → `qutlet-ai` używa globalnego promptu. Wejściem do generacji jest surowy JSON pojedynczego produktu (D-7.G5/D-5.G4) — to pole tylko dostarcza instrukcję/styl, NIE dane produktu. Odczyt cross-plugin: `get_post_meta( $product_id, 'prompt_ai', true )` (wzorzec §9.2 — `get_field()`/`get_post_meta()` równoważne dla prostych pól tekstowych ACF). Literał (`name`/meta_key) `prompt_ai` BEZ ZMIAN — zmienia się WYŁĄCZNIE etykieta widoczna w adminie (FAZA 20, P-20.5: „Prompt AI (nadpisanie)" → „Prompt lokalny"). **Render (P-13.6, D-13.G4/D-13.6.1):** BEZ własnego metaboxu ACF — `qutlet-core` (`PromptOverrideField::remove_own_metabox()`) zdejmuje go z ekranu produktu; renderuje się WEWNĄTRZ scalonego metaboksu „Generacja AI (przeróbka)" (`qutlet-ai`, słowo „Qutlet" usunięte z tytułu od FAZY 20, P-20.6b), wołaniem publicznej metody `PromptOverrideField::render_field( $product_id )` (rejestracja i wywołania ACF zostają w core — `qutlet-ai` nie ma twardej zależności na ACF Pro, D-G5). |
 | Prompt AI (globalny)                | `qutlet_ai_prompt_global` | option (Settings API) | string (textarea, plain text) | tak (brak/puste → brak instrukcji systemowej — core AI Client generuje bez `using_system_instruction()`) | Rejestruje `qutlet-ai` (P-7.2b): strona ustawień pod menu WooCommerce (wzorzec `DiscountRateSettingsPage`, §11), sanityzacja `sanitize_textarea_field()`. Odczyt: `get_option( 'qutlet_ai_prompt_global', '' )`, ale wołający NIE czyta opcji bezpośrednio — używa `Qutlet\Ai\AiRewrite\PromptSettings::effective_prompt( $product_id )` (override per-produkt ?? opcja globalna ?? `null`), analogicznie do `DiscountRate::effective_percent()` (§11). |
 | Kolejność priorytetów dostawców AI (globalna, FAZA 18) | `qutlet_ai_provider_priority` | option (Settings API) | `array<string>` (ID dostawców AI Client w kolejności priorytetu) | tak (brak/pusta lista → fallback na dzisiejsze zachowanie AI Client, pierwszy skonfigurowany provider wg kolejności rejestracji pluginów) | Rejestruje `qutlet-ai` (P-18.2, do zbudowania): nowa sekcja na `PromptSettingsPage`, obok promptu globalnego. ID potwierdzone w kodzie: `'google'`, `'openai'`, `'anthropic'`. UI listuje wyłącznie dostawców, dla których `AiClient::defaultRegistry()->isProviderConfigured( $id )` zwraca `true` (D-18.6, `docs/plan.md`). Odczyt przez nowy helper (nazwa do ustalenia przy realizacji), NIE bezpośrednio `get_option()` — zwraca listę przefiltrowaną do aktualnie skonfigurowanych dostawców. Używana przez WŁASNĄ pętlę runtime failover w `TextGenerationService` (D-18.7) — próbuje kolejnych dostawców z listy na KAŻDY błąd wywołania, w jednym kliknięciu „Generuj". Pełne decyzje: `docs/plan.md` → FAZA 18, D-18.1–D-18.7. |
+| Prompt AI nazwy produktu (globalny, FAZA 20)  | `qutlet_ai_prompt_title_global` | option (Settings API) | string (textarea, plain text) | technicznie zawsze ma wartość (patrz D-20.G1 niżej — seed = dzisiejsza stała `TitleGenerator::SYSTEM_INSTRUCTION`), więc nigdy nie jest „puste znaczące" jak `qutlet_ai_prompt_global` | Rejestruje `qutlet-ai` (FAZA 20, P-20.1, do zbudowania): nowe pole na TEJ SAMEJ stronie ustawień (`PromptSettingsPage`, przemianowanej na „Prompty globalne"), obok promptu opisu. CAŁKOWICIE zastępuje dzisiejszą stałą PHP `TitleGenerator::SYSTEM_INSTRUCTION` jako `$system_instruction` przekazywaną do `TextGenerationService::generate_json()` — bez nadpisania per-produkt (D-20.G1 — świadomie różni się od `qutlet_ai_prompt_global`/`prompt_ai`: to ustawienie jest global-only, użytkownik nie prosił o override per produkt). Odczyt: `get_option( 'qutlet_ai_prompt_title_global', TitleGenerator::SYSTEM_INSTRUCTION )` — domyślna wartość opcji (WP `register_setting()` → `'default'`) to dzisiejsza stała, więc dopóki admin nie zapisze formularza, generator zachowuje się identycznie jak dziś; zapis (nawet pustego stringa) świadomie i całkowicie zastępuje dzisiejsze reguły algorytmiczne. |
 
 **D-7.2a.1 [USTALONE]:** mechanizm rejestracji pola per-produkt = `acf_add_local_field_group()`
 (wzorzec `ProductConditionFields`/`AllegroChannelFields`/`RewrittenFields` — pole
@@ -896,12 +921,142 @@ helper (nazwa do ustalenia przy realizacji) analogiczny do
 skonfigurowanych dostawców. Pełne decyzje (D-18.1–D-18.7, w tym runtime
 failover na KAŻDY błąd wywołania) — `docs/plan.md` → FAZA 18.
 
+**D-20.G1 [USTALONE — decyzja użytkownika, sesja planistyczna FAZY 20,
+2026-08-18]:** generator nazwy (`TitleGenerator`, P-13.2c) traci swoją
+dotychczasową izolację od mechanizmu promptu — świadomą decyzję sesji
+2026-08-08 realizującej P-13.2c („zadanie algorytmiczne — te same reguły za
+każdym razem, nie stylistyczne jak ton opisu — więc świadomie NIE korzysta z
+`PromptSettings`"). Nowy globalny prompt nazwy (`qutlet_ai_prompt_title_global`,
+tabela wyżej) CAŁKOWICIE PODMIENIA `SYSTEM_INSTRUCTION` — nie dokłada się do
+niej jako dodatkowa wskazówka (odrzucona alternatywa, wprost odrzucona przez
+użytkownika). Żeby nie zepsuć dzisiejszego, przetestowanego zachowania w dniu
+wdrożenia: domyślna wartość opcji (`register_setting()` → `'default'`) to
+DOKŁADNY tekst dzisiejszej stałej — dopóki administrator nie zapisze
+formularza (nawet nie otwierając strony), generator zachowuje się identycznie
+jak dziś; sam formularz pokazuje ten tekst jako przykład/punkt startowy do
+edycji. Stała `TitleGenerator::SYSTEM_INSTRUCTION` zmienia widoczność z
+`private` na `public`, żeby `PromptSettingsPage` (ten sam plugin, `qutlet-ai`
+— zero granicy repo do przekroczenia) mogła się do niej odwołać jako do
+wartości domyślnej, bez duplikowania tekstu jako osobny literał w dwóch
+miejscach. **Brak nadpisania per-produkt** (w odróżnieniu od
+`prompt_ai`/`qutlet_ai_prompt_global` wyżej) — nie było o to proszone, więc
+nie jest dodawane (najmniejszy uzasadniony zakres, D-20.G2 niżej).
+
+**D-20.G2 [USTALONE — decyzja z sesji planistycznej FAZY 20, 2026-08-18,
+wynika z zakresu zgłoszenia]:** trzy zmiany nazw pozycji menu WooCommerce
+(„Prompty globalne", „Mapowanie stanów", „Stawka rabatu") dotyczą WYŁĄCZNIE
+etykiet widocznych w UI (`add_submenu_page()` `$page_title`/`$menu_title` +
+`<h1>` renderu strony, dla spójności — inaczej pasek boczny i nagłówek strony
+pokazywałyby dwie różne nazwy tej samej strony) — **`PAGE_SLUG` (URL każdej
+strony) ZOSTAJE bez zmian** (nikt nie prosił o zmianę adresu, a zmiana
+złamałaby ewentualne zakładki/linki). Pole ACF `prompt_ai` (nadpisanie
+per-produkt opisu, metabox „Qutlet — generacja AI") też ZOSTAJE bez zmian —
+zgłoszenie dotyczy tylko strony ustawień globalnych, nie tego pola.
+
+**D-20.G3 [USTALONE — wynika z ground-truthu sesji planistycznej FAZY 20,
+2026-08-18, brak realnej alternatywy przy zachowanych granicach repo]:**
+scalenie dwóch metaboksów nazwy produktu („Qutlet — nazwa produktu (AI)",
+`qutlet-ai`, i auto-metabox ACF grupy `group_qutlet_product_info`,
+`qutlet-core`, §9.2 wyżej) w JEDEN widoczny box używa DOKŁADNIE tego samego
+wzorca, którym `GenerationMetaBox`/`PromptOverrideField` już rozwiązały
+identyczny problem dla `prompt_ai` (D-13.6.1 wyżej): `qutlet-core`
+(`RewrittenFields`) zdejmuje własny auto-metabox (`remove_meta_box()`,
+wzorem `PromptOverrideField::remove_own_metabox()`) i wystawia publiczną
+`render_field( int $product_id ): void`; `qutlet-ai`
+(`TitleGenerationMetaBox`, jedyny właściciel scalonego boksu — ID zostaje
+`qutlet_ai_title_generator` bez zmian, kreator P-17.2 dalej go znajduje pod
+tym samym selektorem) woła tę metodę wprost, bez nowego hooka WP — ten sam
+kierunek zależności co dziś (`qutlet-ai` hard-dependuje na core, D-G5).
+**Skutek uboczny wymagający poprawki w TYM SAMYM punkcie (`qutlet-core`,
+P-20.4a):** `ProductReviewWizard::steps()` (P-17.2) krok 1 traci jeden z
+dwóch selektorów (`RewrittenFields::metabox_id()` przestaje wskazywać
+istniejący box) — lista selektorów kroku 1 redukuje się do samego
+`#qutlet_ai_title_generator`; `metabox_id()` staje się martwym kodem
+(jedyny wołający potwierdzony gruntownie) i jest usuwana w tym samym
+punkcie. **Odrzucona alternatywa:** `qutlet-core` przejmuje właścicielstwo
+scalonego boksu (odwrotny kierunek) — odrzucona, wymagałaby przeniesienia
+AJAX-owej logiki Generuj/Reset do core, łamiąc granicę „AI mieszka w
+qutlet-ai" (`CLAUDE.md` → „Struktura").
+
+**Dopytane i rozstrzygnięte tą samą sesją (po ground-truthu w rdzeniu WP):**
+natywne pole tytułu (`post_title`) DOŁĄCZA do tego scalenia — użytkownik
+zapytał wprost, czy da się scalić tytuł z customowymi metaboksami. TAK, ale
+INNYM mechanizmem niż `remove_meta_box()`/`render_field()` powyżej i INNYM
+niż usunięcie wsparcia CPT (D-20.G4 niżej, dla `editor`): `#titlediv`
+(`wp-admin/edit-form-advanced.php`, ok. linii 526–597) to zwykły, statyczny
+blok HTML — NIE metabox — obejmujący RAZEM pole `#title`
+(`name="post_title"`) i edytor bezpośredniego odnośnika
+(`get_sample_permalink_html()`), bramkowany
+`post_type_supports( $post_type, 'title' )`. Ta sama flaga bramkuje TEŻ
+Quick Edit na liście produktów (`class-wp-posts-list-table.php:1688`) —
+usunięcie wsparcia `title` (analogicznie do D-20.G4) skasowałoby przy okazji
+edytor odnośnika i quick-edit, więc TA droga jest tu ODRZUCONA (w
+odróżnieniu od `editor`, gdzie nic więcej nie zależało od tej flagi).
+Zamiast tego: `qutlet-ai` przenosi `#titlediv` fizycznie przez JS przy
+starcie strony — DOKŁADNIE ten sam mechanizm (`appendChild()`,
+placeholder-anchor), którym `ProductReviewWizard.js` (P-17.2) już dziś
+przenosi całe metaboksy do kroków kreatora, tylko TRWALE (raz, nie
+odwracalne przy zamknięciu, bo to nie jest nakładka). Zapis `post_title`
+nie zależy od miejsca w DOM (`name="post_title"` mapuje się na kolumnę bazy
+BEZPOŚREDNIO, bez żadnej translacji w `_wp_translate_postdata()` — nawet
+prościej niż `content`→`post_content`, D-20.G4) — przeniesienie węzła nie
+wymaga żadnej zmiany zapisu. Cały mechanizm żyje WYŁĄCZNIE w `qutlet-ai`
+(P-20.4b) — zero dodatkowej pracy w `qutlet-core` ponad to, co P-20.4a i tak
+dostarcza. Efekt uboczny (korzystny): krok 1 kreatora (P-17.2) automatycznie
+zyskuje tytuł+odnośnik w swojej karcie, bo `ProductReviewWizard.js` przenosi
+CAŁY węzeł `#qutlet_ai_title_generator`, w którym `#titlediv` jest teraz
+zagnieżdżone.
+
+**D-20.G4 [USTALONE — wynika z ground-truthu sesji planistycznej FAZY 20,
+2026-08-18; ground-truth wykonany bezpośrednio w rdzeniu WP,
+`wp-admin/edit-form-advanced.php` i `wp-admin/includes/post.php`]:** scalenie
+natywnego boksu „Opis produktu" z metaboksem „Generacja AI (przeróbka)"
+(`qutlet-ai`, dawniej „Qutlet — generacja AI (przeróbka)" — słowo „Qutlet"
+usunięte tą samą sesją) jest TECHNICZNIE BEZPIECZNE: `edit-form-advanced.php`
+renderuje natywny edytor (`wp_editor( $post->post_content, 'content', … )`
+wewnątrz `<div id="postdivrich">`) WYŁĄCZNIE gdy `post_type_supports(
+$post_type, 'editor' )` zwraca `true` (linia ok. 609) — **niezależnie od
+tego jest zapis**: `_wp_translate_postdata()` (`wp-admin/includes/post.php:47`)
+mapuje `$_POST['content']` → `post_content` BEZWARUNKOWO, bez żadnego
+sprawdzenia `post_type_supports`. WooCommerce też nigdzie nie odpytuje tej
+flagi dla `product` (grep całego `includes/` — zero trafień; deklaruje
+wsparcie raz, przy rejestracji CPT, `class-wc-post-types.php:341`). Wniosek:
+`qutlet-core` może bezpiecznie wywołać `remove_post_type_support( 'product',
+'editor' )` (Woo-glue na poziomie CPT — granica `CLAUDE.md` → „Struktura"),
+a `qutlet-ai` może wyrenderować WŁASNE wywołanie `wp_editor( …, 'content',
+… )` WEWNĄTRZ `GenerationMetaBox::render()` — te sam ID pola (`content`)
+oznacza, że mechanizm zapisu (natywny submit) i już zaimplementowany JS
+synchronizacji po „Zaakceptuj" (`rewrite-generator.js::setContentField()`,
+FAZA 17 PR qutlet-ai#12 — celuje w `#content`/`tinymce.get('content')` po
+ID, nie po pozycji w DOM) działają BEZ ŻADNEJ zmiany. **Ryzyko operacyjne
+świadomie zaakceptowane:** okno między merge'em `qutlet-core` (usunięcie
+wsparcia edytora) a merge'em `qutlet-ai` (własny render edytora) zostawiłoby
+ekran BEZ ŻADNEGO edytora treści — oba PR-y MUSZĄ wejść razem/bezpośrednio
+po sobie (wzorem FAZY 17, `qutlet-ai`#12 + `qutlet-core`#27), NIE osobno w
+różnym czasie. **Do potwierdzenia przy realizacji (ground-truth ponownie,
+świeży kod może się różnić):** czy REST API (`WP_REST_Posts_Controller`) albo
+inny kod na tej instalacji rozgałęzia się na `post_type_supports( 'product',
+'editor' )` — dzisiejszy grep obu rdzeni (WP/Woo) tego nie ujawnił, ale to
+inwazyjniejsza zmiana niż cokolwiek dotąd w projekcie, więc zasługuje na
+powtórne sprawdzenie tuż przed realizacją, nie tylko w sesji planistycznej.
+**Otwarte, NIE rozstrzygnięte tą sesją:** kolumna „Przerobione (bieżące, na
+stronie)" (`GenerationMetaBox::render_current_column()`) pokazuje STATYCZNY
+podgląd `post_content` — po wstawieniu ŻYWEGO edytora w tym samym boksie
+może okazać się redundantna (to samo widoczne dwa razy, raz edytowalnie, raz
+jako read-only echo). Do rozważenia PRZY REALIZACJI P-20.6b, nie
+rozstrzygnięte tu — może zostać bez zmian (nadal służy porównaniu obok
+„Surowe"/„Wygenerowane" bez przewijania do edytora).
+
 ### Odnośniki (§13)
 - Plan: `docs/plan.md` → FAZA 7 (D-7.G1–G7), P-7.2a (pole per-produkt + rejestracja
   core), P-7.2b (ten kontrakt: ustawienie globalne + odczyt efektywnego promptu w
   `qutlet-ai`), P-13.6a/P-13.6b (D-13.G4/D-13.6.1 — render przeniesiony do metaboxu
   `qutlet-ai`), FAZA 18 (D-18.G1 wyżej: `qutlet_ai_provider_priority`, P-18.1
-  fix schematu OpenAI, P-18.2 lista priorytetów dostawców + runtime failover).
+  fix schematu OpenAI, P-18.2 lista priorytetów dostawców + runtime failover),
+  FAZA 20 (D-20.G1/D-20.G2/D-20.G3/D-20.G4 wyżej: `qutlet_ai_prompt_title_global`
+  + zmiany nazw trzech pozycji menu WooCommerce + scalenie metaboksów nazwy
+  produktu + scalenie boksu opisu z metaboksem generacji AI,
+  P-20.1/P-20.2/P-20.3/P-20.4a/P-20.4b/P-20.5/P-20.6a/P-20.6b).
 
 ---
 
