@@ -7075,7 +7075,7 @@ P-20.7a/b — kolejność zalecana, nie wymuszona jednoczesność, patrz D-20.9)
     kruche, kaskada ACF różnicuje wagę czcionki/marginesy w zależności od
     obecności rodzica `.acf-field`).
 
-### P-20.5 — qutlet-core: „Prompt lokalny" — rename etykiety
+### 🟢 P-20.5 — qutlet-core: „Prompt lokalny" — rename etykiety
 
 - **Repo:** qutlet-core
 - `PromptOverrideField`: etykieta pola `field_qutlet_prompt_ai` — „Prompt AI
