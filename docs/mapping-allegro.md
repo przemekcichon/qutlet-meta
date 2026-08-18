@@ -209,6 +209,7 @@ warto **wyprowadzić** do pól parsowanych / osobnych oraz które są operacyjne
 | param `Kod producenta` (`id 224017`) | MPN | w 538/555. Kandydat na osobne pole. |
 | param `Model` | model | nazwa „Model” w 252/555, ale rozłożona na **5 różnych id per kategoria** (`237206`:211, `250439`:32, `249460`:4, `250441`:3, `250442`:2). Dopasowanie po NAZWIE, nie po jednym id (w przeciwieństwie do Marki/Producenta/EAN, które mają po jednym spójnym id). |
 | `productSet[0].product.parameters[].rangeValue` | wartości zakresowe (min/max) | w większości `null`; **26 parametrów** niesie zakres o kształcie `{from, to}` (stringi) — np. „Pasmo przenoszenia” `{from:"20", to:"20000"}`, „Obwód nadgarstka”. Kształt do zachowania. |
+| param wagowo-wymiarowe (`Szerokość/Wysokość/Głębokość produktu`, `Waga produktu`, `Waga produktu z opakowaniem jednostkowym`, warianty „z podstawą”/„grilla” itd., FAZA 21 — P-21.2) | waga/wymiary produktu (i paczki) | **jednostka NIE jest polem w payloadzie oferty** (obiekt parametru niesie tylko `id`/`name`/`values`/`valuesIds`/`rangeValue`) — definiuje ją słownik parametrów kategorii (`GET /sale/categories/{id}/parameters`, pole `unit`), **per id parametru, nie per nazwa**: ta sama nazwa „Waga produktu” bywa `g` w jednej kategorii i `kg` w innej (różne id). Potwierdzone jednostki (6 kategorii próbki P-3.1): kontrakt-danych.md §15. |
 
 ### 4c. Bezpieczeństwo produktu (GPSR) i podmioty odpowiedzialne
 | Pole Allegro | Znaczenie | Rekomendacja |

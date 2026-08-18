@@ -1152,6 +1152,69 @@ ekranie zarządzania grupami: „docelowo maks. 6 grup dla czytelności menu".
 
 ---
 
+## 15. Atrybuty wagowo-wymiarowe z Allegro — jednostki potwierdzone (FAZA 21 — P-21.2)
+
+Ground-truth pod FAZĘ 21 (waga/wymiary → natywne pola wysyłki Woo, P-21.3/P-21.4).
+Obiekt parametru w `productSet[0].product.parameters[]` (`mapping` §4b) **nie niesie
+jednostki** — tylko `id`/`name`/`values[]`/`valuesIds`/`rangeValue`. Jednostkę definiuje
+osobny, autorytatywny słownik parametrów kategorii: `GET /sale/categories/{categoryId}/parameters`
+(pole `unit` per parametr), **per `id` parametru — NIE per nazwa**: ta sama widoczna
+nazwa bywa różnym `id` (i różną jednostką) w różnych kategoriach.
+
+**Metoda potwierdzenia:** realne, produkcyjne wywołanie `GET /sale/categories/{id}/parameters`
+(slot `production/read`) dla 6 kategorii próbki P-3.1 (`docs/allegro-api-samples/GET_sale-product-offers.json`),
+komendą WP-CLI rozszerzoną w P-21.2a (`qutlet-allegro`, `ApiSamples\CategorySamplesCommand`,
+flaga `--parameter-category-ids`). Pełny (przycięty do parametrów wagowo-wymiarowych)
+wynik: `docs/allegro-api-samples/GET_sale-categories-id-parameters.json`.
+
+| Parametr (`name`) | `id` | Kategoria (`categoryId`) | `unit` | `type` | Uwagi |
+|---|---|---|---|---|---|
+| Szerokość produktu | `223333` | `85166` (audio), `260041` (monitor) | `cm` | float | ten sam `id` w dwóch różnych kategoriach próbki — jednostka spójna. |
+| Wysokość produktu | `223329` | `85166`, `260041` | `cm` | float | jw. |
+| Głębokość produktu | `201321` | `85166`, `260041` | `cm` | float | jw. |
+| Waga produktu | `203709` | `85166` (audio) | `g` | float | **grams**, mimo tej samej nazwy co niżej. |
+| Waga produktu | `224701` | `4575` (mysz) | `g` | integer | inny `id` niż wyżej, ta sama jednostka `g` — zbieżność, nie reguła. |
+| Waga produktu | `206686` | `260041` (podstawka do monitora) | `kg` | float | **INNA jednostka niż powyższe dwa `id` o tej samej nazwie „Waga produktu”.** |
+| Waga produktu z opakowaniem jednostkowym | `17448` | wszystkie 6 próbkowanych kategorii | `kg` | float | jedyny parametr wagowy z **tym samym `id` w każdej kategorii** próbki — jednostka `kg` spójna wszędzie. |
+| Szerokość/Wysokość/Głębokość produktu z podstawą | `206642`/`206650`/`206654` | `260041` | `cm` | float | wariant „z podstawą” (accessory + urządzenie, do którego pasuje). |
+| Waga z podstawą | `206662` | `260041` | `kg` | float | — |
+| Szerokość/Głębokość/Wysokość grilla | `226929`/`226933`/`226937` | `260556` | `cm` | float | `Szerokość`/`Wysokość` `required: true` w tej kategorii. |
+| Waga | `5253` | `260556` (grill) | `kg` | float | nazwa BEZ słowa „produktu”. |
+| Długość przewodu | `207838` | `19357` (ładowarka) | **`m`** | float | **NIE `cm`** — jedyny znaleziony parametr „długościowy” w metrach, mimo że leży w tej samej rodzinie nazewniczej co „Szerokość/Wysokość/Głębokość produktu” (`cm`). Zakres `restrictions.max: 25` (metrów) potwierdza — 25 cm byłoby absurdalne dla przewodu zasilającego. |
+
+**Wnioski (D-21.2.1, USTALONE — potwierdzone realnymi danymi produkcyjnymi):**
+- **Wymiary liniowe produktu** („Szerokość/Wysokość/Głębokość produktu”, warianty
+  „z podstawą”/„grilla”) → **`cm`**, potwierdzone we wszystkich znalezionych
+  wystąpieniach próbki. Podejrzenie użytkownika trafne DLA TEJ rodziny parametrów.
+- **Waga NIE jest jednolicie `g` ani jednolicie `kg`** — zależy od `id` parametru
+  (czyli od kategorii), nawet gdy nazwa widoczna w UI Allegro jest identyczna
+  („Waga produktu” = `g` w kategorii audio/mysz, `kg` w kategorii akcesoriów
+  monitora). Kod P-21.3 **musi rozstrzygać jednostkę po `id` parametru**, nigdy
+  po samej nazwie „Waga…”. Wyjątek: `Waga produktu z opakowaniem jednostkowym`
+  (`id 17448`) jest globalnie spójny (`kg`) w całej próbce — to jedyny parametr
+  wagowy, który dziś można bezpiecznie założyć bez dopasowania po `id` per
+  kategoria (ale P-21.3 i tak powinien czytać `unit` ze słownika, nie zakładać).
+- **Nie każdy parametr „długościowy” to wymiar w cm** — `Długość przewodu` (`m`)
+  jest kontrprzykładem w tej samej próbce. Uogólnianie „wszystko co brzmi jak
+  wymiar = cm” byłoby błędne.
+- **Pełny, ogólny mechanizm ustalania jednostki wymaga wywołania słownika
+  parametrów kategorii KAŻDEJ importowanej oferty** (nie da się zahardkodować
+  tabeli `id → unit` raz na zawsze — 391 różnych nazw parametrów w całej próbce
+  ofert wg `mapping` §4b, tylko ułamek sprawdzony tu). Zakres tego wywołania
+  (cache'owane per `categoryId`? tylko dla wybranych id?) — do P-21.3.
+
+### Odnośniki (§15)
+- Ground-truth i decyzja: `docs/plan.md` → FAZA 21, P-21.2 (+ rozbicie
+  P-21.2a/P-21.2b).
+- Mapping: `docs/mapping-allegro.md` §4b (wiersz „param wagowo-wymiarowe”).
+- Próbki: `docs/allegro-api-samples/GET_sale-product-offers.json` (realne
+  wartości liczbowe per oferta), `docs/allegro-api-samples/GET_sale-categories-id-parameters.json`
+  (słownik jednostek, ten kontrakt), `docs/allegro-api-samples/SOURCES.md` §P-21.2b.
+- Konsument: P-21.3 (jednostki vs `woocommerce_dimension_unit`/`woocommerce_weight_unit`),
+  P-21.4 (zapis do natywnych pól wysyłki Woo `_weight`/`_length`/`_width`/`_height`).
+
+---
+
 ## Log decyzji (P-1.0)
 
 | Decyzja  | Rozstrzygnięcie                                        | Podstawa |
