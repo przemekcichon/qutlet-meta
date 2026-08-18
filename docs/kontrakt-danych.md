@@ -1445,6 +1445,26 @@ passthrough).
    JSON, §9.1) już niesie tę wartość (offer-level `parameters[]`), nowego pola
    meta nie trzeba. `_qutlet_allegro_specification_raw` (§9.1, product-level)
    NIE dostaje tego wiersza — inny poziom parametrów, nie mieszamy warstw.
+5. **Trwałość: SYNC-OWNED, nadpisywane przy KAŻDYM przebiegu — NIE „tylko gdy
+   puste" jak `klasa_stanu` [DOPRECYZOWANE po niezależnej recenzji PR #103,
+   decyzja użytkownika, sesja 2026-08-19].** Pierwsze sformułowanie pkt 2
+   („jak `klasa_stanu` z «Stan»") było niejednoznaczne — `klasa_stanu`
+   (D-6.1.4, `ProductWriter::upsert()`) zapisuje auto-mapę TYLKO gdy pole
+   jest jeszcze puste, właśnie po to, żeby ręczna ocena sprzedawcy przetrwała
+   kolejny sync. Recenzent słusznie złapał tę niespójność: atrybut „Stan
+   opakowania" żyje w TYM SAMYM zestawie atrybutów WC co specyfikacja/waga/
+   wymiary (§16/§17), który `ProductWriter::build_attributes()`/
+   `set_attributes()` PODMIENIA W CAŁOŚCI przy każdym przebiegu (sync-owned,
+   D-13.4a.1, §9.2) — ręczna edycja tego konkretnego atrybutu w adminie NIE
+   przetrwa najbliższego importu/syncu tego produktu, tak samo jak żadna inna
+   pozycja specyfikacji. Użytkownik potwierdził wprost (sesja 2026-08-19,
+   po ponownym pytaniu): to jest ZAMIERZONE — spójność z mechanizmem atrybutów
+   WC (pkt 1) ważniejsza niż analogia „jak `klasa_stanu`" z pierwotnego
+   sformułowania auto-mapy w pkt 2. Odrzucona alternatywa: specjalny przypadek
+   w `upsert()` sprawdzający istniejącą wartość atrybutu przed nadpisaniem
+   (mirror `klasa_stanu`) — odrzucone jako niepotrzebna komplikacja jednego
+   pojedynczego atrybutu wobec reguły „cały zestaw sync-owned" obowiązującej
+   od P-13.4a dla wszystkich pozostałych.
 
 ### Odnośniki (§18)
 - Ground-truth i decyzja: `docs/plan.md` → FAZA 21, P-21.5 (+ rozbicie

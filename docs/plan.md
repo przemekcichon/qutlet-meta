@@ -7574,6 +7574,17 @@ transformują wartości semantycznie). Punkt wielorepowy wg reguły `CLAUDE.md`:
 D-21.5.1 to realna praca po stronie `qutlet-meta` (kontrakt), więc NIE
 kwalifikuje się do wyjątku „czysto-kodowy w jednym repo".
 
+**Poprawka po niezależnej recenzji (sesja 2026-08-19):** pierwotne sformułowanie
+D-21.5.1 pkt 2 („auto-mapa jak `klasa_stanu`") było niejednoznaczne co do
+TRWAŁOŚCI — `klasa_stanu` zapisuje TYLKO gdy pole puste (ręczna ocena
+przetrwa sync), a atrybut „Stan opakowania" faktycznie ląduje w tym samym,
+w CAŁOŚCI nadpisywanym zestawie atrybutów WC co reszta specyfikacji (§16/§17).
+Wróciliśmy z pytaniem do użytkownika: potwierdzone — sync-owned, nadpisywane
+przy każdym przebiegu (ZAMIERZONE, spójność z mechanizmem atrybutów WC ważniejsza
+niż analogia trwałości z `klasa_stanu`). Doprecyzowane w D-21.5.1 pkt 5
+(`docs/kontrakt-danych.md` §18). Implementacja w `qutlet-allegro`#39 NIE
+wymagała zmiany kodu — była już zgodna z tym rozstrzygnięciem.
+
 ### 🟡 P-21.5a — qutlet-meta: kontrakt atrybutu „Stan opakowania" (D-21.5.1)
 - **Repo:** qutlet-meta (`docs/kontrakt-danych.md`, `docs/mapping-allegro.md`)
 - **Zakres:** nowa sekcja §18 kontraktu — D-21.5.1 (struktura: custom atrybut WC
