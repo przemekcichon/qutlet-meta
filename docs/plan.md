@@ -7545,7 +7545,7 @@ po stronie `qutlet-meta` (kontrakt), więc NIE kwalifikuje się do wyjątku
   realnymi id z próbki §15.
 - **Zależności:** P-21.4a (kontrakt D-21.4.1 jako źródło mapowania i priorytetu).
 
-### P-21.5 — Dodanie „stanu opakowania" do atrybutów (punkt wielorepowy → P-21.5a + P-21.5b)
+### 🟢 P-21.5 — Dodanie „stanu opakowania" do atrybutów (punkt wielorepowy → P-21.5a + P-21.5b)
 Nowe pole, analogiczne do `klasa_stanu` (FAZA 12), ale dla stanu OPAKOWANIA,
 nie produktu. Do ustalenia przy realizacji: czy to nowa mała taksonomia
 (wzorem `klasa_stanu_definicja`) czy prostsze pole ACF/atrybut WC; czy Allegro
@@ -7585,21 +7585,27 @@ niż analogia trwałości z `klasa_stanu`). Doprecyzowane w D-21.5.1 pkt 5
 (`docs/kontrakt-danych.md` §18). Implementacja w `qutlet-allegro`#39 NIE
 wymagała zmiany kodu — była już zgodna z tym rozstrzygnięciem.
 
-### 🟡 P-21.5a — qutlet-meta: kontrakt atrybutu „Stan opakowania" (D-21.5.1)
+### 🟢 P-21.5a — qutlet-meta: kontrakt atrybutu „Stan opakowania" (D-21.5.1)
 - **Repo:** qutlet-meta (`docs/kontrakt-danych.md`, `docs/mapping-allegro.md`)
 - **Zakres:** nowa sekcja §18 kontraktu — D-21.5.1 (struktura: custom atrybut WC
   `id=0`, etykieta `Stan opakowania`, źródło offer-level parametr `id 229205`,
   auto-mapa BEZ tabeli — verbatim), + dopisek do `mapping-allegro.md` D-4.1.1
   (offer-level `Stan opakowania` przestaje być WYŁĄCZNIE warstwą surową —
-  dostaje też odpowiednik w atrybutach WC).
+  dostaje też odpowiednik w atrybutach WC). Pkt 5 (trwałość sync-owned)
+  doprecyzowany po niezależnej recenzji, ten sam PR.
+- PR: `qutlet-meta`#103.
 - **Zależności:** brak (decyzja podjęta tą sesją, tu spisana).
 
-### P-21.5b — qutlet-allegro: implementacja atrybutu „Stan opakowania"
+### 🟢 P-21.5b — qutlet-allegro: implementacja atrybutu „Stan opakowania"
 - **Repo:** qutlet-allegro (slice `OfferSync/`)
 - **Zakres:** `OfferMapper::packaging_condition()` (ekstrakcja offer-level
   parametru „Stan opakowania", mirror `condition_raw()`), `ProductWriter`
   (nowa prywatna `append_packaging_condition()` + wpięcie do `upsert()` PRZED
   `build_attributes()`, wzorem `apply_unit_overrides()`) + testy jednostkowe.
+- PR: `qutlet-allegro`#39.
+- **Weryfikacja:** `phpunit` 210/210, `phpstan` czysto (oba zmienione pliki).
+  Runtime (import na Local) NIE zweryfikowany w tej sesji — brak w sandboksie
+  oferty z potwierdzonym „Stan opakowania" do ręcznego testu (jak P-21.4b).
 - **Zależności:** P-21.5a (kontrakt D-21.5.1 jako źródło literałów/mechanizmu).
 
 ### P-21.6 — Dodanie „stanu opakowania" do metaboksu „Stan produktu" [OTWARTE, zależne od P-21.5]
