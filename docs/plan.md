@@ -7218,6 +7218,87 @@ P-20.7a), FAZA 13 (P-13.5, `MarketPriceField` — wzorzec dla P-20.7b), P-9.2
 
 ---
 
+## 🟦 FAZA 21 — Atrybuty wysyłki (waga/wymiary), stan opakowania, porządki edytora (fala 2)
+
+Cel: kontynuacja porządków w edytorze produktu (FAZA 20, zamknięta) — układ
+metaboksów po scaleniach tamtej fazy nie został jeszcze świadomie ustalony —
+plus nowy wątek: atrybuty potrzebne do wysyłki (waga, wymiary) importowane z
+Allegro prawdopodobnie nie trafiają dziś do natywnych pól WooCommerce
+(„Wysyłka"), więc mogą nie być brane pod uwagę przy liczeniu kosztu
+przesyłki. Obok tego — nowe pole „stan opakowania" (analogiczne do istniejącej
+`klasa_stanu`, FAZA 12) oraz poprawka błędu w istniejącym polu „Klasa stanu".
+
+**Zgłoszenie (2026-08-18):** siedem punktów, ŻADEN jeszcze nie ma
+ground-truthu ani decyzji — do zrobienia przy realizacji KAŻDEGO punktu
+(`docs/ground-truth.md`), zgodnie z `CLAUDE.md` → „Realizacja punktu planu".
+Repo/zakres niżej są WSTĘPNYMI przypuszczeniami do potwierdzenia, NIE
+ustaleniami — pytać/weryfikować, nie zgadywać, przy realizacji.
+
+### P-21.1 — Ustalenie kolejności metaboksów w edytorze produktu [OTWARTE]
+Po FAZIE 20 (scalenia/rename/podziały metaboksów) układ ekranu edycji
+produktu zmienił się istotnie — nie ustalono jeszcze docelowej, świadomej
+kolejności metaboksów (dziś kolejność to efekt uboczny priorytetów hooków
+`add_meta_boxes` ustalanych punktowo przy każdej zmianie, nie decyzja o
+całości ekranu). Do ustalenia przy realizacji: pożądana kolejność (pytać
+użytkownika, NIE zgadywać) i mechanizm (priorytety `add_meta_box()` w
+core/ai, ewentualnie ręczny reorder `$wp_meta_boxes`). Prawdopodobnie punkt
+wielorepowy (core i ai rejestrują różne metaboksy tego ekranu) — rozbić na
+pod-punkty przy realizacji, jeśli się potwierdzi.
+
+### P-21.2 — Ground-truth: atrybuty wagowe/wymiarowe z Allegro [OTWARTE]
+Sprawdzić w realnych próbkach (`docs/allegro-api-samples/`) i/lub w kodzie
+`qutlet-allegro`, jakie parametry oferty (`productSet[0].product.parameters[]`,
+patrz `docs/mapping-allegro.md` §4b) niosą wagę i wymiary (długość/szerokość/
+wysokość) produktu/paczki, oraz w JAKICH JEDNOSTKACH Allegro je przekazuje —
+użytkownik podejrzewa cm i gramy, ale to DO POTWIERDZENIA w realnych danych,
+nie założenie gotowe do wpisania w kod. Wynik (nazwy parametrów + jednostki)
+zasila P-21.3/P-21.4 i powinien trafić do `docs/kontrakt-danych.md` jako nowa
+sekcja/literały.
+
+### P-21.3 — Dodanie jednostek do wymiarów i wagi [OTWARTE, zależne od P-21.2]
+Prawdopodobnie do pogodzenia z globalnymi ustawieniami jednostek WooCommerce
+(`woocommerce_dimension_unit`/`woocommerce_weight_unit`, Ustawienia → Ogólne)
+— jeśli Allegro przekazuje w innych jednostkach niż ustawienie sklepu,
+potrzebna konwersja przy zapisie, nie tylko dopisanie etykiety jednostki w
+UI. Zakres/repo do ustalenia po P-21.2.
+
+### P-21.4 — Kopiowanie atrybutów wymiary/waga do zakładki „Wysyłka" [OTWARTE, zależne od P-21.2/P-21.3]
+WooCommerce ma natywne pola wysyłki (`_weight`/`_length`/`_width`/`_height`,
+zakładka „Wysyłka" w Product Data) — dziś dane wagi/wymiarów z Allegro
+prawdopodobnie NIE trafiają tam automatycznie (do potwierdzenia ground-truthem
+`ProductWriter`, `qutlet-allegro`). Cel: sync pisze bezpośrednio w te pola
+natywne (zamiast/obok pozostawienia ich tylko jako atrybut/specyfikacja).
+
+### P-21.5 — Dodanie „stanu opakowania" do atrybutów [OTWARTE]
+Nowe pole, analogiczne do `klasa_stanu` (FAZA 12), ale dla stanu OPAKOWANIA,
+nie produktu. Do ustalenia przy realizacji: czy to nowa mała taksonomia
+(wzorem `klasa_stanu_definicja`) czy prostsze pole ACF/atrybut WC; czy Allegro
+w ogóle przekazuje coś takiego (sprawdzić razem z P-21.2) czy pole jest
+wyłącznie redakcyjne.
+
+### P-21.6 — Dodanie „stanu opakowania" do metaboksu „Stan produktu" [OTWARTE, zależne od P-21.5]
+Repo (przypuszczalnie): qutlet-core, `ProductConditionFields` (metabox „Stan
+produktu" po P-20.8). Dodać pole z P-21.5 do tej grupy — wzorem istniejących
+pól `klasa_stanu`/`allegro_stan_raw_display`.
+
+### P-21.7 — Bug: „Klasa stanu" pokazuje zdublowaną etykietę (np. „Po zwrocie — Po zwrocie") [OTWARTE]
+Repo (przypuszczalnie): qutlet-core (`ProductConditionFields`/
+`ClassDefinitionsTaxonomy` — budowa `choices` pola `klasa_stanu` z etykiet
+termów) — do potwierdzenia ground-truthem, GDZIE dokładnie etykieta się
+dubluje (budowa `choices` pola ACF, render w adminie, czy render na froncie w
+`qutlet-theme`). Charakter bliższy poprawce (FAZA 9) niż nowej funkcji — do
+rozważenia przy realizacji, czy formalnie przenieść jako kolejny punkt FAZY 9
+zamiast zostawiać tu, jeśli po ground-truthcie okaże się izolowanym fixem bez
+związku z resztą tej fazy.
+
+**Zależności (całej fazy):** FAZA 20 (obecny układ/nazwy metaboksów edytora
+produktu — punkt wyjścia P-21.1), FAZA 6/`docs/mapping-allegro.md`
+(parsowanie parametrów oferty — źródło P-21.2), FAZA 12 (`klasa_stanu`,
+wzorzec dla P-21.5 i miejsce bugu P-21.7), P-20.8 (`ProductConditionFields`/
+„Stan produktu" — P-21.6).
+
+---
+
 ## Materiał referencyjny i kandydaci do dalszych faz
 
 ### Inwentarz endpointów Allegro (dostarczony przez użytkownika)
