@@ -954,6 +954,35 @@ scalonego boksu (odwrotny kierunek) — odrzucona, wymagałaby przeniesienia
 AJAX-owej logiki Generuj/Reset do core, łamiąc granicę „AI mieszka w
 qutlet-ai" (`CLAUDE.md` → „Struktura").
 
+**Dopytane i rozstrzygnięte tą samą sesją (po ground-truthu w rdzeniu WP):**
+natywne pole tytułu (`post_title`) DOŁĄCZA do tego scalenia — użytkownik
+zapytał wprost, czy da się scalić tytuł z customowymi metaboksami. TAK, ale
+INNYM mechanizmem niż `remove_meta_box()`/`render_field()` powyżej i INNYM
+niż usunięcie wsparcia CPT (D-20.G4 niżej, dla `editor`): `#titlediv`
+(`wp-admin/edit-form-advanced.php`, ok. linii 526–597) to zwykły, statyczny
+blok HTML — NIE metabox — obejmujący RAZEM pole `#title`
+(`name="post_title"`) i edytor bezpośredniego odnośnika
+(`get_sample_permalink_html()`), bramkowany
+`post_type_supports( $post_type, 'title' )`. Ta sama flaga bramkuje TEŻ
+Quick Edit na liście produktów (`class-wp-posts-list-table.php:1688`) —
+usunięcie wsparcia `title` (analogicznie do D-20.G4) skasowałoby przy okazji
+edytor odnośnika i quick-edit, więc TA droga jest tu ODRZUCONA (w
+odróżnieniu od `editor`, gdzie nic więcej nie zależało od tej flagi).
+Zamiast tego: `qutlet-ai` przenosi `#titlediv` fizycznie przez JS przy
+starcie strony — DOKŁADNIE ten sam mechanizm (`appendChild()`,
+placeholder-anchor), którym `ProductReviewWizard.js` (P-17.2) już dziś
+przenosi całe metaboksy do kroków kreatora, tylko TRWALE (raz, nie
+odwracalne przy zamknięciu, bo to nie jest nakładka). Zapis `post_title`
+nie zależy od miejsca w DOM (`name="post_title"` mapuje się na kolumnę bazy
+BEZPOŚREDNIO, bez żadnej translacji w `_wp_translate_postdata()` — nawet
+prościej niż `content`→`post_content`, D-20.G4) — przeniesienie węzła nie
+wymaga żadnej zmiany zapisu. Cały mechanizm żyje WYŁĄCZNIE w `qutlet-ai`
+(P-20.4b) — zero dodatkowej pracy w `qutlet-core` ponad to, co P-20.4a i tak
+dostarcza. Efekt uboczny (korzystny): krok 1 kreatora (P-17.2) automatycznie
+zyskuje tytuł+odnośnik w swojej karcie, bo `ProductReviewWizard.js` przenosi
+CAŁY węzeł `#qutlet_ai_title_generator`, w którym `#titlediv` jest teraz
+zagnieżdżone.
+
 **D-20.G4 [USTALONE — wynika z ground-truthu sesji planistycznej FAZY 20,
 2026-08-18; ground-truth wykonany bezpośrednio w rdzeniu WP,
 `wp-admin/edit-form-advanced.php` i `wp-admin/includes/post.php`]:** scalenie

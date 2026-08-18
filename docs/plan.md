@@ -6569,12 +6569,18 @@ Część 2 — dopisana w trakcie tej samej sesji, po zrzucie ekranu ekranu edyc
 produktu (świeżo zaimportowany produkt, dwa metaboksy „Qutlet — nazwa
 produktu (AI)" i „Qutlet — nazwa produktu (warstwa przerobiona)" jeden pod
 drugim w bocznej kolumnie):
-5. Scalić oba metaboksy nazwy produktu w JEDEN. Usunąć słowo „Qutlet" z
+5. Scalić oba metaboksy nazwy produktu W JEDEN, RAZEM z natywnym polem
+   tytułu (`post_title`) — dopytane wprost i potwierdzone tą samą sesją
+   („czy da się scalić tytuł z customowymi metaboksami?"): TAK, przez
+   fizyczne przeniesienie `#titlediv` (JS), nie przez wyłączanie wsparcia
+   CPT (patrz ground-truth/D-20.G3 niżej — inny, bezpieczniejszy mechanizm
+   niż scalenie edytora opisu, D-20.G4). Usunąć słowo „Qutlet" z
    tytułów/opisów TEGO metaboksa. „Podnazwa" → **„Druga linia nazwy
    produktu"**. Kolejność wewnątrz scalonego boksu: tytuł wpisu (natywny,
-   niezmieniony, nad boksem) → „Druga linia nazwy produktu" (edytowalne) →
-   „Nazwa oryginalna (Allegro)" (read-only) → przyciski Generuj/Reset.
-   Przycisk „Generuj" ma przestać być wstrzymywany oknem potwierdzenia
+   PRZENIESIONY fizycznie do wnętrza boksu razem z edytorem bezpośredniego
+   odnośnika) → „Druga linia nazwy produktu" (edytowalne) → „Nazwa
+   oryginalna (Allegro)" (read-only) → przyciski Generuj/Reset. Przycisk
+   „Generuj" ma przestać być wstrzymywany oknem potwierdzenia
    (`window.confirm()`) przed wysłaniem żądania.
 
 Część 3 — dopisana w trakcie tej samej sesji, dotyczy DRUGIEGO metaboksu AI
@@ -6629,6 +6635,34 @@ dotykanych plików — `PromptSettingsPage`/`PromptSettings`/`TitleGenerator`/
   Grep potwierdza: `RewrittenFields::metabox_id()` ma dziś JEDYNEGO
   wołającego — `ProductReviewWizard.php:156` — więc po poprawce selektora ta
   metoda staje się martwym kodem, do usunięcia w tym samym punkcie.
+- **Dopytane w trakcie sesji: „czy da się scalić tytuł z customowymi
+  metaboksami?" — TAK, ale INNYM mechanizmem niż scalenie edytora opisu
+  (D-20.G4 niżej), bez ryzyka utraty funkcji.** Ground-truth wprost w
+  `wp-admin/edit-form-advanced.php` (linie ok. 526–597): pole tytułu (`#title`,
+  `name="post_title"`) i edytor bezpośredniego odnośnika
+  (`#edit-slug-box`/`get_sample_permalink_html()`) żyją RAZEM wewnątrz
+  JEDNEGO statycznego bloku `<div id="titlediv">` — NIE metaboksu
+  (`add_meta_box()` nigdzie w tym pliku), zwykły hardcoded HTML w szablonie
+  ekranu, bramkowany `post_type_supports( $post_type, 'title' )`. **Ta sama
+  flaga bramkuje TEŻ Quick Edit na liście produktów**
+  (`class-wp-posts-list-table.php:1688`) — usunięcie wsparcia `title`
+  (analogicznie do D-20.G4 dla `editor`) skasowałoby przy okazji edytor
+  odnośnika I quick-edit, więc TA droga jest odrzucona dla tytułu (w
+  odróżnieniu od edytora opisu, gdzie usunięcie wsparcia niczego więcej nie
+  psuło). Zamiast tego: `#titlediv` przenosi się fizycznie przez JS —
+  DOKŁADNIE ten sam mechanizm, którym `ProductReviewWizard.js` (P-17.2) już
+  dziś przenosi całe metaboksy (`appendChild()`, placeholder-anchor) — z
+  jedną różnicą: to przeniesienie jest TRWAŁE (raz, przy starcie strony), nie
+  odwracalne przy zamknięciu jak w kreatorze, bo scalony metabox nie jest
+  nakładką tylko stałym elementem ekranu. Zapis `post_title` nie zależy od
+  miejsca w DOM (`name="post_title"` mapuje się na kolumnę bazy WPROST, bez
+  żadnej translacji przez `_wp_translate_postdata()` — nawet mniej pośrednio
+  niż `content`→`post_content` z D-20.G4) — przeniesienie węzła nie wymaga
+  ŻADNEJ zmiany zapisu. Efekt uboczny (korzystny, bez dodatkowej pracy):
+  krok 1 kreatora (P-17.2) automatycznie zyska tytuł+odnośnik w swojej
+  karcie, bo `ProductReviewWizard.js` przenosi CAŁY węzeł
+  `#qutlet_ai_title_generator` — który po tej zmianie ma `#titlediv`
+  zagnieżdżone w środku.
 - **Podnazwa na froncie (`qutlet-theme`) nie jest dotknięta.** Grep
   `content-single-product.php` — motyw czyta WYŁĄCZNIE wartość pola
   (`ProductPage::acf_field('podnazwa', …)`), nigdzie nie renderuje etykiety
@@ -6715,7 +6749,18 @@ dotykanych plików — `PromptSettingsPage`/`PromptSettings`/`TitleGenerator`/
   właścicielstwo scalonego boksu (odwrotny kierunek) — odrzucona, bo
   wymagałaby przeniesienia AJAX-owej logiki Generuj/Reset (dziś w
   `qutlet-ai`) do core, łamiąc granicę „AI mieszka w qutlet-ai" (`CLAUDE.md`
-  → „Struktura").
+  → „Struktura"). **Natywne pole tytułu (`#titlediv`) DOŁĄCZA do scalenia**
+  (dopytane i potwierdzone tą sesją) — ale MECHANIZMEM JS (fizyczne
+  przeniesienie węzła, wzorem `ProductReviewWizard.js`), NIE usunięciem
+  `post_type_supports( 'product', 'title' )` — ta flaga bramkuje też edytor
+  bezpośredniego odnośnika i Quick Edit na liście produktów, więc jej
+  zdjęcie skasowałoby więcej niż zamierzone (w odróżnieniu od `editor`,
+  D-20.G4, gdzie zdjęcie wsparcia niczego więcej nie psuło). **Odrzucona
+  alternatywa:** `remove_post_type_support( 'product', 'title' )` +
+  ręczne odtworzenie tytułu/odnośnika/quick-edit wewnątrz metaboksu —
+  odrzucona jako dużo droższa (duplikacja fragmentu rdzenia WP, ryzyko
+  driftu przy aktualizacjach) bez żadnej korzyści nad prostszym JS-owym
+  przeniesieniem węzła.
 - **D-20.4 (`window.confirm()` znika WYŁĄCZNIE dla „Generuj", „Reset"
   zostaje) [USTALONE — decyzja użytkownika, sesja 2026-08-18]:** świadomie
   odwraca część rozstrzygnięcia D-13.G2 (zabezpieczenie zastępcze za brak
@@ -6824,16 +6869,32 @@ ryzyko operacyjne wyżej).
   nazwa produktu (AI)" → **„Nazwa produktu (AI)"** (usunięte słowo „Qutlet",
   D-20 zgłoszenie pkt 5; dokładne brzmienie do potwierdzenia przy
   realizacji, drobna kosmetyka). `render()` w nowej kolejności: status →
-  `RewrittenFields::render_field( $post->ID )` („Druga linia nazwy
-  produktu") → banner „Nowy" (gdy stale) → „Nazwa oryginalna (Allegro)" →
-  przyciski Generuj/Reset.
+  MIEJSCE na `#titlediv` (patrz niżej — puste `<div>`-kotwica, JS wypełnia
+  przenosząc prawdziwy węzeł) → `RewrittenFields::render_field( $post->ID )`
+  („Druga linia nazwy produktu") → banner „Nowy" (gdy stale) → „Nazwa
+  oryginalna (Allegro)" → przyciski Generuj/Reset.
+- **Nowy JS (ten sam plik lub nowy w `assets/js/`, do ustalenia przy
+  realizacji): trwałe przeniesienie `#titlediv`** do wnętrza metaboksu, przy
+  starcie strony (nie przy otwarciu kreatora) — wzorem
+  `ProductReviewWizard.js::rememberPosition()`/`appendChild()` (P-17.2), ale
+  BEZ logiki przywracania (przeniesienie jest trwałe, nie przełączane).
+  Wymaga uwagi na `do_action('edit_form_after_title')` (ACF `acf_form_data()`
+  nonce) — fires PRZED przeniesieniem w naturalnym flow renderu strony, więc
+  kolejność DOM w momencie przeniesienia nie ma znaczenia dla ACF (nonce już
+  wypisany, JS tylko przenosi gotowy, w pełni wyrenderowany węzeł).
+  Weryfikacja wizualna/CSS (czy `#titlediv` wygląda spójnie wewnątrz
+  wąskiego `side` boksu, czy wymaga dodatkowego stylu) — do zrobienia PRZY
+  REALIZACJI (ground-truth samym budowaniem, nie da się przesądzić z samego
+  czytania kodu).
 - `title-generator.js`: `runAction()` pomija `window.confirm()`, gdy
   `confirmMessage` jest puste/`null` — wywołanie dla „Generuj" przechodzi
   bez potwierdzenia, wywołanie dla „Reset" zachowuje `confirmReset` bez
   zmian (D-20.4). Nieużywany i18n `confirmGenerate` usunięty z
   `enqueue_script()`.
 - **Zależności:** P-20.4a (`RewrittenFields::render_field()` musi istnieć —
-  merge core PRZED merge ai).
+  merge core PRZED merge ai). Przeniesienie `#titlediv` jest CAŁKOWICIE
+  wewnątrz `qutlet-ai` — zero zależności od core poza tym, co P-20.4a i tak
+  już dostarcza.
 
 ### P-20.5 — qutlet-core: „Prompt lokalny" — rename etykiety
 
