@@ -7218,6 +7218,148 @@ P-20.7a), FAZA 13 (P-13.5, `MarketPriceField` — wzorzec dla P-20.7b), P-9.2
 
 ---
 
+## 🟦 FAZA 21 — Atrybuty wysyłki (waga/wymiary), stan opakowania, porządki edytora (fala 2)
+
+Cel: kontynuacja porządków w edytorze produktu (FAZA 20, zamknięta) — układ
+metaboksów po scaleniach tamtej fazy nie został jeszcze świadomie ustalony —
+plus nowy wątek: atrybuty potrzebne do wysyłki (waga, wymiary) importowane z
+Allegro prawdopodobnie nie trafiają dziś do natywnych pól WooCommerce
+(„Wysyłka"), więc mogą nie być brane pod uwagę przy liczeniu kosztu
+przesyłki. Obok tego — nowe pole „stan opakowania" (analogiczne do istniejącej
+`klasa_stanu`, FAZA 12) oraz poprawka błędu w istniejącym polu „Klasa stanu".
+
+**Zgłoszenie (2026-08-18):** siedem punktów, ŻADEN jeszcze nie ma
+ground-truthu ani decyzji — do zrobienia przy realizacji KAŻDEGO punktu
+(`docs/ground-truth.md`), zgodnie z `CLAUDE.md` → „Realizacja punktu planu".
+Repo/zakres niżej są WSTĘPNYMI przypuszczeniami do potwierdzenia, NIE
+ustaleniami — pytać/weryfikować, nie zgadywać, przy realizacji.
+
+### P-21.1 — Ustalenie kolejności metaboksów w edytorze produktu
+Po FAZIE 20 (scalenia/rename/podziały metaboksów) układ ekranu edycji
+produktu zmienił się istotnie — nie było jeszcze docelowej, świadomej
+kolejności metaboksów (dziś kolejność to efekt uboczny priorytetów hooków
+`add_meta_boxes` ustalanych punktowo przy każdej zmianie, nie decyzja o
+całości ekranu).
+
+**D-21.1.1 (docelowa kolejność + dwa dodatkowe rename'y) [USTALONE —
+decyzja użytkownika, 2026-08-18]:**
+
+Lewa kolumna (`normal`/`acf_after_title`, z góry na dół):
+1. „Nazwa produktu (AI)" (`qutlet-ai`, `TitleGenerationMetaBox`, kontekst
+   `acf_after_title` od P-20.4b — już renderuje się jako pierwszy element,
+   PRZED obszarem zwykłych metaboksów `normal`; potwierdzić ground-truthem,
+   że to nadal wystarcza samo z siebie, bez dodatkowej pracy).
+2. Bezpośredni odnośnik (`#edit-slug-box` — od P-20.4b już przeniesiony JS-em
+   POD CAŁY box „Nazwa produktu (AI)"; prawdopodobnie już w tym miejscu, do
+   potwierdzenia, nie zmiany).
+3. „Kanał Allegro" (`qutlet-core`, `AllegroChannelFields`).
+4. „Generacja AI (przeróbka)" (`qutlet-ai`, `GenerationMetaBox`) — **RENAME
+   OD RAZU na „Opis produktu (AI)"** (nowa decyzja tej sesji, poza samym
+   porządkiem — `name`/meta_key/ID metaboksa `qutlet_ai_generation` BEZ
+   ZMIAN, zmienia się wyłącznie tytuł widoczny w adminie, wzorem
+   dotychczasowych rename'ów FAZY 20).
+5. „Stan produktu" (`qutlet-core`, `ProductConditionFields`).
+6. „Zawartość przesyłki" (`qutlet-core`, `ShipmentContentsFields`).
+7. „Dane produktu" (natywny WooCommerce „Product data" — panel zakładkowy,
+   NIE nasz kod; jego priorytet/pozycja dziś ustalona względem
+   `GenerationMetaBox` przez świadomą kolejność hooków, patrz docblock
+   `GenerationMetaBox::register()` — do przeanalizowania, czy nowa pozycja
+   #7 wymaga zmiany tej relacji).
+8. „Qutlet — warstwa surowa z Allegro" (`qutlet-core`, `RawLayerMetaBox`,
+   P-5.3 — **dokładny dzisiejszy tytuł DO POTWIERDZENIA ground-truthem**,
+   powyższy zapis to parafraza zgłoszenia użytkownika, nie zweryfikowany
+   literał) — **RENAME OD RAZU na „Podgląd opisu z Allegro"**.
+
+Prawa kolumna (`side`, z góry na dół):
+1. „Opublikuj" (natywny box Publish — `context=side`, `priority=core`,
+   zwykle i tak zawsze na górze; potwierdzić, że nic tego nie zaburza).
+2. „Obrazek produktu" (natywny/Woo box głównego zdjęcia produktu — dokładny
+   dzisiejszy tytuł do potwierdzenia, nie zakładać nazwy).
+3. „Galeria produktu" (natywny Woo box galerii).
+4. „Kategorie produktów" (natywny box taksonomii `product_cat`).
+5. „Qutlet — kategoria (podgląd)" (`qutlet-core`,
+   `ProductReviewWizard\CategoryPreviewMetaBox`, P-17.3 — **dokładny
+   dzisiejszy tytuł DO POTWIERDZENIA ground-truthem**) — **RENAME OD RAZU na
+   „Mapowanie kategorii"**.
+6. „Znaczniki produktu" (natywny box taksonomii `product_tag`).
+7. „Marki" (box taksonomii marki, `product_brand` czy jak faktycznie się
+   nazywa — do potwierdzenia).
+
+**Do ustalenia PRZY REALIZACJI (ground-truth NAJPIERW, nierozstrzygnięte tą
+sesją):**
+- Dokładne dzisiejsze tytuły wszystkich boxów oznaczonych wyżej „do
+  potwierdzenia" — VERBATIM z kodu, nie z parafrazy w tym punkcie planu.
+- Mechanizm wymuszenia kolejności: priorytety `add_meta_box()` (w obrębie
+  tego samego kontekstu/priorytetu WP sortuje po kolejności DOPISANIA do
+  `$wp_meta_boxes`, czyli po kolejności wykonania callbacków hooka
+  `add_meta_boxes` — patrz precedens w docblocku `GenerationMetaBox::register()`)
+  vs ręczny reorder `$wp_meta_boxes` w JS/PHP. Prawdopodobnie NIE jeden
+  mechanizm dla całego ekranu — natywne boxy Woo/WP mają własne,
+  zakorzenione priorytety, które mogą wymagać INNEGO podejścia niż nasze
+  custom boxy.
+- Punkt jest wielorepowy (core rejestruje większość, ai rejestruje
+  „Nazwa produktu (AI)"/„Opis produktu (AI)") — rozbić na pod-punkty
+  (P-21.1a/P-21.1b, kolejność wg zależności) przy realizacji, zgodnie z
+  regułą punktów wielorepowych (`CLAUDE.md` → „Struktura").
+- Krok kreatora `ProductReviewWizard::steps()` używa selektorów PO ID
+  metaboksów, nie po pozycji — reorder sam w sobie prawdopodobnie NIE
+  wymaga zmian w kreatorze, ale zweryfikować (zasada #2 „Zasad przewodnich"
+  FAZY 20, obowiązująca też tutaj mimo że to już FAZA 21).
+
+### P-21.2 — Ground-truth: atrybuty wagowe/wymiarowe z Allegro [OTWARTE]
+Sprawdzić w realnych próbkach (`docs/allegro-api-samples/`) i/lub w kodzie
+`qutlet-allegro`, jakie parametry oferty (`productSet[0].product.parameters[]`,
+patrz `docs/mapping-allegro.md` §4b) niosą wagę i wymiary (długość/szerokość/
+wysokość) produktu/paczki, oraz w JAKICH JEDNOSTKACH Allegro je przekazuje —
+użytkownik podejrzewa cm i gramy, ale to DO POTWIERDZENIA w realnych danych,
+nie założenie gotowe do wpisania w kod. Wynik (nazwy parametrów + jednostki)
+zasila P-21.3/P-21.4 i powinien trafić do `docs/kontrakt-danych.md` jako nowa
+sekcja/literały.
+
+### P-21.3 — Dodanie jednostek do wymiarów i wagi [OTWARTE, zależne od P-21.2]
+Prawdopodobnie do pogodzenia z globalnymi ustawieniami jednostek WooCommerce
+(`woocommerce_dimension_unit`/`woocommerce_weight_unit`, Ustawienia → Ogólne)
+— jeśli Allegro przekazuje w innych jednostkach niż ustawienie sklepu,
+potrzebna konwersja przy zapisie, nie tylko dopisanie etykiety jednostki w
+UI. Zakres/repo do ustalenia po P-21.2.
+
+### P-21.4 — Kopiowanie atrybutów wymiary/waga do zakładki „Wysyłka" [OTWARTE, zależne od P-21.2/P-21.3]
+WooCommerce ma natywne pola wysyłki (`_weight`/`_length`/`_width`/`_height`,
+zakładka „Wysyłka" w Product Data) — dziś dane wagi/wymiarów z Allegro
+prawdopodobnie NIE trafiają tam automatycznie (do potwierdzenia ground-truthem
+`ProductWriter`, `qutlet-allegro`). Cel: sync pisze bezpośrednio w te pola
+natywne (zamiast/obok pozostawienia ich tylko jako atrybut/specyfikacja).
+
+### P-21.5 — Dodanie „stanu opakowania" do atrybutów [OTWARTE]
+Nowe pole, analogiczne do `klasa_stanu` (FAZA 12), ale dla stanu OPAKOWANIA,
+nie produktu. Do ustalenia przy realizacji: czy to nowa mała taksonomia
+(wzorem `klasa_stanu_definicja`) czy prostsze pole ACF/atrybut WC; czy Allegro
+w ogóle przekazuje coś takiego (sprawdzić razem z P-21.2) czy pole jest
+wyłącznie redakcyjne.
+
+### P-21.6 — Dodanie „stanu opakowania" do metaboksu „Stan produktu" [OTWARTE, zależne od P-21.5]
+Repo (przypuszczalnie): qutlet-core, `ProductConditionFields` (metabox „Stan
+produktu" po P-20.8). Dodać pole z P-21.5 do tej grupy — wzorem istniejących
+pól `klasa_stanu`/`allegro_stan_raw_display`.
+
+### P-21.7 — Bug: „Klasa stanu" pokazuje zdublowaną etykietę (np. „Po zwrocie — Po zwrocie") [OTWARTE]
+Repo (przypuszczalnie): qutlet-core (`ProductConditionFields`/
+`ClassDefinitionsTaxonomy` — budowa `choices` pola `klasa_stanu` z etykiet
+termów) — do potwierdzenia ground-truthem, GDZIE dokładnie etykieta się
+dubluje (budowa `choices` pola ACF, render w adminie, czy render na froncie w
+`qutlet-theme`). Charakter bliższy poprawce (FAZA 9) niż nowej funkcji — do
+rozważenia przy realizacji, czy formalnie przenieść jako kolejny punkt FAZY 9
+zamiast zostawiać tu, jeśli po ground-truthcie okaże się izolowanym fixem bez
+związku z resztą tej fazy.
+
+**Zależności (całej fazy):** FAZA 20 (obecny układ/nazwy metaboksów edytora
+produktu — punkt wyjścia P-21.1), FAZA 6/`docs/mapping-allegro.md`
+(parsowanie parametrów oferty — źródło P-21.2), FAZA 12 (`klasa_stanu`,
+wzorzec dla P-21.5 i miejsce bugu P-21.7), P-20.8 (`ProductConditionFields`/
+„Stan produktu" — P-21.6).
+
+---
+
 ## Materiał referencyjny i kandydaci do dalszych faz
 
 ### Inwentarz endpointów Allegro (dostarczony przez użytkownika)
