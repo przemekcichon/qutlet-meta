@@ -7608,10 +7608,32 @@ wymagała zmiany kodu — była już zgodna z tym rozstrzygnięciem.
   oferty z potwierdzonym „Stan opakowania" do ręcznego testu (jak P-21.4b).
 - **Zależności:** P-21.5a (kontrakt D-21.5.1 jako źródło literałów/mechanizmu).
 
-### P-21.6 — Dodanie „stanu opakowania" do metaboksu „Stan produktu" [OTWARTE, zależne od P-21.5]
-Repo (przypuszczalnie): qutlet-core, `ProductConditionFields` (metabox „Stan
-produktu" po P-20.8). Dodać pole z P-21.5 do tej grupy — wzorem istniejących
-pól `klasa_stanu`/`allegro_stan_raw_display`.
+### 🟢 P-21.6 — Dodanie „stanu opakowania" do metaboksu „Stan produktu"
+Repo: qutlet-core, `ProductConditionFields` (metabox „Stan produktu" po
+P-20.8). Dodane pole z P-21.5 do tej grupy — wzorem istniejących pól
+`klasa_stanu`/`allegro_stan_raw_display`.
+
+**Realizacja (sesja 2026-08-19):** nowe pole read-only ACF `message`
+(`allegro_stan_opakowania_raw_display`, etykieta „Stan opakowania wg Allegro
+(surowy, tylko do odczytu)"), mechanizm `acf/pre_render_field` + guard po
+field key wzorem `allegro_stan_raw_display` — ale odczyt WPROST przez
+`WC_Product::get_attribute('Stan opakowania')` (NIE re-parsuje
+`_qutlet_allegro_offer`), bo atrybut jest sync-owned (D-21.5.1 pkt 5, kontrakt
+§18) i zawsze aktualny. Etykieta zweryfikowana verbatim względem
+`qutlet-allegro\OfferSync\ProductWriter::PACKAGING_CONDITION_LABEL` i
+kontraktu §18 pkt 3. Punkt czysto-kodowy w JEDNYM repo (qutlet-core) — pola-
+komunikaty tej grupy (`allegro_stan_raw_display`/`klasa_stanu_terminy_display`)
+nie są dokumentowane w `docs/kontrakt-danych.md`, więc flip 🟡 pominięty
+(wyjątek CLAUDE.md „czysto-kodowy w jednym repo").
+- PR: `qutlet-core`#35 (zmergowany).
+- **Weryfikacja:** `phpstan` czysto, `phpunit` 8/8 (bez nowych testów — cała
+  klasa `ProductConditionFields` nie ma testów w tym repo, `phpunit.xml.dist`
+  bez bootstrapu WP). Niezależna recenzja: 🟢 CZYSTE, brak ustaleń
+  blokujących. Runtime na Local NIE zweryfikowany — sandbox nie ma dziś
+  żadnego produktu z ustawionymi atrybutami WC (`_product_attributes` puste
+  dla wszystkich), ta sama przyczyna co przy P-21.4b/P-21.5b.
+- **Zależności:** P-21.5 (kontrakt D-21.5.1 jako źródło mechanizmu/literału
+  etykiety).
 
 ### P-21.7 — Bug: „Klasa stanu" pokazuje zdublowaną etykietę (np. „Po zwrocie — Po zwrocie") [OTWARTE]
 Repo (przypuszczalnie): qutlet-core (`ProductConditionFields`/
