@@ -1396,6 +1396,89 @@ istniejącego mechanizmu D-21.3.1, nie z oceny „opakowanie > goły produkt"):*
 
 ---
 
+## 18. Stan opakowania — atrybut WC (FAZA 21 — P-21.5)
+
+Nowe pole, analogiczne do `klasa_stanu` (§2, FAZA 12) w SENSIE „stan czegoś
+związanego z egzemplarzem", ale dla stanu OPAKOWANIA — bez żadnych konsekwencji
+cenowych/gwarancyjnych, wyłącznie informacyjne w specyfikacji produktu.
+
+**Ground-truth (sesja 2026-08-18):** Allegro faktycznie przekazuje stan
+opakowania — offer-level `parameters[Stan opakowania]` (`id 229205`, `mapping`
+§4b), TA SAMA warstwa co `Stan` (`id 11323`, D-4.1.1, `OfferMapper::offer_parameters()`),
+**NIE** `productSet[0].product.parameters[]` jak reszta specyfikacji
+(`OfferMapper::specification()`/`product_parameters()`). Obecny w 485/555 ofert
+próbki FAZY 4. Wartość w próbce (`docs/allegro-api-samples/GET_sale-product-offers.json`):
+jedyna znana dziś — `oryginalne` (typ słownikowy, `valuesIds` niesie
+`229205_340245`, ale sam `values[0]` to już gotowa etykieta tekstowa). Pełny
+domain wartości NIE jest znany (próbka pokazuje tylko ten jeden przypadek) —
+nieznany domain jest zgodny z decyzją niżej (brak tabeli mapowania, verbatim
+passthrough).
+
+**D-21.5.1 (USTALONE — decyzja użytkownika, sesja 2026-08-18):**
+
+1. **Struktura: custom atrybut WC (`id=0`, lokalny), NIE taksonomia, NIE ACF.**
+   Odrzucona alternatywa „mała taksonomia wzorem `klasa_stanu_definicja`" (§2.2)
+   — TAMTA taksonomia niesie bogate term-meta (kolor chipsa, opis, okresy
+   gwarancji/reklamacji, tekst „dlaczego taniej") bo `klasa_stanu` wpływa na
+   cenę i marketing produktu (§2). Stan opakowania nie ma takich konsekwencji —
+   użytkownik: „to ma być w zasadzie atrybut WooCommerce ale nie globalny,
+   przede wszystkim do wglądu dla użytkownika w specyfikacji". Mechanizm =
+   TEN SAM co atrybuty wagowo-wymiarowe (§16/§17,
+   `ProductWriter::build_attributes()`, `WC_Product_Attribute` z `set_id(0)` —
+   custom/lokalny, nie taksonomia globalna `pa_*`), nie wzorzec `klasa_stanu`
+   (ACF `taxonomy` + `ClassDefinitionsTaxonomy`).
+2. **Auto-mapowanie przy imporcie, BEZ tabeli mapowania nazw.** Import
+   wyprowadza wartość automatycznie z parametru Allegro (jak `klasa_stanu` z
+   „Stan", D-4.1.1) — ale w odróżnieniu od `OfferMapper::CONDITION_MAP`, BEZ
+   pośredniej tabeli `wartość Allegro → nasza wartość`: wartość jest
+   przepisywana WPROST (verbatim, po `sanitize_text_field()` w
+   `build_attributes()`), bo pole jest czysto informacyjne, tak jak KAŻDA
+   inna wartość specyfikacji (`OfferMapper::specification()` też nie
+   transformuje wartości semantycznie — sklejenie/formatowanie, nie mapowanie
+   znaczenia). Domain wartości Allegro nieznany w pełni (patrz ground-truth
+   wyżej) — tabela mapowania musiałaby być zgadywaniem bez pokrycia w
+   danych; verbatim passthrough unika tego problemu.
+3. **Etykieta atrybutu: `Stan opakowania`** (VERBATIM z nazwy parametru
+   Allegro — spójne z resztą specyfikacji, gdzie etykieta atrybutu = `name`
+   parametru).
+4. **Bez pola do warstwy surowej osobno** — `_qutlet_allegro_offer` (verbatim
+   JSON, §9.1) już niesie tę wartość (offer-level `parameters[]`), nowego pola
+   meta nie trzeba. `_qutlet_allegro_specification_raw` (§9.1, product-level)
+   NIE dostaje tego wiersza — inny poziom parametrów, nie mieszamy warstw.
+5. **Trwałość: SYNC-OWNED, nadpisywane przy KAŻDYM przebiegu — NIE „tylko gdy
+   puste" jak `klasa_stanu` [DOPRECYZOWANE po niezależnej recenzji PR #103,
+   decyzja użytkownika, sesja 2026-08-19].** Pierwsze sformułowanie pkt 2
+   („jak `klasa_stanu` z «Stan»") było niejednoznaczne — `klasa_stanu`
+   (D-6.1.4, `ProductWriter::upsert()`) zapisuje auto-mapę TYLKO gdy pole
+   jest jeszcze puste, właśnie po to, żeby ręczna ocena sprzedawcy przetrwała
+   kolejny sync. Recenzent słusznie złapał tę niespójność: atrybut „Stan
+   opakowania" żyje w TYM SAMYM zestawie atrybutów WC co specyfikacja/waga/
+   wymiary (§16/§17), który `ProductWriter::build_attributes()`/
+   `set_attributes()` PODMIENIA W CAŁOŚCI przy każdym przebiegu (sync-owned,
+   D-13.4a.1, §9.2) — ręczna edycja tego konkretnego atrybutu w adminie NIE
+   przetrwa najbliższego importu/syncu tego produktu, tak samo jak żadna inna
+   pozycja specyfikacji. Użytkownik potwierdził wprost (sesja 2026-08-19,
+   po ponownym pytaniu): to jest ZAMIERZONE — spójność z mechanizmem atrybutów
+   WC (pkt 1) ważniejsza niż analogia „jak `klasa_stanu`" z pierwotnego
+   sformułowania auto-mapy w pkt 2. Odrzucona alternatywa: specjalny przypadek
+   w `upsert()` sprawdzający istniejącą wartość atrybutu przed nadpisaniem
+   (mirror `klasa_stanu`) — odrzucone jako niepotrzebna komplikacja jednego
+   pojedynczego atrybutu wobec reguły „cały zestaw sync-owned" obowiązującej
+   od P-13.4a dla wszystkich pozostałych.
+
+### Odnośniki (§18)
+- Ground-truth i decyzja: `docs/plan.md` → FAZA 21, P-21.5 (+ rozbicie
+  P-21.5a/P-21.5b).
+- Mapping: `docs/mapping-allegro.md` D-4.1.1 (offer-level „Stan"/„Stan
+  opakowania").
+- Próbka: `docs/allegro-api-samples/GET_sale-product-offers.json`
+  (`parameters[]`, `id 229205`).
+- Wzorzec mechanizmu: §16/§17 (atrybuty wagowo-wymiarowe,
+  `ProductWriter::build_attributes()`).
+- Kontrast (struktura ODRZUCONA): §2/§2.2 (`klasa_stanu`/`klasa_stanu_definicja`).
+
+---
+
 ## Log decyzji (P-1.0)
 
 | Decyzja  | Rozstrzygnięcie                                        | Podstawa |

@@ -152,6 +152,14 @@ nie przeoczeniem.
 zachowywane w FAZIE 5 (pełny JSON), bo import może chcieć pokazać oryginalny stan
 Allegro obok naszej klasy.
 
+**REWIZJA P-21.5 (sesja 2026-08-18):** „Stan opakowania” przestaje być
+WYŁĄCZNIE warstwą surową — dostaje też odpowiednik w warstwie przerobionej,
+custom atrybut WC „Stan opakowania” (`docs/kontrakt-danych.md` §18, D-21.5.1),
+zapisywany verbatim (bez tabeli mapowania, w odróżnieniu od `klasa_stanu`
+wyżej) przy każdym imporcie/syncu. Pozostaje offer-level (`parameters[]`), NIE
+`productSet[0].product.parameters[]` jak reszta specyfikacji — `OfferMapper`
+czyta go osobną metodą, nie przez `specification()`.
+
 **Odrzucona alternatywa:** `klasa_stanu` w pełni ręczne (Allegro „Stan” tylko do
 warstwy surowej) — prostsze, ale zrzuca całą pracę klasyfikacji na sprzedawcę mimo
 że Allegro niesie sensowny sygnał wyjściowy.

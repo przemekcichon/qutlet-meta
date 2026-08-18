@@ -7545,12 +7545,62 @@ po stronie `qutlet-meta` (kontrakt), więc NIE kwalifikuje się do wyjątku
   realnymi id z próbki §15.
 - **Zależności:** P-21.4a (kontrakt D-21.4.1 jako źródło mapowania i priorytetu).
 
-### P-21.5 — Dodanie „stanu opakowania" do atrybutów [OTWARTE]
+### P-21.5 — Dodanie „stanu opakowania" do atrybutów (punkt wielorepowy → P-21.5a + P-21.5b)
 Nowe pole, analogiczne do `klasa_stanu` (FAZA 12), ale dla stanu OPAKOWANIA,
 nie produktu. Do ustalenia przy realizacji: czy to nowa mała taksonomia
 (wzorem `klasa_stanu_definicja`) czy prostsze pole ACF/atrybut WC; czy Allegro
 w ogóle przekazuje coś takiego (sprawdzić razem z P-21.2) czy pole jest
 wyłącznie redakcyjne.
+
+**Realizacja (sesja 2026-08-18):** ground-truth ujawnił, że Allegro FAKTYCZNIE
+przekazuje stan opakowania — offer-level `parameters[Stan opakowania]` (`id
+229205`, mapping §4b, obecny w 485/555 ofert próbki FAZY 4), TA SAMA warstwa co
+`Stan` (`id 11323`, D-4.1.1), nie `productSet[0].product.parameters[]` jak
+reszta specyfikacji. Struktura pola i auto-mapa — decyzja użytkownika (sesja
+2026-08-18, `docs/kontrakt-danych.md` §18, D-21.5.1): **NIE** taksonomia wzorem
+`klasa_stanu_definicja` (ta niesie bogate term-meta — kolor/gwarancja/
+reklamacja/„dlaczego taniej" — bo `klasa_stanu` wpływa na cenę/marketing; stan
+opakowania nie ma takich konsekwencji, wyłącznie informacyjny). Użytkownik:
+„to ma być w zasadzie atrybut WooCommerce ale nie globalny, przede wszystkim
+do wglądu dla użytkownika w specyfikacji" — czyli TEN SAM mechanizm co atrybuty
+wagowo-wymiarowe (P-21.3/P-21.4, `ProductWriter::build_attributes()`, custom/
+lokalny atrybut `id=0`, NIE taksonomia globalna `pa_*`), nie ACF/nie taksonomia
+klasy stanu. Auto-mapowanie przy imporcie potwierdzone (jak `klasa_stanu` z
+„Stan") — ale BEZ tabeli mapowania nazw jak `CONDITION_MAP`: wartość Allegro
+(dziś jedyna znana w próbce: „oryginalne") jest przepisywana WPROST (verbatim,
+po sanityzacji), bo pole jest czysto informacyjne, symetrycznie do reszty
+specyfikacji (`OfferMapper::specification()`/`build_attributes()` też nie
+transformują wartości semantycznie). Punkt wielorepowy wg reguły `CLAUDE.md`:
+D-21.5.1 to realna praca po stronie `qutlet-meta` (kontrakt), więc NIE
+kwalifikuje się do wyjątku „czysto-kodowy w jednym repo".
+
+**Poprawka po niezależnej recenzji (sesja 2026-08-19):** pierwotne sformułowanie
+D-21.5.1 pkt 2 („auto-mapa jak `klasa_stanu`") było niejednoznaczne co do
+TRWAŁOŚCI — `klasa_stanu` zapisuje TYLKO gdy pole puste (ręczna ocena
+przetrwa sync), a atrybut „Stan opakowania" faktycznie ląduje w tym samym,
+w CAŁOŚCI nadpisywanym zestawie atrybutów WC co reszta specyfikacji (§16/§17).
+Wróciliśmy z pytaniem do użytkownika: potwierdzone — sync-owned, nadpisywane
+przy każdym przebiegu (ZAMIERZONE, spójność z mechanizmem atrybutów WC ważniejsza
+niż analogia trwałości z `klasa_stanu`). Doprecyzowane w D-21.5.1 pkt 5
+(`docs/kontrakt-danych.md` §18). Implementacja w `qutlet-allegro`#39 NIE
+wymagała zmiany kodu — była już zgodna z tym rozstrzygnięciem.
+
+### 🟡 P-21.5a — qutlet-meta: kontrakt atrybutu „Stan opakowania" (D-21.5.1)
+- **Repo:** qutlet-meta (`docs/kontrakt-danych.md`, `docs/mapping-allegro.md`)
+- **Zakres:** nowa sekcja §18 kontraktu — D-21.5.1 (struktura: custom atrybut WC
+  `id=0`, etykieta `Stan opakowania`, źródło offer-level parametr `id 229205`,
+  auto-mapa BEZ tabeli — verbatim), + dopisek do `mapping-allegro.md` D-4.1.1
+  (offer-level `Stan opakowania` przestaje być WYŁĄCZNIE warstwą surową —
+  dostaje też odpowiednik w atrybutach WC).
+- **Zależności:** brak (decyzja podjęta tą sesją, tu spisana).
+
+### P-21.5b — qutlet-allegro: implementacja atrybutu „Stan opakowania"
+- **Repo:** qutlet-allegro (slice `OfferSync/`)
+- **Zakres:** `OfferMapper::packaging_condition()` (ekstrakcja offer-level
+  parametru „Stan opakowania", mirror `condition_raw()`), `ProductWriter`
+  (nowa prywatna `append_packaging_condition()` + wpięcie do `upsert()` PRZED
+  `build_attributes()`, wzorem `apply_unit_overrides()`) + testy jednostkowe.
+- **Zależności:** P-21.5a (kontrakt D-21.5.1 jako źródło literałów/mechanizmu).
 
 ### P-21.6 — Dodanie „stanu opakowania" do metaboksu „Stan produktu" [OTWARTE, zależne od P-21.5]
 Repo (przypuszczalnie): qutlet-core, `ProductConditionFields` (metabox „Stan
