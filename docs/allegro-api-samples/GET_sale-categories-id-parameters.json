@@ -1,0 +1,607 @@
+[
+    {
+        "categoryId": "85166",
+        "parameters": [
+            {
+                "id": "223333",
+                "name": "Szerokość produktu",
+                "type": "float",
+                "required": false,
+                "requiredForProduct": false,
+                "requiredIf": null,
+                "displayedIf": null,
+                "unit": "cm",
+                "options": {
+                    "ambiguousValueId": null,
+                    "dependsOnParameterId": null,
+                    "describesProduct": true,
+                    "customValuesEnabled": false
+                },
+                "restrictions": {
+                    "min": 0,
+                    "max": 1000000,
+                    "range": false,
+                    "precision": 2
+                },
+                "formerData": {
+                    "names": [
+                        "Szerokość mebla",
+                        "Długość produktu",
+                        "Szerokość stołu",
+                        "Szerokość (mm)",
+                        "Długość",
+                        "Długość całkowita"
+                    ]
+                }
+            },
+            {
+                "id": "223329",
+                "name": "Wysokość produktu",
+                "type": "float",
+                "required": false,
+                "requiredForProduct": false,
+                "requiredIf": null,
+                "displayedIf": null,
+                "unit": "cm",
+                "options": {
+                    "ambiguousValueId": null,
+                    "dependsOnParameterId": null,
+                    "describesProduct": true,
+                    "customValuesEnabled": false
+                },
+                "restrictions": {
+                    "min": 0,
+                    "max": 1000000,
+                    "range": false,
+                    "precision": 2
+                }
+            },
+            {
+                "id": "201321",
+                "name": "Głębokość produktu",
+                "type": "float",
+                "required": false,
+                "requiredForProduct": false,
+                "requiredIf": null,
+                "displayedIf": null,
+                "unit": "cm",
+                "options": {
+                    "ambiguousValueId": null,
+                    "dependsOnParameterId": null,
+                    "describesProduct": true,
+                    "customValuesEnabled": false
+                },
+                "restrictions": {
+                    "min": 0,
+                    "max": 1000000,
+                    "range": false,
+                    "precision": 2
+                },
+                "formerData": {
+                    "names": [
+                        "Głębokość"
+                    ]
+                }
+            },
+            {
+                "id": "203709",
+                "name": "Waga produktu",
+                "type": "float",
+                "required": false,
+                "requiredForProduct": false,
+                "requiredIf": null,
+                "displayedIf": null,
+                "unit": "g",
+                "options": {
+                    "ambiguousValueId": null,
+                    "dependsOnParameterId": null,
+                    "describesProduct": true,
+                    "customValuesEnabled": false
+                },
+                "restrictions": {
+                    "min": 0,
+                    "max": 1000000,
+                    "range": false,
+                    "precision": 2
+                },
+                "formerData": {
+                    "ids": [
+                        "210286",
+                        "242693"
+                    ]
+                }
+            },
+            {
+                "id": "17448",
+                "name": "Waga produktu z opakowaniem jednostkowym",
+                "type": "float",
+                "required": false,
+                "requiredForProduct": false,
+                "requiredIf": null,
+                "displayedIf": null,
+                "unit": "kg",
+                "options": {
+                    "ambiguousValueId": null,
+                    "dependsOnParameterId": null,
+                    "describesProduct": true,
+                    "customValuesEnabled": false
+                },
+                "restrictions": {
+                    "min": 0,
+                    "max": 1000000,
+                    "range": false,
+                    "precision": 3
+                }
+            }
+        ]
+    },
+    {
+        "categoryId": "4575",
+        "parameters": [
+            {
+                "id": "224701",
+                "name": "Waga produktu",
+                "type": "integer",
+                "required": false,
+                "requiredForProduct": false,
+                "requiredIf": null,
+                "displayedIf": null,
+                "unit": "g",
+                "options": {
+                    "ambiguousValueId": null,
+                    "dependsOnParameterId": null,
+                    "describesProduct": true,
+                    "customValuesEnabled": false
+                },
+                "restrictions": {
+                    "min": 0,
+                    "max": 1000,
+                    "range": false
+                }
+            },
+            {
+                "id": "17448",
+                "name": "Waga produktu z opakowaniem jednostkowym",
+                "type": "float",
+                "required": false,
+                "requiredForProduct": false,
+                "requiredIf": null,
+                "displayedIf": null,
+                "unit": "kg",
+                "options": {
+                    "ambiguousValueId": null,
+                    "dependsOnParameterId": null,
+                    "describesProduct": true,
+                    "customValuesEnabled": false
+                },
+                "restrictions": {
+                    "min": 0,
+                    "max": 1000000,
+                    "range": false,
+                    "precision": 3
+                }
+            }
+        ]
+    },
+    {
+        "categoryId": "260041",
+        "parameters": [
+            {
+                "id": "206642",
+                "name": "Szerokość produktu z podstawą",
+                "type": "float",
+                "required": false,
+                "requiredForProduct": false,
+                "requiredIf": null,
+                "displayedIf": null,
+                "unit": "cm",
+                "options": {
+                    "ambiguousValueId": null,
+                    "dependsOnParameterId": null,
+                    "describesProduct": true,
+                    "customValuesEnabled": false
+                },
+                "restrictions": {
+                    "min": 0,
+                    "max": 1000000,
+                    "range": false,
+                    "precision": 2
+                }
+            },
+            {
+                "id": "206650",
+                "name": "Wysokość produktu z podstawą",
+                "type": "float",
+                "required": false,
+                "requiredForProduct": false,
+                "requiredIf": null,
+                "displayedIf": null,
+                "unit": "cm",
+                "options": {
+                    "ambiguousValueId": null,
+                    "dependsOnParameterId": null,
+                    "describesProduct": true,
+                    "customValuesEnabled": false
+                },
+                "restrictions": {
+                    "min": 0,
+                    "max": 1000000,
+                    "range": false,
+                    "precision": 2
+                }
+            },
+            {
+                "id": "206654",
+                "name": "Głębokość produktu z podstawą",
+                "type": "float",
+                "required": false,
+                "requiredForProduct": false,
+                "requiredIf": null,
+                "displayedIf": null,
+                "unit": "cm",
+                "options": {
+                    "ambiguousValueId": null,
+                    "dependsOnParameterId": null,
+                    "describesProduct": true,
+                    "customValuesEnabled": false
+                },
+                "restrictions": {
+                    "min": 0,
+                    "max": 1000000,
+                    "range": false,
+                    "precision": 2
+                }
+            },
+            {
+                "id": "206662",
+                "name": "Waga z podstawą",
+                "type": "float",
+                "required": false,
+                "requiredForProduct": false,
+                "requiredIf": null,
+                "displayedIf": null,
+                "unit": "kg",
+                "options": {
+                    "ambiguousValueId": null,
+                    "dependsOnParameterId": null,
+                    "describesProduct": true,
+                    "customValuesEnabled": false
+                },
+                "restrictions": {
+                    "min": 0,
+                    "max": 1000000,
+                    "range": false,
+                    "precision": 2
+                }
+            },
+            {
+                "id": "223333",
+                "name": "Szerokość produktu",
+                "type": "float",
+                "required": false,
+                "requiredForProduct": false,
+                "requiredIf": null,
+                "displayedIf": null,
+                "unit": "cm",
+                "options": {
+                    "ambiguousValueId": null,
+                    "dependsOnParameterId": null,
+                    "describesProduct": true,
+                    "customValuesEnabled": false
+                },
+                "restrictions": {
+                    "min": 0,
+                    "max": 1000000,
+                    "range": false,
+                    "precision": 2
+                },
+                "formerData": {
+                    "names": [
+                        "Szerokość mebla",
+                        "Długość produktu",
+                        "Szerokość stołu",
+                        "Szerokość (mm)",
+                        "Długość",
+                        "Długość całkowita"
+                    ]
+                }
+            },
+            {
+                "id": "223329",
+                "name": "Wysokość produktu",
+                "type": "float",
+                "required": false,
+                "requiredForProduct": false,
+                "requiredIf": null,
+                "displayedIf": null,
+                "unit": "cm",
+                "options": {
+                    "ambiguousValueId": null,
+                    "dependsOnParameterId": null,
+                    "describesProduct": true,
+                    "customValuesEnabled": false
+                },
+                "restrictions": {
+                    "min": 0,
+                    "max": 1000000,
+                    "range": false,
+                    "precision": 2
+                }
+            },
+            {
+                "id": "201321",
+                "name": "Głębokość produktu",
+                "type": "float",
+                "required": false,
+                "requiredForProduct": false,
+                "requiredIf": null,
+                "displayedIf": null,
+                "unit": "cm",
+                "options": {
+                    "ambiguousValueId": null,
+                    "dependsOnParameterId": null,
+                    "describesProduct": true,
+                    "customValuesEnabled": false
+                },
+                "restrictions": {
+                    "min": 0,
+                    "max": 1000000,
+                    "range": false,
+                    "precision": 2
+                },
+                "formerData": {
+                    "names": [
+                        "Głębokość"
+                    ]
+                }
+            },
+            {
+                "id": "206686",
+                "name": "Waga produktu",
+                "type": "float",
+                "required": false,
+                "requiredForProduct": false,
+                "requiredIf": null,
+                "displayedIf": null,
+                "unit": "kg",
+                "options": {
+                    "ambiguousValueId": null,
+                    "dependsOnParameterId": null,
+                    "describesProduct": true,
+                    "customValuesEnabled": false
+                },
+                "restrictions": {
+                    "min": 0,
+                    "max": 1000000,
+                    "range": false,
+                    "precision": 2
+                }
+            },
+            {
+                "id": "17448",
+                "name": "Waga produktu z opakowaniem jednostkowym",
+                "type": "float",
+                "required": false,
+                "requiredForProduct": false,
+                "requiredIf": null,
+                "displayedIf": null,
+                "unit": "kg",
+                "options": {
+                    "ambiguousValueId": null,
+                    "dependsOnParameterId": null,
+                    "describesProduct": true,
+                    "customValuesEnabled": false
+                },
+                "restrictions": {
+                    "min": 0,
+                    "max": 1000000,
+                    "range": false,
+                    "precision": 3
+                }
+            }
+        ]
+    },
+    {
+        "categoryId": "260556",
+        "parameters": [
+            {
+                "id": "226929",
+                "name": "Szerokość grilla",
+                "type": "float",
+                "required": true,
+                "requiredForProduct": true,
+                "requiredIf": null,
+                "displayedIf": null,
+                "unit": "cm",
+                "options": {
+                    "ambiguousValueId": null,
+                    "dependsOnParameterId": null,
+                    "describesProduct": true,
+                    "customValuesEnabled": false
+                },
+                "restrictions": {
+                    "min": 0,
+                    "max": 1000,
+                    "range": false,
+                    "precision": 2
+                }
+            },
+            {
+                "id": "226933",
+                "name": "Głębokość grilla",
+                "type": "float",
+                "required": false,
+                "requiredForProduct": false,
+                "requiredIf": null,
+                "displayedIf": null,
+                "unit": "cm",
+                "options": {
+                    "ambiguousValueId": null,
+                    "dependsOnParameterId": null,
+                    "describesProduct": true,
+                    "customValuesEnabled": false
+                },
+                "restrictions": {
+                    "min": 0,
+                    "max": 1000,
+                    "range": false,
+                    "precision": 2
+                }
+            },
+            {
+                "id": "226937",
+                "name": "Wysokość grilla",
+                "type": "float",
+                "required": true,
+                "requiredForProduct": true,
+                "requiredIf": null,
+                "displayedIf": null,
+                "unit": "cm",
+                "options": {
+                    "ambiguousValueId": null,
+                    "dependsOnParameterId": null,
+                    "describesProduct": true,
+                    "customValuesEnabled": false
+                },
+                "restrictions": {
+                    "min": 0,
+                    "max": 200,
+                    "range": false,
+                    "precision": 2
+                }
+            },
+            {
+                "id": "5253",
+                "name": "Waga",
+                "type": "float",
+                "required": false,
+                "requiredForProduct": false,
+                "requiredIf": null,
+                "displayedIf": null,
+                "unit": "kg",
+                "options": {
+                    "ambiguousValueId": null,
+                    "dependsOnParameterId": null,
+                    "describesProduct": true,
+                    "customValuesEnabled": false
+                },
+                "restrictions": {
+                    "min": 0,
+                    "max": 100,
+                    "range": false,
+                    "precision": 2
+                },
+                "formerData": {
+                    "ids": [
+                        "226949",
+                        "226985",
+                        "129399"
+                    ]
+                }
+            },
+            {
+                "id": "17448",
+                "name": "Waga produktu z opakowaniem jednostkowym",
+                "type": "float",
+                "required": false,
+                "requiredForProduct": false,
+                "requiredIf": null,
+                "displayedIf": null,
+                "unit": "kg",
+                "options": {
+                    "ambiguousValueId": null,
+                    "dependsOnParameterId": null,
+                    "describesProduct": true,
+                    "customValuesEnabled": false
+                },
+                "restrictions": {
+                    "min": 0,
+                    "max": 1000000,
+                    "range": false,
+                    "precision": 3
+                }
+            }
+        ]
+    },
+    {
+        "categoryId": "19357",
+        "parameters": [
+            {
+                "id": "17448",
+                "name": "Waga produktu z opakowaniem jednostkowym",
+                "type": "float",
+                "required": false,
+                "requiredForProduct": false,
+                "requiredIf": null,
+                "displayedIf": null,
+                "unit": "kg",
+                "options": {
+                    "ambiguousValueId": null,
+                    "dependsOnParameterId": null,
+                    "describesProduct": true,
+                    "customValuesEnabled": false
+                },
+                "restrictions": {
+                    "min": 0,
+                    "max": 1000000,
+                    "range": false,
+                    "precision": 3
+                }
+            },
+            {
+                "id": "207838",
+                "name": "Długość przewodu",
+                "type": "float",
+                "required": false,
+                "requiredForProduct": false,
+                "requiredIf": null,
+                "displayedIf": null,
+                "unit": "m",
+                "options": {
+                    "ambiguousValueId": null,
+                    "dependsOnParameterId": null,
+                    "describesProduct": true,
+                    "customValuesEnabled": false
+                },
+                "restrictions": {
+                    "min": 0,
+                    "max": 25,
+                    "range": false,
+                    "precision": 2
+                },
+                "formerData": {
+                    "ids": [
+                        "25688"
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "categoryId": "260338",
+        "parameters": [
+            {
+                "id": "17448",
+                "name": "Waga produktu z opakowaniem jednostkowym",
+                "type": "float",
+                "required": false,
+                "requiredForProduct": false,
+                "requiredIf": null,
+                "displayedIf": null,
+                "unit": "kg",
+                "options": {
+                    "ambiguousValueId": null,
+                    "dependsOnParameterId": null,
+                    "describesProduct": true,
+                    "customValuesEnabled": false
+                },
+                "restrictions": {
+                    "min": 0,
+                    "max": 1000000,
+                    "range": false,
+                    "precision": 3
+                }
+            }
+        ]
+    }
+]

@@ -221,3 +221,48 @@ Na Windowsie przez most MCP podawaj ścieżkę ze **slashami** (`C:/…`) — ba
 drodze zjadane i katalog z realnym PII powstaje w zupełnie innym miejscu. Surowe wyjście
 trzymać POZA repo; do repo wchodzą wyłącznie pliki zredagowane jak wyżej (patrz
 `.gitignore` — deny-all + allow-lista).
+
+## P-21.2 — słownik jednostek parametrów wagowo-wymiarowych (punkt wielorepowy → P-21.2a + P-21.2b)
+
+Ground-truth pod FAZĘ 21 (P-21.2, `docs/plan.md`): jakich jednostek (cm/g czy inaczej)
+Allegro faktycznie używa dla parametrów wagi/wymiarów. Payload oferty
+(`productSet[0].product.parameters[]`, próbki P-3.1) **nie niesie jednostki** — trzeba
+było sięgnąć po osobny, autorytatywny endpoint słownika parametrów kategorii, którego
+próbka P-3.2 NIE obejmowała (`sample-categories` pobierał tylko `/sale/categories` i
+`/sale/categories/{id}`, nie `/sale/categories/{id}/parameters`). Jak w P-3.1/P-3.2,
+mechanizm pobrania okazał się kodem w `qutlet-allegro` (token OAuth + PHP runtime WP,
+`wp eval` zablokowany przez most MCP), więc P-21.2 rozpada się na dwa pod-punkty.
+
+- **Data pobrania:** 2026-08-18.
+- **Środowisko:** produkcja (`https://api.allegro.pl`), slot OAuth **`production/read`**
+  (wymagał ponownej autoryzacji sesji — poprzedni refresh token wygasł, `invalid_grant`).
+
+### P-21.2a — rozszerzenie komendy `sample-categories` (qutlet-allegro)
+`ApiSamples\CategorySamplesCommand` dostała nową, opcjonalną flagę
+`--parameter-category-ids=<id1,id2,…>`: dla każdego podanego id pobiera
+`GET /sale/categories/{id}/parameters` (pole `unit` per parametr) i zapisuje jeden
+plik z tablicą wyników. Reszta komendy (root/traversal/single kategoria) bez zmian —
+addytywne rozszerzenie, nie nowa komenda (w odróżnieniu od D-3.2.1 dla P-3.2 — tu to
+ta sama rodzina endpointów `/sale/categories/…`, nie inna).
+
+### P-21.2b — próbka + kontrakt (qutlet-meta)
+Dobór: 6 kategorii z próbki ofert P-3.1 (`85166` audio, `4575` mysz, `260041` akcesoria
+monitora, `260556` AGD/grill, `19357` zasilanie, `260338` materiały eksploatacyjne) —
+te same oferty, w których P-4/P-6 ground-truth znalazł realne wartości wagi/wymiarów.
+Surowa zwrotka per kategoria ma setki parametrów (cały słownik kategorii, ~10 MB
+łącznie dla 6 kategorii) — do repo trafia **przycięty** wynik: tylko parametry
+wagowo-wymiarowe zidentyfikowane w próbce ofert (16 `id` parametrów), verbatim co do
+kształtu obiektu (`id`/`name`/`type`/`unit`/`options`/`restrictions`/`formerData`).
+Kategorie to dane publiczne (jak P-3.2) — zero redakcji.
+
+### Pliki (P-21.2b)
+| plik | endpoint | uwagi |
+|---|---|---|
+| `GET_sale-categories-id-parameters.json` | `GET /sale/categories/{id}/parameters` | Tablica 6 zwrotek (`{categoryId, parameters[]}`), **przycięta** do 16 parametrów wagowo-wymiarowych (z ok. kilkuset per kategoria). Kontrakt jednostek: `docs/kontrakt-danych.md` §15. |
+
+### Odtworzenie (P-21.2)
+```
+wp qutlet-allegro sample-categories --out=<katalog-poza-repo> \
+  --parameter-category-ids=85166,4575,260041,260556,19357,260338
+```
+Surowe (nieprzycięte) wyjście trzymać POZA repo.

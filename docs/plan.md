@@ -7371,15 +7371,61 @@ tekstu wyżej ustalone PRZY REALIZACJI, nie domyślnie:**
 - PR: `qutlet-core`#34.
 - **Zależności:** brak (patrz P-21.1a).
 
-### P-21.2 — Ground-truth: atrybuty wagowe/wymiarowe z Allegro [OTWARTE]
-Sprawdzić w realnych próbkach (`docs/allegro-api-samples/`) i/lub w kodzie
-`qutlet-allegro`, jakie parametry oferty (`productSet[0].product.parameters[]`,
-patrz `docs/mapping-allegro.md` §4b) niosą wagę i wymiary (długość/szerokość/
-wysokość) produktu/paczki, oraz w JAKICH JEDNOSTKACH Allegro je przekazuje —
-użytkownik podejrzewa cm i gramy, ale to DO POTWIERDZENIA w realnych danych,
-nie założenie gotowe do wpisania w kod. Wynik (nazwy parametrów + jednostki)
-zasila P-21.3/P-21.4 i powinien trafić do `docs/kontrakt-danych.md` jako nowa
-sekcja/literały.
+### 🟡 P-21.2 — Ground-truth: atrybuty wagowe/wymiarowe z Allegro (punkt wielorepowy → P-21.2a + P-21.2b)
+
+Cel: sprawdzić w realnych danych, jakie parametry oferty
+(`productSet[0].product.parameters[]`, `docs/mapping-allegro.md` §4b) niosą wagę i
+wymiary (długość/szerokość/wysokość) produktu/paczki, oraz w JAKICH JEDNOSTKACH
+Allegro je przekazuje — użytkownik podejrzewał cm i gramy, ale to wymagało
+potwierdzenia w realnych danych, nie założenia.
+
+**Realizacja (sesja 2026-08-18):** próbki ofert (`GET_sale-product-offers.json`,
+P-3.1) ujawniły parametry wagowo-wymiarowe, ale **obiekt parametru nie niesie
+jednostki** (`id`/`name`/`values`/`valuesIds`/`rangeValue` — bez `unit`) — jednostkę
+definiuje osobny endpoint słownika parametrów kategorii
+(`GET /sale/categories/{id}/parameters`), którego próbka P-3.2 NIE obejmowała.
+Ustalenie jednostki wymagało więc DOCIĄGNIĘCIA nowych danych z produkcyjnego API
+(decyzja użytkownika: „możesz użyć produkcyjnego read api, nie ma problemu"), co jest
+kodem w `qutlet-allegro` (jak w P-3.1/P-3.2) — punkt rozpada się na dwa pod-punkty.
+Blokada po drodze: refresh token slotu `production/read` wygasł (`invalid_grant`) —
+wymagał ręcznego reconnectu przez użytkownika (WooCommerce → Allegro OAuth) w
+przeglądarce, zanim komenda mogła dokończyć pobranie.
+
+**D-21.2.1 (wnioski — USTALONE, potwierdzone realnymi danymi produkcyjnymi, pełna
+tabela i uzasadnienie: `docs/kontrakt-danych.md` §15):**
+- Wymiary liniowe produktu (Szerokość/Wysokość/Głębokość, warianty „z podstawą”/
+  „grilla”) → **`cm`**, potwierdzone we wszystkich znalezionych wystąpieniach.
+- **Waga NIE jest jednolicie `g` ani `kg`** — zależy od `id` parametru (czyli od
+  kategorii), NAWET gdy widoczna nazwa jest identyczna („Waga produktu” = `g` w
+  kategorii audio/mysz, `kg` w kategorii akcesoriów monitora). Wyjątek: `Waga
+  produktu z opakowaniem jednostkowym` (`id 17448`) jest globalnie `kg` w całej
+  próbce (jedyny id powtórzony we wszystkich 6 kategoriach).
+- Nie każdy parametr „długościowy” to `cm` — `Długość przewodu` (kategoria
+  ładowarek) jest w **`m`**, kontrprzykład w tej samej próbce.
+- Pełny mechanizm (P-21.3) musi rozstrzygać jednostkę PER `id` parametru ZE
+  SŁOWNIKA kategorii danej oferty — nie da się zahardkodować raz na zawsze tabeli
+  `nazwa → jednostka` (391 różnych nazw parametrów w całej próbce ofert, tu
+  sprawdzony tylko ułamek).
+
+### 🟡 P-21.2a — qutlet-allegro: rozszerzenie `sample-categories` o słownik parametrów
+- **Repo:** qutlet-allegro (slice `ApiSamples/`)
+- **Zakres:** nowa opcjonalna flaga `--parameter-category-ids=<id1,id2,…>` w
+  `CategorySamplesCommand` — dla każdego id pobiera `GET /sale/categories/{id}/parameters`
+  (slot `production/read`), zapisuje jeden plik z tablicą `{categoryId, parameters}`.
+  Addytywne rozszerzenie ISTNIEJĄCEJ komendy (nie nowa komenda) — w odróżnieniu od
+  D-3.2.1 (P-3.2), bo to ta sama rodzina endpointów `/sale/categories/…`.
+- **Zależności:** FAZA 2 (slot `production/read`, ważny token — wymagał reconnectu
+  tej sesji).
+
+### 🟡 P-21.2b — qutlet-meta: próbka + kontrakt jednostek
+- **Repo:** qutlet-meta (`docs/allegro-api-samples/`, `docs/kontrakt-danych.md`)
+- **Zakres:** z surowego wyjścia P-21.2a złożono przycięty plik-próbkę
+  (`GET_sale-categories-id-parameters.json` — 16 parametrów wagowo-wymiarowych z 6
+  kategorii, z ~kilkuset per kategoria w surowej zwrotce) + provenance w
+  `SOURCES.md` (sekcja P-21.2) + kontrakt jednostek `docs/kontrakt-danych.md` §15
+  (D-21.2.1) + dopisek do `docs/mapping-allegro.md` §4b (jednostka nie w payloadzie
+  oferty, per-id nie per-nazwa).
+- **Zależności:** P-21.2a (dostarcza surowe dane).
 
 ### P-21.3 — Dodanie jednostek do wymiarów i wagi [OTWARTE, zależne od P-21.2]
 Prawdopodobnie do pogodzenia z globalnymi ustawieniami jednostek WooCommerce
