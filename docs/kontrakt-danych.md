@@ -1268,7 +1268,8 @@ konwersji.
 
 4. **Tabela konwersji — jednostki kanoniczne.** Długość → `cm` jako baza
    (`mm`=0.1, `cm`=1, `m`=100, `in`=2.54, `yd`=91.44); waga → `g` jako baza
-   (`g`=1, `kg`=1000, `oz`≈28.3495, `lb`≈453.592) — pełny zestaw jednostek
+   (`g`=1, `kg`=1000, `oz`≈28.3495, `lbs`≈453.592 — literał `lbs`, VERBATIM
+   z `WC_Enums\WeightUnit::POUND`, NIE `lb`) — pełny zestaw jednostek
    dostępnych w ustawieniach WooCommerce (nie tylko `cm`/`kg` widziane dziś
    lokalnie), żeby mechanizm nie wymagał zmiany przy zmianie ustawienia
    sklepu.
