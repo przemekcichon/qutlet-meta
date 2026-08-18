@@ -7140,7 +7140,7 @@ P-20.7a/b — kolejność zalecana, nie wymuszona jednoczesność, patrz D-20.9)
 - **Zależności:** brak — może (i powinien, D-20.9) wejść PRZED P-20.7b, bez
   presji czasowej (bezpieczny niezależnie od stanu ACF w core).
 
-### P-20.7b — qutlet-core: „Cena Allegro" → natywne Product Data, „URL oferty Allegro" → link
+### 🟢 P-20.7b — qutlet-core: „Cena Allegro" → natywne Product Data, „URL oferty Allegro" → link
 
 - **Repo:** qutlet-core
 - `AllegroChannelFields`: usunięcie pola `cena_allegro` z `fields` (D-20.8);
