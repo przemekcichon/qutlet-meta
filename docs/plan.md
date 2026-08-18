@@ -6999,7 +6999,7 @@ P-20.7a/b — kolejność zalecana, nie wymuszona jednoczesność, patrz D-20.9)
   zgłoszenie dotyczyło wyłącznie nazwy pozycji menu.
 - **Zależności:** brak.
 
-### P-20.4a — qutlet-core: przygotowanie scalenia metaboksów nazwy
+### 🟢 P-20.4a — qutlet-core: przygotowanie scalenia metaboksów nazwy
 
 - **Repo:** qutlet-core
 - `RewrittenFields`: etykieta pola `field_qutlet_podnazwa` — „Podnazwa" →
@@ -7018,7 +7018,7 @@ P-20.7a/b — kolejność zalecana, nie wymuszona jednoczesność, patrz D-20.9)
   potwierdzone gruntownie: jedyny wołający to właśnie ten selektor).
 - **Zależności:** brak (może ruszyć jako pierwszy — P-20.4b go konsumuje).
 
-### P-20.4b — qutlet-ai: scalony metaboks „Nazwa produktu (AI)"
+### 🟢 P-20.4b — qutlet-ai: scalony metaboks „Nazwa produktu (AI)"
 
 - **Repo:** qutlet-ai
 - `TitleGenerationMetaBox` staje się jedynym metaboksem — tytuł „Qutlet —
@@ -7051,6 +7051,29 @@ P-20.7a/b — kolejność zalecana, nie wymuszona jednoczesność, patrz D-20.9)
   merge core PRZED merge ai). Przeniesienie `#titlediv` jest CAŁKOWICIE
   wewnątrz `qutlet-ai` — zero zależności od core poza tym, co P-20.4a i tak
   już dostarcza.
+- **Realizacja (sesja 2026-08-18, `qutlet-ai`#16) — odstępstwa od tekstu
+  wyżej, ustalone PRZY REALIZACJI, nie domyślnie:**
+  - **Pozycja boxa: `acf_after_title` (pełna szerokość głównej kolumny),
+    NIE `side`.** Weryfikacja wizualna (jak zapowiedziano wyżej) pokazała, że
+    scalony box niesie za dużo treści na wąski `side` (font-size `#title`
+    trzeba było sztucznie zmniejszać, żeby długie nazwy się mieściły).
+    Użytkownik, zobaczywszy wersję `side`, sam przeciągnął box pod tytuł — po
+    czym potwierdził wprost, że ma to być NOWA, stała pozycja dla każdego
+    admina (nie per-user drag). `register()` rejestruje więc box w
+    kontekście `acf_after_title` (ACF Pro, twarda zależność repo, D-G5) —
+    font-size `#title` zostaje bez zmian (pełna szerokość), ACF-owy margines
+    tego kontekstu (`margin:20px 0 -20px`, myślany pod małe pola ACF) nadpisany
+    inline w JS (zerował odstęp do kolejnego metaboxa).
+  - **Odnośnik bezpośredni (`#edit-slug-box`) ląduje POD CAŁYM boxem**, nie
+    zaraz pod tytułem jak w `#titlediv` natywnie — JS wypina go z `#titlediv`
+    i wstawia jako sibling całego postboxa, żeby nie siedział wciśnięty
+    między tytułem a „Druga linia nazwy produktu".
+  - **Dodana etykieta+opis „Pierwsza linia nazwy produktu"** nad polem
+    tytułu (na wyraźną prośbę użytkownika, żeby pasowała do „Druga linia
+    nazwy produktu" tuż pod nią) — inline `style` przepisany z computed
+    values prawdziwego pola ACF (reużycie klasy `acf-label` okazało się
+    kruche, kaskada ACF różnicuje wagę czcionki/marginesy w zależności od
+    obecności rodzica `.acf-field`).
 
 ### P-20.5 — qutlet-core: „Prompt lokalny" — rename etykiety
 
