@@ -1307,8 +1307,10 @@ osobno zweryfikowana dla każdej kategorii — do rewizji, gdyby realne dane
 (kolejne kategorie, D-21.3.1 pkt 1 „lista nie jest zamknięta") pokazały lepszy
 kandydat.**
 
-**D-21.4.1 (USTALONE — ocena wykonawcy wg zasady użytkownika, sesja
-2026-08-18):**
+**D-21.4.1 (USTALONE, sesja 2026-08-18 — pkt 1: ocena wykonawcy wg zasady
+użytkownika, patrz akapit wyżej; pkt 2/3: decyzje inżynierskie wykonawcy,
+niezależne od tej zasady — kształt zwrotki i polityka zapisu wynikają z
+istniejącego mechanizmu D-21.3.1, nie z oceny „opakowanie > goły produkt"):**
 
 1. **Rozszerzenie identyfikacji kandydata o oś fizyczną** (dziś
    `WEIGHT_DIMENSION_CANDIDATES` zna tylko rodzaj `dimension`/`weight`, D-21.3.1
@@ -1337,7 +1339,17 @@ kandydat.**
    Priorytet wagi: `Waga produktu z opakowaniem jednostkowym` (decyzja
    użytkownika wprost, id `17448`, jedyny id spójny globalnie §15) > `Waga z
    podstawą` (analogicznie do wymiarów — cała bryła) > `Waga produktu` > `Waga`
-   (bez słowa „produktu", tylko kategoria grilli).
+   (bez słowa „produktu", tylko kategoria grilli). W odróżnieniu od kolizji
+   wymiarowej (pkt wyżej), ta kolejność JEST potwierdzona realną kolizją w tej
+   samej próbce §15: kategoria `260041` niesie jednocześnie `Waga z podstawą`
+   (`5.59` kg), `Waga produktu` (`0.15` kg) i `Waga produktu z opakowaniem
+   jednostkowym` (`8.61` kg) na TEJ SAMEJ ofercie — wartości rosną w kolejności
+   zgodnej z wybranym priorytetem (opakowanie ciężarem opakowania/gabarytu
+   zbiorczego > sama podstawa > goły produkt). Kategoria `260556` (grill) niesie
+   jednocześnie `Waga` (`6.9` kg) i `Waga produktu z opakowaniem jednostkowym`
+   (`10.2` kg) — również zgodnie z kierunkiem priorytetu. „Grilla"/„produktu"/
+   „z podstawą" jako RODZINY wciąż się nie krzyżują w próbce (rozłączne
+   kategorie) — total order między nimi pozostaje formalny, nie zweryfikowany.
 
 2. **Kształt zwrotki — nowa metoda, nie parsowanie stringa.**
    `weight_dimension_attributes()` (D-21.3.1) zwraca `"wartość jednostka"` jako
