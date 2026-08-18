@@ -7346,7 +7346,7 @@ tekstu wyżej ustalone PRZY REALIZACJI, nie domyślnie:**
   nie zmienia, więc mechanizm kolejności w P-21.1b działa niezależnie od
   kolejności merge'a).
 
-### 🟡 P-21.1a — qutlet-ai: rename metaboksu „Generacja AI (przeróbka)"
+### 🟢 P-21.1a — qutlet-ai: rename metaboksu „Generacja AI (przeróbka)"
 
 - **Repo:** qutlet-ai
 - `GenerationMetaBox::register()` — tytuł widoczny w adminie: „Generacja AI
@@ -7356,7 +7356,7 @@ tekstu wyżej ustalone PRZY REALIZACJI, nie domyślnie:**
 - PR: `qutlet-ai`#18.
 - **Zależności:** brak (patrz „Realizacja" wyżej).
 
-### 🟡 P-21.1b — qutlet-core: docelowa kolejność metaboxów + 2 rename'y
+### 🟢 P-21.1b — qutlet-core: docelowa kolejność metaboxów + 2 rename'y
 
 - **Repo:** qutlet-core
 - Nowy slice `ProductEditorLayout\MetaBoxOrder` — seed usermeta
