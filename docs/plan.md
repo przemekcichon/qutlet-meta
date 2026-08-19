@@ -7884,7 +7884,7 @@ odczytu kodu 1:1) — wyjątek „punkt czysto-kodowy" (patrz `CLAUDE.md` →
   zero kodu.
 - **Zależności:** brak.
 
-#### 🟡 P-22.3b — Custom blok `.pd-stock` (qutlet-theme)
+#### P-22.3b — Custom blok `.pd-stock` (qutlet-theme)
 - **Repo:** qutlet-theme.
 - **Zakres:** markup `.pd-stock` w `woocommerce/content-single-product.php`
   (między `.eco-note` a `woocommerce_template_single_add_to_cart()`, layout z
