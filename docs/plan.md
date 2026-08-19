@@ -7725,7 +7725,7 @@ wzorzec dla P-21.5 i miejsce bugu P-21.7), P-20.8 (`ProductConditionFields`/
 
 ---
 
-## 🟦 FAZA 22 — Strona produktu: powiadomienie koszyka, pozycja CTA, „inne sztuki tego modelu", dostępność, teksty per klasa stanu
+## 🟨 FAZA 22 — Strona produktu: powiadomienie koszyka, pozycja CTA, „inne sztuki tego modelu", dostępność, teksty per klasa stanu
 
 Cel: kolejna iteracja frontendu strony produktu. Źródło projektu: nowy
 prototyp `design/vanilla/produkt-inne-sztuki.html` (+ towarzyszące zmiany
@@ -7743,7 +7743,21 @@ mimo to część decyzji zostaje OTWARTA do potwierdzenia przy realizacji
 P-22.2/P-22.3 przestawione względem siebie, bo dotykają dokładnie tego
 samego regionu szablonu (patrz zależność przy P-22.3).
 
-### P-22.1 — Powiadomienie WooCommerce po dodaniu do koszyka renderuje się na pełną szerokość ekranu
+### 🟢 P-22.1 — Powiadomienie WooCommerce po dodaniu do koszyka renderuje się na pełną szerokość ekranu
+
+**Zrealizowane, zmergowane** — [qutlet-theme PR #36](https://github.com/przemekcichon/qutlet-theme/pull/36)
+(2026-08-19). Niezależna recenzja (`docs/review.md`): 🟢 CZYSTE, zero ustaleń
+blokujących.
+
+**Runtime finding tej sesji:** ground-truth niżej ("`wc-block-components-notice-banner`
+… występuje WYŁĄCZNIE na `page-cart.html`/`page-checkout.html`") jest NIEAKTUALNY —
+zweryfikowano Playwright na stronie produktu, że WooCommerce Core podmienia
+klasyczne szablony `notices/*.php` na blokowy wariant dla KAŻDEGO motywu blokowego
+(`wp_is_block_theme()`, `src/Blocks/Domain/Services/Notices.php:54`), nie tylko na
+cart/checkout. Nie wpływa na fix (celuje w zewnętrzny `.woocommerce-notices-wrapper`,
+wspólny dla obu wariantów) — zostawione jako korekta zapisu poniżej, nie
+przepisywane retroaktywnie.
+
 **Zgłoszenie:** po dodaniu produktu do koszyka natywny komunikat WooCommerce
 pojawia się tuż pod headerem, ale na całą szerokość ekranu, zamiast
 ograniczyć się do szerokości `.wrap`.
