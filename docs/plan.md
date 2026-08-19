@@ -8358,7 +8358,7 @@ potwierdzenia samej wtyczki formularzy.
   brancha/PR (może się okazać, że 2-3 reguły CSS wystarczą, bez potrzeby
   rozbudowanej sesji) do oceny na starcie realizacji.
 
-### P-23.3 — Formularz newslettera (Gravity Forms + dodatek Gravity Forms MailerLite)
+### 🟢 P-23.3 — Formularz newslettera (Gravity Forms + dodatek Gravity Forms MailerLite)
 
 **Ground-truth (sesja 2026-08-19):** Strona „Newsletter" (ID 20,
 `/newsletter/`) analogicznie do Kontaktu — `page-newsletter.php`, chrome z
