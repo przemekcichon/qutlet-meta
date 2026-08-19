@@ -8525,7 +8525,7 @@ mimo niego.** Opcje na przyszłość (żadna nie jest punktem tego planu):
 zgłoszenie do WooCommerce (upstream, poza naszym kodem), albo świadome
 zignorowanie jako nieszkodliwy szum logów dev.
 
-## 🟦 FAZA 24 — Regresja ikon SVG na Stronach zamrożonych przed P-11.5 (qutlet-theme)
+## 🟩 FAZA 24 — Regresja ikon SVG na Stronach zamrożonych przed P-11.5 (qutlet-theme)
 
 **Zgłoszenie (sesja 2026-08-19/20):** użytkownik zgłosił zepsute ikony w
 kartach „2eko"/„Co dostajesz jako Ekołowca" na stronie Newsletter (dwa
@@ -8561,35 +8561,52 @@ sprawdzone `wp post get <ID> --field=post_content` + grep):
 - **Jak to działa (ID 18):** 2× `.eko-icon` (te same braki), 3×
   `.how-fact-icon` (brak `how-fact-icon-cart`/`-shield`/`-leaf`). Wzorzec
   poprawny: `patterns/card-grid-eko.php`, `patterns/how-why.php`.
-- **Kontakt (ID 19) — SPRAWDZONE, NIE dotknięte:** `.contact-item-icon` w
-  żywej treści ma już poprawny markup (`wp:spacer` + obie klasy) — ta Strona
-  została wstawiona/naprawiona już PO P-11.5.
+- **Kontakt (ID 19) — SKOREKTOWANE PRZY REALIZACJI (sesja 2026-08-20):**
+  poprzedni ground-truth (sesja 2026-08-19/20, wpis wyżej) był BŁĘDNY —
+  żywy `post_content` miał TEN SAM regres, tylko głębszy: gołe `<svg>` bez
+  nawet `<span>` (nie `.contact-item-icon` bez modyfikatora, jak przy
+  eko/perk3/how-fact, a kompletny brak wrappera). Realny stan potwierdzony
+  `wp post get 19 --field=post_content` PRZED naprawą — 3× ikona
+  (`contact-item-icon-mail`/`-clock`/`-message`, wzorzec poprawny w
+  `patterns/contact-intro.php`). Naprawione RAZEM z ID 18/20 w tej samej
+  sesji (decyzja użytkownika — pełny zakres, nie osobny punkt).
 - Wszystkie 4 pliki patternów źródłowych są JUŻ poprawne (nic w nich do
   zmiany) — problem wyłącznie w DB (`post_content` skopiowany PRZED
   poprawką), nie w kodzie repo.
+- **Zrealizowane (sesja 2026-08-20):** `wp post update <ID> <plik>` (treść z
+  lokalnego pliku, 1:1 z odpowiednim patternem) dla ID 18, 19, 20 — 13
+  instancji łącznie (5+5+3). Zero zmian w plikach repo (potwierdzone `git
+  status` czysty w `qutlet-meta` i `qutlet-theme`) — czysta resynchronizacja
+  DB, bez brancha/PR (nic do recenzji w `docs/review.md`, który operuje na
+  diffie PR-a). Zweryfikowane wizualnie (Playwright MCP, zrzuty ekranu
+  wszystkich 3 stron) — ikony renderują się jako kolorowe kwadraty/koła z
+  symbolem, zgodnie z prototypem.
 
 **Zakres:**
-- Zamiana w `post_content` obu Stron (ID 18, ID 20) starego markupu
-  (`<!-- wp:html --><span class="X"><svg>...</svg></span><!-- /wp:html -->`)
-  na aktualny markup 1:1 z odpowiedniego patternu (`wp:spacer` + bazowa +
-  modyfikator) — mechaniczna resynchronizacja, ZERO nowego CSS/PHP, zero
-  decyzji projektowej (poprawka już istnieje w plikach patternów, tylko nie
-  dotarła do tych 2 Stron).
-- Do potwierdzenia przy realizacji: podmiana ręcznie w edytorze (usunąć stary
-  blok `wp:html`, wstawić pattern na nowo z biblioteki) czy przez
-  `wp post update` (jak przy P-23.3 dla bloku GF) — obie ścieżki są poza
-  repo (DB), więc prawdopodobnie BEZ flipu 🟡/brancha w qutlet-meta (wyjątek
-  „punkt czysto-kodowy" — tu nawet plik motywu się nie zmienia, tylko treść w
-  DB; potwierdzić, nie zakładać z góry).
-- Przy realizacji: przejrzeć całą treść obu Stron pod kątem INNYCH instancji
-  tego samego problemu (ta sesja grep'owała tylko po znanych klasach ikon,
-  nie czytała całej treści linia po linii) — możliwe, że są inne miejsca
-  z tym samym wzorcem błędu.
+- Zamiana w `post_content` Stron (ID 18, 19, 20 — zakres rozszerzony przy
+  realizacji, patrz korekta ground-truth wyżej) starego markupu
+  (`<!-- wp:html --><span class="X"><svg>...</svg></span><!-- /wp:html -->`,
+  a dla ID 19 nawet bez `<span>`) na aktualny markup 1:1 z odpowiedniego
+  patternu (`wp:spacer` + bazowa + modyfikator) — mechaniczna
+  resynchronizacja, ZERO nowego CSS/PHP, zero decyzji projektowej (poprawka
+  już istnieje w plikach patternów, tylko nie dotarła do tych Stron).
+- **Rozstrzygnięte przy realizacji:** `wp post update <ID> <plik>` (treść z
+  lokalnego pliku wygenerowana 1:1 wg patternu, nie edycja ręczna w
+  edytorze) — deterministyczne i diff-owalne. Obie ścieżki są poza repo
+  (DB), więc BEZ flipu 🟡/brancha/PR w qutlet-meta (potwierdzone: `git
+  status` czysty w obu repo po naprawie) — jedynym śladem w qutlet-meta jest
+  ten wpis planu + flip 🟩 (wyjątek z Git workflow, jak w „Realizacja punktu
+  planu").
+- Przy realizacji przejrzano całą treść wszystkich 3 Stron linia po linii
+  (nie tylko grep po znanych klasach) — potwierdzono brak innych instancji
+  tego wzorca błędu poza już wymienionymi 13 (5+5+3); strzałka SVG w
+  `.hero-cta` (`patterns/how-cta.php`) to inny, niezmieniony od P-11.5
+  wzorzec (inline dekoracyjna ikona w linku, nie dotyczy tej regresji).
 - **Zależności:** FAZA 11 (P-11.2 insercja treści, P-11.5 poprawka
   patternów) — historyczne, nieblokujące (patterny już poprawione, tylko
-  synchronizacja z DB pozostaje).
-- **Repo:** wyłącznie qutlet-theme/DB — dziś nie przewiduje się zmian w
-  plikach repo (patterny już poprawne), ale POTWIERDZIĆ przy realizacji.
+  synchronizacja z DB pozostawała).
+- **Repo:** wyłącznie qutlet-theme/DB — potwierdzone przy realizacji: zero
+  zmian w plikach repo (patterny już poprawne).
 
 ---
 
