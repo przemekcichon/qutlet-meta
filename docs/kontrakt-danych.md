@@ -1189,10 +1189,33 @@ elastyczny układ (liczbę kolumn wylicza render z faktycznej liczby UŻYTYCH gr
 zawinęła się bez łamania layoutu). Instrukcja tekstowa przy polu `kolejnosc`/na
 ekranie zarządzania grupami: „docelowo maks. 6 grup dla czytelności menu".
 
+### 14.4 Lokalizacje menu stopki (rejestruje `qutlet-theme`, FAZA 23/P-23.1)
+
+Trzy kolumny `.footer-col` w `parts/footer.html` (`Sklep`/`Informacje`/`Pomoc`)
+— ten sam wzorzec rozwiązywania PRZEZ LOKALIZACJĘ co §14.1/§8, ale zwykłe menu
+WP bez dodatkowych pól ACF (zero pracy po stronie `qutlet-core`). Jeden
+parametryzowany blok `qutlet/footer-nav` (atrybut `menuLocation`, wzorem
+`qutlet/post-card`, `inc/features/Blog/blocks/post-card`) osadzony 3× w
+`parts/footer.html`, zamiast 3 osobnych bloków — kolumny są strukturalnie
+identyczne (nagłówek `<h5>` statyczny + płaska lista `<a>`).
+
+| Lokalizacja (design)              | Literał (slug lokalizacji) | Zawartość                                                  | Rejestruje | Uwagi |
+|-------------------------------------|------------------------------|-------------------------------------------------------------|------------|-------|
+| Kolumna „Sklep" (`.footer-col` #1)   | `stopka-sklep`             | dziś PUSTE — dzisiejsze linki to gołe `href="#"`, nie ma z czego migrować | `qutlet-theme`, slice `FooterMenu/` | Treść to decyzja admina PO merge'u P-23.1 (Wygląd → Menu), nie coś rozstrzygane w kodzie. |
+| Kolumna „Informacje" (`.footer-col` #2) | `stopka-informacje`     | 4 linki (Jak to działa? / Klasy produktów / Blog „Drugi obieg” / Newsletter Ekołowców) | `qutlet-theme`, slice `FooterMenu/` | Zasiane WP-CLI startową treścią 1:1 z dzisiejszego hardkodowanego markupu. |
+| Kolumna „Pomoc" (`.footer-col` #3)   | `stopka-pomoc`             | 5 linków (Centrum pomocy / Regulamin / Polityka prywatności / Polityka cookies / Kontakt) | `qutlet-theme`, slice `FooterMenu/` | Zasiane WP-CLI startową treścią — osobne menu od `pomoc` (§8, sidebar `.help-nav`), mimo identycznej treści startowej: 2 niezależne menu WP, redaktor może je rozdzielić w przyszłości bez zmiany kodu. |
+
+Blok `qutlet/footer-nav` (`inc/features/FooterMenu/blocks/footer-nav/render.php`)
+czyta menu pętlą po `wp_get_nav_menu_items()`, NIE `wp_nav_menu()` — ten sam
+powód co `qutlet/header-nav` (§14.1): domyślny `Walker_Nav_Menu` opakowuje
+pozycje w `<ul>/<li>`, niezgodne z płaskim markupem `.footer-col`.
+
 ### Odnośniki (§14)
-- Ground-truth: `docs/plan.md` → FAZA 16 (ground-truth pełny, sesja 2026-08-16).
+- Ground-truth: `docs/plan.md` → FAZA 16 (ground-truth pełny, sesja 2026-08-16),
+  FAZA 23/P-23.1 (ground-truth footer, sesja 2026-08-19).
 - Plan: `docs/plan.md` → FAZA 16, P-16.2a (core: taksonomia + pola), P-16.2b
-  (theme: lokalizacje + render + seed).
+  (theme: lokalizacje + render + seed); FAZA 23, P-23.1 (theme: lokalizacje
+  stopki + render + seed).
 - Wzorzec taksonomii rozszerzalnej: §2.2 (`klasa_stanu_definicja`).
 - Wzorzec lokalizacji menu rozwiązywanej przez `get_nav_menu_locations()`: §8
   (`Help::MENU_LOCATION`).
