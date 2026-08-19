@@ -7913,7 +7913,32 @@ odczytu kodu 1:1) — wyjątek „punkt czysto-kodowy" (patrz `CLAUDE.md` →
 - **Zależności:** P-22.3a (decyzja D-22.3.1), P-22.2 (docelowe miejsce w
   layoucie — blok wstawia się między `.eco-note` a przeniesionym przyciskiem).
 
-### 🟨 P-22.4 — Widget „Inne sztuki tego modelu" (agregacja po GTIN) — realizuje ❓ P-6.10 (FAZA 6) (punkt wielorepowy → P-22.4a + P-22.4b + P-22.4c)
+### 🟢 P-22.4 — Widget „Inne sztuki tego modelu" (agregacja po GTIN) — realizuje ❓ P-6.10 (FAZA 6) (punkt wielorepowy → P-22.4a + P-22.4b + P-22.4c)
+
+**Zrealizowane, zmergowane** — [qutlet-meta PR #108](https://github.com/przemekcichon/qutlet-meta/pull/108)
+(P-22.4a, decyzje D-22.4.1…D-22.4.4) + [qutlet-core PR #36](https://github.com/przemekcichon/qutlet-core/pull/36)
+(P-22.4b, strona ustawień „Zarządzanie stanami") + [qutlet-theme PR #40](https://github.com/przemekcichon/qutlet-theme/pull/40)
+(P-22.4c, widget `#ism`) (2026-08-19). Niezależna recenzja (`docs/review.md`,
+jedna sesja dla wszystkich trzech PR-ów): 🟢 CZYSTE, zero ustaleń
+blokujących — jedno drobne 🟡 (bezpośrednie wołanie
+`ClassDefinitionsTaxonomy::for_product()` zamiast wrappera
+`ProductPage::condition_for_product()`) zaadresowane przed merge'em; drugie
+🟡 (`phpstan.neon` nigdy nie obejmował `woocommerce/` w żadnym z repo —
+wcześniejsza, systemowa luka konfiguracji, niezwiązana z tym punktem)
+zostaje jako dług dla przyszłego, osobnego punktu. Runtime zweryfikowany
+Playwright + WP-CLI na Local: tymczasowo zduplikowany `global_unique_id` na
+trzech realnych, opublikowanych produktach katalogu (ID 46/47/49) —
+widget wyrenderował 3 sztuki posortowane rosnąco po cenie, poprawne badge
+„Najniższa cena"/„Oglądasz teraz", działający przełącznik lista/kafelki,
+poprawny fallback „co w zestawie" z opcji `qutlet-core`. Po drodze znaleziony
+i naprawiony realny bug: `wc_get_products( array( 'meta_query' => … ) )`
+jest po cichu ignorowane przez `WC_Data_Store::get_wp_query_args()`
+(WooCommerce, `class-wc-data-store-wp.php`) — zapytanie zwracało cały katalog
+(501 „sztuk" zamiast 3) zamiast filtrowanych wyników; poprawione na
+bezpośrednie zapytanie do indeksowanej tabeli `wc_product_meta_lookup`
+(`ProductPage::sibling_product_ids_by_gtin()`), tym samym mechanizmem, którym
+natywne `wc_get_product_id_by_global_unique_id()` znajduje pojedyncze
+dopasowanie.
 **Zgłoszenie:** gdy istnieją produkty z tym samym GTIN, strona produktu
 pokazuje sekcję „Inne sztuki tego modelu" (lista/kafelki + karuzela, wg
 `produkt-inne-sztuki.html`) — dla WSZYSTKICH klas stanu tego GTIN, nie tylko
@@ -8015,13 +8040,13 @@ kandydat, dla przypadków gdy sztuki są NAPRAWDĘ identyczne).
   spełnione), P-9.2 (`zawartosc_zestawu_pozycje`, źródło „co w zestawie"),
   P-12.1b/P-12.2c (`ClassDefinitionsTaxonomy`).
 
-#### 🟡 P-22.4a — Decyzje D-22.4.1…D-22.4.4 + kontrakt (qutlet-meta)
+#### 🟢 P-22.4a — Decyzje D-22.4.1…D-22.4.4 + kontrakt (qutlet-meta)
 - **Repo:** qutlet-meta (`docs/plan.md`, ten wpis + `docs/kontrakt-danych.md`
   §19 — nowa opcja `qutlet_zawartosc_zestawu_domyslny_tekst`).
 - **Zakres:** rozstrzygnięcia wyżej — czysto dokumentacyjne, zero kodu.
 - **Zależności:** brak.
 
-#### 🟦 P-22.4b — Strona ustawień „Zarządzanie stanami" (qutlet-core)
+#### 🟢 P-22.4b — Strona ustawień „Zarządzanie stanami" (qutlet-core)
 - **Repo:** qutlet-core.
 - **Zakres:** nowa klasa `ProductCondition\ConditionManagementSettingsPage`
   (podmenu WooCommerce, Settings API, `manage_woocommerce` — wzorzec
@@ -8030,7 +8055,7 @@ kandydat, dla przypadków gdy sztuki są NAPRAWDĘ identyczne).
   bootstrapie pluginu (`qutlet-core.php`, obok innych `::init()`).
 - **Zależności:** P-22.4a (decyzja D-22.4.2).
 
-#### 🟦 P-22.4c — Widget `#ism` w `content-single-product.php` (qutlet-theme)
+#### 🟢 P-22.4c — Widget `#ism` w `content-single-product.php` (qutlet-theme)
 - **Repo:** qutlet-theme.
 - **Zakres:** `ProductPage::other_pieces()` (zapytanie `wc_get_products()` po
   `_global_unique_id`, sortowanie po cenie, filtr `_stock`>0 dla sztuk innych
