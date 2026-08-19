@@ -168,10 +168,21 @@ P-12.2a, „Uwaga operacyjna".
 (`required=0`, wzorem `dlaczego_taniej`): puste pole → motyw pokazuje
 HARDKODOWANY fallback (dzisiejszy literał) zamiast pustego newralgicznego
 tekstu (polityka zwrotu/gwarancja NIE mogą po prostu zniknąć z rendera, w
-odróżnieniu od `.eco-note`, które wolno ukryć). Dziś seedowane WSPÓLNIE dla
-A-D identyczną treścią (`BackfillPolicyTextsCommand`, jak `dlaczego_taniej`) —
-różnicowanie per klasa to przyszła praca redakcyjna admina, nie coś
-wymyślane w tej sesji.
+odróżnieniu od `.eco-note`, które wolno ukryć). Dziś seedowane WSPÓLNIE
+identyczną treścią dla WSZYSTKICH dziś zdefiniowanych klas
+(`BackfillPolicyTextsCommand`, jak `dlaczego_taniej`) — różnicowanie per
+klasa to przyszła praca redakcyjna admina, nie coś wymyślane w tej sesji.
+**REWIZJA (recenzja P-22.5, D-22.5.3):** backfill iteruje DYNAMICZNIE po
+`ClassDefinitionsTaxonomy::all()`, NIE po sztywnej liście `A`/`B`/`C`/`D` —
+na tym środowisku (i zapewne produkcji) taksonomia niesie dziś 7 realnych
+klas nazwanych surowymi wartościami Allegro „Stan" (`Na części`/`Nowy`/
+`Nowy z defektem`/`Po zwrocie`/`Powystawowy`/`Uszkodzony`/`Używany`), NIE
+klasy `A`-`D` z `SeedClassDefinitionsCommand` (ten sam fakt, niezależnie
+ground-truthowany przy P-9.7, `docs/plan.md`) — `kod` NIE jest już
+jednoliterowym literałem w praktyce, mimo że ta tabela (wyżej, §2.2) wciąż
+go tak opisuje jako stan HISTORYCZNY. Ta rozbieżność kod↔dokumentacja
+istniała PRZED P-22.5 (odkryta przy P-9.7) — poza zakresem tego punktu do
+skorygowania w całości.
 
 | Pole (design)                          | Literał (term meta)          | Typ      | Opcjonalne? | Uwagi |
 |-----------------------------------------|-------------------------------|----------|-------------|-------|

@@ -8141,6 +8141,25 @@ per klasa to przyszła praca redakcyjna", kontrakt §2.2).
   nowe pola **opcjonalne** (`required=0`) z hardkodowanym fallbackiem w motywie
   (dzisiejszy literał) — polityka zwrotu/gwarancji nie może po prostu zniknąć
   z rendera, gdyby pole było puste przed backfillem.
+- **D-22.5.3 [USTALONE — decyzja użytkownika po niezależnej recenzji, sesja
+  2026-08-19]:** recenzja P-22.5b (`docs/review.md`) ujawniła, że pierwsza
+  wersja `BackfillPolicyTextsCommand` celowała w sztywną listę kodów
+  `A`/`B`/`C`/`D` (wzorem `SeedClassDefinitionsCommand`) — zweryfikowane
+  `wp_cli` (`wp term list klasa_stanu_definicja` + `wp term meta list`) na
+  Localu: ŻADNA klasa o takim kodzie nie istnieje. Taksonomia niesie dziś
+  WYŁĄCZNIE 7 realnych klas nazwanych surowymi wartościami Allegro „Stan"
+  (`Na części`/`Nowy`/`Nowy z defektem`/`Po zwrocie`/`Powystawowy`/
+  `Uszkodzony`/`Używany`), z `kod` identycznym z `name` na każdej — ten sam
+  fakt, niezależnie ground-truthowany przy **P-9.7** (bug „Klasa stanu"
+  pokazuje zdublowaną etykietę). Sztywna lista A-D była więc martwym kodem
+  (0/84 pól wypełniłoby się — potwierdzone dry-run). Użytkownik zdecydował:
+  komenda iteruje DYNAMICZNIE po `ClassDefinitionsTaxonomy::all()` zamiast
+  zakładać konkretny zestaw kodów — poprawka zweryfikowana na Localu
+  (dry-run → 84/0, real run → 84 wypełnione, ponowny dry-run → 0/84,
+  potwierdzona idempotencja). `docs/kontrakt-danych.md` §2.2 (opis pola
+  `kod` jako historycznie A-D/Nowe) zostaje BEZ ZMIAN w tym punkcie — ta
+  szersza rozbieżność dokumentacja↔realne dane istniała przed P-22.5
+  (odkryta przy P-9.7), korekta całej sekcji jest POZA zakresem tego punktu.
 
 **Zakres (rozbite na pod-punkty wzorem P-22.4a/b/c, kolejność wg zależności —
 kontrakt najpierw):**
@@ -8156,9 +8175,11 @@ kontrakt najpierw):**
   `textarea`, `required=0`, `location` = taksonomia `klasa_stanu_definicja`).
 - Nowa komenda WP-CLI `wp qutlet-core backfill-teksty-polityk-klasa-stanu
   [--dry-run]` (wzorem `SeedClassDefinitionsCommand`) — jednorazowo wypełnia
-  12 nowych pól dzisiejszą treścią (identyczną dla A-D) dla term-ów, które
-  mają puste pole (idempotentna, NIE nadpisuje ręcznej edycji admina — pomija
-  pole już wypełnione, nie cały term).
+  12 nowych pól dzisiejszą treścią (identyczną dla wszystkich klas) dla
+  term-ów, które mają puste pole (idempotentna, NIE nadpisuje ręcznej edycji
+  admina — pomija pole już wypełnione, nie cały term). Iteruje DYNAMICZNIE
+  po `ClassDefinitionsTaxonomy::all()`, NIE po sztywnej liście kodów —
+  patrz D-22.5.3 (poprawka po niezależnej recenzji).
 - **Zależności:** P-22.5a (nazwy pól z kontraktu).
 
 #### P-22.5c — Render czyta nowe pola (qutlet-theme)
