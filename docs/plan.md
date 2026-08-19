@@ -7727,7 +7727,7 @@ wzorzec dla P-21.5 i miejsce bugu P-21.7), P-20.8 (`ProductConditionFields`/
 
 ---
 
-## 🟨 FAZA 22 — Strona produktu: powiadomienie koszyka, pozycja CTA, „inne sztuki tego modelu", dostępność, teksty per klasa stanu
+## 🟩 FAZA 22 — Strona produktu: powiadomienie koszyka, pozycja CTA, „inne sztuki tego modelu", dostępność, teksty per klasa stanu
 
 Cel: kolejna iteracja frontendu strony produktu. Źródło projektu: nowy
 prototyp `design/vanilla/produkt-inne-sztuki.html` (+ towarzyszące zmiany
@@ -8073,7 +8073,25 @@ kandydat, dla przypadków gdy sztuki są NAPRAWDĘ identyczne).
   fallback, nie blokuje runtime, ale kolejność merge'a a→b→c zachowuje
   spójność historii).
 
-### P-22.5 — Teksty polityk (zwrot/gwarancja/wysyłka) na stronie produktu jako pola per klasa stanu (punkt wielorepowy)
+### 🟢 P-22.5 — Teksty polityk (zwrot/gwarancja/wysyłka) na stronie produktu jako pola per klasa stanu (punkt wielorepowy)
+
+**Zrealizowane, zmergowane** — [qutlet-meta PR #109](https://github.com/przemekcichon/qutlet-meta/pull/109)
+(P-22.5a, decyzje D-22.5.1…D-22.5.4 + kontrakt) + [qutlet-core PR #37](https://github.com/przemekcichon/qutlet-core/pull/37)
+(P-22.5b, pola ACF + backfill + strona „Treści sklepu") + [qutlet-theme PR #41](https://github.com/przemekcichon/qutlet-theme/pull/41)
+(P-22.5c, render) (2026-08-19). Niezależna recenzja (`docs/review.md`,
+jedna sesja dla P-22.5a/b/c PRZED rewizją D-22.5.4): 🔴 BLOKADA →
+naprawiona i zweryfikowana na Localu (`BackfillPolicyTextsCommand`
+celowało w martwe kody A-D zamiast realnych klas — D-22.5.3, patrz log
+decyzji wyżej) + jedno 🟡 kosmetyczne (wyrównanie tablicy) zaadresowane.
+**Po rewizji D-22.5.4** (przeniesienie 10 z 12 pól na opcje globalne) PEŁNA
+druga runda `docs/review.md` NIE była powtórzona (ocena wykonawcy: zmiana
+głównie mechaniczna) — zamiast tego: PHPStan czyste (oba repo), `php -l`
+czyste, grep sanity-check zero stałych referencji do starej nazwy klasy
+(`ConditionManagementSettingsPage`) i pełna zgodność 10/10 nazw opcji
+core↔theme, oraz runtime na Localu (`curl` strony produktu, HTTP 200, zero
+fatal error, treść z fallbacku renderuje się poprawnie) — słabsza
+weryfikacja niż pełna niezależna recenzja, odnotowane jako świadomy
+kompromis, nie przeoczenie.
 **Zgłoszenie:** wszystkie teksty widoczne na stronie produktu (np. „Polityka
 zwrotów: W razie zwrotu produktu kupionego w naszym sklepie, koszty
 przesyłki zwrotnej pokrywasz sam.", „14 dni na zwrot / Koszt po Twojej
@@ -8178,13 +8196,13 @@ per klasa to przyszła praca redakcyjna", kontrakt §2.2).
 **Zakres (rozbite na pod-punkty wzorem P-22.4a/b/c, kolejność wg zależności —
 kontrakt najpierw):**
 
-#### 🟡 P-22.5a — Decyzje D-22.5.1…D-22.5.4 + kontrakt (qutlet-meta)
+#### 🟢 P-22.5a — Decyzje D-22.5.1…D-22.5.4 + kontrakt (qutlet-meta)
 - **Repo:** qutlet-meta (`docs/plan.md`, ten wpis + `docs/kontrakt-danych.md`
   §2.2 — 2 pola term meta `klasa_stanu_definicja` + §19.2 — 10 opcji globalnych
   `StoreContentSettingsPage`).
 - **Zależności:** brak (pierwszy pod-punkt).
 
-#### P-22.5b — 2 pola ACF + backfill + strona „Treści sklepu" (qutlet-core)
+#### 🟢 P-22.5b — 2 pola ACF + backfill + strona „Treści sklepu" (qutlet-core)
 - `ClassDefinitionsTaxonomy::register_fields()` niesie WYŁĄCZNIE 2 pola per
   klasa: `gwarancja_opis`/`reklamacja_opis` (nazwy/typy: kontrakt §2.2).
 - `BackfillPolicyTextsCommand` — jednorazowo wypełnia te 2 pola dzisiejszą
@@ -8199,7 +8217,7 @@ kontrakt najpierw):**
   Qutlet\Core\ProductCondition\StoreContentSettingsPage;` — rename referencji).
 - **Zależności:** P-22.5a (nazwy pól/opcji z kontraktu).
 
-#### P-22.5c — Render czyta pola i opcje (qutlet-theme)
+#### 🟢 P-22.5c — Render czyta pola i opcje (qutlet-theme)
 - `content-single-product.php` czyta 2 pola per klasa
   (`$condition_definition['gwarancja_opis'/'reklamacja_opis']`, z placeholderem
   `{okres}` → `ProductPage::period_years_text()`, zastępuje dotychczasową
