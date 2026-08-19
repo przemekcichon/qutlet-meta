@@ -8525,6 +8525,72 @@ mimo niego.** Opcje na przyszłość (żadna nie jest punktem tego planu):
 zgłoszenie do WooCommerce (upstream, poza naszym kodem), albo świadome
 zignorowanie jako nieszkodliwy szum logów dev.
 
+## 🟦 FAZA 24 — Regresja ikon SVG na Stronach zamrożonych przed P-11.5 (qutlet-theme)
+
+**Zgłoszenie (sesja 2026-08-19/20):** użytkownik zgłosił zepsute ikony w
+kartach „2eko"/„Co dostajesz jako Ekołowca" na stronie Newsletter (dwa
+zrzuty ekranu porównawcze: prototyp vs WordPress) — w WP ikony renderują
+się jako gołe, nieostylowane obrysy SVG bez tła/ramki/koloru, zamiast
+kolorowych kwadratów z ikoną w środku.
+
+**Ground-truth (ustalone PRZY DODAWANIU tego punktu, sesja 2026-08-19/20 —
+realny kod i DB, nie zgadywane):** P-11.2 wstawił treść Stron
+Newsletter/Kontakt/Jak-to-działa przez JEDNORAZOWĄ insercję patternu w
+edytorze — `post_content` to KOPIA treści patternu z tamtego momentu,
+rozłączona od źródła. Inaczej niż strona główna: `templates/front-page.html`
+czyta patterny ŻYWO przez blokowe referencje (`wp:pattern
+{"slug":"qutlet-theme/home-usp"} /-->`) — każda zmiana pliku patternu widoczna
+natychmiast, bez insercji. P-11.5 poprawił pliki patternów (ikona jako
+`wp:spacer {"className":"X X-modyfikator"}` = prawdziwy blokowy `<div>` z
+DWIEMA klasami, zamiast `wp:html` z gołym `<svg>` w `<span>`) — poprawka
+NIGDY nie dotarła do już-skopiowanej treści tych Stron, bo insercja
+patternu nie jest żywym łączem.
+
+Efekt w DOM (zweryfikowane Playwright MCP, `getComputedStyle` na żywej
+stronie): `<span>` ma tylko bazową klasę (np. `eko-icon`, brak
+`eko-icon-percent`) I jest nadal gołym `<span>` (inline) — `width`/
+`height`/`background-color`/`border-radius` bazowej klasy w ogóle się nie
+stosują (inline element ignoruje box-sizing). Stąd ikona to surowy,
+nieostylowany zarys SVG.
+
+Potwierdzone instancje (żywy `post_content` per Strona, nie plik patternu —
+sprawdzone `wp post get <ID> --field=post_content` + grep):
+- **Newsletter (ID 20):** 2× `.eko-icon` (brak `eko-icon-percent`/
+  `eko-icon-leaf`), 3× `.perk3-icon` (brak `perk3-icon-bell`/`-lock`/`-bolt`).
+  Wzorzec poprawny: `patterns/eko-grid-newsletter.php`, `patterns/perks3.php`.
+- **Jak to działa (ID 18):** 2× `.eko-icon` (te same braki), 3×
+  `.how-fact-icon` (brak `how-fact-icon-cart`/`-shield`/`-leaf`). Wzorzec
+  poprawny: `patterns/card-grid-eko.php`, `patterns/how-why.php`.
+- **Kontakt (ID 19) — SPRAWDZONE, NIE dotknięte:** `.contact-item-icon` w
+  żywej treści ma już poprawny markup (`wp:spacer` + obie klasy) — ta Strona
+  została wstawiona/naprawiona już PO P-11.5.
+- Wszystkie 4 pliki patternów źródłowych są JUŻ poprawne (nic w nich do
+  zmiany) — problem wyłącznie w DB (`post_content` skopiowany PRZED
+  poprawką), nie w kodzie repo.
+
+**Zakres:**
+- Zamiana w `post_content` obu Stron (ID 18, ID 20) starego markupu
+  (`<!-- wp:html --><span class="X"><svg>...</svg></span><!-- /wp:html -->`)
+  na aktualny markup 1:1 z odpowiedniego patternu (`wp:spacer` + bazowa +
+  modyfikator) — mechaniczna resynchronizacja, ZERO nowego CSS/PHP, zero
+  decyzji projektowej (poprawka już istnieje w plikach patternów, tylko nie
+  dotarła do tych 2 Stron).
+- Do potwierdzenia przy realizacji: podmiana ręcznie w edytorze (usunąć stary
+  blok `wp:html`, wstawić pattern na nowo z biblioteki) czy przez
+  `wp post update` (jak przy P-23.3 dla bloku GF) — obie ścieżki są poza
+  repo (DB), więc prawdopodobnie BEZ flipu 🟡/brancha w qutlet-meta (wyjątek
+  „punkt czysto-kodowy" — tu nawet plik motywu się nie zmienia, tylko treść w
+  DB; potwierdzić, nie zakładać z góry).
+- Przy realizacji: przejrzeć całą treść obu Stron pod kątem INNYCH instancji
+  tego samego problemu (ta sesja grep'owała tylko po znanych klasach ikon,
+  nie czytała całej treści linia po linii) — możliwe, że są inne miejsca
+  z tym samym wzorcem błędu.
+- **Zależności:** FAZA 11 (P-11.2 insercja treści, P-11.5 poprawka
+  patternów) — historyczne, nieblokujące (patterny już poprawione, tylko
+  synchronizacja z DB pozostaje).
+- **Repo:** wyłącznie qutlet-theme/DB — dziś nie przewiduje się zmian w
+  plikach repo (patterny już poprawne), ale POTWIERDZIĆ przy realizacji.
+
 ---
 
 ## Materiał referencyjny i kandydaci do dalszych faz
