@@ -1479,6 +1479,33 @@ passthrough).
 
 ---
 
+## 19. Widget „Inne sztuki tego modelu" — tekst zastępczy „co w zestawie" (FAZA 22 — P-22.4)
+
+Widget agreguje po odczycie (`global_unique_id`, §1/§10.2) produkty
+współdzielące GTIN — BEZ nowego pola na produkcie (patrz `docs/plan.md`
+P-22.4, D-22.4.3: zapytanie+render w całości w `qutlet-theme`). Jedyny nowy
+literał kontraktu to opcja globalna niżej — tekst zastępczy „co w zestawie",
+gdy repeater `zawartosc_zestawu_pozycje` (§2, D-9.2.1) jest pusty ALBO żaden
+wiersz nie ma `w_zestawie=true` (D-22.4.1).
+
+| Pole (design)                        | Literał (meta_key)                          | Miejsce | Typ    | Opcjonalne? | Prototyp | Uwagi |
+|---------------------------------------|----------------------------------------------|---------|--------|-------------|----------|-------|
+| Tekst zastępczy „co w zestawie"       | `qutlet_zawartosc_zestawu_domyslny_tekst`     | option  | string (jedno zdanie) | tak (puste → wiersz „co w zestawie" pomijany w widgecie, D-22.4.1) | `produkt-inne-sztuki.html:294` (`.ism-contents`, tam treść PER SZTUKA, nie zastępcza) | opcja WP (`get_option`), rejestruje `qutlet-core` (`ProductCondition\ConditionManagementSettingsPage`, D-22.4.2); strona ustawień „Zarządzanie stanami" pod menu WooCommerce, wzorzec `Pricing\DiscountRateSettingsPage` (§11). Odczyt z `qutlet-theme` przez `use Qutlet\Core\ProductCondition\ConditionManagementSettingsPage;` + stała `::FALLBACK_OPTION` (wzorzec: `use ClassDefinitionsTaxonomy` już dziś w `ProductPage.php`). Celowo BEZ wymyślonej treści domyślnej — puste ustawienie = brak wiersza, decyzja treści zostaje dla admina (zasada „pytaj, nie zgaduj" dla literałów marketingowych). |
+
+**D-22.4.1/D-22.4.2 — pełny kontekst decyzji, odrzucone alternatywy:** patrz
+`docs/plan.md` → FAZA 22 → P-22.4 (główny wpis + P-22.4a/b/c).
+
+### Odnośniki (§19)
+- Ground-truth i decyzje: `docs/plan.md` → FAZA 22, P-22.4 (+ rozbicie
+  P-22.4a/P-22.4b/P-22.4c).
+- Pole źródłowe „co w zestawie" per sztuka: §2, `zawartosc_zestawu_pozycje`
+  (D-9.2.1).
+- `global_unique_id` (GTIN, klucz agregacji): §1/§10.2.
+- Wzorzec strony ustawień: §11 (`qutlet_stawka_rabatu`,
+  `Pricing\DiscountRateSettingsPage`).
+
+---
+
 ## Log decyzji (P-1.0)
 
 | Decyzja  | Rozstrzygnięcie                                        | Podstawa |
@@ -1572,3 +1599,13 @@ passthrough).
 | D-16.G3  | limit 6 grup mega menu = wskazówka (tekst przy polu + CSS elastyczny), NIE twardy limit walidowany przy zapisie | decyzja użytkownika (sesja 2026-08-16) |
 | D-16.G4  | dynamiczna treść wewnątrz blokowego template parta `parts/header.html` (nie może wykonywać PHP wprost, w odróżnieniu od `patterns/*.php`) = własne bloki dynamiczne (`register_block_type` + `render.php`), osadzone w miejscu dzisiejszych statycznych fragmentów `<!-- wp:html -->` — jedyny mechanizm obsługujący zmienną liczbę pigułek/kolumn (Block Bindings API nie wspiera pętli) | decyzja użytkownika (sesja 2026-08-16) |
 | D-16.G5  | migracja dzisiejszej zaszytej treści (6 pigułek + 4 kolumny × 4 linki) = jednorazowy seed przez WP-CLI (wzorzec D-8.4.3/D-8.5.3 — stan bazy tej instalacji, NIE migracja/kod), nie ręczne odtwarzanie w adminie | wzorzec przyjęty, sesja 2026-08-16 |
+
+## Log decyzji (P-22.4)
+
+| Decyzja   | Rozstrzygnięcie                                                                 | Podstawa |
+|-----------|----------------------------------------------------------------------------------|----------|
+| D-22.4.1  | „co w zestawie" (widget) auto-generowane z etykiet `zawartosc_zestawu_pozycje` (`w_zestawie=true`, przecinek); puste → opcja globalna niżej; puste ustawienie → wiersz pomijany (bez wymyślonej treści domyślnej) | decyzja użytkownika (sesja 2026-08-19) |
+| D-22.4.2  | tekst zastępczy = nowa opcja `qutlet_zawartosc_zestawu_domyslny_tekst` (§19) na NOWEJ stronie „Zarządzanie stanami" (`qutlet-core`, slice `ProductCondition`) — NIE dopisana do `qutlet-allegro\OfferSync\ConditionMapPage` („Mapowanie stanów"), bo tamta strona jest Allegro-specyficzna i read-only (D-12.1c.2); nowe pole łamałoby granicę repo | decyzja użytkownika (sesja 2026-08-19), po zidentyfikowaniu konfliktu granic repo |
+| D-22.4.3  | zapytanie GTIN→lista sztuk + cały render widgetu żyją w `qutlet-theme` (`ProductPage`, rozszerzenie istniejącej klasy), NIE w `qutlet-core` — precedens `ProductFilterQuery`/D-8.3b.2 dotyczy modyfikacji GŁÓWNEGO zapytania archiwum, nie samodzielnego zapytania jednego widgetu (analogia: `ProductPage::ship_items()`, blok `qutlet/featured-products`) | ground-truth sesja 2026-08-19 |
+| D-22.4.4  | filtr `_stock`>0 dotyczy WYŁĄCZNIE sztuk innych niż bieżąca — bieżąca zostaje w wyniku bezwarunkowo (`.ism-fine` prototypu: „sztuka znika z listy po sprzedaży" — dotyczy INNYCH sztuk) | ground-truth sesja 2026-08-19, prototyp `produkt-inne-sztuki.html:408` |
+| D-6.7.3 (rewizja) | agregacja wielu ofert w JEDEN produkt (`_stock`>1) POZA zakresem P-22.4 — real-world przypadek (ta sama klasa, różna zawartość zestawu/cena) wymaga OSOBNYCH produktów (WooCommerce: jedna cena/opis na produkt); D-6.7.3 zostaje jako ❓ nierozstrzygnięty kandydat w FAZA 6 → P-6.10, dla sztuk NAPRAWDĘ identycznych | decyzja użytkownika (sesja 2026-08-19), po wyjaśnieniu ograniczenia WooCommerce |

@@ -1988,11 +1988,13 @@ To REALIZUJE D-6.7.2 (widget bez zwijania stron) niżej, ale **ODRZUCA
 kierunek D-6.7.3** (agregacja wielu ofert w jeden produkt, `_stock`>1) —
 model „1 oferta = 1 produkt" (P-6.1/P-6.7) zostaje BEZ ZMIAN, widget to
 wyłącznie read-only zapytanie po współdzielonym GTIN między już-osobnymi
-produktami. Rewizja SILNIE zasugerowana przez własny prototyp użytkownika,
-ale formalnie do potwierdzenia wprost na starcie sesji P-22.4 (patrz tam) —
-D-6.7.2/D-6.7.3 i pod-decyzje niżej zostają jako ZAPIS HISTORYCZNY tego, co
-było rozważane, nie jako aktualny plan. Pełny ground-truth i zakres — patrz
-P-22.4, nie tutaj.
+produktami. **Potwierdzone jawnie z użytkownikiem na starcie sesji P-22.4
+(2026-08-19)** — patrz `docs/kontrakt-danych.md` Log decyzji (P-22.4),
+rewizja D-6.7.3. D-6.7.2/D-6.7.3 i pod-decyzje niżej zostają jako ZAPIS
+HISTORYCZNY tego, co było rozważane, nie jako aktualny plan — **D-6.7.3 sama
+w sobie zostaje OTWARTYM kandydatem** (agregacja NAPRAWDĘ identycznych sztuk
+w jeden produkt, `_stock`>1) dla osobnej, przyszłej sesji, POZA zakresem
+P-22.4. Pełny ground-truth i zakres — patrz P-22.4, nie tutaj.
 
 - **Repo:** WIELOREPOWY (feature rozproszony) — prawdopodobnie kontrakt (`qutlet-meta`,
   rewizja §10.1 kształtu `_qutlet_allegro_offer_id` i ew. §10.2), agregacja przy
@@ -7911,7 +7913,7 @@ odczytu kodu 1:1) — wyjątek „punkt czysto-kodowy" (patrz `CLAUDE.md` →
 - **Zależności:** P-22.3a (decyzja D-22.3.1), P-22.2 (docelowe miejsce w
   layoucie — blok wstawia się między `.eco-note` a przeniesionym przyciskiem).
 
-### P-22.4 — Widget „Inne sztuki tego modelu" (agregacja po GTIN) — realizuje ❓ P-6.10 (FAZA 6)
+### 🟨 P-22.4 — Widget „Inne sztuki tego modelu" (agregacja po GTIN) — realizuje ❓ P-6.10 (FAZA 6) (punkt wielorepowy → P-22.4a + P-22.4b + P-22.4c)
 **Zgłoszenie:** gdy istnieją produkty z tym samym GTIN, strona produktu
 pokazuje sekcję „Inne sztuki tego modelu" (lista/kafelki + karuzela, wg
 `produkt-inne-sztuki.html`) — dla WSZYSTKICH klas stanu tego GTIN, nie tylko
@@ -7934,37 +7936,117 @@ w kodzie: `AllegroLinkMeta::META_OFFER_ID` (`qutlet-core`) jest nadal
 `single => true` — model „1 oferta = 1 produkt" nigdy nie został zmieniony,
 D-6.7.3 nigdy nie zaimplementowana, więc to czysta ścieżka bez migracji.
 
-**To jest ISTOTNA rewizja kierunku D-6.7.3** (poprzednio „USTALONE
-kierunkowo", `docs/plan.md` P-6.10) — silnie zasugerowana faktem, że
-użytkownik SAM zbudował ten prototyp z tym właśnie komentarzem, ale
-FORMALNIE niepotwierdzona wprost w rozmowie — **do jawnego potwierdzenia z
-użytkownikiem na starcie sesji realizacyjnej P-22.4**, nie cichego założenia
-(zasada „pytaj, nie zgaduj").
+**Rewizja kierunku D-6.7.3 — POTWIERDZONA jawnie z użytkownikiem na starcie
+sesji realizacyjnej (2026-08-19).** Użytkownik początkowo chciał zachować
+możliwość agregacji (`_stock`>1) dla przypadku „ten sam model + ta sama klasa
+stanu, ale różna zawartość zestawu/cena" (przykład: dwa zwroty w identycznym
+stanie wizualnym, jeden z instrukcją, drugi bez, różne ceny) — po wyjaśnieniu,
+że WooCommerce nie udźwignie dwóch cen/zestawów na jednym produkcie z
+`_stock`>1 (jedna cena, jeden opis na produkt), a DOKŁADNIE ten przypadek
+wymaga osobnych produktów, użytkownik potwierdził kierunek czysto odczytowy:
+**P-22.4 = WYŁĄCZNIE read-only widget, model „1 oferta = 1 produkt" BEZ ZMIAN.
+D-6.7.3 (prawdziwe scalanie identycznych sztuk w jeden produkt z `_stock`>1)
+zostaje OSOBNYM, przyszłym punktem planu — POZA zakresem P-22.4** (patrz
+FAZA 6 → P-6.10, `docs/plan.md`, zostaje tam jako ❓ nierozstrzygnięty
+kandydat, dla przypadków gdy sztuki są NAPRAWDĘ identyczne).
 
-**Zakres (do doprecyzowania przy realizacji):**
-- Zapytanie: produkty PUBLISHED o tym samym `global_unique_id`
-  (meta_key natywnego pola Woo — potwierdzić dokładny literał przy
-  realizacji), wykluczając bieżący produkt. Czy filtrować po `_stock`>0
-  (wyprzedane sztuki znikają z listy, zgodne z `.ism-fine` w prototypie:
-  „sztuka znika z listy po sprzedaży") — do potwierdzenia.
+**Zakres:**
+- Zapytanie: produkty `publish` o tym samym `global_unique_id` (natywny
+  meta_key Woo `_global_unique_id`, kontrakt §10.2, zweryfikowane w
+  `abstracts/abstract-wc-product.php`/`class-wc-product-data-store-cpt.php`),
+  WŁĄCZAJĄC bieżący produkt (żeby wyznaczyć jego pozycję/pill „Oglądasz
+  teraz" wśród reszty, posortowanych rosnąco po cenie — wzorem
+  `produkt-inne-sztuki.html:286-343`, gdzie bieżąca sztuka siedzi na swoim
+  miejscu cenowym, NIE na końcu/początku listy). Sekcja renderuje się TYLKO
+  gdy liczba sztuk (włącznie z bieżącą) ≥ 2.
+- **D-22.4.4 [USTALONE]:** filtr `_stock`>0 dotyczy WYŁĄCZNIE sztuk INNYCH
+  niż bieżąca — zgodne z `.ism-fine` w prototypie („sztuka znika z listy po
+  sprzedaży"). Bieżąca sztuka zostaje w wyniku bezwarunkowo (na stronie
+  produktu dostępnego zawsze ma `_stock`>0 — ten warunek jest czysto
+  defensywny, przygotowuje grunt pod przyszły punkt integracji ze stroną
+  „produkt wyprzedany", patrz uwaga niżej).
 - Render: przełącznik lista/kafelki + karuzela (`produkt-inne-sztuki.html`
-  `#ism`), per sztuka: miniatura, klasa stanu (`kolor`/`nazwa` z
+  `#ism`), per sztuka: miniatura (`wp_get_attachment_image`, wzorem
+  `.buybar-thumb`/`.pd-main-img`), klasa stanu (`kolor`/`nazwa` z
   `ClassDefinitionsTaxonomy`, już gotowe), jednozdaniowe „co w zestawie",
-  cena + rabat.
-- **Otwarta decyzja [OTWARTE]:** „co w zestawie" jako jedno zdanie NIE
-  istnieje dziś jako pojedyncze pole — `zawartosc_zestawu_pozycje` (P-9.2)
-  to REPEATER pozycji, nie gotowe podsumowanie. Nowe pole tekstowe
-  (redakcyjne, jedno zdanie) czy auto-generowane z etykiet repeatera? Do
-  ustalenia przy realizacji.
-- **Otwarta decyzja [OTWARTE]:** logika zapytania po GTIN to raczej „model"
-  niż „wygląd" (reguła rozstrzygająca `CLAUDE.md` → „Struktura") — helper w
-  `qutlet-core` czy w całości w `qutlet-theme` (bo nic nowego się nie
-  zapisuje, czysto odczytowe)? Do ustalenia przy realizacji.
-- **Repo:** do ustalenia przy realizacji (przypuszczalnie `qutlet-theme`,
-  ewentualnie `qutlet-core` dla query helpera) — punkt WIELOREPOWY, jeśli
-  tak wyjdzie z ground-truthu.
+  cena + rabat (`ProductPage::price_text()`/`save_percent()`, już gotowe),
+  badge „Najniższa cena" dla sztuki o minimalnej cenie w grupie.
+- **D-22.4.1 [USTALONE — decyzja użytkownika]:** „co w zestawie" jako jedno
+  zdanie AUTO-GENEROWANE z etykiet repeatera `zawartosc_zestawu_pozycje`
+  (P-9.2) — złączenie `etykieta` wierszy z `w_zestawie=true` przecinkiem.
+  Gdy wynik pusty (repeater pusty ALBO żaden wiersz nie ma `w_zestawie=true`)
+  → tekst zastępczy z NOWEGO ustawienia globalnego (opcja WP, `qutlet-core`,
+  patrz D-22.4.2) — puste ustawienie = wiersz „co w zestawie" pomijany w
+  ogóle (BEZ wymyślonej domyślnej treści redakcyjnej — decyzja treści
+  zostaje dla admina, zgodnie z zasadą „pytaj, nie zgaduj" dla literałów
+  marketingowych).
+- **D-22.4.2 [USTALONE — decyzja użytkownika]:** nowa strona ustawień
+  **„Zarządzanie stanami"** w `qutlet-core` (slice `ProductCondition`, obok
+  `ClassDefinitionsTaxonomy`/`DiscountRateSettingsPage` — ten sam wzorzec:
+  podmenu WooCommerce, Settings API, `manage_woocommerce`), z JEDNYM polem:
+  tekst zastępczy „co w zestawie" (opcja `qutlet_zawartosc_zestawu_domyslny_tekst`,
+  kontrakt-danych.md §19). **Odrzucona alternatywa:** dopisanie pola do
+  istniejącej `qutlet-allegro\OfferSync\ConditionMapPage` („Mapowanie
+  stanów") — TAMTA strona jest Allegro-specyficzna (mapowanie „Stan" z oferty
+  Allegro → nasza klasa) i jawnie READ-ONLY (D-12.1c.2); nowe pole nie
+  dotyczy synchronizacji Allegro (łamałoby granicę repo z `CLAUDE.md` —
+  „ruszasz dane między qutlet a Allegro → allegro"). `ConditionMapPage`
+  zostaje BEZ ZMIAN.
+- **D-22.4.3 [USTALONE — ground-truth]:** logika zapytania (GTIN → lista
+  sztuk) i cały render widgetu żyją w **`qutlet-theme`** (rozszerzenie
+  istniejącej klasy `ProductPage`, NIE nowy slice) — analogicznie do
+  `ProductPage::ship_items()` (już dziś czyta repeater ACF w theme) i do
+  bloku `qutlet/featured-products` (`inc/features/Home/blocks/featured-products/render.php`,
+  samodzielne `wc_get_products()` w theme, zero modyfikacji głównego
+  zapytania). **Odrzucona alternatywa:** helper w `qutlet-core` wzorem
+  `ProductFilterQuery` — TAMTEN precedens (D-8.3b.2) dotyczy modyfikacji
+  GŁÓWNEGO zapytania archiwum (hooki na współdzielone zapytanie WordPressa),
+  nie samodzielnego, jednorazowego zapytania na potrzeby jednego widgetu
+  strony produktu — inna kategoria problemu, mimo pozornego podobieństwa
+  „to query czy to render".
+- **Poza zakresem P-22.4 [zdecydowane z użytkownikiem]:** integracja z
+  `produkt-wyprzedany.html` (blok `.pd-sold` + CTA „Zobacz inne sztuki tego
+  modelu" scrollujące do `#ism`) — strona „produkt wyprzedany" (`_stock=0`)
+  w ogóle nie jest jeszcze zportowana do `content-single-product.php` i nie
+  jest przypisana do żadnego istniejącego punktu planu. Zostaje jako
+  KANDYDAT do przyszłej, osobnej sesji (patrz „Materiał referencyjny i
+  kandydaci do dalszych faz" niżej).
 - **Zależności:** FAZA 6 (P-6.7, rozluźnienie unikalności GTIN — już
-  spełnione), P-9.2 (`zawartosc_zestawu_pozycje`, źródło „co w zestawie").
+  spełnione), P-9.2 (`zawartosc_zestawu_pozycje`, źródło „co w zestawie"),
+  P-12.1b/P-12.2c (`ClassDefinitionsTaxonomy`).
+
+#### 🟡 P-22.4a — Decyzje D-22.4.1…D-22.4.4 + kontrakt (qutlet-meta)
+- **Repo:** qutlet-meta (`docs/plan.md`, ten wpis + `docs/kontrakt-danych.md`
+  §19 — nowa opcja `qutlet_zawartosc_zestawu_domyslny_tekst`).
+- **Zakres:** rozstrzygnięcia wyżej — czysto dokumentacyjne, zero kodu.
+- **Zależności:** brak.
+
+#### 🟦 P-22.4b — Strona ustawień „Zarządzanie stanami" (qutlet-core)
+- **Repo:** qutlet-core.
+- **Zakres:** nowa klasa `ProductCondition\ConditionManagementSettingsPage`
+  (podmenu WooCommerce, Settings API, `manage_woocommerce` — wzorzec
+  `Pricing\DiscountRateSettingsPage`), jedno pole tekstowe → opcja
+  `qutlet_zawartosc_zestawu_domyslny_tekst`. Rejestracja `::init()` w
+  bootstrapie pluginu (`qutlet-core.php`, obok innych `::init()`).
+- **Zależności:** P-22.4a (decyzja D-22.4.2).
+
+#### 🟦 P-22.4c — Widget `#ism` w `content-single-product.php` (qutlet-theme)
+- **Repo:** qutlet-theme.
+- **Zakres:** `ProductPage::other_pieces()` (zapytanie `wc_get_products()` po
+  `_global_unique_id`, sortowanie po cenie, filtr `_stock`>0 dla sztuk innych
+  niż bieżąca, D-22.4.1/D-22.4.4) + `ProductPage::contents_sentence()` (D-22.4.1,
+  `use Qutlet\Core\ProductCondition\ConditionManagementSettingsPage` dla opcji
+  zastępczej — wzorem istniejącego `use ClassDefinitionsTaxonomy`), markup
+  sekcji `.ism` (lista + kafelki/karuzela) w `content-single-product.php`
+  między `.pd-grid` a `.pd-tabs-section` (layout z prototypu), port stylów
+  `.ism*` z `<style>` inline `produkt-inne-sztuki.html` do `style.css`, nowy
+  `assets/js/product-other-pieces.js` (toggle layoutu + scroll karuzeli, port
+  `<script>` z prototypu, enqueue z `ProductPage::enqueue()` wzorem
+  `product-stock-stepper.js`).
+- **Zależności:** P-22.4b (opcja tekstu zastępczego musi istnieć, żeby
+  `contents_sentence()` miało co czytać — brak opcji = po prostu pusty
+  fallback, nie blokuje runtime, ale kolejność merge'a a→b→c zachowuje
+  spójność historii).
 
 ### P-22.5 — Teksty polityk (zwrot/gwarancja/wysyłka) na stronie produktu jako pola per klasa stanu (punkt wielorepowy)
 **Zgłoszenie:** wszystkie teksty widoczne na stronie produktu (np. „Polityka
@@ -8054,3 +8136,17 @@ dalsze utwardzanie (podniesienie poziomu PHPStan, testy e2e) i sam
 DEPLOY na produkcję (`www.qutlet.pl`, faktyczne wgranie i uruchomienie) —
 FAZA 14 dokumentuje JAK skonfigurować środowisko, nie wykonuje deployu.
 Rozpiszemy deploy jako taki, gdy dojdziemy do tego etapu.
+
+**Strona „produkt wyprzedany" (`_stock=0`, port `design/vanilla/produkt-wyprzedany.html`)
+— kandydat dopisany 2026-08-19 (sesja P-22.4).** Prototyp istnieje (blok
+`.pd-sold` zamiast panelu zakupu, przycisk „Produkt niedostępny" disabled, CTA
+`<a data-scroll-to="#ism">Zobacz inne sztuki tego modelu</a>` scrollujące do
+widgetu P-22.4 niżej na tej samej stronie, JS usuwający CTA gdy sekcja `#ism`
+nie istnieje — markup/CSS widgetu identyczne 1:1 z `produkt-inne-sztuki.html`),
+ale `content-single-product.php` DZIŚ nie renderuje żadnego wariantu dla
+`_stock=0` poza natywnym `wc_get_stock_html()`/blokadą `add_to_cart` Woo —
+świadomie POZA zakresem P-22.4 (widget czytany read-only, nie wymaga tej
+strony do działania: sekcja `#ism` renderuje się niezależnie na stronie
+KAŻDEJ dostępnej sztuki z GTIN, patrz D-22.4.4). Zależność przy realizacji:
+P-22.4 (sekcja `#ism`, cel scrolla CTA) musi istnieć wcześniej — CTA bez
+istniejącego celu nie ma sensu.
