@@ -8561,3 +8561,16 @@ strony do działania: sekcja `#ism` renderuje się niezależnie na stronie
 KAŻDEJ dostępnej sztuki z GTIN, patrz D-22.4.4). Zależność przy realizacji:
 P-22.4 (sekcja `#ism`, cel scrolla CTA) musi istnieć wcześniej — CTA bez
 istniejącego celu nie ma sensu.
+
+**Baner `.nlband` w stopce (`parts/footer.html`, osobny uproszczony
+formularz zapisu do newslettera) — kandydat dopisany 2026-08-19 (sesja
+P-23.3).** P-23.3 domknął formularz zapisu na stronie `/newsletter/`
+(Gravity Forms, formularz ID 2) i świadomie zostawił `.nlband`
+POZA zakresem (decyzja użytkownika w tamtej sesji) — `.nlband-form` w
+`parts/footer.html` zostaje jako dotychczasowy placeholder
+(`action="#"`/`data-nlband-form`, D-8.G3). Ustalenie do wzięcia pod uwagę
+przy realizacji tego kandydata: e-mail wpisany w baner ma **przekazać się
+do/zasilić TEN SAM formularz `/newsletter/`** (np. redirect z parametrem
+prewypełniającym pole e-mail GF, albo współdzielony feed MailerLite), NIE
+tworzyć duplikat osobnego zapisu — inaczej dwa niezależne miejsca zapisu do
+tej samej listy.
