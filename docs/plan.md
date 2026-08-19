@@ -7820,7 +7820,7 @@ sąsiadują dziś i w prototypie) TUŻ POD `.eco-note`, PRZED `.perk-list`/
   blok dostępności już w docelowe miejsce (między `.eco-note` a
   przeniesionym przyciskiem), bez podwójnego przepisywania.
 
-### P-22.3 — Redesign prezentacji dostępności/stanu magazynowego
+### 🟡 P-22.3 — Redesign prezentacji dostępności/stanu magazynowego (punkt wielorepowy → P-22.3a + P-22.3b)
 **Zgłoszenie:** wg `produkt-inne-sztuki.html` (blok `.pd-stock` — „Ostatnia
 sztuka" dla 1 egzemplarza, licznik + stepper ilości dla ≥2; `style.css` ma
 już gotowe klasy `.pd-stock-one`/`.pd-stock-many`/`.pd-qty`/`.pd-stepper`,
@@ -7844,15 +7844,59 @@ stock Woo), tylko niestylowany pod nowy design.
 egzemplarz w klasie X"; `count>=2` → licznik dostępnych + custom
 `.pd-stepper`.
 
-**Do ustalenia przy realizacji [OTWARTE]:** czy custom `.pd-stepper` zastępuje
-natywny `woocommerce_quantity_input()` (JS syncuje ukryty natywny
-`<input name="quantity">`, żeby submit formularza działał bez zmian
-backendu), czy renderuje się obok niego (ukryty natywny input jako fallback
-no-JS)? Do rozstrzygnięcia ground-truthem `assets/js/app.js` przy realizacji,
-nie zgadywać.
+Punkt otwierał się z jedną decyzją **[OTWARTE]** (stepper zastępuje vs.
+renderuje się obok natywnego inputa) do rozstrzygnięcia ground-truthem przy
+realizacji. Rozstrzygnięcie (**D-22.3.1** niżej) samo w sobie jest realną
+pracą po stronie `qutlet-meta` (decyzja architektoniczna, nie pochodna
+odczytu kodu 1:1) — wyjątek „punkt czysto-kodowy" (patrz `CLAUDE.md` →
+„Realizacja punktu planu") więc NIE ma zastosowania: punkt rozpada się na
+`P-22.3a` (decyzja, `qutlet-meta`) + `P-22.3b` (implementacja, `qutlet-theme`),
+`b` zależny od `a`.
+
+- **D-22.3.1 (custom `.pd-stepper` ZASTĘPUJE natywny `woocommerce_quantity_input()`
+  wizualnie, bez fallbacku no-JS) [USTALONE — sesja 2026-08-19]:** ground-truth
+  `design/vanilla/js/app.js` (prototyp) — PUSTY wynik na `stock|qty|stepper`,
+  prototyp nie niesie żadnej logiki JS dla tego bloku (statyczny demo-markup,
+  oba warianty `.pd-stock-one`/`.pd-stock-many` mają `hidden` na sztywno).
+  Decyzja więc oparta o konwencję REALNEGO kodu `qutlet-theme`, nie prototypu:
+  `assets/js/product-buy-tabs.js` (przełącznik kanału zakupu) chowa panele
+  atrybutem `hidden` wpisanym WPROST w PHP (`content-single-product.php`), nie
+  warunkowo przez JS — motyw NIGDZIE nie implementuje progressive enhancement/
+  fallbacku no-JS (taby, galeria, akordeon „jak-to-dziala" — wszystkie martwe
+  bez JS). Ten sam wzorzec zastosowany tu: natywny `<input name="quantity">`
+  zostaje w DOM (jedyne pole, które faktycznie submituje się z
+  `WC_Form_Handler::add_to_cart_action()` — D-8.G1, theme nie duplikuje logiki
+  Woo), ale CSS (`.pd-stock ~ .cart .quantity { display: none; }`) chowa go
+  BEZWARUNKOWO, nie przez klasę dodawaną JS-em. Custom `.pd-stepper`
+  (`assets/js/product-stock-stepper.js`) czyta `min`/`max` z ukrytego
+  natywnego inputa (już policzone przez `wc_get_quantity_input_args()` z
+  `_stock`/`sold_individually`/limitów produktu — logika NIE duplikowana) i
+  przy każdym kliknięciu +/− zapisuje wybraną wartość z powrotem do niego
+  (`input.value` + `dispatchEvent('change')`). **Odrzucona alternatywa:**
+  „obok, natywny input jako fallback no-JS" — niespójne z resztą motywu
+  (żaden inny interaktywny element strony produktu takiego fallbacku nie ma)
+  i dodatkowy koszt (markup + CSS) na wypadek scenariusza, którego motyw i
+  tak nie wspiera nigdzie indziej.
+
+#### 🟡 P-22.3a — Decyzja D-22.3.1 (qutlet-meta)
+- **Repo:** qutlet-meta (`docs/plan.md`, ten wpis).
+- **Zakres:** rozstrzygnięcie D-22.3.1 (wyżej) — czysto dokumentacyjne,
+  zero kodu.
+- **Zależności:** brak.
+
+#### P-22.3b — Custom blok `.pd-stock` (qutlet-theme)
 - **Repo:** qutlet-theme.
-- **Zależności:** P-22.2 (docelowe miejsce w layoucie — blok wstawia się
-  między `.eco-note` a przeniesionym przyciskiem).
+- **Zakres:** markup `.pd-stock` w `woocommerce/content-single-product.php`
+  (między `.eco-note` a `woocommerce_template_single_add_to_cart()`, layout z
+  P-22.2), style `.pd-stock*`/`.pd-qty*`/`.pd-stepper*` w `style.css` (port
+  `design/vanilla/css/style.css`), ukrycie natywnego inputa (`.pd-stock ~ .cart
+  .quantity`), nowy `assets/js/product-stock-stepper.js` (D-22.3.1) enqueue'owany
+  z `ProductPage::enqueue()`. Natywny `wc_get_stock_html()`
+  (`add-to-cart/simple.php`) ograniczony do przypadku OUT OF STOCK — dla
+  in-stock rolę przejmuje `.pd-stock` (podwójny badge byłby duplikacją tej
+  samej informacji).
+- **Zależności:** P-22.3a (decyzja D-22.3.1), P-22.2 (docelowe miejsce w
+  layoucie — blok wstawia się między `.eco-note` a przeniesionym przyciskiem).
 
 ### P-22.4 — Widget „Inne sztuki tego modelu" (agregacja po GTIN) — realizuje ❓ P-6.10 (FAZA 6)
 **Zgłoszenie:** gdy istnieją produkty z tym samym GTIN, strona produktu
