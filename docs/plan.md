@@ -8151,13 +8151,27 @@ przez Gravity Forms (licencja developerska); (3) formularz newslettera przez
 Gravity Forms + dodatek Gravity Forms MailerLite; (4) wyszukiwarka przez
 Relevanssi (wersja darmowa, chyba że ground-truth realizacji pokaże powód do
 zmiany); (5) favicona (plik gotowy w `design/vanilla/assets/favicon.svg`,
-motyw jej dziś w ogóle nie osadza). Gravity Forms i Relevanssi ZACZĘŁY być
-instalowane przez użytkownika już w trakcie TEJ sesji planistycznej
-(potwierdzone: `wp plugin list` na starcie sesji ich nie pokazywał; komunikat
-o warningu WooCommerce niżej padł dosłownie „gdy [Gravity Forms] dostałem" —
-instalacja w toku) — realizacja tych punktów zastanie środowisko częściowo
-przygotowane, ground-truth na starcie realizacji powinien to zweryfikować na
-nowo, nie zakładać stanu z tej sesji.
+motyw jej dziś w ogóle nie osadza).
+
+**AKTUALIZACJA (ta sama sesja, po dopisaniu fazy):** użytkownik zainstalował
+wszystkie potrzebne wtyczki jeszcze W TRAKCIE tej sesji planistycznej —
+`wp plugin list` (2026-08-19, po instalacji) potwierdza WSZYSTKIE aktywne:
+`gravityforms` (3.0.2.6), **`gravityformscli`** (1.7 — dodaje komendy `wp gf
+…`: `form`/`field`/`entry`/`notification`/`tool`/`license`/`setup` — ODDAJE
+tworzenie/zarządzanie formularzami w ręce WP-CLI, więc realizujący agent
+NIE MUSI polegać wyłącznie na ręcznej konfiguracji w adminie GF, tam gdzie
+się da), `gravityformsmailerlite` (1.1.1 — dodatek MailerLite z P-23.3 też
+już zainstalowany), `gravitysmtp` (2.3.2 — NIE był częścią zgłoszenia,
+dodatkowa wtyczka GF do niezawodnego wysyłania e-maili formularzy;
+odnotowane jako fakt środowiska, nie nowe wymaganie tego punktu) i
+`relevanssi` (4.28.2). `wp gf form list` — zero formularzy utworzonych
+(pusta lista) — sama instalacja skończona, KONFIGURACJA (pola formularzy,
+feed MailerLite, CSS, wpięcie do stron) wciąż czeka, ground-truth „Handoff/
+config" niżej w każdym punkcie jest więc już częściowo NIEAKTUALNY (mówi
+„instalacja" jako krok do zrobienia) — zostaje jako historia sesji, ale
+realizacja MUSI zrobić własny ground-truth `wp plugin list`/`wp gf …` na
+starcie, nie ufać ani tej notatce, ani oryginalnemu tekstowi niżej,
+środowisko mogło się zmienić dalej między sesjami.
 
 Pięć punktów jest ze sobą NIEZALEŻNYCH (żaden nie blokuje pozostałych) —
 łączy je wyłącznie wspólny mianownik „domykamy to, co FAZA 8 świadomie
