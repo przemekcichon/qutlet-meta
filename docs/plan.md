@@ -7820,7 +7820,20 @@ sąsiadują dziś i w prototypie) TUŻ POD `.eco-note`, PRZED `.perk-list`/
   blok dostępności już w docelowe miejsce (między `.eco-note` a
   przeniesionym przyciskiem), bez podwójnego przepisywania.
 
-### 🟡 P-22.3 — Redesign prezentacji dostępności/stanu magazynowego (punkt wielorepowy → P-22.3a + P-22.3b)
+### 🟢 P-22.3 — Redesign prezentacji dostępności/stanu magazynowego (punkt wielorepowy → P-22.3a + P-22.3b)
+
+**Zrealizowane, zmergowane** — [qutlet-meta PR #106](https://github.com/przemekcichon/qutlet-meta/pull/106)
+(P-22.3a, decyzja D-22.3.1) + [qutlet-theme PR #38](https://github.com/przemekcichon/qutlet-theme/pull/38)
+(P-22.3b, implementacja) (2026-08-19). Niezależna recenzja (`docs/review.md`,
+jedna sesja dla obu PR-ów): 🟡 WARUNKOWO (drobne), zero ustaleń blokujących —
+oba znalezione ustalenia (przedwczesna ikona 🟡 na nagłówku P-22.3b;
+docblock w `content-single-product.php` twierdzący o pełnej zgodności z
+`ProductCard::qty_label()`, w praktyce rozjeżdżający się w jednym edge
+case'ie przez zbędny gate `managing_stock()`) zaadresowane przed merge'em.
+Runtime zweryfikowany Playwright na trzech realnych produktach (`_stock=1`,
+`_stock=37` + faktyczny submit „Dodaj do koszyka" z ilością 3, oraz
+out-of-stock — regresja natywnego badge'a „Brak w magazynie" sprawdzona).
+
 **Zgłoszenie:** wg `produkt-inne-sztuki.html` (blok `.pd-stock` — „Ostatnia
 sztuka" dla 1 egzemplarza, licznik + stepper ilości dla ≥2; `style.css` ma
 już gotowe klasy `.pd-stock-one`/`.pd-stock-many`/`.pd-qty`/`.pd-stepper`,
@@ -7878,13 +7891,13 @@ odczytu kodu 1:1) — wyjątek „punkt czysto-kodowy" (patrz `CLAUDE.md` →
   i dodatkowy koszt (markup + CSS) na wypadek scenariusza, którego motyw i
   tak nie wspiera nigdzie indziej.
 
-#### 🟡 P-22.3a — Decyzja D-22.3.1 (qutlet-meta)
+#### 🟢 P-22.3a — Decyzja D-22.3.1 (qutlet-meta)
 - **Repo:** qutlet-meta (`docs/plan.md`, ten wpis).
 - **Zakres:** rozstrzygnięcie D-22.3.1 (wyżej) — czysto dokumentacyjne,
   zero kodu.
 - **Zależności:** brak.
 
-#### P-22.3b — Custom blok `.pd-stock` (qutlet-theme)
+#### 🟢 P-22.3b — Custom blok `.pd-stock` (qutlet-theme)
 - **Repo:** qutlet-theme.
 - **Zakres:** markup `.pd-stock` w `woocommerce/content-single-product.php`
   (między `.eco-note` a `woocommerce_template_single_add_to_cart()`, layout z
