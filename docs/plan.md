@@ -8107,32 +8107,109 @@ w `content-single-product.php` (identyczne dla każdej klasy, NIE per-klasa):**
 §2.2): `opis_chip`, `dlaczego_taniej`, `stan_wizualny`, `charakterystyka`,
 `kolor`, `okres_gwarancji_miesiace`, `okres_reklamacji_miesiace`.
 
-**Otwarta decyzja domenowa [OTWARTE — do potwierdzenia z użytkownikiem PRZED
-implementacją, nie zgadywać]:** NIE wszystkie literały wyżej faktycznie
-różnią się dziś między klasami. Część to raczej OGÓLNA polityka sklepu
-niezależna od stanu egzemplarza (np. „Wysyłka w 1 dzień roboczy", cały blok
-„Kupuj przez Allegro") — dodanie im pola per-klasa oznaczałoby 5-krotną
-duplikację identycznej treści (A/B/C/D/Nowe) bez żadnej korzyści redakcyjnej,
-tylko więcej miejsc do przeoczenia przy zmianie. Przed dodaniem pól do
-`klasa_stanu_definicja` — spisać przy realizacji tabelę KAŻDEGO literału z
-listy wyżej: (a) faktycznie różni się między klasami dziś czy w bliskiej
-przyszłości → kandydat na nowe pole term meta; (b) stała treść sklepu →
-NIE trafia do `klasa_stanu_definicja`, potrzebuje innego mechanizmu
-(Customizer/ustawienia ogólne/stały literał) — POZA zakresem tego punktu,
-o ile użytkownik nie zdecyduje inaczej. Wzorzec tabeli kandydatów: D-12.1a.2/
-D-21.4.1.
+**Otwarta decyzja domenowa — ROZSTRZYGNIĘTA jawnie z użytkownikiem na starcie
+sesji realizacyjnej (2026-08-19).** Wykonawca przedstawił analizę: NIE
+wszystkie literały wyżej faktycznie różnią się dziś między klasami — część to
+raczej OGÓLNA polityka sklepu/kanału (np. „Wysyłka w 1 dzień roboczy") i
+zaproponował wariant „żadne nowe pole" (wzorem tabeli kandydatów D-12.1a.2/
+D-21.4.1, gdzie „nie różni się dziś" bywa argumentem za odrzuceniem
+kandydata). **Użytkownik odrzucił tę rekomendację**: „Już teraz mamy
+dodatkowe pola do per klasa i wpisuję tam różne teksty. Po prostu stwórz nowe
+pola." — intencja jest REDAKCYJNA (elastyczność edycji per klasa naprzód),
+nie zależy od tego, czy treść RÓŻNI SIĘ dziś (dokładnie ten sam wzorzec co
+już zaakceptowany dla `dlaczego_taniej`, „Dziś WSPÓLNY dla A-D … różnicowanie
+per klasa to przyszła praca redakcyjna", kontrakt §2.2).
 
-**Zakres (do rozbicia na pod-punkty przy realizacji, wzorem P-21.4/P-21.5):**
-- Kontrakt (`qutlet-meta`): tabela kandydatów rozstrzygnięta z użytkownikiem
-  + rozszerzenie `docs/kontrakt-danych.md` §2.2 o nowe pola term meta.
-- `qutlet-core`: nowe pola ACF w `ClassDefinitionsTaxonomy::register_fields()`.
-- `qutlet-theme`: `content-single-product.php` czyta nowe pola zamiast
-  literałów DLA TEKSTÓW rozstrzygniętych jako per-klasa; teksty uznane za
-  sklepowo-ogólne zostają bez zmian w tym punkcie.
-- **Repo:** qutlet-meta + qutlet-core + qutlet-theme (rozbicie na pod-punkty
-  a/b/c przy realizacji, kolejność wg zależności — kontrakt najpierw).
-- **Zależności:** FAZA 12 (`ClassDefinitionsTaxonomy`, wzorzec rozszerzalnego
-  bytu per klasa).
+- **D-22.5.1 [USTALONE — decyzja użytkownika, sesja 2026-08-19]:** wszystkie
+  literały z listy ground-truth dostają nowe pole term meta per klasa w
+  `klasa_stanu_definicja`, niezależnie od tego, czy treść różni się między
+  klasami DZIŚ (seedowane identycznie dla A-D, jak `dlaczego_taniej`) — poza
+  JEDNYM wyjątkiem niżej (D-22.5.2).
+- **D-22.5.2 [USTALONE — ocena wykonawcy, granica NIE kwestionowana przez
+  użytkownika]:** blok „Kupuj przez Allegro" (`#jak-to-dziala`, wyjaśnienie
+  KANAŁU zakupu) zostaje POZA zakresem — nie mówi NIC o stanie egzemplarza,
+  to inna oś (kanał Qutlet/Allegro, slice `AllegroChannel`, kontrakt §4), nie
+  klasa stanu. Podobnie nagłówki kart akordeonu „Dostawa i zwroty" sterowane
+  WYŁĄCZNIE `$allegro_enabled` („Zwrot — nasz sklep"/„Zwrot — 14 dni"/„Zwrot —
+  Allegro") zostają literałami w motywie — to struktura zależna od kanału,
+  nie treść redakcyjna zależna od klasy. Reszta (12 literałów) dostaje nowe
+  pola — pełna lista z nazwami term meta, typami i domyślną treścią seed: patrz
+  `docs/kontrakt-danych.md` §2.2 (sekcja „Pola tekstów polityk", P-22.5).
+  Pola dla `gwarancja_opis`/`reklamacja_opis` niosą placeholder `{okres}`
+  (podstawiany przez motyw) — zastępują dzisiejszą logikę sprintf/próg
+  liczbowy `$claim_months >= 24` w pełni redakcyjną treścią per klasa. Wszystkie
+  nowe pola **opcjonalne** (`required=0`) z hardkodowanym fallbackiem w motywie
+  (dzisiejszy literał) — polityka zwrotu/gwarancji nie może po prostu zniknąć
+  z rendera, gdyby pole było puste przed backfillem.
+- **D-22.5.3 [USTALONE — decyzja użytkownika po niezależnej recenzji, sesja
+  2026-08-19]:** recenzja P-22.5b (`docs/review.md`) ujawniła, że pierwsza
+  wersja `BackfillPolicyTextsCommand` celowała w sztywną listę kodów
+  `A`/`B`/`C`/`D` (wzorem `SeedClassDefinitionsCommand`) — zweryfikowane
+  `wp_cli` (`wp term list klasa_stanu_definicja` + `wp term meta list`) na
+  Localu: ŻADNA klasa o takim kodzie nie istnieje. Taksonomia niesie dziś
+  WYŁĄCZNIE 7 realnych klas nazwanych surowymi wartościami Allegro „Stan"
+  (`Na części`/`Nowy`/`Nowy z defektem`/`Po zwrocie`/`Powystawowy`/
+  `Uszkodzony`/`Używany`), z `kod` identycznym z `name` na każdej — ten sam
+  fakt, niezależnie ground-truthowany przy **P-9.7** (bug „Klasa stanu"
+  pokazuje zdublowaną etykietę). Sztywna lista A-D była więc martwym kodem
+  (0/84 pól wypełniłoby się — potwierdzone dry-run). Użytkownik zdecydował:
+  komenda iteruje DYNAMICZNIE po `ClassDefinitionsTaxonomy::all()` zamiast
+  zakładać konkretny zestaw kodów — poprawka zweryfikowana na Localu
+  (dry-run → 84/0, real run → 84 wypełnione, ponowny dry-run → 0/84,
+  potwierdzona idempotencja). `docs/kontrakt-danych.md` §2.2 (opis pola
+  `kod` jako historycznie A-D/Nowe) zostaje BEZ ZMIAN w tym punkcie — ta
+  szersza rozbieżność dokumentacja↔realne dane istniała przed P-22.5
+  (odkryta przy P-9.7), korekta całej sekcji jest POZA zakresem tego punktu.
+- **D-22.5.4 [USTALONE — decyzja użytkownika, sesja 2026-08-19, po
+  implementacji D-22.5.1/D-22.5.2]:** po zobaczeniu zaimplementowanych 12 pól
+  użytkownik ocenił 10 z nich jako treść SKLEPOWĄ/KANAŁOWĄ (dokładnie granica,
+  którą wykonawca proponował na starcie sesji i którą użytkownik wtedy
+  odrzucił) — zdecydował PRZENIEŚĆ je na opcje globalne, rozszerzając stronę
+  ustawień z P-22.4b („Zarządzanie stanami") o nowy zakres i przemianowując ją
+  na bardziej ogólną **„Treści sklepu"** (`StoreContentSettingsPage`,
+  `qutlet-core`) — pełny kontrakt i pełna lista 10 opcji: `docs/kontrakt-danych.md`
+  §19.2. **Zostają per-klasa WYŁĄCZNIE** `gwarancja_opis`/`reklamacja_opis`
+  (jedyne dwa już dziś sprzężone z inną wartością per-klasa przez placeholder
+  `{okres}` — kontrakt §2.2). Backfill (`BackfillPolicyTextsCommand`) też się
+  kurczy do tych dwóch pól — 10 przeniesionych opcji dostaje domyślną treść
+  przez natywny mechanizm `register_setting()` → `default` (WP zwraca go z
+  `get_option()`, dopóki admin nie zapisze formularza), bez osobnej komendy.
+
+**Zakres (rozbite na pod-punkty wzorem P-22.4a/b/c, kolejność wg zależności —
+kontrakt najpierw):**
+
+#### 🟡 P-22.5a — Decyzje D-22.5.1…D-22.5.4 + kontrakt (qutlet-meta)
+- **Repo:** qutlet-meta (`docs/plan.md`, ten wpis + `docs/kontrakt-danych.md`
+  §2.2 — 2 pola term meta `klasa_stanu_definicja` + §19.2 — 10 opcji globalnych
+  `StoreContentSettingsPage`).
+- **Zależności:** brak (pierwszy pod-punkt).
+
+#### P-22.5b — 2 pola ACF + backfill + strona „Treści sklepu" (qutlet-core)
+- `ClassDefinitionsTaxonomy::register_fields()` niesie WYŁĄCZNIE 2 pola per
+  klasa: `gwarancja_opis`/`reklamacja_opis` (nazwy/typy: kontrakt §2.2).
+- `BackfillPolicyTextsCommand` — jednorazowo wypełnia te 2 pola dzisiejszą
+  treścią (identyczną dla wszystkich klas) dla term-ów, które mają puste pole
+  (idempotentna per-pole, iteruje DYNAMICZNIE po `ClassDefinitionsTaxonomy::all()`
+  — D-22.5.3).
+- `ConditionManagementSettingsPage` (P-22.4b) → **przemianowana** na
+  `StoreContentSettingsPage` („Treści sklepu") — istniejące pole „co w
+  zestawie" bez zmian (`FALLBACK_OPTION`, zero migracji danych), dochodzi 10
+  nowych opcji Settings API z niepustym domyślnym seedem (kontrakt §19.2,
+  D-22.5.4). Odczyt cross-repo z `qutlet-theme` bez zmian mechanizmu (`use
+  Qutlet\Core\ProductCondition\StoreContentSettingsPage;` — rename referencji).
+- **Zależności:** P-22.5a (nazwy pól/opcji z kontraktu).
+
+#### P-22.5c — Render czyta pola i opcje (qutlet-theme)
+- `content-single-product.php` czyta 2 pola per klasa
+  (`$condition_definition['gwarancja_opis'/'reklamacja_opis']`, z placeholderem
+  `{okres}` → `ProductPage::period_years_text()`, zastępuje dotychczasową
+  gałąź `$claim_months >= 24`) oraz 10 opcji globalnych (`get_option()` przez
+  nowy `ProductPage::store_text()`, referencja stałych `StoreContentSettingsPage::OPTION_*`)
+  zamiast literałów — oba mechanizmy z hardkodowanym fallbackiem (dzisiejszy
+  tekst) gdy puste. Bez zmian: blok „Kupuj przez Allegro", nagłówki kart
+  akordeonu sterowane kanałem (D-22.5.2).
+- **Zależności:** P-22.5b (pola/opcje muszą istnieć), FAZA 8
+  (`content-single-product.php`, render strony produktu).
 
 **Zależności (całej fazy):** FAZA 6 (P-6.7 — GTIN, P-6.10 — realizowane tu
 jako P-22.4), FAZA 8 (`content-single-product.php`, render strony produktu),
