@@ -334,11 +334,107 @@ produkcja go nie potrzebuje (prostszy `wp-config.php`, zero ryzyka pomyłki
 Wartości wszystkich powyższych stałych to sekrety produkujemy osobno, przy
 wdrożeniu — **nigdy w tym pliku, nigdy w repo**.
 
+### Przygotowanie danych katalogu na produkcji (WP-CLI)
+
+**Dopisano 2026-08-19** (poza pierwotnym zakresem P-14.2 — uzupełnienie na
+prośbę użytkownika). Skąd bierze się REALNY katalog produktów/klas na
+świeżej instalacji produkcyjnej — sekwencja komend `wp qutlet-*` (pełna
+referencja + sygnatury flag: `docs/wp-cli-commands.md`). Świeża produkcja
+startuje z PUSTĄ bazą (żaden produkt, żadna klasa stanu) — w odróżnieniu od
+Local, które ma już wyimportowany katalog i wyewoluowaną taksonomię klas.
+
+1. **Definicje klas stanu** (`klasa_stanu_definicja`, kontrakt §2.2) — MUSZĄ
+   istnieć PRZED importem (krok 3 niżej wymaga gotowych termów do
+   dopasowania). `wp qutlet-core seed-klasa-stanu` tworzy klasyczne A/B/C/D
+   (+ ręcznie „Nowe", D-12.1a.3). **[OTWARTE — do ustalenia PRZED
+   pierwszym importem na produkcji, NIE zgadywać]:** ground-truth sesji
+   2026-08-19 (P-22.5, `docs/plan.md`, niezależna recenzja PR) ujawnił, że
+   REALNA taksonomia na Local dawno odeszła od modelu A-D — dziś niesie 7
+   klas nazwanych surowymi wartościami Allegro „Stan" (`Na części`/`Nowy`/
+   `Nowy z defektem`/`Po zwrocie`/`Powystawowy`/`Uszkodzony`/`Używany`), z
+   `kod` = `name` na każdej. `seed-klasa-stanu` seeduje więc coś, czego
+   dzisiejszy `CONDITION_MAP` (`qutlet-allegro`, `OfferMapper::CONDITION_MAP`)
+   może już NIE używać — sprawdzić `CONDITION_MAP` w realnym kodzie na dzień
+   wdrożenia i STWORZYĆ (ręcznie w adminie, albo dedykowaną komendą, jeśli
+   ktoś ją napisze) terminy `klasa_stanu_definicja` o kodach DOKŁADNIE
+   zgodnych z jego kluczami, zamiast ślepo odpalać `seed-klasa-stanu`.
+   Merytoryczna treść (kolor/opisy/gwarancja/reklamacja/teksty polityk
+   P-22.5) per klasa to osobna decyzja redakcyjna użytkownika, niezależna
+   od wybranej ścieżki kodów.
+2. **Import katalogu:** `wp qutlet-allegro import-offers
+   --environment=production` (BEZ `--new-only` — pełny przebieg, pierwsze
+   zasilenie pustej bazy; `--new-only` ma sens dopiero gdy jest już co
+   różnicować względem). Ciężka operacja (setki/tysiące ofert + obrazki) —
+   patrz „Limity execution time / memory" wyżej; rozważyć `--skip-images` +
+   osobny przebieg dociągający obrazki, jeśli limity hostingu nie
+   wystarczą na jeden przebieg.
+3. **Relacja produkt↔klasa:** `wp qutlet-core backfill-klasa-stanu-relacja`
+   — TWARDY WARUNEK WSTĘPNY (kontrakt §2.2, „Backfill relacji") przed
+   jakąkolwiek edycją produktu w adminie: pole `klasa_stanu` (ACF
+   `taxonomy`) czyta WYŁĄCZNIE z relacji, bez niej dropdown jest pusty i
+   zapis formularza blokuje się na walidacji ACF. Uruchomić OD RAZU po
+   każdym pełnym imporcie/reimporcie, nie tylko raz na starcie.
+4. **Teksty polityk per klasa** (P-22.5, o ile już zmergowane na dzień
+   wdrożenia): `wp qutlet-core backfill-teksty-polityk-klasa-stanu` —
+   wypełnia `gwarancja_opis`/`reklamacja_opis` domyślną treścią dla
+   wszystkich klas z kroku 1 (iteruje dynamicznie po realnych klasach, NIE
+   zakłada A-D — D-22.5.3). Pozostałe 10 tekstów polityk z tego punktu
+   (D-22.5.4) to opcje globalne (`StoreContentSettingsPage`) z wbudowanym
+   domyślnym seedem w kodzie — NIE wymagają osobnej komendy.
+5. **Mapowanie kategorii** (opcjonalnie, do oceny PO pierwszym imporcie):
+   `wp qutlet-allegro category-report --environment=production` (bez
+   `--apply` — czysty raport) pokazuje, ile ofert wpadło w kosz „brak
+   reguły" `CategoryMapRules` — jeśli niepusty, rozważyć
+   `--resolve-missing` (dociąga brakujące ścieżki z API) i `--apply` po
+   ustaleniu/dopisaniu brakujących reguł.
+6. **Zamówienia historyczne** (decyzja BIZNESOWA, NIE techniczny wymóg
+   startu): domyślnie świeża produkcja NIE potrzebuje importu starych
+   zamówień — scheduler `sync-orders` (`docs/wp-cli-commands.md`) zacznie
+   łapać zamówienia NOWE od uruchomienia crona (krok 7). Jeśli mimo to
+   biznes chce mieć w WP historię sprzed startu: `wp qutlet-allegro
+   sync-orders --environment=production --full` (pull rekoncyliacyjny) +
+   `wp qutlet-allegro backfill-order-attribution` (atrybucja Origin
+   „Allegro" na tak zaimportowanych zamówieniach) — potwierdzić z
+   użytkownikiem, czy w ogóle wchodzi w zakres wdrożenia, zanim się to
+   odpali (zawiera realne PII kupujących).
+7. **Uruchomić trigger WP-Cron** (jeśli jeszcze nie — patrz „Trigger
+   WP-Cron" wyżej) PRZED krokiem 2 albo zaraz po — bez niego kroki 2/3
+   trzeba by powtarzać ręcznie w nieskończoność zamiast dać je przejąć
+   schedulerom `sync-stock`/`sync-orders`/`import-offers --new-only`.
+
+Kolejność **1→2→3 jest SZTYWNA** (krok 3 wymaga termów z 1 i produktów z 2).
+Krok 4 wymaga 1 (i istnienia P-22.5 w kodzie na dzień wdrożenia). Kroki 5-6
+niezależne od pozostałych, do oceny osobno — nie blokują uruchomienia sklepu.
+
 ---
 
 ## Otwarte punkty
 
-Brak — wszystkie STOP-y z zakresu tego punktu (dostęp do crontaba, limity
-hostingu, licencja ACF Pro, polityka klucza AI, produkt Google do sprawdzania
-limitów) zostały rozstrzygnięte z użytkownikiem przy realizacji (patrz sekcje
-wyżej).
+Zamknięte przy realizacji P-14.2 (dostęp do crontaba, limity hostingu,
+licencja ACF Pro, polityka klucza AI, produkt Google do sprawdzania
+limitów) — patrz sekcje wyżej. **Nowe, dopisane 2026-08-19:** kody klas
+stanu na produkcji (A-D vs realny `CONDITION_MAP`) — patrz „Przygotowanie
+danych katalogu" krok 1 wyżej, [OTWARTE] do ustalenia PRZED pierwszym
+importem produkcyjnym.
+
+### Weryfikacja aktualności tego dokumentu
+
+Ten plik to zrzut stanu z konkretnych sesji (data przy każdej sekcji/
+dopisku) — środowisko (wersje wtyczek, zawartość `wp-config.php`, stan
+bazy, dostępne komendy WP-CLI) dryfuje między sesjami. **Przed realnym
+użyciem tego dokumentu do wdrożenia lub odtworzenia środowiska — sprawdź
+ponownie, nie ufaj mu ślepo jako aktualnej prawdzie:**
+- `wp plugin list` (Local, przez MCP) — czy wersje/status aktywności
+  wtyczek nadal się zgadzają z tym, co tu opisane (zwłaszcza WooCommerce/
+  ACF Pro — częste aktualizacje mogą zmieniać zachowanie).
+- `read_wp_config` (Local, przez MCP) — czy lista stałych `wp-config.php`
+  się nie zmieniła (nowe sekrety/flagi mogły dojść przy późniejszych
+  punktach planu, patrz `docs/plan.md` za punkty nowsze niż P-14.2/P-22.5).
+- `docs/wp-cli-commands.md` — ten dokument explicite linkuje do niego jako
+  „pełnej referencji" komend; jeśli w międzyczasie doszły nowe komendy/
+  schedulery (ten plik sam ostrzega, że bywał out-of-sync z planem), sekcja
+  „Przygotowanie danych katalogu" wyżej może pomijać nowe kroki.
+- Stan taksonomii `klasa_stanu_definicja` na środowisku DOCELOWYM (nie
+  Local) — patrz zastrzeżenie w kroku 1 „Przygotowanie danych katalogu"
+  wyżej; to świeże ustalenie (P-22.5, 2026-08-19), może wymagać dalszej
+  weryfikacji `CONDITION_MAP` przy realnym wdrożeniu.
