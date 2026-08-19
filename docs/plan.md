@@ -8315,7 +8315,7 @@ opakowuje pozycje w `<ul>/<li>`, niezgodne z płaskim `<a>` markupem
 - **Repo:** wyłącznie qutlet-theme (rejestracja lokalizacji menu + blok
   renderujący = warstwa graficzna, D-8.G1) — zero pól ACF/CPT, więc BEZ core.
 
-### P-23.2 — Formularz kontaktowy (Gravity Forms, wersja developerska)
+### 🟢 P-23.2 — Formularz kontaktowy (Gravity Forms, wersja developerska)
 
 **Ground-truth (sesja 2026-08-19):** Strona „Kontakt" (ID 19, `/kontakt/`)
 już istnieje i renderuje się przez `page-kontakt.php` (D-8.5.1) — chrome
