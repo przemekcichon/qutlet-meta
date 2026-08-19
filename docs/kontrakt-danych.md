@@ -164,40 +164,45 @@ P-12.2a, „Uwaga operacyjna".
 | Okres gwarancji (miesiące)           | `okres_gwarancji_miesiace` | number (int) | nie      | Dobrowolne zobowiązanie sprzedawcy. Dziś 12 dla A-D (verbatim „12 miesięcy"/„1 rok" z `content-single-product.php`). |
 | Okres reklamacji ustawowej (miesiące) | `okres_reklamacji_miesiace` | number (int) | nie     | Rękojmia — DWA OSOBNE pola od gwarancji (D-12.G3), nawet gdy liczbowo równe. Dziś 12 dla A-D. |
 
-**Pola tekstów polityk (P-22.5, D-22.5.1/D-22.5.2)** — wszystkie **opcjonalne**
-(`required=0`, wzorem `dlaczego_taniej`): puste pole → motyw pokazuje
-HARDKODOWANY fallback (dzisiejszy literał) zamiast pustego newralgicznego
-tekstu (polityka zwrotu/gwarancja NIE mogą po prostu zniknąć z rendera, w
-odróżnieniu od `.eco-note`, które wolno ukryć). Dziś seedowane WSPÓLNIE
-identyczną treścią dla WSZYSTKICH dziś zdefiniowanych klas
-(`BackfillPolicyTextsCommand`, jak `dlaczego_taniej`) — różnicowanie per
-klasa to przyszła praca redakcyjna admina, nie coś wymyślane w tej sesji.
-**REWIZJA (recenzja P-22.5, D-22.5.3):** backfill iteruje DYNAMICZNIE po
-`ClassDefinitionsTaxonomy::all()`, NIE po sztywnej liście `A`/`B`/`C`/`D` —
-na tym środowisku (i zapewne produkcji) taksonomia niesie dziś 7 realnych
-klas nazwanych surowymi wartościami Allegro „Stan" (`Na części`/`Nowy`/
-`Nowy z defektem`/`Po zwrocie`/`Powystawowy`/`Uszkodzony`/`Używany`), NIE
-klasy `A`-`D` z `SeedClassDefinitionsCommand` (ten sam fakt, niezależnie
-ground-truthowany przy P-9.7, `docs/plan.md`) — `kod` NIE jest już
-jednoliterowym literałem w praktyce, mimo że ta tabela (wyżej, §2.2) wciąż
-go tak opisuje jako stan HISTORYCZNY. Ta rozbieżność kod↔dokumentacja
-istniała PRZED P-22.5 (odkryta przy P-9.7) — poza zakresem tego punktu do
-skorygowania w całości.
+**Pola tekstów polityk (P-22.5, D-22.5.1/D-22.5.2, REWIZJA D-22.5.4)** — TYLKO
+dwa pola zostają per-klasa na tym bycie; pozostałe 10 z pierwotnej listy
+D-22.5.2 PRZENIESIONE na opcje globalne (§19, `StoreContentSettingsPage`) —
+patrz D-22.5.4 niżej, czemu. Oba pozostałe **opcjonalne** (`required=0`,
+wzorem `dlaczego_taniej`): puste pole → motyw pokazuje HARDKODOWANY fallback
+(dzisiejszy literał). Seedowane WSPÓLNIE identyczną treścią dla WSZYSTKICH
+dziś zdefiniowanych klas (`BackfillPolicyTextsCommand`, jak `dlaczego_taniej`)
+— różnicowanie per klasa to przyszła praca redakcyjna admina. Backfill iteruje
+DYNAMICZNIE po `ClassDefinitionsTaxonomy::all()`, NIE po sztywnej liście
+`A`/`B`/`C`/`D` — na tym środowisku (i zapewne produkcji) taksonomia niesie
+dziś 7 realnych klas nazwanych surowymi wartościami Allegro „Stan" (`Na
+części`/`Nowy`/`Nowy z defektem`/`Po zwrocie`/`Powystawowy`/`Uszkodzony`/
+`Używany`), NIE klasy `A`-`D` z `SeedClassDefinitionsCommand` (ten sam fakt,
+niezależnie ground-truthowany przy P-9.7, `docs/plan.md`) — `kod` NIE jest już
+jednoliterowym literałem w praktyce, mimo że ta tabela (wyżej, §2.2) wciąż go
+tak opisuje jako stan HISTORYCZNY (D-22.5.3, rozbieżność odkryta przy P-9.7,
+korekta całej sekcji poza zakresem P-22.5).
 
-| Pole (design)                          | Literał (term meta)          | Typ      | Opcjonalne? | Uwagi |
-|-----------------------------------------|-------------------------------|----------|-------------|-------|
-| Zwrot — nagłówek (perk)                 | `zwrot_naglowek`               | text     | tak         | „14 dni na zwrot" — `.perk-list`, WSPÓLNY dla obu kanałów (Qutlet/Allegro, identyczny tekst w obu panelach dziś). |
-| Zwrot — tag kanału Qutlet               | `zwrot_tag_qutlet`             | text     | tak         | „Koszt po Twojej stronie" — `.perk-tag`, WYŁĄCZNIE panel Qutlet (Allegro ma własny tag niżej). |
-| Zwrot — tag kanału Allegro               | `zwrot_tag_allegro`            | text     | tak         | „Możliwy bezpłatny" — `.perk-tag-green`, WYŁĄCZNIE panel Allegro. Renderuje się tylko gdy `allegro_wlaczone` (§4). |
-| Wysyłka — nagłówek (perk)               | `wysylka_naglowek`             | text     | tak         | „Wysyłka w 1 dzień roboczy" — `.perk-list`, WSPÓLNY dla obu kanałów. |
-| Zwrot — opis kanału Qutlet (długi)      | `zwrot_opis_qutlet`            | textarea | tak         | „W razie zwrotu produktu kupionego w naszym sklepie, koszty przesyłki zwrotnej pokrywasz sam." — `.warn-note`. Etykieta „Polityka zwrotów:" zostaje STATYCZNYM pogrubieniem w motywie (nie częścią pola) — pole niesie WYŁĄCZNIE zdanie opisowe. |
-| Zwrot — opis kanału Allegro (długi)     | `zwrot_opis_allegro`           | textarea | tak         | „Zwrot całkowicie bezpłatny przy wyborze Allegro Delivery oraz dla Allegrowiczów Smart." — `.ok-note`. Ta sama konwencja etykiety co wyżej. |
-| Wysyłka — opis (akordeon)               | `wysylka_opis`                 | textarea | tak         | „Wysyłamy w najbliższy dzień roboczy (sesja rano/popołudnie)." — akordeon „Dostawa i zwroty", karta „Szybka wysyłka". |
-| Zwrot — opis kanału Qutlet (akordeon)   | `zwrot_akordeon_opis_qutlet`   | textarea | tak         | „14 dni na zmianę zdania. Koszt przesyłki zwrotnej po stronie kupującego." — akordeon „Dostawa i zwroty", karta „Zwrot — nasz sklep"/„Zwrot — 14 dni" (nagłówek karty zależy od KANAŁU, zostaje literałem w motywie — nie duplikujemy per klasa, bo nie niesie treści opisowej). |
-| Zwrot — opis kanału Allegro (akordeon)  | `zwrot_akordeon_opis_allegro`  | textarea | tak         | „14 dni na zmianę zdania. Zwrot bezpłatny — przy wyborze Allegro Delivery lub abonamentu Smart." — akordeon, karta „Zwrot — Allegro". |
-| Gwarancja — opis                        | `gwarancja_opis`               | textarea | tak         | Zastępuje dzisiejsze zdanie-otoczkę „Reklamacje realizujemy w naszym serwisie — szybko i bezproblemowo." Niesie placeholder **`{okres}`** (motyw podstawia `ProductPage::period_years_text( $warranty_months )`, np. „12 miesięcy") — domyślny seed: „{okres} gwarancji na każdy produkt. Reklamacje realizujemy w naszym serwisie — szybko i bezproblemowo." |
-| Reklamacja — opis                       | `reklamacja_opis`              | textarea | tak         | Zastępuje dzisiejszą gałąź LICZBOWĄ `$claim_months >= 24` (dwa warianty prawnego sformułowania) — od teraz JEDNA, w pełni redakcyjna treść per klasa, ta sama konwencja placeholdera **`{okres}`** co wyżej. Domyślny seed dla A-D (dziś 12 mies., wariant „skrócony"): „{okres} (zamiast ustawowych 2 lat — dopuszczalne dla towarów używanych, gdy kupujący zostanie wyraźnie poinformowany)." Gdyby przyszła klasa miała okres ≥24 mies., admin RĘCZNIE przepisuje na wariant ustawowy — próg liczbowy przestaje być logiką kodu. |
-| Stan używany — zapewnienie              | `stan_uzywany_opis`            | textarea | tak         | Zastępuje `.know-fine` „Gwarancja i prawo do reklamacji są identyczne dla każdego egzemplarza." Zdanie-wstęp „Wszystkie produkty w Qutlet sprzedawane są jako **używane**." zostaje STATYCZNE w motywie (pogrubienie „używane" niezmienne) — pole niesie WYŁĄCZNIE drugie zdanie. |
+| Pole (design)       | Literał (term meta) | Typ      | Opcjonalne? | Uwagi |
+|----------------------|----------------------|----------|-------------|-------|
+| Gwarancja — opis     | `gwarancja_opis`     | textarea | tak         | Zastępuje dzisiejsze zdanie-otoczkę „Reklamacje realizujemy w naszym serwisie — szybko i bezproblemowo." Niesie placeholder **`{okres}`** (motyw podstawia `ProductPage::period_years_text( $warranty_months )`, np. „12 miesięcy") — domyślny seed: „{okres} gwarancji na każdy produkt. Reklamacje realizujemy w naszym serwisie — szybko i bezproblemowo." Zostaje per-klasa (D-22.5.4): sformułowanie może uzasadnienie różnić się razem z fizycznym stanem egzemplarza, nawet gdy `{okres}` jest dziś liczbowo identyczny. |
+| Reklamacja — opis    | `reklamacja_opis`    | textarea | tak         | Zastępuje dzisiejszą gałąź LICZBOWĄ `$claim_months >= 24` (dwa warianty prawnego sformułowania) — od teraz JEDNA, w pełni redakcyjna treść per klasa, ta sama konwencja placeholdera **`{okres}`** co wyżej. Domyślny seed (dziś <24 mies. na każdej klasie, wariant „skrócony"): „{okres} (zamiast ustawowych 2 lat — dopuszczalne dla towarów używanych, gdy kupujący zostanie wyraźnie poinformowany)." Gdyby przyszła klasa miała okres ≥24 mies., admin RĘCZNIE przepisuje na wariant ustawowy — próg liczbowy przestaje być logiką kodu. Zostaje per-klasa z tego samego powodu co wyżej. |
+
+**D-22.5.4 [USTALONE — decyzja użytkownika, sesja 2026-08-19, po
+implementacji D-22.5.1/D-22.5.2]:** po zaimplementowaniu wszystkich 12 pól
+jako term meta, użytkownik ocenił 10 z nich jako w istocie treść SKLEPOWĄ/
+KANAŁOWĄ, nie redakcyjnie związaną z fizycznym stanem egzemplarza (dokładnie
+ta granica, którą wykonawca zaproponował na starcie sesji i którą użytkownik
+wtedy odrzucił jako zbyt daleko idącą uogólnienie „po prostu stwórz nowe
+pola") — zdecydował PRZENIEŚĆ te 10 na opcje globalne, rozszerzając stronę
+ustawień „Zarządzanie stanami" (P-22.4b) o nowy, bardziej ogólny zakres
+(przemianowana na „Treści sklepu", `StoreContentSettingsPage` — patrz §19).
+**Zostają per-klasa WYŁĄCZNIE** `gwarancja_opis`/`reklamacja_opis` — jedyne
+dwa pola z listy, których treść jest już DZIŚ sprzężona z inną wartością
+per-klasa (`okres_gwarancji_miesiace`/`okres_reklamacji_miesiace` przez
+placeholder `{okres}`), więc mają naturalny punkt zaczepienia do
+różnicowania w przyszłości, w odróżnieniu od reszty (logistyka/polityka
+zwrotu niezależna od klasy — patrz też D-22.5.2 dla bloku „Kupuj przez
+Allegro", tej samej logiki „kanał, nie klasa").
 
 **Poza zakresem P-22.5 [zdecydowane, D-22.5.2]:** blok „Kupuj przez Allegro"
 (`#jak-to-dziala`, wyjaśnienie kanału zakupu) — treść o KANALE, nie o klasie
@@ -1521,28 +1526,63 @@ passthrough).
 
 ---
 
-## 19. Widget „Inne sztuki tego modelu" — tekst zastępczy „co w zestawie" (FAZA 22 — P-22.4)
+## 19. Treści sklepu — opcje globalne (`StoreContentSettingsPage`, FAZA 22 — P-22.4/P-22.5)
+
+**REWIZJA D-22.5.4 (sesja 2026-08-19):** strona powstała w P-22.4b jako
+„Zarządzanie stanami" (`ConditionManagementSettingsPage`) z JEDNYM polem —
+tekst zastępczy „co w zestawie". P-22.5 rozszerza ją o 10 tekstów
+polityk/logistyki (D-22.5.4: uznane za treść sklepową/kanałową, nie
+per-klasa) i przy okazji **przemianowuje** na bardziej ogólną „Treści
+sklepu" (`StoreContentSettingsPage`) — nazwa i klasa celowo ogólne, miejsce
+na kolejne globalne teksty w przyszłości. Slug strony/grupa opcji Settings
+API zmieniają się razem z nazwą; **klucze POSZCZEGÓLNYCH opcji (`option_name`)
+zostają bez zmian** dla `qutlet_zawartosc_zestawu_domyslny_tekst` (zero
+migracji danych, D-22.4.2 bez zmian).
+
+### 19.1 Tekst zastępczy „co w zestawie" (P-22.4, D-22.4.1/D-22.4.2)
 
 Widget agreguje po odczycie (`global_unique_id`, §1/§10.2) produkty
 współdzielące GTIN — BEZ nowego pola na produkcie (patrz `docs/plan.md`
-P-22.4, D-22.4.3: zapytanie+render w całości w `qutlet-theme`). Jedyny nowy
-literał kontraktu to opcja globalna niżej — tekst zastępczy „co w zestawie",
-gdy repeater `zawartosc_zestawu_pozycje` (§2, D-9.2.1) jest pusty ALBO żaden
-wiersz nie ma `w_zestawie=true` (D-22.4.1).
+P-22.4, D-22.4.3: zapytanie+render w całości w `qutlet-theme`). Ten literał
+to tekst zastępczy „co w zestawie", gdy repeater `zawartosc_zestawu_pozycje`
+(§2, D-9.2.1) jest pusty ALBO żaden wiersz nie ma `w_zestawie=true` (D-22.4.1).
 
 | Pole (design)                        | Literał (meta_key)                          | Miejsce | Typ    | Opcjonalne? | Prototyp | Uwagi |
 |---------------------------------------|----------------------------------------------|---------|--------|-------------|----------|-------|
-| Tekst zastępczy „co w zestawie"       | `qutlet_zawartosc_zestawu_domyslny_tekst`     | option  | string (jedno zdanie) | tak (puste → wiersz „co w zestawie" pomijany w widgecie, D-22.4.1) | `produkt-inne-sztuki.html:294` (`.ism-contents`, tam treść PER SZTUKA, nie zastępcza) | opcja WP (`get_option`), rejestruje `qutlet-core` (`ProductCondition\ConditionManagementSettingsPage`, D-22.4.2); strona ustawień „Zarządzanie stanami" pod menu WooCommerce, wzorzec `Pricing\DiscountRateSettingsPage` (§11). Odczyt z `qutlet-theme` przez `use Qutlet\Core\ProductCondition\ConditionManagementSettingsPage;` + stała `::FALLBACK_OPTION` (wzorzec: `use ClassDefinitionsTaxonomy` już dziś w `ProductPage.php`). Celowo BEZ wymyślonej treści domyślnej — puste ustawienie = brak wiersza, decyzja treści zostaje dla admina (zasada „pytaj, nie zgaduj" dla literałów marketingowych). |
+| Tekst zastępczy „co w zestawie"       | `qutlet_zawartosc_zestawu_domyslny_tekst`     | option  | string (jedno zdanie) | tak (puste → wiersz „co w zestawie" pomijany w widgecie, D-22.4.1) | `produkt-inne-sztuki.html:294` (`.ism-contents`, tam treść PER SZTUKA, nie zastępcza) | Celowo BEZ wymyślonej treści domyślnej — puste ustawienie = brak wiersza, decyzja treści zostaje dla admina (zasada „pytaj, nie zgaduj" dla literałów marketingowych). |
 
-**D-22.4.1/D-22.4.2 — pełny kontekst decyzji, odrzucone alternatywy:** patrz
-`docs/plan.md` → FAZA 22 → P-22.4 (główny wpis + P-22.4a/b/c).
+### 19.2 Teksty polityk zwrotu/wysyłki (P-22.5, D-22.5.4)
+
+Przeniesione z pierwotnej listy per-klasa (§2.2, D-22.5.2) po decyzji
+użytkownika, że nie są związane z fizycznym stanem egzemplarza — sklepowa/
+kanałowa polityka, jedna wartość dla całego katalogu. Wszystkie **opcjonalne**
+z NIEPUSTYM domyślnym seedem (`register_setting()` → `default`, WP zwraca
+go automatycznie z `get_option()` dopóki admin nie zapisze formularza —
+BEZ osobnej komendy backfill, w odróżnieniu od term meta w §2.2).
+
+| Pole (design)                          | Literał (meta_key)                | Typ      | Opcjonalne? | Uwagi |
+|-----------------------------------------|-------------------------------------|----------|-------------|-------|
+| Zwrot — nagłówek (perk)                 | `qutlet_zwrot_naglowek`             | option (string) | tak | „14 dni na zwrot" — `.perk-list`, WSPÓLNY dla obu kanałów (Qutlet/Allegro, identyczny tekst w obu panelach dziś). |
+| Zwrot — tag kanału Qutlet               | `qutlet_zwrot_tag_qutlet`           | option (string) | tak | „Koszt po Twojej stronie" — `.perk-tag`, WYŁĄCZNIE panel Qutlet (Allegro ma własny tag niżej). |
+| Zwrot — tag kanału Allegro              | `qutlet_zwrot_tag_allegro`          | option (string) | tak | „Możliwy bezpłatny" — `.perk-tag-green`, WYŁĄCZNIE panel Allegro. Renderuje się tylko gdy `allegro_wlaczone` (§4). |
+| Wysyłka — nagłówek (perk)               | `qutlet_wysylka_naglowek`           | option (string) | tak | „Wysyłka w 1 dzień roboczy" — `.perk-list`, WSPÓLNY dla obu kanałów. |
+| Zwrot — opis kanału Qutlet (długi)      | `qutlet_zwrot_opis_qutlet`          | option (string) | tak | „W razie zwrotu produktu kupionego w naszym sklepie, koszty przesyłki zwrotnej pokrywasz sam." — `.warn-note`. Etykieta „Polityka zwrotów:" zostaje STATYCZNYM pogrubieniem w motywie (nie częścią opcji) — opcja niesie WYŁĄCZNIE zdanie opisowe. |
+| Zwrot — opis kanału Allegro (długi)     | `qutlet_zwrot_opis_allegro`         | option (string) | tak | „Zwrot całkowicie bezpłatny przy wyborze Allegro Delivery oraz dla Allegrowiczów Smart." — `.ok-note`. Ta sama konwencja etykiety co wyżej. |
+| Wysyłka — opis (akordeon)               | `qutlet_wysylka_opis`               | option (string) | tak | „Wysyłamy w najbliższy dzień roboczy (sesja rano/popołudnie)." — akordeon „Dostawa i zwroty", karta „Szybka wysyłka". |
+| Zwrot — opis kanału Qutlet (akordeon)   | `qutlet_zwrot_akordeon_opis_qutlet` | option (string) | tak | „14 dni na zmianę zdania. Koszt przesyłki zwrotnej po stronie kupującego." — akordeon „Dostawa i zwroty", karta „Zwrot — nasz sklep"/„Zwrot — 14 dni" (nagłówek karty zależy od KANAŁU, zostaje literałem w motywie — D-22.5.2). |
+| Zwrot — opis kanału Allegro (akordeon)  | `qutlet_zwrot_akordeon_opis_allegro`| option (string) | tak | „14 dni na zmianę zdania. Zwrot bezpłatny — przy wyborze Allegro Delivery lub abonamentu Smart." — akordeon, karta „Zwrot — Allegro". |
+| Stan używany — zapewnienie              | `qutlet_stan_uzywany_opis`          | option (string) | tak | Zastępuje `.know-fine` „Gwarancja i prawo do reklamacji są identyczne dla każdego egzemplarza." Zdanie-wstęp „Wszystkie produkty w Qutlet sprzedawane są jako **używane**." zostaje STATYCZNE w motywie (pogrubienie „używane" niezmienne) — opcja niesie WYŁĄCZNIE drugie zdanie. |
+
+**D-22.4.1/D-22.4.2/D-22.5.4 — pełny kontekst decyzji, odrzucone
+alternatywy:** patrz `docs/plan.md` → FAZA 22 → P-22.4 (główny wpis +
+P-22.4a/b/c) i P-22.5.
 
 ### Odnośniki (§19)
-- Ground-truth i decyzje: `docs/plan.md` → FAZA 22, P-22.4 (+ rozbicie
-  P-22.4a/P-22.4b/P-22.4c).
+- Ground-truth i decyzje: `docs/plan.md` → FAZA 22, P-22.4/P-22.5.
 - Pole źródłowe „co w zestawie" per sztuka: §2, `zawartosc_zestawu_pozycje`
   (D-9.2.1).
 - `global_unique_id` (GTIN, klucz agregacji): §1/§10.2.
+- Pola per-klasa pozostałe po D-22.5.4: §2.2 (`gwarancja_opis`/`reklamacja_opis`).
 - Wzorzec strony ustawień: §11 (`qutlet_stawka_rabatu`,
   `Pricing\DiscountRateSettingsPage`).
 
