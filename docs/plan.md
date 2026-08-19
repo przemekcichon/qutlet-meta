@@ -3313,16 +3313,27 @@ w ogóle ładować te arkusze?
 
 ### P-9.7 — „Klasa stanu" pokazuje zdublowaną etykietę (np. „Po zwrocie — Po zwrocie")
 
+**✅ Zrealizowane, zmergowane** — [qutlet-theme PR #35](https://github.com/przemekcichon/qutlet-theme/pull/35)
+(2026-08-19). Nieformalny znacznik dla czytelności — FAZA 9 nie używa ikon
+🟡/🟢 na punktach (patrz `### P-9.1`/`### P-9.5`/`### P-9.6`, ta sama
+konwencja), sama faza zostaje 🟨 na stałe.
+
 **Przeniesiony formalnie z FAZY 21 (P-21.7, zgłoszenie 2026-08-18)** — decyzja
 tej sesji (2026-08-19), zgodnie z furtką dopuszczoną w P-21.7: ground-truth
 potwierdził izolowany fix jednego repo (`qutlet-theme`), bez żadnego związku z
-resztą FAZY 21 (atrybuty wagowo-wymiarowe/stan opakowania). Nieformalny
-znacznik dla czytelności — FAZA 9 nie używa ikon 🟡/🟢 na punktach (patrz
-`### P-9.1`/`### P-9.5`/`### P-9.6`, ta sama konwencja), sama faza zostaje 🟨
-na stałe.
+resztą FAZY 21 (atrybuty wagowo-wymiarowe/stan opakowania).
 
 **Repo:** qutlet-theme — PR: [qutlet-theme#35](https://github.com/przemekcichon/qutlet-theme/pull/35)
-(draft, oczekuje na review/merge).
+(zmergowany). Niezależna recenzja (`docs/review.md`): 🟢 CZYSTE, brak ustaleń
+blokujących (jedna niebiokująca uwaga — porównanie `kod === nazwa` bez
+`trim()`, odłożone na przyszłość).
+
+**Follow-up tej samej sesji (poza pierwotnym zgłoszeniem, decyzja
+redakcyjna użytkownika):** etykieta wiersza specyfikacji zmieniona z „Klasa
+stanu" na „Stan produktu" — WYŁĄCZNIE ten jeden wiersz na stronie produktu;
+pole ACF „Klasa stanu" (kontrakt §2), metabox „Stan produktu" (P-20.8,
+niezwiązany), buybar i chip karty produktu bez zmian. Ten sam PR, ten sam
+commit cyklu (drugi, atomowy commit na branchu).
 
 **Ground-truth (sesja 2026-08-19):** przyczyna w `ProductPage::specification_rows()`
 (`inc/features/ProductPage/ProductPage.php`, wiersz specyfikacji „Klasa
@@ -7268,7 +7279,7 @@ P-20.7a), FAZA 13 (P-13.5, `MarketPriceField` — wzorzec dla P-20.7b), P-9.2
 
 ---
 
-## 🟨 FAZA 21 — Atrybuty wysyłki (waga/wymiary), stan opakowania, porządki edytora (fala 2)
+## 🟩 FAZA 21 — Atrybuty wysyłki (waga/wymiary), stan opakowania, porządki edytora (fala 2)
 
 Cel: kontynuacja porządków w edytorze produktu (FAZA 20, zamknięta) — układ
 metaboksów po scaleniach tamtej fazy nie został jeszcze świadomie ustalony —
@@ -7685,7 +7696,7 @@ nie są dokumentowane w `docs/kontrakt-danych.md`, więc flip 🟡 pominięty
 - **Zależności:** P-21.5 (kontrakt D-21.5.1 jako źródło mechanizmu/literału
   etykiety).
 
-### P-21.7 — Bug: „Klasa stanu" pokazuje zdublowaną etykietę (np. „Po zwrocie — Po zwrocie") [PRZENIESIONY]
+### 🟢 P-21.7 — Bug: „Klasa stanu" pokazuje zdublowaną etykietę (np. „Po zwrocie — Po zwrocie") [PRZENIESIONY]
 **Realizacja (sesja 2026-08-19):** ground-truth potwierdził izolowany fix
 jednego repo (`qutlet-theme`, render), zero związku z resztą FAZY 21 (atrybuty
 wagowo-wymiarowe/stan opakowania) — formalnie przeniesiony jako **P-9.7**
