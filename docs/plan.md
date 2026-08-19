@@ -3311,6 +3311,56 @@ w ogóle ładować te arkusze?
   już zmergowanych stron), ale znaleziony PRZY OKAZJI tej sesji — oba PR-y
   mogą się zmergować w dowolnej kolejności.
 
+### P-9.7 — „Klasa stanu" pokazuje zdublowaną etykietę (np. „Po zwrocie — Po zwrocie")
+
+**Przeniesiony formalnie z FAZY 21 (P-21.7, zgłoszenie 2026-08-18)** — decyzja
+tej sesji (2026-08-19), zgodnie z furtką dopuszczoną w P-21.7: ground-truth
+potwierdził izolowany fix jednego repo (`qutlet-theme`), bez żadnego związku z
+resztą FAZY 21 (atrybuty wagowo-wymiarowe/stan opakowania). Nieformalny
+znacznik dla czytelności — FAZA 9 nie używa ikon 🟡/🟢 na punktach (patrz
+`### P-9.1`/`### P-9.5`/`### P-9.6`, ta sama konwencja), sama faza zostaje 🟨
+na stałe.
+
+**Repo:** qutlet-theme — PR: [qutlet-theme#35](https://github.com/przemekcichon/qutlet-theme/pull/35)
+(draft, oczekuje na review/merge).
+
+**Ground-truth (sesja 2026-08-19):** przyczyna w `ProductPage::specification_rows()`
+(`inc/features/ProductPage/ProductPage.php`, wiersz specyfikacji „Klasa
+stanu") i w chipie karty produktu (`woocommerce/content-product.php`) — obie
+konkatenowały BEZWARUNKOWO `kod` (term meta join key, {@see
+`ClassDefinitionsTaxonomy`}) z `nazwa` (natywne `name` termu). Prototyp
+(`design/vanilla/produkt.html:190`, „A — jak nowy") zakładał, że `kod` to
+zawsze krótka litera odrębna od pełnej nazwy — ale kontrakt (`docs/kontrakt-danych.md`
+§2.2) jawnie opisuje `kod` jako WOLNY TEKST od P-12.1c (klasa „Nowe" ma
+`kod=Nowe`, pełne słowo) — a `ClassDefinitionsTaxonomy::validate_unique_kod()`
+pilnuje WYŁĄCZNIE unikalności, nic nie stoi na przeszkodzie, żeby kurator
+nadał nowej klasie `kod` identyczny z `nazwa`. Skutek: taka klasa renderuje
+się jako dosłowny duplikat („Po zwrocie — Po zwrocie" / „Klasa Po zwrocie ·
+Po zwrocie").
+
+**Nie jest to teoretyczny brzeg** — zweryfikowane na żywo na danych Locala
+(`wp term list klasa_stanu_definicja` + `wp term meta list`): taksonomia niesie
+dziś WYŁĄCZNIE 7 termów nazwanych dosłownie surowymi wartościami Allegro
+„Stan" (`Na części`/`Nowy`/`Nowy z defektem`/`Po zwrocie`/`Powystawowy`/
+`Uszkodzony`/`Używany`), z term meta `kod` identycznym z `name` na KAŻDYM z
+nich (żadna z klas A-D/Nowe z `SeedClassDefinitionsCommand` nie jest dziś
+zaseedowana na tym środowisku) — czyli bug dotyka DZIŚ całego katalogu
+(potwierdzone Playwrightem: produkt 3463, wiersz specyfikacji i chip karty w
+siatce sklepu), nie pojedynczego, wyimaginowanego przypadku. Dodatkowe
+potwierdzenie nieuchronności w produkcji: `docs/mapping-allegro.md` §4.1
+planuje klasę „Nowe" z `kod=Nowe`/`nazwa=Nowe` — identyczny wzorzec
+duplikatu powtórzy się tam, niezależnie od stanu danych na Localu.
+
+**Fix:** oba miejsca renderowania zwracają samą etykietę, gdy `kod ===
+nazwa` — ścieżka z różnymi wartościami („A — Jak nowy" / „Klasa A · Jak
+nowy") bez zmian. Weryfikacja: `phpstan analyse --memory-limit=1G` czysto,
+`php -l` obu plików, Playwright na żywo (produkt 3463 + siatka sklepu) —
+dublet zniknął. Brak automatycznych testów dla tej klasy (ten sam brak co
+przy P-21.6 — repo motywu nie ma bootstrapu WP dla pomocników zależnych od
+`WC_Product`).
+
+**Zależności:** brak.
+
 ---
 
 ## 🟦 FAZA 10 — Dodatki (poza pierwotnym zakresem prototypu/build-outu)
@@ -7635,15 +7685,12 @@ nie są dokumentowane w `docs/kontrakt-danych.md`, więc flip 🟡 pominięty
 - **Zależności:** P-21.5 (kontrakt D-21.5.1 jako źródło mechanizmu/literału
   etykiety).
 
-### P-21.7 — Bug: „Klasa stanu" pokazuje zdublowaną etykietę (np. „Po zwrocie — Po zwrocie") [OTWARTE]
-Repo (przypuszczalnie): qutlet-core (`ProductConditionFields`/
-`ClassDefinitionsTaxonomy` — budowa `choices` pola `klasa_stanu` z etykiet
-termów) — do potwierdzenia ground-truthem, GDZIE dokładnie etykieta się
-dubluje (budowa `choices` pola ACF, render w adminie, czy render na froncie w
-`qutlet-theme`). Charakter bliższy poprawce (FAZA 9) niż nowej funkcji — do
-rozważenia przy realizacji, czy formalnie przenieść jako kolejny punkt FAZY 9
-zamiast zostawiać tu, jeśli po ground-truthcie okaże się izolowanym fixem bez
-związku z resztą tej fazy.
+### P-21.7 — Bug: „Klasa stanu" pokazuje zdublowaną etykietę (np. „Po zwrocie — Po zwrocie") [PRZENIESIONY]
+**Realizacja (sesja 2026-08-19):** ground-truth potwierdził izolowany fix
+jednego repo (`qutlet-theme`, render), zero związku z resztą FAZY 21 (atrybuty
+wagowo-wymiarowe/stan opakowania) — formalnie przeniesiony jako **P-9.7**
+(`docs/plan.md` FAZA 9), zgodnie z furtką dopuszczoną niżej. Pełny
+ground-truth, przyczyna i fix — patrz P-9.7, nie tutaj.
 
 **Zależności (całej fazy):** FAZA 20 (obecny układ/nazwy metaboksów edytora
 produktu — punkt wyjścia P-21.1), FAZA 6/`docs/mapping-allegro.md`
