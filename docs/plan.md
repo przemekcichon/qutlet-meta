@@ -8236,7 +8236,7 @@ FAZA 12 (`ClassDefinitionsTaxonomy` — wzorzec dla P-22.5), P-9.2
 
 ---
 
-## 🟦 FAZA 23 — Uzupełnienia front-endu: menu stopki, formularze (Gravity Forms), wyszukiwarka (Relevanssi)
+## 🟨 FAZA 23 — Uzupełnienia front-endu: menu stopki, formularze (Gravity Forms), wyszukiwarka (Relevanssi)
 
 **Zgłoszenie (sesja 2026-08-19):** pięć niedokończonych/unwired elementów
 front-endu, większość już dziś widoczna w markupie jako świadomy placeholder
@@ -8274,7 +8274,7 @@ zostawiła jako placeholder, plus drobne braki brandingu", ten sam wzorzec
 grupowania co FAZA 22 (niezależne poprawki strony produktu pod jednym
 numerem fazy).
 
-### P-23.1 — Menu stopki: 3 nowe lokalizacje (qutlet-theme)
+### 🟡 P-23.1 — Menu stopki: 3 nowe lokalizacje (qutlet-theme)
 
 **Ground-truth (sesja 2026-08-19):** `parts/footer.html` renderuje dziś TRZY
 kolumny (`.footer-col`) jako surowy, hardkodowany `<!-- wp:html -->` z gołymi
