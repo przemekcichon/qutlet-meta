@@ -7788,7 +7788,12 @@ reguły `max-width` w `style.css`.
 - **Repo:** qutlet-theme (CSS only, jeden plik).
 - **Zależności:** brak.
 
-### P-22.2 — Przeniesienie przycisku „Dodaj do koszyka" nad sekcję „14 dni na zwrot"
+### 🟢 P-22.2 — Przeniesienie przycisku „Dodaj do koszyka" nad sekcję „14 dni na zwrot"
+
+**Zrealizowane, zmergowane** — [qutlet-theme PR #37](https://github.com/przemekcichon/qutlet-theme/pull/37)
+(2026-08-19). Niezależna recenzja (`docs/review.md`): 🟢 CZYSTE, zero ustaleń
+blokujących.
+
 **Zgłoszenie:** wg `produkt-inne-sztuki.html` przycisk ma się znaleźć TUŻ POD
 boksem „Skąd niższa cena" (`.eco-note`), a TUŻ NAD `.perk-list` (pierwszy
 wiersz „14 dni na zwrot").
