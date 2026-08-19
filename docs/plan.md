@@ -1979,7 +1979,21 @@ P-6.8a — więc **P-6.8a → P-6.8b**.
   jedną komendę robiącą import + tranzycje), wzorzec `StockSyncScheduler` (P-6.2b),
   systemowy tick crona (D-6.G1, handoff — już istnieje dla `sync-stock`).
 
-### ❓ P-6.10 — Agregacja sztuk (GTIN) + widget „inne sztuki tego modelu" (odłożone z P-6.7) — [OTWARTE, do rozpisania]
+### ❓ P-6.10 — Agregacja sztuk (GTIN) + widget „inne sztuki tego modelu" (odłożone z P-6.7) — [PRZENIESIONY do FAZY 22 jako P-22.4]
+
+**Realizacja/rewizja (sesja 2026-08-19):** podjęte jako **P-22.4** (`docs/plan.md`
+FAZA 22) — nowy prototyp `design/vanilla/produkt-inne-sztuki.html` ROZSTRZYGA
+kierunek, jawnym komentarzem „Nieniszczący — każda sztuka = własna strona".
+To REALIZUJE D-6.7.2 (widget bez zwijania stron) niżej, ale **ODRZUCA
+kierunek D-6.7.3** (agregacja wielu ofert w jeden produkt, `_stock`>1) —
+model „1 oferta = 1 produkt" (P-6.1/P-6.7) zostaje BEZ ZMIAN, widget to
+wyłącznie read-only zapytanie po współdzielonym GTIN między już-osobnymi
+produktami. Rewizja SILNIE zasugerowana przez własny prototyp użytkownika,
+ale formalnie do potwierdzenia wprost na starcie sesji P-22.4 (patrz tam) —
+D-6.7.2/D-6.7.3 i pod-decyzje niżej zostają jako ZAPIS HISTORYCZNY tego, co
+było rozważane, nie jako aktualny plan. Pełny ground-truth i zakres — patrz
+P-22.4, nie tutaj.
+
 - **Repo:** WIELOREPOWY (feature rozproszony) — prawdopodobnie kontrakt (`qutlet-meta`,
   rewizja §10.1 kształtu `_qutlet_allegro_offer_id` i ew. §10.2), agregacja przy
   imporcie + sync stanów (`qutlet-allegro`, slice `OfferSync/`), pole/relacja modelu
@@ -7708,6 +7722,239 @@ produktu — punkt wyjścia P-21.1), FAZA 6/`docs/mapping-allegro.md`
 (parsowanie parametrów oferty — źródło P-21.2), FAZA 12 (`klasa_stanu`,
 wzorzec dla P-21.5 i miejsce bugu P-21.7), P-20.8 (`ProductConditionFields`/
 „Stan produktu" — P-21.6).
+
+---
+
+## 🟦 FAZA 22 — Strona produktu: powiadomienie koszyka, pozycja CTA, „inne sztuki tego modelu", dostępność, teksty per klasa stanu
+
+Cel: kolejna iteracja frontendu strony produktu. Źródło projektu: nowy
+prototyp `design/vanilla/produkt-inne-sztuki.html` (+ towarzyszące zmiany
+`design/vanilla/css/style.css`, WIP użytkownika w chwili otwarcia tej fazy)
+— rozwinięcie `produkt.html`, source of truth dla wyglądu tych zmian
+(`CLAUDE.md`).
+
+**Zgłoszenie (2026-08-19):** pięć punktów. Ground-truth ZROBIONY w tej samej
+sesji dla wszystkich pięciu (poniżej, przy każdym punkcie) — w odróżnieniu od
+FAZY 21 przy otwarciu, tu przyczyny/zakres są już w większości ustalone;
+mimo to część decyzji zostaje OTWARTA do potwierdzenia przy realizacji
+(oznaczone niżej), zgodnie z `docs/ground-truth.md`. Kolejność punktów niżej
+(P-22.1…P-22.5) NIE jest 1:1 z kolejnością zgłoszenia użytkownika (tam:
+1=powiadomienie, 2=pozycja CTA, 3=„inne sztuki", 4=dostępność, 5=teksty) —
+P-22.2/P-22.3 przestawione względem siebie, bo dotykają dokładnie tego
+samego regionu szablonu (patrz zależność przy P-22.3).
+
+### P-22.1 — Powiadomienie WooCommerce po dodaniu do koszyka renderuje się na pełną szerokość ekranu
+**Zgłoszenie:** po dodaniu produktu do koszyka natywny komunikat WooCommerce
+pojawia się tuż pod headerem, ale na całą szerokość ekranu, zamiast
+ograniczyć się do szerokości `.wrap`.
+
+**Ground-truth (sesja 2026-08-19):** `do_action('woocommerce_before_single_product')`
+(→ `woocommerce_output_all_notices`, klasyczny `.woocommerce-message`/
+`.woocommerce-error`, NIE nowszy blokowy `wc-block-components-notice-banner`
+— ten występuje WYŁĄCZNIE na `templates/page-cart.html`/`page-checkout.html`,
+potwierdzone grepem, nieistotny tutaj) strzela jako pierwsza instrukcja w
+`content-single-product.php:48`, PRZED otwarciem `<div class="wrap">`
+(~linia 168) — renderuje się jako RODZEŃSTWO `.wrap`, wewnątrz
+`<main class="wp-block-group">` z `templates/single-product.html`, który NIE
+ma atrybutu `layout` (więc nie dostaje `theme.json`'owego `contentSize`/
+`wideSize`) — motyw świadomie usunął domyślne
+`woocommerce_output_content_wrapper(_end)`/`woocommerce_breadcrumb` z hooków
+Woo (`functions.php:181-183`, komentarz: „Motyw dostarcza własny wrapper
+(.wrap …) — domyślne hooki Woo dublowałyby oba"), więc nie ma żadnego innego
+kontenera ograniczającego szerokość. `style.css` (~linia 182) ma wspólną
+regułę `.wrap, .woocommerce-products-header { max-width:1240px; margin:auto;
+padding:0 24px }`, ale BEZ `.woocommerce-notices-wrapper`/`.woocommerce-message`
+— stąd pełna szerokość. Ten sam wzorzec (dopisanie selektora do wspólnej
+reguły) już raz zastosowany dla `.woocommerce-products-header` (ten sam
+problem, inny element).
+
+**Fix (do realizacji):** dopisać `.woocommerce-notices-wrapper` (i/lub
+`.woocommerce-message, .woocommerce-error, .woocommerce-info`) do wspólnej
+reguły `max-width` w `style.css`.
+- **Repo:** qutlet-theme (CSS only, jeden plik).
+- **Zależności:** brak.
+
+### P-22.2 — Przeniesienie przycisku „Dodaj do koszyka" nad sekcję „14 dni na zwrot"
+**Zgłoszenie:** wg `produkt-inne-sztuki.html` przycisk ma się znaleźć TUŻ POD
+boksem „Skąd niższa cena" (`.eco-note`), a TUŻ NAD `.perk-list` (pierwszy
+wiersz „14 dni na zwrot").
+
+**Ground-truth (sesja 2026-08-19):** dzisiejsza kolejność w
+`content-single-product.php`, wewnątrz `data-buy-pane="qutlet"`:
+`.pd-price-row` → `.eco-note` (~259-264) → `.perk-list` (~266-282) →
+`.warn-note` (~284-293) → `<?php woocommerce_template_single_add_to_cart(); ?>`
+(~295 — natywny hook Woo, renderuje override
+`woocommerce/single-product/add-to-cart/simple.php`, stamtąd realny
+`<button class="btn-buy" data-buy-anchor>` + natywny `wc_get_stock_html()` +
+`woocommerce_quantity_input()`) → `.pd-fine` (~297-314). Docelowo (prototyp):
+`.eco-note` → [P-22.3: nowy blok dostępności] → przycisk → `.pd-fine` →
+`.perk-list` → `.warn-note`.
+
+**Zakres:** czysty reorder markupu w JEDNYM pliku — przenieść wywołanie
+`woocommerce_template_single_add_to_cart()` razem z `.pd-fine` (ta sama para,
+sąsiadują dziś i w prototypie) TUŻ POD `.eco-note`, PRZED `.perk-list`/
+`.warn-note`. Mechanizm przycisku (`add-to-cart/simple.php`, sticky buybar
+`form="qutlet-add-to-cart-form"`) BEZ ZMIAN — to wyłącznie pozycja w DOM.
+- **Repo:** qutlet-theme.
+- **Zależności:** brak formalnej, ale fizycznie ten sam region co P-22.3 —
+  realizować w tej kolejności (P-22.2 → P-22.3), żeby P-22.3 wstawiał nowy
+  blok dostępności już w docelowe miejsce (między `.eco-note` a
+  przeniesionym przyciskiem), bez podwójnego przepisywania.
+
+### P-22.3 — Redesign prezentacji dostępności/stanu magazynowego
+**Zgłoszenie:** wg `produkt-inne-sztuki.html` (blok `.pd-stock` — „Ostatnia
+sztuka" dla 1 egzemplarza, licznik + stepper ilości dla ≥2; `style.css` ma
+już gotowe klasy `.pd-stock-one`/`.pd-stock-many`/`.pd-qty`/`.pd-stepper`,
+WIP nie-scommitowane w chwili pisania tego punktu — zweryfikować, że nadal
+aktualne przy realizacji, WIP mógł się zmienić).
+
+**Ground-truth (sesja 2026-08-19):** DZIŚ brak jakiejkolwiek prezentacji
+liczby sztuk na stronie produktu — jedyny element to natywny badge
+`wc_get_stock_html()` (`add-to-cart/simple.php:39`, sam napis „W magazynie"/
+„Brak w magazynie", bez liczby). `_stock` dla produktów z importu Allegro JUŻ
+DZIŚ poprawnie odzwierciedla `stock.available` POJEDYNCZEJ oferty
+(`qutlet-allegro\OfferSync\ProductWriter.php:220-224` pełny import,
+`:523-525` lekki sync — `set_stock_quantity()`) — **to NIE wymaga żadnej
+zmiany modelu danych ani nowego pola, wyłącznie redesign frontendu
+istniejącej, już poprawnej wartości**. Natywny quantity input
+(`woocommerce_quantity_input()`) już się renderuje (`add-to-cart/simple.php:51-59`,
+owinięty w `!$product->is_sold_individually()` — theme-owy dodatek, nie
+stock Woo), tylko niestylowany pod nowy design.
+
+**Zakres:** custom blok `.pd-stock` — `count<=1` → „Ostatnia sztuka — jedyny
+egzemplarz w klasie X"; `count>=2` → licznik dostępnych + custom
+`.pd-stepper`.
+
+**Do ustalenia przy realizacji [OTWARTE]:** czy custom `.pd-stepper` zastępuje
+natywny `woocommerce_quantity_input()` (JS syncuje ukryty natywny
+`<input name="quantity">`, żeby submit formularza działał bez zmian
+backendu), czy renderuje się obok niego (ukryty natywny input jako fallback
+no-JS)? Do rozstrzygnięcia ground-truthem `assets/js/app.js` przy realizacji,
+nie zgadywać.
+- **Repo:** qutlet-theme.
+- **Zależności:** P-22.2 (docelowe miejsce w layoucie — blok wstawia się
+  między `.eco-note` a przeniesionym przyciskiem).
+
+### P-22.4 — Widget „Inne sztuki tego modelu" (agregacja po GTIN) — realizuje ❓ P-6.10 (FAZA 6)
+**Zgłoszenie:** gdy istnieją produkty z tym samym GTIN, strona produktu
+pokazuje sekcję „Inne sztuki tego modelu" (lista/kafelki + karuzela, wg
+`produkt-inne-sztuki.html`) — dla WSZYSTKICH klas stanu tego GTIN, nie tylko
+tej samej.
+
+**To jest realizacja odłożonego ❓ P-6.10** (`docs/plan.md` FAZA 6 —
+„Agregacja sztuk (GTIN) + widget «inne sztuki tego modelu»", odłożone z
+P-6.7 sesja 2026-07-25). Ground-truth tej sesji ROZSTRZYGA kierunek, którego
+P-6.10 nie przesądzał: sam plik prototypu jawnie mówi „Nieniszczący — każda
+sztuka = własna strona" (komentarz `produkt-inne-sztuki.html:194-196) — czyli
+**BEZ** agregacji wielu ofert w jeden produkt (**D-6.7.3** rozważała
+`_stock`>1 z wielowartościowym `_qutlet_allegro_offer_id`,
+`docs/kontrakt-danych.md` §10.2) — ten kierunek zostaje **ODRZUCONY** na
+rzecz prostszego: każda sztuka NADAL osobnym produktem/ofertą (model „1
+oferta = 1 produkt" z P-6.7 **BEZ ZMIAN**), a widget to WYŁĄCZNIE
+read-only zapytanie łączące już-istniejące, osobne produkty po współdzielonym
+`global_unique_id` (duplikat GTIN między produktami już DOZWOLONY od P-6.7/
+D-6.7.1 — `wc_product_pre_has_global_unique_id`, kontrakt §10.2). Potwierdzone
+w kodzie: `AllegroLinkMeta::META_OFFER_ID` (`qutlet-core`) jest nadal
+`single => true` — model „1 oferta = 1 produkt" nigdy nie został zmieniony,
+D-6.7.3 nigdy nie zaimplementowana, więc to czysta ścieżka bez migracji.
+
+**To jest ISTOTNA rewizja kierunku D-6.7.3** (poprzednio „USTALONE
+kierunkowo", `docs/plan.md` P-6.10) — silnie zasugerowana faktem, że
+użytkownik SAM zbudował ten prototyp z tym właśnie komentarzem, ale
+FORMALNIE niepotwierdzona wprost w rozmowie — **do jawnego potwierdzenia z
+użytkownikiem na starcie sesji realizacyjnej P-22.4**, nie cichego założenia
+(zasada „pytaj, nie zgaduj").
+
+**Zakres (do doprecyzowania przy realizacji):**
+- Zapytanie: produkty PUBLISHED o tym samym `global_unique_id`
+  (meta_key natywnego pola Woo — potwierdzić dokładny literał przy
+  realizacji), wykluczając bieżący produkt. Czy filtrować po `_stock`>0
+  (wyprzedane sztuki znikają z listy, zgodne z `.ism-fine` w prototypie:
+  „sztuka znika z listy po sprzedaży") — do potwierdzenia.
+- Render: przełącznik lista/kafelki + karuzela (`produkt-inne-sztuki.html`
+  `#ism`), per sztuka: miniatura, klasa stanu (`kolor`/`nazwa` z
+  `ClassDefinitionsTaxonomy`, już gotowe), jednozdaniowe „co w zestawie",
+  cena + rabat.
+- **Otwarta decyzja [OTWARTE]:** „co w zestawie" jako jedno zdanie NIE
+  istnieje dziś jako pojedyncze pole — `zawartosc_zestawu_pozycje` (P-9.2)
+  to REPEATER pozycji, nie gotowe podsumowanie. Nowe pole tekstowe
+  (redakcyjne, jedno zdanie) czy auto-generowane z etykiet repeatera? Do
+  ustalenia przy realizacji.
+- **Otwarta decyzja [OTWARTE]:** logika zapytania po GTIN to raczej „model"
+  niż „wygląd" (reguła rozstrzygająca `CLAUDE.md` → „Struktura") — helper w
+  `qutlet-core` czy w całości w `qutlet-theme` (bo nic nowego się nie
+  zapisuje, czysto odczytowe)? Do ustalenia przy realizacji.
+- **Repo:** do ustalenia przy realizacji (przypuszczalnie `qutlet-theme`,
+  ewentualnie `qutlet-core` dla query helpera) — punkt WIELOREPOWY, jeśli
+  tak wyjdzie z ground-truthu.
+- **Zależności:** FAZA 6 (P-6.7, rozluźnienie unikalności GTIN — już
+  spełnione), P-9.2 (`zawartosc_zestawu_pozycje`, źródło „co w zestawie").
+
+### P-22.5 — Teksty polityk (zwrot/gwarancja/wysyłka) na stronie produktu jako pola per klasa stanu (punkt wielorepowy)
+**Zgłoszenie:** wszystkie teksty widoczne na stronie produktu (np. „Polityka
+zwrotów: W razie zwrotu produktu kupionego w naszym sklepie, koszty
+przesyłki zwrotnej pokrywasz sam.", „14 dni na zwrot / Koszt po Twojej
+stronie" itd.) mają być edytowalne — zdaniem użytkownika zależne od klasy
+stanu, więc obok istniejących pól ACF w `klasa_stanu_definicja` (kontrakt
+§2.2).
+
+**Ground-truth (sesja 2026-08-19) — pełna lista literałów DZIŚ zahardkodowanych
+w `content-single-product.php` (identyczne dla każdej klasy, NIE per-klasa):**
+- „14 dni na zwrot" (~269, ~333) i „Koszt po Twojej stronie" (~270);
+  „Wysyłka w 1 dzień roboczy" (~280, ~344) — `.perk-list`, oba kanały.
+- `.warn-note`: „Polityka zwrotów: W razie zwrotu produktu kupionego w
+  naszym sklepie, koszty przesyłki zwrotnej pokrywasz sam." (~286-292).
+- Allegro `.ok-note`: „Polityka zwrotów: Zwrot całkowicie bezpłatny przy
+  wyborze Allegro Delivery oraz dla Allegrowiczów Smart." (~348-354).
+- Akordeon „Dostawa i zwroty": „Szybka wysyłka" / „Wysyłamy w najbliższy
+  dzień roboczy…" (~484-485); „Zwrot — nasz sklep"/„Zwrot — 14 dni" (~488-494);
+  „14 dni na zmianę zdania. Koszt przesyłki zwrotnej po stronie kupującego."
+  (~495-501); Allegro „Zwrot — Allegro"/„…Zwrot bezpłatny…" (~504-513).
+- Akordeon „Gwarancja i reklamacje": „Reklamacje realizujemy w naszym
+  serwisie — szybko i bezproblemowo." (~532, sama liczba miesięcy JEST
+  dynamiczna, ale zdanie-otoczka jest literałem); zdania rękojmi (~549-559,
+  dziś gałąź LICZBOWA `$claim_months >= 24`, NIE per-klasa); `.know-fine`:
+  „Wszystkie produkty w Qutlet sprzedawane są jako używane. Gwarancja i
+  prawo do reklamacji są identyczne dla każdego egzemplarza." (~564-570).
+- Blok wyjaśniający kanał Allegro (`#jak-to-dziala` „Kupuj przez Allegro",
+  ~580-620) — CAŁKOWICIE niezwiązany z klasą stanu (treść o kanale zakupu,
+  nie o kondycji egzemplarza).
+
+**DZIŚ już per-klasa** (term meta `ClassDefinitionsTaxonomy`, kontrakt
+§2.2): `opis_chip`, `dlaczego_taniej`, `stan_wizualny`, `charakterystyka`,
+`kolor`, `okres_gwarancji_miesiace`, `okres_reklamacji_miesiace`.
+
+**Otwarta decyzja domenowa [OTWARTE — do potwierdzenia z użytkownikiem PRZED
+implementacją, nie zgadywać]:** NIE wszystkie literały wyżej faktycznie
+różnią się dziś między klasami. Część to raczej OGÓLNA polityka sklepu
+niezależna od stanu egzemplarza (np. „Wysyłka w 1 dzień roboczy", cały blok
+„Kupuj przez Allegro") — dodanie im pola per-klasa oznaczałoby 5-krotną
+duplikację identycznej treści (A/B/C/D/Nowe) bez żadnej korzyści redakcyjnej,
+tylko więcej miejsc do przeoczenia przy zmianie. Przed dodaniem pól do
+`klasa_stanu_definicja` — spisać przy realizacji tabelę KAŻDEGO literału z
+listy wyżej: (a) faktycznie różni się między klasami dziś czy w bliskiej
+przyszłości → kandydat na nowe pole term meta; (b) stała treść sklepu →
+NIE trafia do `klasa_stanu_definicja`, potrzebuje innego mechanizmu
+(Customizer/ustawienia ogólne/stały literał) — POZA zakresem tego punktu,
+o ile użytkownik nie zdecyduje inaczej. Wzorzec tabeli kandydatów: D-12.1a.2/
+D-21.4.1.
+
+**Zakres (do rozbicia na pod-punkty przy realizacji, wzorem P-21.4/P-21.5):**
+- Kontrakt (`qutlet-meta`): tabela kandydatów rozstrzygnięta z użytkownikiem
+  + rozszerzenie `docs/kontrakt-danych.md` §2.2 o nowe pola term meta.
+- `qutlet-core`: nowe pola ACF w `ClassDefinitionsTaxonomy::register_fields()`.
+- `qutlet-theme`: `content-single-product.php` czyta nowe pola zamiast
+  literałów DLA TEKSTÓW rozstrzygniętych jako per-klasa; teksty uznane za
+  sklepowo-ogólne zostają bez zmian w tym punkcie.
+- **Repo:** qutlet-meta + qutlet-core + qutlet-theme (rozbicie na pod-punkty
+  a/b/c przy realizacji, kolejność wg zależności — kontrakt najpierw).
+- **Zależności:** FAZA 12 (`ClassDefinitionsTaxonomy`, wzorzec rozszerzalnego
+  bytu per klasa).
+
+**Zależności (całej fazy):** FAZA 6 (P-6.7 — GTIN, P-6.10 — realizowane tu
+jako P-22.4), FAZA 8 (`content-single-product.php`, render strony produktu),
+FAZA 12 (`ClassDefinitionsTaxonomy` — wzorzec dla P-22.5), P-9.2
+(`zawartosc_zestawu_pozycje` — źródło „co w zestawie" dla P-22.4).
 
 ---
 
