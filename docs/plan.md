@@ -8218,6 +8218,297 @@ FAZA 12 (`ClassDefinitionsTaxonomy` — wzorzec dla P-22.5), P-9.2
 
 ---
 
+## 🟦 FAZA 23 — Uzupełnienia front-endu: menu stopki, formularze (Gravity Forms), wyszukiwarka (Relevanssi)
+
+**Zgłoszenie (sesja 2026-08-19):** pięć niedokończonych/unwired elementów
+front-endu, większość już dziś widoczna w markupie jako świadomy placeholder
+z FAZY 8 (D-8.G3, D-8.5.1, D-8.5.3): (1) 3 lokalizacje menu w stopce —
+„Stopka Sklep", „Stopka Informacje", „Stopka Pomoc"; (2) formularz kontaktowy
+przez Gravity Forms (licencja developerska); (3) formularz newslettera przez
+Gravity Forms + dodatek Gravity Forms MailerLite; (4) wyszukiwarka przez
+Relevanssi (wersja darmowa, chyba że ground-truth realizacji pokaże powód do
+zmiany); (5) favicona (plik gotowy w `design/vanilla/assets/favicon.svg`,
+motyw jej dziś w ogóle nie osadza).
+
+**AKTUALIZACJA (ta sama sesja, po dopisaniu fazy):** użytkownik zainstalował
+wszystkie potrzebne wtyczki jeszcze W TRAKCIE tej sesji planistycznej —
+`wp plugin list` (2026-08-19, po instalacji) potwierdza WSZYSTKIE aktywne:
+`gravityforms` (3.0.2.6), **`gravityformscli`** (1.7 — dodaje komendy `wp gf
+…`: `form`/`field`/`entry`/`notification`/`tool`/`license`/`setup` — ODDAJE
+tworzenie/zarządzanie formularzami w ręce WP-CLI, więc realizujący agent
+NIE MUSI polegać wyłącznie na ręcznej konfiguracji w adminie GF, tam gdzie
+się da), `gravityformsmailerlite` (1.1.1 — dodatek MailerLite z P-23.3 też
+już zainstalowany), `gravitysmtp` (2.3.2 — NIE był częścią zgłoszenia,
+dodatkowa wtyczka GF do niezawodnego wysyłania e-maili formularzy;
+odnotowane jako fakt środowiska, nie nowe wymaganie tego punktu) i
+`relevanssi` (4.28.2). `wp gf form list` — zero formularzy utworzonych
+(pusta lista) — sama instalacja skończona, KONFIGURACJA (pola formularzy,
+feed MailerLite, CSS, wpięcie do stron) wciąż czeka, ground-truth „Handoff/
+config" niżej w każdym punkcie jest więc już częściowo NIEAKTUALNY (mówi
+„instalacja" jako krok do zrobienia) — zostaje jako historia sesji, ale
+realizacja MUSI zrobić własny ground-truth `wp plugin list`/`wp gf …` na
+starcie, nie ufać ani tej notatce, ani oryginalnemu tekstowi niżej,
+środowisko mogło się zmienić dalej między sesjami.
+
+Pięć punktów jest ze sobą NIEZALEŻNYCH (żaden nie blokuje pozostałych) —
+łączy je wyłącznie wspólny mianownik „domykamy to, co FAZA 8 świadomie
+zostawiła jako placeholder, plus drobne braki brandingu", ten sam wzorzec
+grupowania co FAZA 22 (niezależne poprawki strony produktu pod jednym
+numerem fazy).
+
+### P-23.1 — Menu stopki: 3 nowe lokalizacje (qutlet-theme)
+
+**Ground-truth (sesja 2026-08-19):** `parts/footer.html` renderuje dziś TRZY
+kolumny (`.footer-col`) jako surowy, hardkodowany `<!-- wp:html -->` z gołymi
+`<a>` — kolumna „Sklep" ma linki-placeholdery `href="#"` (komentarz w pliku:
+poza zakresem P-8.5/P-8.3, do domknięcia „w odpowiednim punkcie FAZY 8"),
+kolumny „Informacje"/„Pomoc" mają REALNE linki (P-8.5), ale wciąż wpisane na
+sztywno w HTML, nie z menu WP admina. Wzorzec do powielenia: `HeaderMenu`
+(`inc/features/HeaderMenu/HeaderMenu.php`) — `register_nav_menu()` na
+`after_setup_theme`, każda lokalizacja czytana przez DEDYKOWANY blok
+dynamiczny (`qutlet/header-nav`, `blocks/header-nav/render.php`) pętlą po
+`wp_get_nav_menu_items()`, celowo NIE `wp_nav_menu()` (`Walker_Nav_Menu`
+opakowuje pozycje w `<ul>/<li>`, niezgodne z płaskim `<a>` markupem
+`.footer-col`; ten sam konflikt typowania PHPStan opisany w docblocku
+`header-nav/render.php` — kopiować rozwiązanie, nie problem).
+
+**Zakres:**
+- Nowy slice `FooterMenu` (`inc/features/FooterMenu/FooterMenu.php`),
+  analogiczny do `HeaderMenu` — 3 lokalizacje menu: `stopka-sklep`,
+  `stopka-informacje`, `stopka-pomoc` (literały Polskie, kebab-case, wzorem
+  `nawigacja`/`kategorie`/`pomoc` — potwierdzić przy ground-truth realizacji,
+  dopisać do `docs/kontrakt-danych.md` §14).
+- Blok(i) dynamiczne renderujące płaską listę `<a>` (wzorem
+  `header-nav/render.php`) w miejscu dzisiejszych trzech `.footer-col` w
+  `parts/footer.html`. Do rozstrzygnięcia przy realizacji: JEDEN
+  parametryzowany blok (atrybut `menuLocation`) użyty 3×, czy 3 osobne bloki
+  (wzorem różnych renderów `header-categories-mnav`/`header-categories-band`
+  w HeaderMenu) — kolumny są dziś strukturalnie IDENTYCZNE (nagłówek `<h5>` +
+  płaska lista `<a>`), więc jeden parametryzowany blok wygląda na naturalny
+  wybór, ale to ocena do potwierdzenia w kodzie, nie z góry przesądzona tu.
+- Seed WP-CLI (wzorem `wp menu location assign pomoc pomoc`, P-8.5/D-8.5.3)
+  — utworzenie 3 menu WP i przypisanie do nowych lokalizacji, z dzisiejszą
+  treścią linków „Informacje"/„Pomoc" jako startowa zawartość. Kolumna
+  „Sklep" zostaje pusta/redakcyjna (dzisiejsze linki to gołe „#", nie ma z
+  czego migrować) — wypełnienie treścią to decyzja admina PO merge'u, nie
+  coś do rozstrzygnięcia w kodzie.
+- **Zależności:** FAZA 8 (P-8.5 — `parts/footer.html`, `Help.php` — wzorzec
+  menu `pomoc`), FAZA 16 (`HeaderMenu`, wzorzec P-16.1/P-16.2b).
+- **Repo:** wyłącznie qutlet-theme (rejestracja lokalizacji menu + blok
+  renderujący = warstwa graficzna, D-8.G1) — zero pól ACF/CPT, więc BEZ core.
+
+### P-23.2 — Formularz kontaktowy (Gravity Forms, wersja developerska)
+
+**Ground-truth (sesja 2026-08-19):** Strona „Kontakt" (ID 19, `/kontakt/`)
+już istnieje i renderuje się przez `page-kontakt.php` (D-8.5.1) — chrome
+(nagłówek + lista kontaktowa e-mail/godziny/Allegro) z patternu
+`patterns/contact-intro.php`, a `the_content()` Strony osadza się WEWNĄTRZ
+karty `.contact-form-card` — **jedyny punkt wpięcia wtyczki 3rd-party**
+(D-8.G3/D-8.5.1). Dziś `post_content` niesie jawny placeholder: „Miejsce na
+formularz kontaktowy. Zainstaluj i skonfiguruj wtyczkę formularzy (…), a
+następnie wklej tutaj jej shortcode lub blok — zastąpi ten tekst" (D-8.5.3).
+Pola z prototypu (`design/vanilla/kontakt.html`, `.contact-form-card`/
+`.form-grid`): imię i nazwisko, e-mail, numer zamówienia (opcjonalnie),
+wiadomość, przycisk „Wyślij wiadomość". Stan „wysłano" ma osobny widok
+(`.contact-sent`) — w prototypie czysty JS-demo, docelowo mechanizm
+potwierdzenia samej wtyczki formularzy.
+
+**Zakres:**
+- **Handoff/config (użytkownik, POZA kodem repo):** instalacja Gravity
+  Forms (licencja developerska — klucz aktywacji PER INSTALACJA, ten sam
+  wzorzec co ACF Pro, `docs/environment-setup.md` „Instalacja WooCommerce +
+  ACF Pro": aktywacja osobno na Local i na produkcji, ten sam klucz);
+  zbudowanie formularza w GF UI z polami wyżej; wklejenie
+  bloku/shortcode'u GF do `post_content` Strony „Kontakt" (zastępuje
+  placeholder D-8.5.3); ewentualna konfiguracja confirmation message GF
+  odpowiadająca `.contact-sent`.
+- **qutlet-theme (kod):** CSS dopasowujący domyślny markup Gravity Forms
+  (`.gform_wrapper`/`.gfield`/`.gform_footer` itd.) do wyglądu prototypu
+  (`.form-grid`/`.field`/`.btn-primary.btn-lg.btn-dark`) — GF renderuje
+  WŁASNE klasy, bez dostrojenia formularz wygląda jak generyczny GF, nie
+  jak `.contact-form-card` z `kontakt.html`. Dokładne reguły CSS zależą od
+  realnego markupu wersji GF zainstalowanej przy realizacji — nie da się
+  ich wypisać z góry bez wtyczki na Localu.
+- **Otwarta decyzja [OTWARTE — potwierdzić przy realizacji, nie zgadywać]:**
+  pole „numer zamówienia" (opcjonalne w prototypie, `placeholder="np.
+  QT-2026-0143"") — czysty wolny tekst bez walidacji/powiązania z realnymi
+  zamówieniami Woo (tak sugeruje prototyp, brak logiki w JS-demo), czy admin
+  chce w przyszłości jakieś powiązanie? Domyślna rekomendacja: wolny tekst,
+  bez integracji z Woo w tym punkcie.
+- **Zależności:** FAZA 8 (P-8.5 — strona Kontakt, D-8.G3/D-8.5.1/D-8.5.3).
+- **Repo:** qutlet-theme (CSS) + config/handoff poza repo. Wielkość
+  brancha/PR (może się okazać, że 2-3 reguły CSS wystarczą, bez potrzeby
+  rozbudowanej sesji) do oceny na starcie realizacji.
+
+### P-23.3 — Formularz newslettera (Gravity Forms + dodatek Gravity Forms MailerLite)
+
+**Ground-truth (sesja 2026-08-19):** Strona „Newsletter" (ID 20,
+`/newsletter/`) analogicznie do Kontaktu — `page-newsletter.php`, chrome z
+`patterns/newsletter-intro.php`, placeholder w `.nl-form-card` (D-8.5.1/
+D-8.5.3, ten sam mechanizm D-8.G3: „Zainstaluj i skonfiguruj wtyczkę ESP
+(…), wklej tutaj jej shortcode lub blok"). Pola z prototypu
+(`design/vanilla/newsletter.html`, `.nl-form-card`): e-mail (wymagany), imię
+(opcjonalnie), „Co Cię interesuje?" — 6 chipów wielokrotnego wyboru
+(Smartfony/Laptopy/Audio/Gaming/Foto/Konsole; dziś JS `data-nl-chip`
+togglujący klasę `.active` na gołych `<button>` — wizualnie przyciski,
+funkcjonalnie odpowiednik pola checkbox). **Osobny, UPROSZCZONY formularz
+zapisu istnieje też w stopce** (`parts/footer.html`, `.nlband-form`, tylko
+e-mail + przycisk „Dołączam", `data-nlband-form`, dziś `action="#"`) —
+komentarz w pliku jawnie mówi „NIE ten sam formularz co page-newsletter.php"
+i że domknięcie obu naraz jest poza zakresem P-8.5.
+
+**Zakres:**
+- **Handoff/config:** instalacja Gravity Forms (jeśli nie zrobione przy
+  P-23.2) + dodatku „Gravity Forms MailerLite" (płatny addon) + konto/klucz
+  API MailerLite. Klucz API jako SEKRET — wzorem kluczy AI/Allegro
+  (`docs/environment-setup.md`, „zero sekretów w DB i repo"); GF addony
+  zwykle trzymają klucze we własnych opcjach DB, nie `wp-config.php` —
+  **potwierdzić przy realizacji**, czy dodatek MailerLite wspiera
+  nadpisanie stałą PHP (analogicznie do D-7.G2 dla kluczy AI), a jeśli nie —
+  świadomie zaakceptować DB jako jedyną dostępną opcję dla TEGO konkretnego
+  sekretu (odstępstwo od reguły „zero sekretów w DB", udokumentować jako
+  decyzję, nie przeoczenie). Budowa formularza w GF UI (checkboxy dla „Co
+  Cię interesuje?"), konfiguracja feeda MailerLite (mapowanie pól + grup/tagów
+  MailerLite na wybrane zainteresowania — decyzja redakcyjna, poza kodem).
+  Wklejenie bloku/shortcode'u do `post_content` Strony „Newsletter".
+- **qutlet-theme (kod):** CSS jw. (P-23.2) dopasowujący GF do `.nl-form-card`
+  ORAZ osobno do checkboxów „Co Cię interesuje?" wyglądających/zachowujących
+  się jak chipy (`.nl-chip`/`.nl-chips`) — możliwe że wystarczy czyste CSS
+  (`:checked + label`) bez JS, do potwierdzenia przy realizacji na realnym
+  markupie GF checkbox.
+- **Otwarta decyzja [OTWARTE — potwierdzić z użytkownikiem PRZED
+  implementacją]:** czy baner `.nlband` w stopce wchodzi w zakres tego
+  punktu (osadzić tam TEN SAM/inny formularz GF) czy zostaje jako odrębny,
+  przyszły punkt — dzisiejszy kod jawnie zaznacza „to nie ten sam formularz",
+  ale nie przesądza dalszego losu banera. Domyślna rekomendacja: POZA
+  zakresem P-23.3 (tylko strona `/newsletter/`), baner do osobnej decyzji.
+- **Zależności:** FAZA 8 (P-8.5 — strona Newsletter, D-8.G3/D-8.5.1/D-8.5.3);
+  P-23.2, jeśli realizowane w tej kolejności (Gravity Forms już
+  zainstalowany) — inaczej niezależne od siebie.
+- **Repo:** qutlet-theme (CSS) + config/handoff poza repo (w tym MailerLite).
+
+### P-23.4 — Wyszukiwarka (Relevanssi, wersja darmowa)
+
+**Ground-truth (sesja 2026-08-19):** pole wyszukiwania w nagłówku
+(`parts/header.html`, `.search`, `<input type="search" placeholder="Szukaj:
+smartfon, laptop, słuchawki…">`) jest dziś WYŁĄCZNIE dekoracyjne — brak
+`<form>`/`action`/`name`, nic go nie wysyła. Motyw NIE ma szablonu wyników
+wyszukiwania (`search.php`/`templates/search.html`) — WP użyłby dziś
+domyślnej hierarchii szablonów blokowych, niedostosowanej do siatki
+produktów. Relevanssi nie jest dziś zainstalowany.
+
+Instrukcja użytkownika (`https://www.relevanssi.com/user-manual/woocommerce/`,
+przeczytana 2026-08-19): podstawowa integracja z WooCommerce działa w wersji
+DARMOWEJ — strona jawnie: „These solutions work with both the free version
+and Premium" dla sekcji WooCommerce; funkcje Premium to dodatki (fuzzy
+matching, boost cenowy przez snippet itd.), NIE podstawowe wyszukiwanie
+produktów — potwierdza wybór darmowej wersji ze zgłoszenia. Kluczowe kroki
+konfiguracyjne z instrukcji: wyłączyć „Expand shortcodes in indexing"
+(konflikt z shortcode'ami Woo), dopisać `_sku` do „Custom fields to index"
+(SKU też wyszukiwalne), dostroić obsługę myślników w Advanced Indexing.
+Warianty produktu (`product_variation`) też można indeksować — osobna
+instrukcja Knowledge Base dla mapowania wariant→produkt nadrzędny w
+wynikach (do przeczytania przy realizacji, nie research'owane głębiej w tej
+sesji planowania).
+
+**Zakres:**
+- **Handoff/config:** instalacja + aktywacja Relevanssi (darmowa, WP.org),
+  konfiguracja wg instrukcji wyżej (wyłączenie shortcode expansion, `_sku`
+  do custom fields, hyphen handling), pierwsze zaindeksowanie katalogu.
+- **qutlet-theme (kod):**
+  - Owinięcie `.search` inputu w realny `<form role="search" method="get"
+    action="{home_url()}">` z `name="s"` (natywny mechanizm WP) —
+    Relevanssi podpina się pod ten sam `pre_get_posts`/`the_search_query`,
+    zero dodatkowego kodu zapytania po naszej stronie.
+  - Nowy szablon wyników: `search.php` (klasyczna hierarchia, wzorem
+    `page-{slug}.php` z P-8.5/D-8.5.1) LUB blokowy `templates/search.html` —
+    do rozstrzygnięcia przy realizacji, zależnie co lepiej reużywa istniejący
+    layout siatki produktów (`ProductFilters`/`ProductCard`, `strefa-okazji.html`
+    jako referencja wyglądu). Reużyć gotowy komponent karty produktu
+    (`ProductCard`, P-8.3a) zamiast budować nowy.
+- **Otwarta decyzja [OTWARTE — potwierdzić z użytkownikiem PRZED
+  implementacją, NIE zgadywać]:** czy wyniki obejmują WYŁĄCZNIE produkty
+  (`post_type=product`), czy też wpisy bloga (`post_type=post`, FAZA 9/11) —
+  placeholder inputu sugeruje intencję produktową („Szukaj: smartfon,
+  laptop, słuchawki…"), ale WP natywnie przeszukuje wszystkie publiczne typy
+  treści naraz, jeśli zapytanie nie jest zawężone. Domyślna rekomendacja:
+  zawęzić do `product`, zgodnie z placeholderem — potwierdzić przy realizacji.
+- **Zależności:** FAZA 8 (P-8.3a — `ProductCard` do reużycia w wynikach,
+  `parts/header.html` — pole `.search`, P-8.2a).
+- **Repo:** wyłącznie qutlet-theme (szablon wyników + wiring formularza =
+  warstwa graficzna, D-8.G1) — Relevanssi podpina się pod natywne query WP,
+  zero potrzeby kodu w core.
+
+### P-23.5 — Favicona
+
+**Ground-truth (sesja 2026-08-19):** prototyp ma gotowy plik
+`design/vanilla/assets/favicon.svg` (SVG, 281 B), referencjonowany w każdej
+stronie prototypu jako `<link rel="icon" type="image/svg+xml"
+href="assets/favicon.svg">`. Motyw (`qutlet-theme`) DZIŚ nie ma żadnego
+mechanizmu favicony — zero wystąpień `favicon`/`site_icon`/`SiteIcon` w
+całym repo (`Grep`, sesja 2026-08-19). Strona renderuje się dziś bez ikony
+karty/zakładki przeglądarki.
+
+**Zakres:**
+- **Otwarta decyzja [OTWARTE — potwierdzić przy realizacji]:** natywny
+  mechanizm WP „Site Icon" (Wygląd → Site Editor → Ustawienia strony,
+  opcja `site_icon`, `wp_site_icon()` na `wp_head` generuje automatycznie
+  `<link rel="icon">` + `apple-touch-icon` w kilku rozmiarach) WYMAGA
+  obrazu RASTROWEGO (przesyłanego przez ekran przycinania w adminie, PNG/
+  JPG — natywny upload nie akceptuje SVG) — niezgodne wprost z plikiem
+  źródłowym `favicon.svg`. Dwie ścieżki: (a) wyeksportować SVG do PNG
+  (min. 512×512, zalecane przez WP) i ustawić przez natywny „Site Icon" —
+  edytowalne przez admina bez kodu, ale traci wektorowość/ostrość SVG na
+  większych ekranach; (b) hardkodować `<link rel="icon"
+  type="image/svg+xml" href="{URI pliku w motywie}">` w `wp_head` (funkcja w
+  `functions.php`/nowy drobny slice) — zachowuje SVG 1:1 z prototypem, ale
+  NIE jest edytowalne przez admina bez zmiany kodu. Rekomendacja: (b), bo
+  favicona to element brandingu/kodu, nie treść redakcyjna — ale ostateczna
+  decyzja do potwierdzenia z użytkownikiem, nie zgadywać.
+- Skopiować `design/vanilla/assets/favicon.svg` do assets motywu (wzorem
+  innych assetów portowanych z prototypu, np. `assets/js/*`).
+- **Zależności:** brak (niezależne od reszty fazy, drobny, samodzielny
+  punkt).
+- **Repo:** wyłącznie qutlet-theme.
+
+**Zależności (całej fazy):** FAZA 8 (`parts/header.html`, `parts/footer.html`,
+`page-kontakt.php`/`page-newsletter.php`, D-8.G1/D-8.G3, P-8.3a `ProductCard`),
+FAZA 16 (`HeaderMenu`, wzorzec dla `FooterMenu`, P-23.1).
+
+**Uwaga środowiskowa (zaobserwowana przy tej sesji, 2026-08-19) — NIE
+punkt planu, WooCommerce jest READ-ONLY (CLAUDE.md), więc nie do naprawienia
+w naszych repo:** przy instalacji Gravity Forms w adminie Local zaczęło
+sypać się WIELOKROTNIE `Warning: Undefined array key 1 in
+.../woocommerce/includes/admin/helper/class-wc-helper.php on line 1704`.
+Ground-truth kodu (czytany, nie edytowany): linia 1704 to
+`list( $product_id, $file_id ) = explode( ':', $header );` w
+`WC_Helper::get_local_woo_themes()` — analogiczny kod dla WTYCZEK istnieje
+też w `get_local_woo_plugins()` (linia ~1655). Oba miejsca zakładają, że
+nagłówek pliku `Woo:` (motywu/wtyczki WooCommerce.com) ma format
+`"product_id:file_id"` — brak dwukropka (albo pusty ciąg, który powinien być
+odfiltrowany wcześniejszym `empty()`) daje tablicę z jednym elementem, stąd
+„Undefined array key 1" przy `list()`. **Sprawdzone i NIE wyjaśnione w tej
+sesji:** `grep -rl "^Woo:"` po wszystkich motywach (`qutlet-theme` +
+domyślne `twentytwenty*`) i wszystkich plikach wtyczek w
+`wp-content/plugins/` — ZERO trafień, czyli lokalny kod nie deklaruje
+żadnego widocznego, zepsutego nagłówka `Woo:`, który tłumaczyłby to
+bezpośrednio. Prawdopodobny trigger: `WC_Helper` skanuje WSZYSTKIE
+zainstalowane motywy/wtyczki przy określonych ekranach admina (Wtyczki/
+Aktualizacje) w ramach mechanizmu subskrypcji WooCommerce.com — coś w tym
+skanie (może stan cache `wp_get_themes()`/`get_plugins()`, może inny plugin
+z nietypowym nagłówkiem niewidocznym prostym grepem, np. w komentarzu z
+BOM/innym kodowaniem) trafia na pustą-ale-nie-`empty()` wartość. Nie
+zweryfikowane do końca — kolejny krok, jeśli ktoś będzie to naprawiał: `wp
+eval-file` z bezpośrednim wywołaniem `WC_Helper::get_local_woo_themes()`/
+`get_local_woo_plugins()` i `var_dump()` per-motyw/wtyczka (poza zasięgiem
+MCP `wp_cli`, wymaga shella Locala — patrz `docs/plan.md`/pamięć „MCP
+blocks wp eval"). **To WARNING, nie fatal error — strona/admin działa
+mimo niego.** Opcje na przyszłość (żadna nie jest punktem tego planu):
+zgłoszenie do WooCommerce (upstream, poza naszym kodem), albo świadome
+zignorowanie jako nieszkodliwy szum logów dev.
+
+---
+
 ## Materiał referencyjny i kandydaci do dalszych faz
 
 ### Inwentarz endpointów Allegro (dostarczony przez użytkownika)
