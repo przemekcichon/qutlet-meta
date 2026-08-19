@@ -8107,32 +8107,69 @@ w `content-single-product.php` (identyczne dla każdej klasy, NIE per-klasa):**
 §2.2): `opis_chip`, `dlaczego_taniej`, `stan_wizualny`, `charakterystyka`,
 `kolor`, `okres_gwarancji_miesiace`, `okres_reklamacji_miesiace`.
 
-**Otwarta decyzja domenowa [OTWARTE — do potwierdzenia z użytkownikiem PRZED
-implementacją, nie zgadywać]:** NIE wszystkie literały wyżej faktycznie
-różnią się dziś między klasami. Część to raczej OGÓLNA polityka sklepu
-niezależna od stanu egzemplarza (np. „Wysyłka w 1 dzień roboczy", cały blok
-„Kupuj przez Allegro") — dodanie im pola per-klasa oznaczałoby 5-krotną
-duplikację identycznej treści (A/B/C/D/Nowe) bez żadnej korzyści redakcyjnej,
-tylko więcej miejsc do przeoczenia przy zmianie. Przed dodaniem pól do
-`klasa_stanu_definicja` — spisać przy realizacji tabelę KAŻDEGO literału z
-listy wyżej: (a) faktycznie różni się między klasami dziś czy w bliskiej
-przyszłości → kandydat na nowe pole term meta; (b) stała treść sklepu →
-NIE trafia do `klasa_stanu_definicja`, potrzebuje innego mechanizmu
-(Customizer/ustawienia ogólne/stały literał) — POZA zakresem tego punktu,
-o ile użytkownik nie zdecyduje inaczej. Wzorzec tabeli kandydatów: D-12.1a.2/
-D-21.4.1.
+**Otwarta decyzja domenowa — ROZSTRZYGNIĘTA jawnie z użytkownikiem na starcie
+sesji realizacyjnej (2026-08-19).** Wykonawca przedstawił analizę: NIE
+wszystkie literały wyżej faktycznie różnią się dziś między klasami — część to
+raczej OGÓLNA polityka sklepu/kanału (np. „Wysyłka w 1 dzień roboczy") i
+zaproponował wariant „żadne nowe pole" (wzorem tabeli kandydatów D-12.1a.2/
+D-21.4.1, gdzie „nie różni się dziś" bywa argumentem za odrzuceniem
+kandydata). **Użytkownik odrzucił tę rekomendację**: „Już teraz mamy
+dodatkowe pola do per klasa i wpisuję tam różne teksty. Po prostu stwórz nowe
+pola." — intencja jest REDAKCYJNA (elastyczność edycji per klasa naprzód),
+nie zależy od tego, czy treść RÓŻNI SIĘ dziś (dokładnie ten sam wzorzec co
+już zaakceptowany dla `dlaczego_taniej`, „Dziś WSPÓLNY dla A-D … różnicowanie
+per klasa to przyszła praca redakcyjna", kontrakt §2.2).
 
-**Zakres (do rozbicia na pod-punkty przy realizacji, wzorem P-21.4/P-21.5):**
-- Kontrakt (`qutlet-meta`): tabela kandydatów rozstrzygnięta z użytkownikiem
-  + rozszerzenie `docs/kontrakt-danych.md` §2.2 o nowe pola term meta.
-- `qutlet-core`: nowe pola ACF w `ClassDefinitionsTaxonomy::register_fields()`.
-- `qutlet-theme`: `content-single-product.php` czyta nowe pola zamiast
-  literałów DLA TEKSTÓW rozstrzygniętych jako per-klasa; teksty uznane za
-  sklepowo-ogólne zostają bez zmian w tym punkcie.
-- **Repo:** qutlet-meta + qutlet-core + qutlet-theme (rozbicie na pod-punkty
-  a/b/c przy realizacji, kolejność wg zależności — kontrakt najpierw).
-- **Zależności:** FAZA 12 (`ClassDefinitionsTaxonomy`, wzorzec rozszerzalnego
-  bytu per klasa).
+- **D-22.5.1 [USTALONE — decyzja użytkownika, sesja 2026-08-19]:** wszystkie
+  literały z listy ground-truth dostają nowe pole term meta per klasa w
+  `klasa_stanu_definicja`, niezależnie od tego, czy treść różni się między
+  klasami DZIŚ (seedowane identycznie dla A-D, jak `dlaczego_taniej`) — poza
+  JEDNYM wyjątkiem niżej (D-22.5.2).
+- **D-22.5.2 [USTALONE — ocena wykonawcy, granica NIE kwestionowana przez
+  użytkownika]:** blok „Kupuj przez Allegro" (`#jak-to-dziala`, wyjaśnienie
+  KANAŁU zakupu) zostaje POZA zakresem — nie mówi NIC o stanie egzemplarza,
+  to inna oś (kanał Qutlet/Allegro, slice `AllegroChannel`, kontrakt §4), nie
+  klasa stanu. Podobnie nagłówki kart akordeonu „Dostawa i zwroty" sterowane
+  WYŁĄCZNIE `$allegro_enabled` („Zwrot — nasz sklep"/„Zwrot — 14 dni"/„Zwrot —
+  Allegro") zostają literałami w motywie — to struktura zależna od kanału,
+  nie treść redakcyjna zależna od klasy. Reszta (12 literałów) dostaje nowe
+  pola — pełna lista z nazwami term meta, typami i domyślną treścią seed: patrz
+  `docs/kontrakt-danych.md` §2.2 (sekcja „Pola tekstów polityk", P-22.5).
+  Pola dla `gwarancja_opis`/`reklamacja_opis` niosą placeholder `{okres}`
+  (podstawiany przez motyw) — zastępują dzisiejszą logikę sprintf/próg
+  liczbowy `$claim_months >= 24` w pełni redakcyjną treścią per klasa. Wszystkie
+  nowe pola **opcjonalne** (`required=0`) z hardkodowanym fallbackiem w motywie
+  (dzisiejszy literał) — polityka zwrotu/gwarancji nie może po prostu zniknąć
+  z rendera, gdyby pole było puste przed backfillem.
+
+**Zakres (rozbite na pod-punkty wzorem P-22.4a/b/c, kolejność wg zależności —
+kontrakt najpierw):**
+
+#### 🟡 P-22.5a — Decyzje D-22.5.1/D-22.5.2 + kontrakt (qutlet-meta)
+- **Repo:** qutlet-meta (`docs/plan.md`, ten wpis + `docs/kontrakt-danych.md`
+  §2.2 — 12 nowych pól term meta `klasa_stanu_definicja`).
+- **Zależności:** brak (pierwszy pod-punkt).
+
+#### P-22.5b — Nowe pola ACF + backfill (qutlet-core)
+- Rozszerzyć `ClassDefinitionsTaxonomy::register_fields()` o 12 nowych pól
+  (nazwy/typy: kontrakt §2.2) — ten sam wzorzec co istniejące (`text`/
+  `textarea`, `required=0`, `location` = taksonomia `klasa_stanu_definicja`).
+- Nowa komenda WP-CLI `wp qutlet-core backfill-teksty-polityk-klasa-stanu
+  [--dry-run]` (wzorem `SeedClassDefinitionsCommand`) — jednorazowo wypełnia
+  12 nowych pól dzisiejszą treścią (identyczną dla A-D) dla term-ów, które
+  mają puste pole (idempotentna, NIE nadpisuje ręcznej edycji admina — pomija
+  pole już wypełnione, nie cały term).
+- **Zależności:** P-22.5a (nazwy pól z kontraktu).
+
+#### P-22.5c — Render czyta nowe pola (qutlet-theme)
+- `content-single-product.php` czyta 12 nowych pól przez
+  `$condition_definition[...]` zamiast literałów, z hardkodowanym fallbackiem
+  (dzisiejszy tekst) gdy pole puste. `gwarancja_opis`/`reklamacja_opis`:
+  podstawienie `{okres}` → `ProductPage::period_years_text()`, zastępuje
+  dotychczasową gałąź `$claim_months >= 24`. Bez zmian: blok „Kupuj przez
+  Allegro", nagłówki kart akordeonu sterowane kanałem (D-22.5.2).
+- **Zależności:** P-22.5b (pola muszą istnieć w ACF), FAZA 8
+  (`content-single-product.php`, render strony produktu).
 
 **Zależności (całej fazy):** FAZA 6 (P-6.7 — GTIN, P-6.10 — realizowane tu
 jako P-22.4), FAZA 8 (`content-single-product.php`, render strony produktu),

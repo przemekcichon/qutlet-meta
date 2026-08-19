@@ -164,6 +164,37 @@ P-12.2a, „Uwaga operacyjna".
 | Okres gwarancji (miesiące)           | `okres_gwarancji_miesiace` | number (int) | nie      | Dobrowolne zobowiązanie sprzedawcy. Dziś 12 dla A-D (verbatim „12 miesięcy"/„1 rok" z `content-single-product.php`). |
 | Okres reklamacji ustawowej (miesiące) | `okres_reklamacji_miesiace` | number (int) | nie     | Rękojmia — DWA OSOBNE pola od gwarancji (D-12.G3), nawet gdy liczbowo równe. Dziś 12 dla A-D. |
 
+**Pola tekstów polityk (P-22.5, D-22.5.1/D-22.5.2)** — wszystkie **opcjonalne**
+(`required=0`, wzorem `dlaczego_taniej`): puste pole → motyw pokazuje
+HARDKODOWANY fallback (dzisiejszy literał) zamiast pustego newralgicznego
+tekstu (polityka zwrotu/gwarancja NIE mogą po prostu zniknąć z rendera, w
+odróżnieniu od `.eco-note`, które wolno ukryć). Dziś seedowane WSPÓLNIE dla
+A-D identyczną treścią (`BackfillPolicyTextsCommand`, jak `dlaczego_taniej`) —
+różnicowanie per klasa to przyszła praca redakcyjna admina, nie coś
+wymyślane w tej sesji.
+
+| Pole (design)                          | Literał (term meta)          | Typ      | Opcjonalne? | Uwagi |
+|-----------------------------------------|-------------------------------|----------|-------------|-------|
+| Zwrot — nagłówek (perk)                 | `zwrot_naglowek`               | text     | tak         | „14 dni na zwrot" — `.perk-list`, WSPÓLNY dla obu kanałów (Qutlet/Allegro, identyczny tekst w obu panelach dziś). |
+| Zwrot — tag kanału Qutlet               | `zwrot_tag_qutlet`             | text     | tak         | „Koszt po Twojej stronie" — `.perk-tag`, WYŁĄCZNIE panel Qutlet (Allegro ma własny tag niżej). |
+| Zwrot — tag kanału Allegro               | `zwrot_tag_allegro`            | text     | tak         | „Możliwy bezpłatny" — `.perk-tag-green`, WYŁĄCZNIE panel Allegro. Renderuje się tylko gdy `allegro_wlaczone` (§4). |
+| Wysyłka — nagłówek (perk)               | `wysylka_naglowek`             | text     | tak         | „Wysyłka w 1 dzień roboczy" — `.perk-list`, WSPÓLNY dla obu kanałów. |
+| Zwrot — opis kanału Qutlet (długi)      | `zwrot_opis_qutlet`            | textarea | tak         | „W razie zwrotu produktu kupionego w naszym sklepie, koszty przesyłki zwrotnej pokrywasz sam." — `.warn-note`. Etykieta „Polityka zwrotów:" zostaje STATYCZNYM pogrubieniem w motywie (nie częścią pola) — pole niesie WYŁĄCZNIE zdanie opisowe. |
+| Zwrot — opis kanału Allegro (długi)     | `zwrot_opis_allegro`           | textarea | tak         | „Zwrot całkowicie bezpłatny przy wyborze Allegro Delivery oraz dla Allegrowiczów Smart." — `.ok-note`. Ta sama konwencja etykiety co wyżej. |
+| Wysyłka — opis (akordeon)               | `wysylka_opis`                 | textarea | tak         | „Wysyłamy w najbliższy dzień roboczy (sesja rano/popołudnie)." — akordeon „Dostawa i zwroty", karta „Szybka wysyłka". |
+| Zwrot — opis kanału Qutlet (akordeon)   | `zwrot_akordeon_opis_qutlet`   | textarea | tak         | „14 dni na zmianę zdania. Koszt przesyłki zwrotnej po stronie kupującego." — akordeon „Dostawa i zwroty", karta „Zwrot — nasz sklep"/„Zwrot — 14 dni" (nagłówek karty zależy od KANAŁU, zostaje literałem w motywie — nie duplikujemy per klasa, bo nie niesie treści opisowej). |
+| Zwrot — opis kanału Allegro (akordeon)  | `zwrot_akordeon_opis_allegro`  | textarea | tak         | „14 dni na zmianę zdania. Zwrot bezpłatny — przy wyborze Allegro Delivery lub abonamentu Smart." — akordeon, karta „Zwrot — Allegro". |
+| Gwarancja — opis                        | `gwarancja_opis`               | textarea | tak         | Zastępuje dzisiejsze zdanie-otoczkę „Reklamacje realizujemy w naszym serwisie — szybko i bezproblemowo." Niesie placeholder **`{okres}`** (motyw podstawia `ProductPage::period_years_text( $warranty_months )`, np. „12 miesięcy") — domyślny seed: „{okres} gwarancji na każdy produkt. Reklamacje realizujemy w naszym serwisie — szybko i bezproblemowo." |
+| Reklamacja — opis                       | `reklamacja_opis`              | textarea | tak         | Zastępuje dzisiejszą gałąź LICZBOWĄ `$claim_months >= 24` (dwa warianty prawnego sformułowania) — od teraz JEDNA, w pełni redakcyjna treść per klasa, ta sama konwencja placeholdera **`{okres}`** co wyżej. Domyślny seed dla A-D (dziś 12 mies., wariant „skrócony"): „{okres} (zamiast ustawowych 2 lat — dopuszczalne dla towarów używanych, gdy kupujący zostanie wyraźnie poinformowany)." Gdyby przyszła klasa miała okres ≥24 mies., admin RĘCZNIE przepisuje na wariant ustawowy — próg liczbowy przestaje być logiką kodu. |
+| Stan używany — zapewnienie              | `stan_uzywany_opis`            | textarea | tak         | Zastępuje `.know-fine` „Gwarancja i prawo do reklamacji są identyczne dla każdego egzemplarza." Zdanie-wstęp „Wszystkie produkty w Qutlet sprzedawane są jako **używane**." zostaje STATYCZNE w motywie (pogrubienie „używane" niezmienne) — pole niesie WYŁĄCZNIE drugie zdanie. |
+
+**Poza zakresem P-22.5 [zdecydowane, D-22.5.2]:** blok „Kupuj przez Allegro"
+(`#jak-to-dziala`, wyjaśnienie kanału zakupu) — treść o KANALE, nie o klasie
+stanu, zero związku z fizycznym stanem egzemplarza; zostaje literałem.
+Podobnie nagłówki kart akordeonu „Dostawa i zwroty" sterowane WYŁĄCZNIE
+kanałem (`$allegro_enabled`: „Zwrot — nasz sklep"/„Zwrot — 14 dni"/„Zwrot —
+Allegro") — struktura, nie treść redakcyjna, zostają literałami.
+
 Taksonomia: `klasa_stanu_definicja` (`ClassDefinitionsTaxonomy::TAXONOMY`) —
 niehierarchiczna, `public=false`, dołączona do `product` WYŁĄCZNIE po admin
 UI (ekran „Produkty → Klasy stanu"); `meta_box_cb=false` — na ekranie edycji
