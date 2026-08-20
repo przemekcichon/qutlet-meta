@@ -8680,7 +8680,7 @@ sprawdzone `wp post get <ID> --field=post_content` + grep):
 
 ## 🟩 FAZA 25 — Poprawki wizualne front-endu: nagłówek wyników wyszukiwania, podgląd nagłówka/stopki w edytorze (qutlet-theme)
 
-Dwa punkty NIEZALEŻNE od siebie (żaden nie blokuje drugiego) — łączy je
+Trzy punkty NIEZALEŻNE od siebie (żaden nie blokuje drugiego) — łączy je
 wyłącznie wspólny mianownik „drobne poprawki wizualne qutlet-theme
 zgłoszone/odkryte w tej samej sesji", ten sam wzorzec grupowania co FAZA 22/23.
 
@@ -9051,6 +9051,104 @@ ground-truth implementacji (prawdopodobnie nowy mały slice, np.
 **Zależności:** P-25.3a (decyzja D-25.3.1 wyżej) — musi być zmergowana
 najpierw.
 
+### P-25.4 — Koszyk i Kasa: obcięta nazwa produktu / obcy opis w wierszu podsumowania
+
+**Zgłoszenie:** dopisane jako kandydat 2026-08-20 (sesja P-25.3b) — pełna
+diagnoza z Koszyka (zweryfikowana live przez Playwright/DevTools) zapisana
+verbatim w „Materiał referencyjny i kandydaci" niżej. Trzy otwarte wątki do
+ustalenia ground-truth przed implementacją: (1) czemu `post_content` produktu
+3810 jest niepuste; (2) jak ograniczyć `.wc-block-components-product-metadata`
+w gridzie Koszyka; (3) czy Kasa ma ten sam wzorzec błędu (NIE zweryfikowane
+wcześniej, tylko spekulowane).
+
+**Ground-truth (sesja planistyczna 2026-08-20):**
+
+*Wątek 1 — `post_content` NIE jest błędem.* `qutlet-ai/src/AiRewrite/RewriteWriter.php:53`
+zapisuje przerobiony (AI) opis produktu przez `wp_update_post(['post_content' =>
+wp_kses_post($opis)])` — to jest DOKŁADNIE zamierzone miejsce zapisu warstwy
+przerobionej opisu, udokumentowane w `kontrakt-danych.md` §9.2 (D-13.3a:
+natywne pole WP zamiast osobnego ACF, „opis to swobodny rich text jednego
+pola — dokładnie to, co WordPress już modeluje natywnie jako `post_content`").
+Zapytanie do bazy (`wp db query`, poprawione o `LENGTH()` zamiast `!= ''`, bo
+MySQL porównanie stringów myliło o rekordy z samymi białymi znakami)
+potwierdza: 14 z 525 opublikowanych produktów (2,7%) ma niepuste
+`post_content`, rozrzucone po datach 2026-07-23 i 2026-08-15 (różne partie,
+nie jeden import) — spójne z „produkty, które już przeszły kreator przeróbki
+AI", nie z domyślnym zachowaniem pipeline'u importu. Produkt 3810 to po
+prostu jeden z tych 14 — nie odosobniona anomalia ani błąd.
+
+*Wątek 2 — Koszyk (grid, mechanizm z kandydata potwierdzony).*
+`style.css:2068-2073`: `.wc-block-cart-item__wrap { display:grid !important;
+grid-template-columns: 1fr auto; }`. `.wc-block-components-product-metadata`
+ma WYŁĄCZNIE regułę `:empty { display:none }` (linia 2154) — brak
+jakiegokolwiek jawnego umiejscowienia w gridzie dla przypadku niepustego.
+`cart-block-filters.js` (`injectItemBadges()`) NIGDY nie odwołuje się do
+`.wc-block-components-product-metadata` — odznaki dopisuje bezpośrednio do
+`.wc-block-cart-item__wrap` jako osobne rodzeństwo. `design/vanilla/js/templates.js`
+→ `QT.tpl.cartRow()` (linia ~113-126) nie ma ŻADNEGO pola opisu (tytuł,
+odznaki, „Ilość: 1 szt.", cena, „Usuń" — nic więcej). Wniosek: kontener jest w
+Koszyku całkowicie zbędny/niechciany — bezpiecznie ukryć w całości.
+
+*Wątek 3 — Kasa: INNY mechanizm niż Koszyk, NIE potwierdzony 1:1 jak
+spekulował kandydat.* Zweryfikowane NA ŻYWO (Playwright: dodano produkt 3810
+do koszyka, otwarto `/kasa/`, odczytano DOM + computed styles). Ustalenia:
+`.wc-block-components-order-summary-item__description` to flex-column (nie
+grid) o szerokości narzuconej przez kartę podsumowania, NIE przez treść —
+ZERO kradzieży szerokości: nazwa produktu renderuje się w pełni, nieucięta
+(zmierzone 228,89px — identyczna szerokość co kolumna metadanych; dół
+wiersza pokrywa się z dołem opisu, brak przepełnienia). Zamiast tego:
+`.wc-block-components-product-metadata` zawiera DWOJE dzieci —
+`.wc-block-components-product-metadata__description` (surowy `post_content`,
+przycięty PO STRONIE KLIENTA przez sam WC Blocks, dosłowny znak „…" w
+`textContent`) wyrenderowane NAD `.qutlet-summary-meta` (własny podpis
+motywu „Klasa X · Gwarancja… · N szt.", wstrzykiwany przez
+`checkout-block-filters.js:119-122`). Komentarz w tym pliku
+(`checkout-block-filters.js:84-85`) jawnie zakłada, że
+`.wc-block-components-product-metadata` to „pusty węzeł już przygotowany
+przez WC Blocks" — założenie fałszywe dla tych 14 już-przerobionych
+produktów, gdzie WC Blocks wypełnia go opisem WCZEŚNIEJ niż JS motywu zdąży
+dopisać podpis. Efekt: dodatkowy, ok. 48px wysoki, „obcy" akapit opisu
+między nazwą a zamierzonym podpisem — wiersz robi się wyższy/bardziej
+zaszumiony, ale karta podsumowania NIE traci szerokości/layoutu (różnica
+względem Koszyka). Potwierdzone też przez `design/vanilla/js/templates.js`
+→ `QT.tpl.checkoutItem()` (linia 131-137): tytuł + `<small>Klasa X ·
+N szt.</small>` + cena — zero pola opisu, tak samo jak w Koszyku.
+
+**Decyzje:**
+- **D-25.4.1 [USTALONE]:** Koszyk — `.wc-block-components-product-metadata`
+  ukryty W CAŁOŚCI, scope'owany do `.wc-block-cart-item__wrap`
+  (rozszerzenie istniejącego wzorca `:empty{display:none}` z linii 2154 o
+  przypadek niepusty). Bezpieczne: cart JS nigdy nie używa tego kontenera,
+  prototyp `cartRow()` nie ma pola opisu (wątek 2).
+- **D-25.4.2 [USTALONE]:** Kasa — chowamy WYŁĄCZNIE dziecko
+  `.wc-block-components-product-metadata__description`, scope'owane do
+  `.wc-block-components-order-summary-item__description` (żeby nie ukryć
+  całego kontenera drugą ścieżką) — `.wc-block-components-product-metadata`
+  MUSI zostać widoczny, bo to host wstrzyknięcia `.qutlet-summary-meta`
+  (wątek 3).
+- **D-25.4.3 [USTALONE]:** obie poprawki to czysty CSS w
+  `qutlet-theme/style.css`, wzorzec identyczny z istniejącą regułą
+  `.wc-block-components-order-summary-item__description
+  .wc-block-cart-item__prices { display:none }` (linia 3026-3028, chowa
+  inny niechciany natywny slot WC Blocks) — zero zmian JS, zero zmian w
+  core/allegro/ai.
+- **D-25.4.4 [USTALONE]:** `post_content` NIE jest błędem (wątek 1) — bez
+  zmian w pipeline AI/importu, poza zakresem tego punktu.
+
+**Zakres:**
+- `qutlet-theme/style.css`: dwie nowe reguły (D-25.4.1, D-25.4.2), scope'owane
+  jak wyżej.
+- Weryfikacja manualna (Playwright) po zmianie: Koszyk — nazwa produktu 3810
+  wraca do pełnej szerokości (nie ucięta do jednego słowa); Kasa — wiersz
+  podsumowania traci akapit opisu, zostaje nazwa/cena/„Klasa · Gwarancja ·
+  Reklamacja · szt.".
+- **Repo:** wyłącznie qutlet-theme — potwierdzone ground-truth tej sesji
+  (zero pól ACF/CPT, zero zmian pipeline'u). Punkt czysto-kodowy w JEDNYM
+  repo, bez pracy w `qutlet-meta` poza tym wpisem planu — flip 🟡 pomijamy
+  całkowicie (wyjątek z „Realizacja punktu planu" w CLAUDE.md), flip 🟢
+  wchodzi normalnie po merge'u.
+- **Zależności:** brak (niezależny od P-25.1/P-25.2/P-25.3).
+
 ---
 
 ## Materiał referencyjny i kandydaci do dalszych faz
@@ -9145,6 +9243,14 @@ umiejscowić `.wc-block-components-product-metadata` w gridzie koszyka, żeby
 nie rozpychał kolumny z nazwą niezależnie od długości treści; (3) to samo
 pytanie dla `.wc-block-components-order-summary-item__description` na
 Kasie, po potwierdzeniu że problem tam faktycznie występuje.
+
+**Promowany do pełnego punktu P-25.4 (FAZA 25) 2026-08-20**, na tej samej
+sesji planistycznej, wraz z ground-truth wszystkich trzech wątków —
+`post_content` okazał się ZAMIERZONYM polem AI-przeróbki (nie błędem), a
+mechanizm Kasy okazał się INNY niż Koszyka (brak kradzieży szerokości, za to
+obcy akapit opisu nad podpisem „Klasa/Gwarancja") — spekulacja
+„prawdopodobnie ten sam wzorzec błędu" z akapitu wyżej NIE potwierdziła się
+1:1. Nie jest już samym kandydatem, patrz P-25.4 wyżej.
 
 **Kasa: link nagłówka „Wróć do zakupów" → „Wróć do koszyka"** — kandydat
 dopisany 2026-08-20 (sesja P-25.3b). Na stronie Kasy w nagłówku (dziś ten sam
