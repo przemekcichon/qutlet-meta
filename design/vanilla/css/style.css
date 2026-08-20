@@ -698,6 +698,28 @@ a { color: inherit; }
 .pd-stepper button:disabled { color: #cfcbd6; cursor: default; }
 .pd-qty-val { min-width: 40px; text-align: center; font-family: var(--font-display); font-weight: 800; font-size: 16px; border-left: 1.5px solid var(--line); border-right: 1.5px solid var(--line); align-self: stretch; display: grid; place-items: center; }
 
+/* ---------- Produkt niedostępny / wyprzedany (→ WooCommerce _stock=0) ---------- */
+.pd-sold {
+  display: flex; align-items: center; gap: 12px;
+  background: linear-gradient(135deg, #faf2ef, #f4e6df); border: 1.5px solid #e7c9bc; border-radius: 13px;
+  padding-top: 13px; padding-bottom: 13px; padding-left: 14px; padding-right: 17px; margin-bottom: 14px;
+}
+.pd-sold-ico { flex-shrink: 0; width: 38px; height: 38px; border-radius: 10px; background: #ecd5cb; color: #a1543a; display: grid; place-items: center; }
+.pd-sold-txt { line-height: 1.4; }
+.pd-sold-txt b { display: block; font-family: var(--font-display); font-size: 15.5px; font-weight: 800; letter-spacing: -.01em; color: #8a3f22; }
+.pd-sold-txt span { font-size: 13px; color: #9a6a54; }
+.btn-buy.is-disabled { background: #e9e7ee; color: #a9a4b3; cursor: not-allowed; }
+.btn-buy.is-disabled:hover { background: #e9e7ee; }
+.btn-alt {
+  width: 100%; margin-top: 11px; display: flex; align-items: center; justify-content: center; gap: 10px;
+  background: var(--accent); color: #fff; font-family: var(--font-display); font-weight: 800; font-size: 16px;
+  letter-spacing: .01em; border-radius: 14px; border: 0; cursor: pointer; text-decoration: none;
+  padding-top: 17px; padding-bottom: 17px; transition: background .15s, transform .15s;
+}
+.btn-alt:hover { background: var(--accent-deep); transform: translateY(-1px); }
+.btn-alt .btn-alt-arrow { display: inline-flex; animation: btn-alt-bob 1.7s ease-in-out infinite; }
+@keyframes btn-alt-bob { 0%, 100% { transform: translateY(-1px); } 50% { transform: translateY(3px); } }
+@media (prefers-reduced-motion: reduce) { .btn-alt .btn-alt-arrow { animation: none; } }
 .pd-tabs-section { padding-top: 48px; padding-bottom: 8px; }
 .pd-tabs { display: flex; gap: 30px; border-bottom: 1.5px solid var(--line); margin-bottom: 30px; }
 .pd-tab {
@@ -1125,3 +1147,17 @@ body[data-page="kontakt"] .help-nav a[data-help="kontakt"] { background: var(--i
   .help-nav h4 { display: none; }
   .help-nav a { border: 1px solid var(--line); border-radius: 999px; padding-left: 14px; padding-right: 14px; }
 }
+
+
+/* ---------- Wyniki wyszukiwania (→ search.php) ---------- */
+.search-summary { font-size: 15px; color: var(--ink-soft); margin-top: 4px; }
+.search-summary b { color: var(--ink); font-weight: 800; }
+.results-section { margin-top: 44px; }
+.results-section:first-of-type { margin-top: 0; }
+.results-section-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+.results-section-head h2 { font-family: var(--font-display); font-size: 22px; font-weight: 800; letter-spacing: -.02em; margin: 0; }
+.results-section-count { font-size: 14px; font-weight: 700; color: var(--muted); }
+.results-section-more { margin-left: auto; font-size: 14px; font-weight: 700; color: var(--accent); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.results-section-more:hover { text-decoration: underline; }
+.section-empty { color: var(--muted); font-size: 14.5px; line-height: 1.6; padding-top: 2px; padding-bottom: 6px; }
+.section-empty a { color: var(--accent); font-weight: 700; }
