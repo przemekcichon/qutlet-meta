@@ -225,6 +225,15 @@
         if (e.target.closest('[data-logout]')) QT.account.logout();
       });
 
+      /* wyszukiwarka w headerze → strona wyników (→ w WP: form action="/" method=get) */
+      document.addEventListener('keydown', function (e) {
+        var inp = e.target.closest && e.target.closest('.search input[type="search"]');
+        if (inp && e.key === 'Enter') {
+          var val = inp.value.trim();
+          window.location.href = 'wyniki-wyszukiwania.html' + (val ? '#q=' + encodeURIComponent(val) : '');
+        }
+      });
+
       this.refreshCart();
     },
   };
@@ -426,6 +435,71 @@
 
     renderFacets();
     renderDeals();
+  }
+
+  /* ============================================================
+     WYNIKI WYSZUKIWANIA (→ search.php)
+     Produkty (WooCommerce) + wpisy bloga (post). Wpisy pod produktami.
+     ============================================================ */
+  function initSearch() {
+    if (!initSearch._bound) {
+      initSearch._bound = true;
+      window.addEventListener('hashchange', initSearch);
+    }
+    var params = new URLSearchParams(window.location.search);
+    var hashQ = (window.location.hash.match(/[#&]q=([^&]*)/) || [])[1];
+    var q = (hashQ != null ? decodeURIComponent(hashQ.replace(/\+/g, ' ')) : params.get('q')) || '';
+    var qn = QT.norm(q.trim());
+
+    var input = document.querySelector('[data-search-input]');
+    if (input) input.value = q;
+    setText('[data-search-query]', q || '—');
+
+    var products = [], posts = [];
+    if (qn) {
+      products = QT.CATALOG.filter(function (p) {
+        var hay = QT.norm(p.title + ' ' + p.brand + ' ' + (QT.CAT_LABEL[p.cat] || p.cat) + ' ' + p.cat + ' klasa ' + p.cls);
+        return qn.split(/\s+/).every(function (w) { return hay.indexOf(w) !== -1; });
+      });
+      posts = QT.POSTS.filter(function (p) {
+        var hay = QT.norm(p.title + ' ' + p.excerpt + ' ' + p.cat);
+        return qn.split(/\s+/).every(function (w) { return hay.indexOf(w) !== -1; });
+      });
+    }
+
+    var total = products.length + posts.length;
+    setText('[data-search-total]', total + ' ' + QT.plural(total, 'wynik', 'wyniki', 'wyników'));
+
+    /* sekcja: produkty */
+    var pWrap = document.querySelector('[data-results-products]');
+    var pGrid = document.querySelector('[data-search-products-grid]');
+    var pCount = document.querySelector('[data-products-count]');
+    var pEmpty = document.querySelector('[data-products-empty]');
+    if (pGrid) pGrid.innerHTML = products.map(QT.tpl.productCard).join('');
+    if (pCount) pCount.textContent = products.length + ' ' + QT.plural(products.length, 'produkt', 'produkty', 'produktów');
+    if (pGrid) pGrid.hidden = products.length === 0;
+    if (pEmpty) pEmpty.hidden = products.length > 0;
+
+    /* sekcja: wpisy bloga */
+    var bGrid = document.querySelector('[data-search-posts-grid]');
+    var bCount = document.querySelector('[data-posts-count]');
+    var bEmpty = document.querySelector('[data-posts-empty]');
+    if (bGrid) bGrid.innerHTML = posts.map(QT.tpl.postCard).join('');
+    if (bCount) bCount.textContent = posts.length + ' ' + QT.plural(posts.length, 'wpis', 'wpisy', 'wpisów');
+    if (bGrid) bGrid.hidden = posts.length === 0;
+    if (bEmpty) bEmpty.hidden = posts.length > 0;
+
+    /* pusty stan globalny (brak zapytania lub 0 wyników) */
+    var globalEmpty = document.querySelector('[data-search-empty]');
+    var body = document.querySelector('[data-search-body]');
+    var noQuery = qn === '';
+    if (globalEmpty) globalEmpty.hidden = !(noQuery || total === 0);
+    if (body) body.hidden = noQuery || total === 0;
+    setText('[data-search-empty-query]', q || '');
+    var noQ = document.querySelector('[data-search-noquery]');
+    var zeroRes = document.querySelector('[data-search-zero]');
+    if (noQ) noQ.hidden = !noQuery;
+    if (zeroRes) zeroRes.hidden = noQuery || total > 0;
   }
 
   /* ============================================================
@@ -873,6 +947,7 @@
         home: initHome,
         'kategoria-smartfony': initCatPhones,
         'strefa-okazji': initDeals,
+        'wyniki-wyszukiwania': initSearch,
         produkt: initProduct,
         koszyk: initCart,
         kasa: initCheckout,

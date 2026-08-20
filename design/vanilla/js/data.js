@@ -52,6 +52,37 @@ QT.CATALOG = [
   { id: 20, title: 'Nintendo Switch OLED',              cat: 'gaming',    brand: 'Nintendo',    cls: 'B', now: 899,    old: 1399, ph: 'konsola', qty: 2 },
 ];
 
+
+/* ============================================================
+   WPISY BLOGA (→ WP_Query po 'post'; w tym prototypie statyczne)
+   -   .id        → get_the_ID()
+   -   .title     → get_the_title()
+   -   .cat       → nazwa kategorii (taxonomy 'category')
+   -   .excerpt   → get_the_excerpt()
+   -   .date      → get_the_date()
+   -   .read      → pole ACF 'czas_czytania'
+   -   .ph        → opis placeholdera zdjęcia (w WP: miniatura wpisu)
+   ============================================================ */
+QT.POSTS = [
+  { id: 101, title: '62 miliony ton rocznie. Krótki raport o elektrośmieciach', cat: 'Ekologia', date: '2 lipca 2026', read: '6 min', excerpt: 'Ludzkość produkuje rocznie tyle e-waste, ile waży 6 200 wież Eiffla — a do recyklingu trafia niecała jedna czwarta. Liczby, które warto znać, zanim kupisz coś „na zapas”.', ph: 'foto: góra zużytej elektroniki' },
+  { id: 102, title: 'Dryfujący analog w padzie? Naprawisz go za 30 zł', cat: 'Naprawy i DIY', date: '28 czerwca 2026', read: '9 min', excerpt: 'Nowy pad kosztuje ponad 300 zł, a winowajcą dryfu jest zwykle moduł za kilkanaście złotych. Pokazujemy naprawę krok po kroku — z lutownicą i bez.', ph: 'foto: rozkręcony pad, widoczne analogi' },
+  { id: 103, title: '„Buy Now!” na Netfliksie — dokument, po którym inaczej spojrzysz na koszyk', cat: 'Ekologia', date: '21 czerwca 2026', read: '4 min', excerpt: 'Godzina i kwadrans o tym, jak projektuje się rzeczy, żeby ich nie dało się naprawić. Obowiązkowy seans dla każdego ekopragmatyka.', ph: 'kadr z dokumentu / pilot TV' },
+  { id: 104, title: 'Dwuletni flagowiec vs nowy średniak: benchmark za te same pieniądze', cat: 'Testy i benchmarki', date: '14 czerwca 2026', read: '11 min', excerpt: 'Za ~1 500 zł: używany flagowiec z 2024 czy nówka ze średniej półki? Sprawdzamy wydajność, aparat i baterię — wyniki nie są oczywiste.', ph: 'foto: dwa smartfony obok siebie' },
+  { id: 105, title: 'Od zwrotu do klasy A–D: jak naprawdę oceniamy sprzęt', cat: 'Jak to działa', date: '7 czerwca 2026', read: '5 min', excerpt: 'Co dzieje się z urządzeniem między magazynem zwrotów a ofertą w sklepie? Przechodzimy całą ścieżkę serwisową na przykładzie jednego laptopa.', ph: 'foto: stanowisko serwisowe Qutlet' },
+  { id: 106, title: 'Dlaczego bateria się starzeje — i jak spowolnić ten proces', cat: 'Jak to działa', date: '31 maja 2026', read: '7 min', excerpt: 'Cykle, temperatura i ładowanie „do pełna”: chemia ogniw litowo-jonowych wyjaśniona po ludzku, plus 5 nawyków, które realnie wydłużają życie baterii.', ph: 'foto: ogniwo baterii litowo-jonowej' },
+  { id: 107, title: 'Laptop po leasingu: na co patrzeć, zanim klikniesz „kup”', cat: 'Poradniki zakupowe', date: '24 maja 2026', read: '8 min', excerpt: 'Poleasingowe ThinkPady i Latitude to najlepszy stosunek jakości do ceny na rynku — jeśli wiesz, jak sprawdzić baterię, matrycę i zawiasy.', ph: 'foto: laptop biznesowy z boku' },
+  { id: 108, title: 'SSD z drugiej ręki: sprawdź zużycie w 5 minut', cat: 'Poradniki zakupowe', date: '17 maja 2026', read: '6 min', excerpt: 'Jeden darmowy program i trzy parametry S.M.A.R.T. wystarczą, żeby ocenić, ile życia zostało w używanym dysku. Instrukcja ze zrzutami ekranu.', ph: 'zrzut: raport S.M.A.R.T. dysku' },
+  { id: 109, title: 'Głośna konsola? Czyszczenie i wymiana pasty krok po kroku', cat: 'Naprawy i DIY', date: '3 maja 2026', read: '7 min', excerpt: 'Po 3–4 latach wentylator konsoli potrafi brzmieć jak suszarka. Godzina pracy, tubka pasty i wraca kultura pracy jak z pudełka.', ph: 'foto: konsola z otwartą obudową' },
+];
+
+/* Normalizacja do wyszukiwania: małe litery + bez polskich znaków */
+QT.norm = function (s) {
+  return String(s == null ? '' : s).toLowerCase()
+    .replace(/[ąàá]/g, 'a').replace(/ć/g, 'c').replace(/[ęèé]/g, 'e')
+    .replace(/ł/g, 'l').replace(/ń/g, 'n').replace(/[óòô]/g, 'o')
+    .replace(/ś/g, 's').replace(/[żź]/g, 'z');
+};
+
 QT.byId = function (id) { return QT.CATALOG.find(function (p) { return p.id === Number(id); }); };
 
 /* wc_price() — formatowanie ceny w PLN */

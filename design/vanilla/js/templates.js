@@ -62,6 +62,21 @@ QT.tpl.productCard = function (p) {
     '</a>';
 };
 
+
+/* → content.php (karta wpisu bloga) */
+QT.tpl.postCard = function (p) {
+  return '' +
+    '<a class="post-card" href="blog-artykul.html" data-post-id="' + p.id + '">' +
+      '<div class="post-media"><div class="ph-stripes">' + QT.esc(p.ph) + '</div></div>' +
+      '<div class="post-body">' +
+        '<div class="post-topline"><span class="post-cat">' + QT.esc(p.cat) + '</span><span class="post-read">' + QT.esc(p.read) + '</span></div>' +
+        '<h3>' + QT.esc(p.title) + '</h3>' +
+        '<p>' + QT.esc(p.excerpt) + '</p>' +
+        '<div class="post-meta">' + QT.esc(p.date) + '</div>' +
+      '</div>' +
+    '</a>';
+};
+
 /* Dropdown koszyka w headerze (Woo cart fragments) */
 QT.tpl.cartMenu = function (items) {
   if (!items.length) {

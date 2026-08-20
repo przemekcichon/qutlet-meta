@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wyniki wyszukiwania — Qutlet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/blog.css">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+</head>
+<!-- → search.php (wyniki: produkty WooCommerce + wpisy bloga) -->
+<body data-page="wyniki-wyszukiwania">
+<div data-include="partials/header.html"></div>
+
+<main class="wrap page-main">
+  <nav class="breadcrumbs">
+    <a href="index.html">Home</a><span class="sep">/</span>
+    <span class="current">Wyniki wyszukiwania</span>
+  </nav>
+
+  <div class="page-head">
+    <h1 class="page-title">Wyniki dla „<span data-search-query>—</span>”</h1>
+    <p class="search-summary"><b data-search-total>0 wyników</b> — produkty i wpisy na blogu.</p>
+  </div>
+
+  <!-- treść wyników -->
+  <div data-search-body>
+    <!-- SEKCJA: PRODUKTY -->
+    <section class="results-section" data-results-products>
+      <div class="results-section-head">
+        <h2>Produkty</h2>
+        <span class="results-section-count" data-products-count>0 produktów</span>
+        <a class="results-section-more" href="strefa-okazji.html">
+          Cała strefa okazji
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+        </a>
+      </div>
+      <div class="grid-3" data-search-products-grid hidden></div>
+      <p class="section-empty" data-products-empty hidden>Brak produktów pasujących do zapytania. Zajrzyj do <a href="strefa-okazji.html">strefy okazji</a> albo zawęź hasło.</p>
+    </section>
+
+    <!-- SEKCJA: WPISY NA BLOGU (pod produktami) -->
+    <section class="results-section">
+      <div class="results-section-head">
+        <h2>Wpisy na blogu</h2>
+        <span class="results-section-count" data-posts-count>0 wpisów</span>
+        <a class="results-section-more" href="blog.html">
+          Cały blog „Drugi obieg”
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+        </a>
+      </div>
+      <div class="post-grid" data-search-posts-grid hidden></div>
+      <p class="section-empty" data-posts-empty hidden>Brak wpisów pasujących do zapytania. Przejrzyj <a href="blog.html">wszystkie artykuły</a>.</p>
+    </section>
+  </div>
+
+  <!-- PUSTY STAN: brak zapytania lub 0 wyników -->
+  <div class="empty-state" data-search-empty hidden>
+    <svg width="56" height="56" viewBox="0 0 24 24" fill="none" class="empty-icon" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path><path d="M8 11h6"></path></svg>
+    <h3 data-search-noquery hidden>Wpisz, czego szukasz</h3>
+    <h3 data-search-zero hidden>Brak wyników dla „<span data-search-empty-query></span>”</h3>
+    <p>Spróbuj innego hasła albo przejdź do <a href="strefa-okazji.html">strefy okazji</a> lub <a href="blog.html">bloga</a>.</p>
+  </div>
+</main>
+
+<div data-include="partials/footer.html"></div>
+<script src="js/data.js"></script>
+<script src="js/templates.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
