@@ -8969,3 +8969,38 @@ prośbę użytkownika — nie jest już samym kandydatem, patrz P-23.6 wyżej.
 2026-08-20**, na prośbę użytkownika, wraz z ground-truth przyczyny (mechanizm
 piaskownicowanych iframe'ów bloku „Custom HTML" przy dzielonych tagach) —
 nie jest już samym kandydatem, patrz P-25.2a/P-25.2b wyżej.
+
+**Podgląd nagłówka/stopki w edytorze — czy w ogóle powinien się tam
+renderować? (follow-up P-25.2)** — kandydat dopisany 2026-08-20 (sesja
+P-25.2, po merge'u obu PR-ów #118/#50). D-25.2.1/P-25.2 naprawiło
+POTWIERDZONE usterki STRUKTURALNE podglądu (rozerwane elementy —
+koszyk/konto/hamburger wypadające poza `<nav>`; panel `.mega`/mobilne menu
+renderujące się jako trwale widoczne zamiast `hidden`) — zweryfikowane
+Playwrightem, zmergowane, niezależna recenzja 🟢 CZYSTE. Użytkownik, patrząc
+na wynik (bloki nagłówka/stopki nadal układają się w edytorze PIONOWO, jako
+osobne fragmenty listy bloków, zamiast jednego spójnego poziomego paska jak
+na froncie — to ZNANE, zaakceptowane ograniczenie Site Editora przy
+podziale treści na wiele bloków/fragmentów `core/html`, NIE regresja tej
+sesji), zasygnalizował wątpliwość, czy to wystarczający stan „dokończenia"
+tematu. BEZ decyzji — trzy otwarte kierunki, wymagają ground-truth i wyboru
+w osobnej sesji:
+1. Zostawić jak jest — usterki strukturalne naprawione i zweryfikowane,
+   wizualny rozjazd MIĘDZY blokami (nie WEWNĄTRZ nich) to zaakceptowana
+   granica edytora; temat faktycznie zamknięty, bez dalszego kodu.
+2. Większy refaktor: scalić nagłówek/stopkę w mniejszą liczbę większych
+   bloków dynamicznych dla pełnej zgodności wizualnej z frontem W EDYTORZE
+   (to dokładnie odrzucona przy D-25.2.1 opcja (b) — użytkownik otwarcie
+   rozważa ją ponownie, świadomie większy zakres/ryzyko).
+3. Zbadać usunięcie `parts/header.html`/`parts/footer.html` z podglądu przy
+   edycji Stron/Wpisów całkowicie — użytkownik nie pamięta, kiedy/dlaczego
+   zaczęły się tam w ogóle renderować, i wspomina, że „wcześniej wyglądały
+   dobrze" (prawdopodobnie ZANIM FAZA 16/23 wprowadziły bloki dynamiczne
+   dzielące statyczny markup na fragmenty `core/html` — do potwierdzenia w
+   historii/ground-truth, NIE zgadywać). Wymaga zbadania: czy to w ogóle
+   sterowalne per-szablon w Gutenbergu/Site Editorze (np. wyłączenie
+   podglądu pełnego szablonu przy edycji treści Strony/Wpisu), jakie są
+   realne konsekwencje (utrata wizualnego kontekstu nagłówka/stopki przy
+   edycji treści) — zbadać jak działa DZIŚ i jakie opcje daje real
+   WP-core/Gutenberg, nie zakładać z góry wykonalności.
+**Zależności:** P-25.2a/P-25.2b (zmergowane — kontekst/przyczyna, na których
+się opiera ground-truth tego follow-upu).
