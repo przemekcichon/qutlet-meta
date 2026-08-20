@@ -8678,6 +8678,86 @@ sprawdzone `wp post get <ID> --field=post_content` + grep):
 - **Repo:** wyłącznie qutlet-theme/DB — potwierdzone przy realizacji: zero
   zmian w plikach repo (patterny już poprawne).
 
+## 🟦 FAZA 25 — Nagłówek strony wyników wyszukiwania (qutlet-theme)
+
+**Zgłoszenie (sesja 2026-08-20):** P-23.4 zostawił notatkę „Do dopracowania"
+— nagłówek `search.php` (`.page-title` + nagłówki sekcji) reużywał czysto
+generycznej typografii bez własnego wzorca wizualnego, bo `design/vanilla`
+nie miał WTEDY żadnej strony-referencji dla wyszukiwarki. Przed tą sesją
+planistyczną w `design/vanilla` przybył nowy plik `wyniki-wyszukiwania.html`
+(prototyp) + towarzyszące zmiany w `css/style.css`, `js/app.js`, `js/data.js`,
+`js/templates.js`, `partials/header.html` (JS-demo pełnej strony wyników,
+statyczny `QT.CATALOG`/nowy `QT.POSTS`) — ta faza domyka wspomnianą notatkę.
+
+**Ground-truth (sesja 2026-08-20, `search.php` + `style.css` motywu vs
+prototyp):** struktura ogólna się zgadza (breadcrumb → `.page-head` z
+`h1.page-title` → sekcje Produkty/Wpisy blog → empty-state; sekcje reużywają
+gotowe karty `ProductCard`/`post-card`, P-8.3a/P-8.4) — zero nowych pól ACF/
+CPT, zero zmian po stronie `Search::restrict_query()`
+(`inc/features/Search/Search.php`, zawężenie `post_type` już działa,
+niezależne od tej poprawki). Różnice, wszystkie w warstwie
+prezentacji/PHP-markupu:
+1. Pod `h1` brakuje linii podsumowania (prototyp: `.search-summary`,
+   „**N wyników** — produkty i wpisy na blogu.") — dzisiejszy `search.php` nic
+   tam nie renderuje.
+2. Nagłówki sekcji („Produkty"/„Wpisy blog") dziś owinięte w
+   `.section-head-solo`/`.section-title` — klasy WSPÓŁDZIELONE z innymi
+   stronami (`woocommerce/myaccount/orders.php`,
+   `woocommerce/myaccount/my-account.php`, `patterns/home-categories.php`,
+   `inc/features/Home/blocks/featured-products/render.php`,
+   `patterns/blog-hero.php`,
+   `inc/features/Blog/blocks/related-posts/render.php`) — NIE dotykać ich
+   globalnie. Prototyp ma dedykowane, nowe klasy `.results-section`/
+   `.results-section-head` z licznikiem przy tytule (`.results-section-count`,
+   „N produktów"/„N wpisów") i linkiem „więcej" po prawej
+   (`.results-section-more`: Produkty → cała strefa okazji, Blog → cały blog).
+3. Globalny pusty stan: dziś JEDEN generyczny tekst „Brak wyników dla podanej
+   frazy" niezależnie od przyczyny. Prototyp rozróżnia DWA stany: pusta fraza
+   (`data-search-noquery`, „Wpisz, czego szukasz") vs zero wyników dla
+   niepustej frazy (`data-search-zero`, „Brak wyników dla „X"", z wstawioną
+   frazą) — realnie osiągalne, bo `.search` w headerze
+   (`parts/header.html:17`, `<form ... method="get">`) pozwala wysłać pusty
+   submit.
+4. Prototyp ma też komunikat pustej POJEDYNCZEJ sekcji (`.section-empty`, np.
+   „Brak produktów pasujących…") gdy jeden typ ma 0 wyników a drugi >0 — dziś
+   `search.php` w tej sytuacji całkiem POMIJA pustą sekcję (`if ( $has_products
+   )`/`if ( $has_posts )` owija całą `<section>`). **Rozstrzygnięte w tej
+   sesji planistycznej (D-25.1, decyzja użytkownika): zostajemy przy
+   dzisiejszym ukrywaniu pustej sekcji — `.section-empty` i ten fragment
+   prototypu ŚWIADOMIE NIE są portowane.** Świadome odejście od 1:1 prototypu
+   w tym jednym miejscu.
+
+Nowe klasy CSS w `design/vanilla/css/style.css` (diff tej sesji) bez
+odpowiednika w `style.css` motywu: `.search-summary` (+ `.search-summary b`),
+`.results-section` (+ `:first-of-type`), `.results-section-head` (+ `h2`),
+`.results-section-count`, `.results-section-more` (+ `:hover`);
+`.section-empty` istnieje w prototypie, ale (D-25.1 wyżej) NIE wchodzi do
+zakresu.
+
+**Zakres:**
+- CSS: dopisać do `style.css` motywu klasy wypisane wyżej (bez
+  `.section-empty`) — czysty port z `design/vanilla/css/style.css`, wartości
+  1:1, zero nowych decyzji wizualnych.
+- `search.php`: dodać linię `.search-summary` pod `h1` — wymaga REALNYCH
+  liczników wyników per typ (dziś kod śledzi tylko booleany
+  `$has_products`/`$has_posts`, trzeba dołożyć zliczanie w tej samej pętli/
+  `rewind_posts()`, reużywalne też dla `.results-section-count` w punkcie
+  niżej).
+- `search.php`: zamienić `.section-head-solo`/`.section-title` na
+  `.results-section`/`.results-section-head` z licznikiem i linkiem „więcej"
+  — DOKŁADNE docelowe URL-e (permalink Strefy Okazji, URL archiwum bloga) do
+  potwierdzenia w kodzie przy realizacji, NIE zgadywać z prototypu (tam to
+  statyczne `strefa-okazji.html`/`blog.html`).
+- `search.php`: rozróżnić globalny empty-state na pustą frazę vs zero wyników
+  (`empty( get_search_query() )` jako warunek) — port 1:1 z prototypu.
+- **Repo:** wyłącznie qutlet-theme (CSS + PHP markup `search.php`) — zero
+  pól ACF/CPT, potwierdzone ground-truth tej sesji. Punkt czysto-kodowy w
+  JEDNYM repo, bez pracy w `qutlet-meta` poza tym wpisem planu — flip 🟡
+  pomijamy całkowicie (wyjątek z „Realizacja punktu planu" w CLAUDE.md),
+  flip 🟢/🟩 wchodzi normalnie po merge'u.
+- **Zależności:** FAZA 23 (P-23.4 — pierwsza realizacja `search.php`/
+  `Search.php`, notatka „Do dopracowania").
+
 ---
 
 ## Materiał referencyjny i kandydaci do dalszych faz
