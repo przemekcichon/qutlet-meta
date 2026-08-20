@@ -8684,7 +8684,7 @@ Dwa punkty NIEZALEŻNE od siebie (żaden nie blokuje drugiego) — łączy je
 wyłącznie wspólny mianownik „drobne poprawki wizualne qutlet-theme
 zgłoszone/odkryte w tej samej sesji", ten sam wzorzec grupowania co FAZA 22/23.
 
-### 🟦 P-25.1 — Nagłówek strony wyników wyszukiwania
+### 🟢 P-25.1 — Nagłówek strony wyników wyszukiwania
 
 **Zgłoszenie (sesja 2026-08-20):** P-23.4 zostawił notatkę „Do dopracowania"
 — nagłówek `search.php` (`.page-title` + nagłówki sekcji) reużywał czysto
