@@ -8678,7 +8678,7 @@ sprawdzone `wp post get <ID> --field=post_content` + grep):
 - **Repo:** wyłącznie qutlet-theme/DB — potwierdzone przy realizacji: zero
   zmian w plikach repo (patterny już poprawne).
 
-## 🟦 FAZA 25 — Poprawki wizualne front-endu: nagłówek wyników wyszukiwania, podgląd nagłówka/stopki w edytorze (qutlet-theme)
+## 🟨 FAZA 25 — Poprawki wizualne front-endu: nagłówek wyników wyszukiwania, podgląd nagłówka/stopki w edytorze (qutlet-theme)
 
 Dwa punkty NIEZALEŻNE od siebie (żaden nie blokuje drugiego) — łączy je
 wyłącznie wspólny mianownik „drobne poprawki wizualne qutlet-theme
@@ -8764,7 +8764,7 @@ zakresu.
 - **Zależności:** FAZA 23 (P-23.4 — pierwsza realizacja `search.php`/
   `Search.php`, notatka „Do dopracowania").
 
-### 🟦 P-25.2 — Podgląd `parts/header.html`/`parts/footer.html` w edytorze Gutenberg
+### 🟡 P-25.2a — Decyzja D-25.2.1: skala fixu podglądu nagłówka/stopki (qutlet-meta)
 
 **Zgłoszenie:** dopisane jako kandydat 2026-08-20 (sesja P-23.4) — użytkownik
 zgłosił, że nagłówek i stopka strony wyświetlają się niepoprawnie w podglądzie
@@ -8825,29 +8825,102 @@ problem inicjalizacji JS, tylko strukturalny problem DOM:
    dostaje traktowania iframe'em jak „Custom HTML"; tylko dosłowne bloki
    `core/html` je dostają.
 
-**Zakres:** realny fix wymaga przestania polegać na triku „dzielony tag między
-blokami" dla elementów, które muszą się zagnieżdżać w podglądzie edytora.
-Kierunki do rozważenia przy realizacji (NIE przesądzone tu, wymaga decyzji
-użytkownika co do skali):
-- (a) przenieść otaczający statyczny markup do WŁASNYCH bloków dynamicznych
-  (rozszerzyć już sprawdzony wzorzec `qutlet/header-nav`-podobny — każdy
-  samodzielny fragment nagłówka/stopki jako JEDEN blok dynamiczny z
-  `render.php` emitującym kompletny, samo-zagnieżdżony markup) — omija
-  piaskownicę „Custom HTML" całkowicie, zgodnie z już działającym wzorcem
-  `ServerSideRender`.
-- (b) scalić cały nagłówek/stopkę w JEDEN blok dynamiczny/render (większy
-  zakres, dotyka `HeaderNav`/`FooterMenu`/pasa kategorii/mega-grid naraz).
-- (c) świadomie zaakceptować rozjazd podglądu edytora jako znaną granicę
-  Gutenberga i NIE zmieniać kodu (front pozostaje poprawny) — potraktować
-  jako udokumentowane ograniczenie, jeśli edycja wizualna w Site Editorze nie
-  jest na tyle istotna dla użytkownika, by uzasadnić refaktor.
-  Skala realnej poprawki (od małej — odizolowanie zagnieżdżenia panelu `.mega`
-  — po dużą — przebudowa nagłówka/stopki na bloki dynamiczne) do potwierdzenia
-  z użytkownikiem na starcie realizacji.
-- **Repo:** wyłącznie qutlet-theme (rejestracja/render bloków, `parts/
-  header.html`/`parts/footer.html` = warstwa graficzna).
-- **Zależności:** FAZA 16 (`HeaderNav`, wzorzec bloków dynamicznych
-  nagłówka), FAZA 23 (P-23.1 — `FooterMenu`, analogiczny wzorzec stopki).
+**D-25.2.1 (decyzja użytkownika, sesja 2026-08-20) [USTALONE]:** wybrany
+kierunek (a) — rozszerzenie już sprawdzonego wzorca `ServerSideRender`: każdy
+samodzielny fragment nagłówka/stopki, którego wewnętrzna struktura
+(zagnieżdżenie, atrybut `hidden`) jest dziś rozcinana granicą bloku
+`core/html`, staje się JEDNYM blokiem dynamicznym emitującym KOMPLETNY,
+samo-zagnieżdżony markup (statyczny wrapper + dane). Odrzucone: (b) scalenie
+całego nagłówka/stopki w jeden blok dynamiczny (zbyt duży zakres, miesza dziś
+odseparowane slice'y `HeaderMenu`/`FooterMenu` w jedną jednostkę renderu) i
+(c) pozostawienie bez zmian (front-end jest już poprawny, ale realny UX
+podglądu w Site Editorze zostaje zepsuty — użytkownik uznał to za
+wystarczająco istotne, by uzasadnić refaktor).
+
+Ustalona lista fragmentów do przeróbki (ground-truth kodu tej sesji —
+`parts/header.html`/`parts/footer.html` + bloki
+`inc/features/HeaderMenu/blocks/*` i `inc/features/FooterMenu/blocks/footer-nav`):
+1. `qutlet/header-nav` — dziś renderuje TYLKO linki `.nav-link`; rozszerzyć
+   `render.php` o pełny wrapper `<nav class="header-nav">` + statyczne
+   dropdowny koszyk/konto (`.header-menu-wrap`) + przycisk hamburgera
+   (`.mnav-toggle`) — dziś rozdzielone jako osobny fragment `wp:html` PO
+   bloku.
+2. `qutlet/header-categories-band` — dziś renderuje TYLKO pigułki
+   `.subnav-link`; rozszerzyć o pełny wrapper `.subnav-band > .wrap.subnav` +
+   statyczny przycisk „Więcej" (`data-toggle-mega`) PO pigułkach.
+3. `qutlet/header-mega-grid` — dziś renderuje TYLKO `.wrap.mega-grid`;
+   rozszerzyć o zewnętrzny wrapper `.mega[data-mega hidden]` — dziś ten
+   `hidden` wrapper otwiera się i zamyka w OSOBNYCH fragmentach `wp:html`
+   wokół bloku, więc w edytorze treść bloku renderuje się jako zawsze
+   widoczny blok najwyższego poziomu (kontekst `--mega-cols`, D-16.G3, już
+   jest poprawny WEWNĄTRZ — problem jest TYLKO w zewnętrznym `hidden`).
+4. Nowy blok `qutlet/header-mobile-nav` (zastępuje `qutlet/header-categories-mnav`,
+   który znika — jego logika `CategoryMenu::pills()` przenosi się do nowego
+   bloku) — łączy w JEDNYM `render.php` całą zawartość dziś rozciętą na 3
+   fragmenty wokół `.mnav-overlay[data-mnav hidden] > .mnav-panel`: przycisk
+   zamknięcia (`.mnav-close`), sekcję „Kategorie" (dawny
+   `header-categories-mnav`) i statyczne linki (Wszystkie kategorie / Strefa
+   okazji / Jak to działa? / Blog / Pomoc / Zaloguj się). Powód objęcia
+   całego `.mnav-overlay`/`.mnav-panel`, nie tylko sekcji kategorii: sam
+   wrapper `hidden` jest dziś rozcięty tym samym mechanizmem co (3) — musi być
+   emitowany w całości przez JEDEN blok, żeby `hidden` przetrwał w edytorze.
+5. `qutlet/footer-nav` — dziś renderuje TYLKO płaskie linki `.footer-col`
+   sparametryzowane atrybutem `menuLocation`; rozszerzyć o zewnętrzny wrapper
+   `<div class="footer-col"><h5>{nagłówek}</h5>` — nagłówek („Sklep"/
+   „Informacje"/„Pomoc") wyprowadzony WEWNĄTRZ `render.php` z mapy
+   `menuLocation → nagłówek` (te same 3 literały co `docs/kontrakt-danych.md`
+   §14.4, `FooterMenu::MENU_LOCATION_*`) — BEZ nowego atrybutu bloku (uniknięcie
+   dublowania tego samego faktu w dwóch miejscach; `menuLocation` zostaje
+   jedynym źródłem prawdy).
+
+**Zasada zachowania front-endu (wszystkie 5 punktów):** finalny wyrenderowany
+HTML strony (`render_block()`, front-end) ma być BAJT-W-BAJT identyczny
+przed/po — przenosimy WYŁĄCZNIE to, KTÓRY plik PHP emituje dany fragment
+statycznego markupu, nie zmieniamy samego markupu ani jego pozycji w
+strumieniu wyjściowym. Każdy `render.php`, który dziś przy braku danych
+(`return` przy pustym `$items`/`$columns`) nie renderował NIC, musi po
+przeróbce nadal renderować statyczny wrapper (dawniej poza blokiem) i pominąć
+TYLKO warunkową, wewnętrzną pętlę — inaczej przeniesienie wrappera do bloku
+zmieniłoby zachowanie frontendu przy pustym menu/pustych kategoriach (np.
+pusta kolumna „Sklep" straciłaby dziś zawsze-widoczny nagłówek `<h5>Sklep</h5>`
+— regresja poza zakresem tego punktu).
+
+**Repo:** wyłącznie `qutlet-meta` (ten wpis planu — decyzja + rozbicie punktu
+na pod-punkty a/b). Zero kodu.
+
+### P-25.2b — Samodzielne bloki dynamiczne dla nagłówka/stopki (qutlet-theme)
+
+Implementacja D-25.2.1 (lista 5 fragmentów wyżej) w `qutlet-theme`:
+`inc/features/HeaderMenu/blocks/{header-nav,header-categories-band,
+header-mega-grid}/render.php` (rozszerzenie), nowy katalog
+`inc/features/HeaderMenu/blocks/header-mobile-nav/` (`block.json` +
+`render.php`, usunięcie `blocks/header-categories-mnav/`), aktualizacja
+`assets/js/header-menu-blocks-editor.js` (lista `BLOCK_NAMES`),
+`inc/features/FooterMenu/blocks/footer-nav/render.php` (rozszerzenie),
+`parts/header.html`/`parts/footer.html` (usunięcie rozciętych fragmentów
+`wp:html`, po jednym pełnym odwołaniu do bloku na miejsce cięcia).
+
+**Weryfikacja przy realizacji (OBOWIĄZKOWA, nie tylko wizualna):**
+- front-end BAJT-W-BAJT identyczny przed/po (diff wyrenderowanego HTML
+  `<header>`/`<footer>` strony głównej `loc.qutlet.pl` przed zmianą i po);
+  `assets/js/header-nav.js` opiera się na selektorach
+  `[data-toggle-menu]`/`[data-mega]`/`[data-toggle-mega]`/`[data-mnav]`/
+  `[data-menu]`, nie na tym, KTÓRY plik PHP wyemitował dany fragment — front-end
+  nie powinien się w ogóle zauważalnie zmienić.
+- Site Editor / edytor Strony-Wpisu (Playwright MCP,
+  `iframe[name="editor-canvas"]`): `<nav class="header-nav">` renderuje
+  spójnie ze swoimi dziećmi (koszyk/konto/hamburger), `.mega` zostaje
+  `hidden` (nie renderuje się jako zawsze widoczny blok najwyższego poziomu),
+  `.mnav-overlay`/`.mnav-panel` zostaje `hidden` z poprawnie zagnieżdżoną
+  zawartością, 3× `.footer-col` renderują się z poprawnym nagłówkiem nawet
+  przy pustym menu (kolumna „Sklep"), zero błędów w konsoli JS (już dziś
+  zero — potwierdzić, że tak zostaje).
+- PHPStan na `qutlet-theme` bez nowych błędów (jednowątkowo,
+  `--memory-limit=1G --debug` — znany workaround OOM na tej maszynie).
+
+**Zależności:** P-25.2a (decyzja D-25.2.1 wyżej) — musi być zmergowana
+najpierw. FAZA 16 (`HeaderMenu`, wzorzec bloków dynamicznych nagłówka), FAZA 23
+P-23.1 (`FooterMenu`, analogiczny wzorzec stopki).
 
 ---
 
@@ -8895,4 +8968,4 @@ prośbę użytkownika — nie jest już samym kandydatem, patrz P-23.6 wyżej.
 świadomie odłożony); **promowany do pełnego punktu P-25.2 (FAZA 25)
 2026-08-20**, na prośbę użytkownika, wraz z ground-truth przyczyny (mechanizm
 piaskownicowanych iframe'ów bloku „Custom HTML" przy dzielonych tagach) —
-nie jest już samym kandydatem, patrz P-25.2 wyżej.
+nie jest już samym kandydatem, patrz P-25.2a/P-25.2b wyżej.
