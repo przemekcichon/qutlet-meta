@@ -8678,7 +8678,7 @@ sprawdzone `wp post get <ID> --field=post_content` + grep):
 - **Repo:** wyłącznie qutlet-theme/DB — potwierdzone przy realizacji: zero
   zmian w plikach repo (patterny już poprawne).
 
-## 🟨 FAZA 25 — Poprawki wizualne front-endu: nagłówek wyników wyszukiwania, podgląd nagłówka/stopki w edytorze (qutlet-theme)
+## 🟩 FAZA 25 — Poprawki wizualne front-endu: nagłówek wyników wyszukiwania, podgląd nagłówka/stopki w edytorze (qutlet-theme)
 
 Dwa punkty NIEZALEŻNE od siebie (żaden nie blokuje drugiego) — łączy je
 wyłącznie wspólny mianownik „drobne poprawki wizualne qutlet-theme
@@ -8764,7 +8764,7 @@ zakresu.
 - **Zależności:** FAZA 23 (P-23.4 — pierwsza realizacja `search.php`/
   `Search.php`, notatka „Do dopracowania").
 
-### 🟡 P-25.2a — Decyzja D-25.2.1: skala fixu podglądu nagłówka/stopki (qutlet-meta)
+### 🟢 P-25.2a — Decyzja D-25.2.1: skala fixu podglądu nagłówka/stopki (qutlet-meta)
 
 **Zgłoszenie:** dopisane jako kandydat 2026-08-20 (sesja P-23.4) — użytkownik
 zgłosił, że nagłówek i stopka strony wyświetlają się niepoprawnie w podglądzie
@@ -8888,7 +8888,7 @@ pusta kolumna „Sklep" straciłaby dziś zawsze-widoczny nagłówek `<h5>Sklep<
 **Repo:** wyłącznie `qutlet-meta` (ten wpis planu — decyzja + rozbicie punktu
 na pod-punkty a/b). Zero kodu.
 
-### P-25.2b — Samodzielne bloki dynamiczne dla nagłówka/stopki (qutlet-theme)
+### 🟢 P-25.2b — Samodzielne bloki dynamiczne dla nagłówka/stopki (qutlet-theme)
 
 Implementacja D-25.2.1 (lista 5 fragmentów wyżej) w `qutlet-theme`:
 `inc/features/HeaderMenu/blocks/{header-nav,header-categories-band,
