@@ -8234,6 +8234,120 @@ jako P-22.4), FAZA 8 (`content-single-product.php`, render strony produktu),
 FAZA 12 (`ClassDefinitionsTaxonomy` — wzorzec dla P-22.5), P-9.2
 (`zawartosc_zestawu_pozycje` — źródło „co w zestawie" dla P-22.4).
 
+### P-22.6 — Strona produktu: stan „sztuka sprzedana" (`_stock=0`) — port `design/vanilla/produkt-wyprzedany.html`
+
+**Zgłoszenie:** kandydat dopisany 2026-08-19 (sesja P-22.4, patrz „Materiał
+referencyjny i kandydaci" niżej) — prototyp `produkt-wyprzedany.html` istnieje
+(blok `.pd-sold` zamiast panelu zakupu, przycisk „Produkt niedostępny"
+disabled, CTA do widgetu `#ism`), ale `content-single-product.php` dziś nie
+renderuje żadnego dedykowanego wariantu dla `_stock=0`. Zależność (cel
+scrolla CTA) — P-22.4 — już zmergowana, więc punkt odblokowany.
+
+**Ground-truth (sesja planistyczna 2026-08-20, czytane z dysku:
+`content-single-product.php`, `woocommerce/single-product/add-to-cart/simple.php`,
+`style.css`, `design/vanilla/produkt-wyprzedany.html` + `css/style.css`):**
+
+*Wątek 1 — dzisiejszy render przy `_stock=0`.* `.pd-stock`
+(`content-single-product.php:300-352`) renderuje się WYŁĄCZNIE gdy
+`$product->is_in_stock()` — przy wyprzedaniu znika CAŁKOWICIE, bez
+zastępnika. `add-to-cart/simple.php:46-48`: gdy `! is_in_stock()`, drukuje
+WYŁĄCZNIE natywny `wc_get_stock_html($product)` (szablon Woo
+`single-product/stock.php`, motyw go nie nadpisuje) — goły, niestylowany
+`<p class="stock out-of-stock">…</p>`, ŻADEN przycisk (nawet disabled) się
+nie renderuje, bo natywny `<form>` jest w `if ($product->is_in_stock()):
+… endif;`. Buybar (`content-single-product.php:865`) pokazuje przycisk
+„Dodaj do koszyka" WYŁĄCZNIE gdy `is_purchasable() && is_in_stock()` — przy
+wyprzedaniu buybar ma TYLKO przycisk Allegro (jeśli `allegro_enabled`) albo
+jest pusty. CSS: `.pd-sold`/`.btn-alt`/`.btn-buy.is-disabled` NIE istnieją w
+`qutlet-theme/style.css` — żyją WYŁĄCZNIE w prototypie
+(`design/vanilla/css/style.css:701-722`), gotowe do portu 1:1.
+
+*Wątek 2 — PHP-conditional zamiast JS-removal (precedens w TYM SAMYM
+pliku).* `content-single-product.php` już dziś oblicza `$has_other_pieces`
+po stronie serwera (linia 140-141) i owija sekcję `#ism` w `if
+($has_other_pieces): … endif;` (D-22.4.4) — sekcja w ogóle się nie
+renderuje, gdy sztuk < 2. Prototyp usuwa CTA „Zobacz inne sztuki tego
+modelu" przez JS PO stronie klienta, gdy `#ism` nie istnieje w DOM — to
+obejście dla statycznego HTML-a bez backendu. W realnym renderze
+`$has_other_pieces` jest znane WCZEŚNIEJ niż cokolwiek się wyrenderuje, więc
+CTA można owinąć w PHP `if`, zero JS, zero migotania. Ten sam wniosek dla
+smooth-scrollu: sąsiedni link `.class-link` → `#jak-to-dziala` w TYM SAMYM
+pliku (linia 244) to zwykły `<a href="#jak-to-dziala">` BEZ JS-owego
+smooth-scrollu — ustalony idiom motywu dla nawigacji wewnątrz strony,
+którego prototyp (JS smooth-scroll tylko dla tego jednego CTA) nigdzie
+indziej w realnym kodzie nie ma odpowiednika.
+
+*Wątek 3 — treść `.pd-sold`.* `$condition_code` jest już w scope (linia
+60) — dokładnie ten sam wzorzec co `.pd-stock-one` (linia 302-319) używa
+dla „jedyny egzemplarz w klasie X" / fallbacku bez klasy, gdy kod pusty.
+
+*Wątek 4 — czy druga linijka komunikatu prototypu jest bezpieczna
+uniwersalnie.* `_stock` odzwierciedla `stock.available` POJEDYNCZEJ oferty
+Allegro (P-22.3, komentarz linia 121-127 tego samego pliku — model „1
+oferta = 1 produkt", D-6.7.3 odrzucona) — `_stock=0` ZAWSZE oznacza
+literalnie „ostatnia/jedyna sztuka TEJ AUKCJI została sprzedana". Fraza
+prototypu „To był pojedynczy egzemplarz w klasie A — sprzedaż zakończona."
+jest więc uniwersalnie prawdziwa dla każdego produktu w tym modelu danych,
+nie tylko dla przykładu z prototypu.
+
+*Wątek 5 — karta produktu (listing).* `ProductCard` (grep na
+`is_in_stock`/`stock_status`/„wyprzedan”/„niedostępn”) NIE ma dziś ŻADNEJ
+obsługi `_stock=0` — poza zakresem tego punktu (kandydat i prototyp
+dotyczą wyłącznie strony pojedynczego produktu).
+
+**Decyzje:**
+- **D-22.6.1 [USTALONE]:** `.pd-stock` (`content-single-product.php`)
+  dostaje gałąź `else` dla `! is_in_stock()` — renderuje `.pd-sold` (ikona +
+  „Ta sztuka została sprzedana" + druga linia z `$condition_code` albo
+  fallback bez klasy), port struktury z prototypu, dane z już policzonego
+  `$condition_code` (wątek 1, 3, 4).
+- **D-22.6.2 [USTALONE]:** `add-to-cart/simple.php`, gałąź `! is_in_stock()`
+  (dziś: goły `wc_get_stock_html()`) zastąpiona przyciskiem `<button
+  class="btn-buy is-disabled" disabled aria-disabled="true">Produkt
+  niedostępny</button>` (port 1:1 z prototypu) — `wc_get_stock_html()`
+  usunięty, bo dublowałby informację, którą `.pd-sold` już przekazuje
+  (wątek 1).
+- **D-22.6.3 [USTALONE]:** CTA „Zobacz inne sztuki tego modelu" renderowane
+  w `content-single-product.php` (ma dostęp do `$has_other_pieces`) jako
+  zwykły `<a href="#ism">` — WYŁĄCZNIE gdy `$has_other_pieces` — PHP-
+  conditional zamiast JS-owego usuwania z prototypu, bez smooth-scrollu
+  (wątek 2). Zero nowego pliku JS.
+- **D-22.6.4 [USTALONE]:** buybar dostaje analogiczną gałąź `else` —
+  disabled `<button class="btn btn-primary is-disabled" disabled
+  aria-disabled="true">Produkt niedostępny</button>` zamiast dzisiejszego
+  kompletnego braku przycisku — KLASA `.btn-primary.is-disabled` zamiast
+  inline `style` z prototypu (motyw nigdzie indziej w tym pliku nie stosuje
+  inline styles).
+- **D-22.6.5 [USTALONE]:** nowe reguły w `qutlet-theme/style.css` — port
+  1:1 `.pd-sold`/`.pd-sold-ico`/`.pd-sold-txt`/`.btn-buy.is-disabled`/
+  `.btn-alt` (+ `@keyframes btn-alt-bob`, ma już `prefers-reduced-motion`
+  guard w prototypie) z `design/vanilla/css/style.css:701-722`, plus NOWA
+  `.btn-primary.is-disabled` (nie istnieje w prototypie jako klasa —
+  prototyp użył inline style na buybarze, D-22.6.4 wymaga odpowiednika
+  klasowego; kolory 1:1 z inline stylu prototypu `#e9e7ee`/`#a9a4b3`).
+- **D-22.6.6 [USTALONE]:** brak zmian w `qutlet-core`/`qutlet-allegro`/
+  `qutlet-ai` — `_stock`/`is_in_stock()` to natywne mechanizmy WooCommerce,
+  już zasilane przez P-22.3 (qutlet-allegro). `ProductCard` (karty
+  listingowe) POZA zakresem (wątek 5) — osobny, nieporuszany temat.
+
+**Zakres:**
+- `qutlet-theme`: `content-single-product.php` (gałąź `.pd-sold` + CTA
+  warunkowe), `woocommerce/single-product/add-to-cart/simple.php` (disabled
+  button), `style.css` (port + jedna nowa klasa, D-22.6.5).
+- Weryfikacja: Playwright na produkcie z `_stock=0` — panel zakupu pokazuje
+  `.pd-sold` + disabled „Produkt niedostępny" + (gdy inne sztuki istnieją)
+  link „Zobacz inne sztuki tego modelu" do `#ism`; buybar pokazuje disabled
+  „Produkt niedostępny" zamiast pustki; produkt BEZ innych sztuk (`#ism`
+  nie istnieje) — CTA w ogóle się nie renderuje.
+- **Repo:** wyłącznie `qutlet-theme` — potwierdzone ground-truth tej sesji
+  (zero pól ACF/CPT, zero zmian pipeline'u/core/allegro/ai). Punkt
+  czysto-kodowy w JEDNYM repo, bez pracy w `qutlet-meta` poza tym wpisem
+  planu — flip 🟡 pomijamy całkowicie (wyjątek z „Realizacja punktu planu"
+  w CLAUDE.md, wzorem P-25.4/FAZA 25), flip 🟢 wchodzi normalnie po
+  merge'u; FAZA 22 (już zamknięta 🟩) tym punktem się wizualnie NIE
+  otwiera ponownie.
+- **Zależności:** P-22.4 (sekcja `#ism`, cel CTA) — już zmergowana.
+
 ---
 
 ## 🟩 FAZA 23 — Uzupełnienia front-endu: menu stopki, formularze (Gravity Forms), wyszukiwarka (Relevanssi)
@@ -9185,6 +9299,12 @@ strony do działania: sekcja `#ism` renderuje się niezależnie na stronie
 KAŻDEJ dostępnej sztuki z GTIN, patrz D-22.4.4). Zależność przy realizacji:
 P-22.4 (sekcja `#ism`, cel scrolla CTA) musi istnieć wcześniej — CTA bez
 istniejącego celu nie ma sensu.
+
+**Promowany do pełnego punktu P-22.6 (FAZA 22) 2026-08-20**, wraz z
+ground-truth wszystkich pięciu wątków (dzisiejszy render przy `_stock=0`,
+precedens PHP-conditional zamiast JS-removal, dane do treści `.pd-sold`,
+uniwersalność drugiej linijki komunikatu, brak dotknięcia karty produktu) —
+nie jest już samym kandydatem, patrz P-22.6 wyżej.
 
 **Baner `.nlband` w stopce** — był tu jako kandydat od 2026-08-19 (sesja
 P-23.3); **promowany do pełnego punktu P-23.6 (FAZA 23) 2026-08-20**, na
