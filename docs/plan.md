@@ -9106,3 +9106,12 @@ P-25.3a/P-25.3b (FAZA 25) 2026-08-20**, wraz z ground-truth obu otwartych
 pytań (kiedy/dlaczego nagłówek/stopka zaczęły się renderować w edytorze;
 czy WP-core pozwala to wyłączyć bez rezygnacji z FSE) i decyzją D-25.3.1 —
 nie jest już samym kandydatem, patrz P-25.3a/P-25.3b wyżej.
+
+**Notyfikacja „dodano do koszyka" — zmiana miejsca wyświetlania** — kandydat
+dopisany 2026-08-20 (sesja P-25.3b). Dziś komunikat po dodaniu produktu do
+koszyka renderuje się jako pasek WEWNĄTRZ treści strony (nad breadcrumbs,
+przesuwa layout w dół). Użytkownik chce docelowe miejsce jak w referencji
+zenbox.pl — floating toast w prawym dolnym rogu, nad treścią (overlay, bez
+przesuwania layoutu). Bez ground-truth (odłożone do sesji planistycznej) —
+źródło dzisiejszego komunikatu (natywny toast/notice WooCommerce Blocks czy
+własny kod `qutlet-theme`) do ustalenia przy realizacji.
