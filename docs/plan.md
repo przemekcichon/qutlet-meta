@@ -8470,7 +8470,7 @@ hierarchia względem breadcrumb/wyniku liczby trafień, ewentualnie odróżnieni
 od nagłówka archiwum kategorii/Shopu, który używa tej samej klasy
 `.page-title`).
 
-### P-23.5 — Favicona
+### 🟢 P-23.5 — Favicona
 
 **Ground-truth (sesja 2026-08-19):** prototyp ma gotowy plik
 `design/vanilla/assets/favicon.svg` (SVG, 281 B), referencjonowany w każdej
@@ -8501,6 +8501,15 @@ karty/zakładki przeglądarki.
 - **Zależności:** brak (niezależne od reszty fazy, drobny, samodzielny
   punkt).
 - **Repo:** wyłącznie qutlet-theme.
+
+**Rozstrzygnięte przy realizacji (D-23.5.1, sesja 2026-08-20, decyzja
+użytkownika):** wariant (b) — hardkodowany `<link rel="icon"
+type="image/svg+xml">` w `wp_head` (priorytet 1), nowy slice
+`inc/features/Favicon/Favicon.php` (`Favicon::boot()`), asset skopiowany do
+`assets/favicon.svg`. Zweryfikowane: PHPStan czysty, Playwright MCP na
+`loc.qutlet.pl` potwierdza `<link>` w `<head>` i `200` na pliku SVG.
+Niezależna recenzja (`docs/review.md`): 🟢 CZYSTE. Zmergowany
+qutlet-theme PR #47.
 
 ### P-23.6 — Baner newslettera w stopce
 
