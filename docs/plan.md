@@ -8234,7 +8234,7 @@ jako P-22.4), FAZA 8 (`content-single-product.php`, render strony produktu),
 FAZA 12 (`ClassDefinitionsTaxonomy` — wzorzec dla P-22.5), P-9.2
 (`zawartosc_zestawu_pozycje` — źródło „co w zestawie" dla P-22.4).
 
-### P-22.6 — Strona produktu: stan „sztuka sprzedana" (`_stock=0`) — port `design/vanilla/produkt-wyprzedany.html`
+### 🟢 P-22.6 — Strona produktu: stan „sztuka sprzedana" (`_stock=0`) — port `design/vanilla/produkt-wyprzedany.html`
 
 **Zgłoszenie:** kandydat dopisany 2026-08-19 (sesja P-22.4, patrz „Materiał
 referencyjny i kandydaci" niżej) — prototyp `produkt-wyprzedany.html` istnieje
