@@ -9051,7 +9051,7 @@ ground-truth implementacji (prawdopodobnie nowy mały slice, np.
 **Zależności:** P-25.3a (decyzja D-25.3.1 wyżej) — musi być zmergowana
 najpierw.
 
-### P-25.4 — Koszyk i Kasa: obcięta nazwa produktu / obcy opis w wierszu podsumowania
+### 🟢 P-25.4 — Koszyk i Kasa: obcięta nazwa produktu / obcy opis w wierszu podsumowania
 
 **Zgłoszenie:** dopisane jako kandydat 2026-08-20 (sesja P-25.3b) — pełna
 diagnoza z Koszyka (zweryfikowana live przez Playwright/DevTools) zapisana
