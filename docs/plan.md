@@ -8348,6 +8348,187 @@ dotyczą wyłącznie strony pojedynczego produktu).
   otwiera ponownie.
 - **Zależności:** P-22.4 (sekcja `#ism`, cel CTA) — już zmergowana.
 
+### 🟦 P-22.7 — Notyfikacja „dodano do koszyka": floating toast prawy-dół zamiast paska w treści strony
+
+**Zgłoszenie:** kandydat dopisany 2026-08-20 (sesja P-25.3b, patrz „Materiał
+referencyjny i kandydaci" niżej) — dzisiejszy komunikat po dodaniu produktu do
+koszyka renderuje się jako pasek WEWNĄTRZ treści strony (nad breadcrumbs,
+przesuwa layout w dół). Referencja użytkownika (zenbox.pl) okazała się
+niezweryfikowalna (WHMCS-owy flow konfiguracji hostingu, nie klasyczny toast
+e-commerce) — cel „floating toast w prawym dolnym rogu, overlay, bez
+przesuwania layoutu" ustalony słownie z użytkownikiem w tej sesji (patrz
+Decyzje niżej), nie 1:1 portem z referencji.
+
+**Ground-truth (sesja planistyczna 2026-08-20, czytane z dysku +
+zweryfikowane Playwright na `loc.qutlet.pl`, produkt
+`chlodzenie-wodne-cpu-silver-monkey-x-snowy-argb-360-3x120-mm-smxc025[-2]`):**
+
+*Wątek 1 — realne źródło dzisiejszego komunikatu (nie pamięć P-22.1).*
+Zweryfikowane live: to `wc-block-components-notice-banner` (blokowy wariant
+WC Blocks, NIE klasyczny `.woocommerce-message`) wewnątrz
+`.woocommerce-notices-wrapper` (`data-block-name="woocommerce/legacy-template"
+data-template="single-product"`), renderowany na `woocommerce_before_single_product`
+— DOKŁADNIE ten sam hook/miejsce w DOM co ustalił P-22.1 (jego korekta w
+tekście — „WC Core podmienia klasyczne notices na blokowy wariant dla
+KAŻDEGO motywu blokowego" — potwierdzona jako wciąż aktualna, nie
+przestarzała). Dodanie do koszyka na stronie produktu (`add-to-cart/simple.php:59`)
+to DZIŚ zwykły `<form method="post">` bez żadnego AJAX/JS — kliknięcie
+przycisku daje PEŁNE przeładowanie strony (zweryfikowane: URL/tytuł/cały DOM
+się odświeżają, nie fragment).
+
+*Wątek 2 — zero JS w qutlet-theme na add-to-cart DZIŚ, ale infrastruktura
+AJAX WooCommerce JUŻ jest enqueued.* Grep `assets/js/*.js`
+(`product-buy-tabs.js`, `product-stock-stepper.js`, `product-other-pieces.js`,
+`cart-block-filters.js` i reszta) — zero listenera na add-to-cart/`added_to_cart`.
+Mimo to strona produktu ładuje (zweryfikowane `window.jQuery`,
+`wc_add_to_cart_params`, `wc_cart_fragments_params` — wszystkie obecne) natywne
+`woocommerce/assets/js/frontend/add-to-cart.min.js` +
+`cart-fragments.min.js` — WooCommerce enqueue'uje je sitewide niezależnie od
+tego, czy motyw z nich korzysta. `AddToCartHandler` w `add-to-cart.js`
+(`assets/js/frontend/add-to-cart.js:17-27`) nasłuchuje kliknięć
+`.add_to_cart_button.ajax_add_to_cart[data-product_id]` (kształt linku z
+pętli/archiwum — NIE pasuje do naszego `<form>` z polem ilości) ORAZ, co
+kluczowe, ręcznie wyzwalanego zdarzenia jQuery `added_to_cart` na `body`
+(linia 25, `onAddedToCart` → `updateFragments`/`updateButton` — te same,
+które i tak już odświeżają mini-koszyk w headerze, patrz komentarz
+`cart-block-filters.js:409-416` o `wc_fragment_refresh`). Haczyk do
+wykorzystania: własny mały JS przechwytuje submit `#qutlet-add-to-cart-form`
+(oraz sticky buybar, który submituje TEN SAM formularz przez atrybut
+`form="qutlet-add-to-cart-form"`, `content-single-product.php:865`), POST-uje
+do `wc_add_to_cart_params.wc_ajax_url` (endpoint `add_to_cart`), a po
+sukcesie ręcznie odpala `jQuery(document.body).trigger('added_to_cart', [fragments, cart_hash, $button])`
+— natywny handler sam podmienia fragmenty (w tym mini-koszyk), zero
+duplikacji logiki (D-8.G1).
+
+*Wątek 3 — natywny fallback błędu w `WC_AJAX::add_to_cart()` (`woocommerce/includes/class-wc-ajax.php:509-561`).*
+Gdy walidacja/limit stanu zawiedzie — zaobserwowane LIVE: drugi klik „Dodaj
+do koszyka" na produkcie już w koszyku (stan=1) dał realny błąd „Nie możesz
+dodać takiej ilości do koszyka — w magazynie posiadamy 1 a w koszyku masz już
+1" — endpoint (linia 551-560) NIE zwraca fragmentów, zwraca
+`{error:true, product_url}`; natywny `add-to-cart.js` (i każdy zgodny z nim
+custom kod) na taką odpowiedź robi `window.location = response.product_url`
+— PEŁNE przeładowanie z klasycznym renderem błędu w dzisiejszym miejscu
+(Wątek 1). To natywna architektura WooCommerce (walidacja stanu żyje
+server-side, `WC_Cart::add_to_cart()`), NIE luka do obejścia — reimplementacja
+tej walidacji po stronie klienta byłaby duplikacją logiki (złamanie D-8.G1).
+**Wniosek:** „pełna konwersja AJAX" (D-22.7.1 niżej) realnie ajaxuje
+WYŁĄCZNIE ścieżkę sukcesu; ścieżka błędu zostaje pełnym przeładowaniem jak
+dziś.
+
+*Wątek 4 — czy `.woocommerce-notices-wrapper` bezpiecznie przyjmuje
+`position:fixed` bezwarunkowo, bez rozgałęzień sukces/błąd.* Zweryfikowane
+live na świeżym, „czystym" załadowaniu strony produktu (zero komunikatów):
+element ISTNIEJE ZAWSZE w DOM (`<div data-block-name="woocommerce/legacy-template"
+data-template="single-product" class="woocommerce-notices-wrapper alignwide"></div>`),
+ale PUSTY (`childCount:0`), gdy nie ma nic do wyświetlenia. `position:fixed`
+na pustym divie jest niewidoczne/nieszkodliwe — JEDNA reguła CSS bezpiecznie
+obsłuży zarówno ścieżkę sukcesu (fragment wstrzyknięty AJAX-em, Wątek 2) jak
+i ścieżkę błędu (pełne przeładowanie, ten sam wrapper/klasa, Wątek 3), bez
+warunków. Efekt uboczny (pozytywny, nie wymaga osobnej decyzji): komunikaty
+błędów też staną się floating-toastem w tym samym miejscu, nie tylko sukces
+— spójne zachowanie za darmo.
+
+*Wątek 5 — treść komunikatu sukcesu na AJAX NIE istnieje domyślnie.*
+`WC_AJAX::add_to_cart()` woła `wc_add_to_cart_message()` WYŁĄCZNIE gdy opcja
+`woocommerce_cart_redirect_after_add=yes` (linia 545-547, do zweryfikowania
+przy realizacji czy u nas ta opcja jest `no` — zakładane, bo dziś brak
+przekierowania do koszyka po dodaniu) — bez tego natywne fragmenty (`self::get_refreshed_fragments()`,
+linia 549) nie niosą TEKSTU „dodano do koszyka". Naprawa (natywne haki, zero
+core-hackingu): theme podpina się pod `do_action('woocommerce_ajax_added_to_cart', $product_id)`
+(odpala się BEZWARUNKOWO na sukces, linia 533, PRZED zbudowaniem fragmentów)
+i sam woła `wc_add_to_cart_message($product_id, true)`, kolejkując komunikat
+do sesji; DRUGI hak, `woocommerce_add_to_cart_fragments`, dorzuca fragment
+`.woocommerce-notices-wrapper` z HTML-em z `wc_print_notices()` (który i tak
+respektuje podmiankę na `wc-block-components-notice-banner`, bo
+`wp_is_block_theme()` jest `true` niezależnie od kontekstu requestu —
+`Notices::init()`, `woocommerce/src/Blocks/Domain/Services/Notices.php:44-58`)
+— zero duplikacji tekstu/i18n, w 100% natywne API WooCommerce.
+
+*Wątek 6 — design/vanilla: zero wzorca.* Grep „toast”/„notif” w całym
+`design/vanilla` (HTML/CSS/JS) — ZERO trafień, potwierdzone. Nowy wzorzec
+wizualny bez portu z prototypu — odpowiedzi na pytania zadane wprost
+użytkownikowi w tej sesji (nie zgadywane, patrz Decyzje niżej).
+
+*Wątek 7 — zachowanie przy wielu dodaniach pod rząd.* Mechanizm fragmentów
+WooCommerce z natury PODMIENIA węzeł DOM (`$(key).replaceWith(value)`,
+`add-to-cart.js:236`) — kolejny udany add-to-cart zastępuje poprzedni toast
+nowym, nie stackuje. Dodatkowo model danych „1 oferta = 1 produkt” (D-6.7.3,
+potwierdzony ponownie przy P-22.3) sprawia, że na STRONIE POJEDYNCZEGO
+PRODUKTU drugi klik tego samego przycisku prawie zawsze trafia w ścieżkę
+błędu (limit stanu wyczerpany — dokładnie to zaobserwowane live w Wątku 3),
+więc „kilka udanych dodań pod rząd tego samego produktu” jest w praktyce
+rzadkim scenariuszem; dla różnych produktów wymagałby przejścia na inną
+stronę (nowy pełny load, świeży toast). Zachowanie „replace” ustalone jako
+naturalna konsekwencja mechanizmu fragmentów, NIE osobna decyzja użytkownika
+— otwarte do rewizji przy realizacji, gdyby jednak okazało się niewystarczające.
+
+**Decyzje:**
+- **D-22.7.1 [USTALONE, decyzja użytkownika tej sesji]:** pełny zakres —
+  konwersja add-to-cart na stronie produktu na AJAX dla ŚCIEŻKI SUKCESU
+  (Wątek 2), z zachowaniem natywnego fallbacku pełnego przeładowania dla
+  ścieżki błędu (Wątek 3) — NIE samo CSS-owe przestylowanie dzisiejszego
+  statycznego (pełne-przeładowanie) renderu. Odrzucony wariant „minimalny"
+  (CSS + lekki JS na istniejącym przeładowaniu, bez zmiany mechanizmu).
+- **D-22.7.2 [USTALONE, decyzja użytkownika]:** brak auto-hide — toast znika
+  WYŁĄCZNIE przez ręczne zamknięcie (nowy przycisk „×”, JS). Odrzucony
+  wariant z timerem (4s/6s).
+- **D-22.7.3 [USTALONE, decyzja użytkownika]:** styl wizualny bazuje na
+  dzisiejszych klasach WC Blocks (`wc-block-components-notice-banner
+  is-success/is-error/is-info` — kolory/ikony już używane sitewide, spójność
+  z resztą sklepu) — CSS zmienia WYŁĄCZNIE pozycję/kształt/cień
+  (`position:fixed` prawy-dół, zaokrąglenie, `box-shadow`, szerokość
+  toastowa), NIE paletę kolorów. Odrzucony wariant nowego brandingu qutlet
+  (np. ciemne tło jak `.pd-sold`/`.btn-alt`).
+- **D-22.7.4 [USTALONE]:** nowy JS (nazwa pliku do potwierdzenia przy
+  realizacji, wzorem `assets/js/product-*.js`) przechwytuje submit
+  `#qutlet-add-to-cart-form`; POST do `wc_add_to_cart_params.wc_ajax_url`
+  (`add_to_cart`); sukces → ręcznie wyzwolone jQuery `added_to_cart` (Wątek
+  2) do natywnego podmienienia fragmentów + dodanie przycisku zamknięcia
+  (D-22.7.2); błąd (`response.error && response.product_url`) →
+  `window.location = response.product_url`, identyczne z natywnym
+  `add-to-cart.js` (Wątek 3) — theme nie duplikuje logiki WooCommerce
+  (D-8.G1).
+- **D-22.7.5 [USTALONE]:** nowe haki PHP w theme (lokalizacja —
+  `functions.php` czy nowy plik w `inc/features/...` — do ustalenia przy
+  realizacji): `woocommerce_ajax_added_to_cart` woła
+  `wc_add_to_cart_message($product_id, true)`; `woocommerce_add_to_cart_fragments`
+  dorzuca `.woocommerce-notices-wrapper` z HTML-em z `wc_print_notices()`
+  (Wątek 5) — zero duplikacji i18n/tekstu.
+- **D-22.7.6 [USTALONE]:** CSS — `.woocommerce-notices-wrapper` wypada ze
+  wspólnej reguły `max-width:1240px` (P-22.1, `style.css:186`), dostaje
+  własną regułę `position:fixed` (prawy-dół, z-index ≥100 — ponad
+  dzisiejszym maksimum 91 dla `.drawer-panel`, `style.css:1090`) + szerokość
+  toastowa (np. `min(380px, calc(100vw - 48px))`, dokładne wartości do
+  doprecyzowania przy realizacji) — JEDNA reguła obsługuje zarówno sukces
+  (fragment AJAX) jak i błąd (pełne przeładowanie), bez rozgałęzień (Wątek
+  4). Realizacja MUSI edytować regułę z P-22.1 świadomie (wydzielić
+  selektor), nie nadpisywać przypadkowo.
+- **D-22.7.7 [USTALONE]:** zero zmian w `qutlet-core`/`qutlet-allegro`/
+  `qutlet-ai` — natywne mechanizmy WooCommerce (wc-ajax, fragmenty, notices)
+  wystarczają. Punkt czysto-kodowy w JEDNYM repo (`qutlet-theme`).
+
+**Zakres:**
+- `qutlet-theme`: nowy JS (przechwycenie submitu formularza → AJAX →
+  natywne zdarzenie `added_to_cart` + przycisk „×”), nowe haki PHP
+  (komunikat + fragment notices), CSS (`.woocommerce-notices-wrapper`
+  wydzielony z reguły P-22.1, nowa reguła `position:fixed` + styl toastowy
+  na bazie klas WC Blocks).
+- Weryfikacja: Playwright na produkcie ze stanem >1 (sukces AJAX — toast bez
+  przeładowania strony, mini-koszyk w headerze aktualizuje się, przycisk „×”
+  usuwa toast) ORAZ na produkcie z wyczerpanym stanem/drugim kliknięciem tego
+  samego produktu (błąd → pełne przeładowanie, komunikat błędu jako floating
+  toast w tym samym miejscu co sukces).
+- **Repo:** wyłącznie `qutlet-theme` — potwierdzone ground-truth tej sesji
+  (zero pól ACF/CPT, zero zmian pipeline'u/core/allegro/ai, D-22.7.7). Punkt
+  czysto-kodowy w JEDNYM repo, bez pracy w `qutlet-meta` poza tym wpisem
+  planu — flip 🟡 pomijamy całkowicie (wyjątek z „Realizacja punktu planu” w
+  CLAUDE.md, wzorem P-22.6/P-25.4), flip 🟢 wchodzi normalnie po merge'u;
+  FAZA 22 (już zamknięta 🟩) tym punktem się wizualnie NIE otwiera ponownie.
+- **Zależności:** brak formalnej dla mechanizmu AJAX; fizycznie dotyka tej
+  samej reguły CSS co P-22.1 (`style.css:186`, wspólna z
+  `.woocommerce-products-header`/`.wrap`) — realizować ze świadomością tamtej
+  reguły (wydzielić selektor, nie nadpisywać przypadkowo).
+
 ---
 
 ## 🟩 FAZA 23 — Uzupełnienia front-endu: menu stopki, formularze (Gravity Forms), wyszukiwarka (Relevanssi)
@@ -9330,9 +9511,20 @@ dopisany 2026-08-20 (sesja P-25.3b). Dziś komunikat po dodaniu produktu do
 koszyka renderuje się jako pasek WEWNĄTRZ treści strony (nad breadcrumbs,
 przesuwa layout w dół). Użytkownik chce docelowe miejsce jak w referencji
 zenbox.pl — floating toast w prawym dolnym rogu, nad treścią (overlay, bez
-przesuwania layoutu). Bez ground-truth (odłożone do sesji planistycznej) —
-źródło dzisiejszego komunikatu (natywny toast/notice WooCommerce Blocks czy
-własny kod `qutlet-theme`) do ustalenia przy realizacji.
+przesuwania layoutu).
+
+**Promowany do pełnego punktu P-22.7 (FAZA 22) 2026-08-20**, wraz z
+ground-truth siedmiu wątków (realne źródło komunikatu i mechanizm pełnego
+przeładowania, dostępna-ale-niewykorzystana infrastruktura AJAX WooCommerce,
+natywny fallback błędu, bezpieczeństwo `position:fixed` na zawsze-obecnym
+wrapperze, brak natywnej treści komunikatu sukcesu na AJAX, brak wzorca w
+design/vanilla, zachowanie przy wielu dodaniach pod rząd) i decyzjami
+D-22.7.1…D-22.7.7 (w tym decyzje użytkownika: pełna konwersja AJAX zamiast
+CSS-only, brak auto-hide/tylko ręczne „×”, styl na bazie klas WC Blocks) —
+nie jest już samym kandydatem, patrz P-22.7 wyżej. Referencja zenbox.pl
+okazała się niezweryfikowalna (WHMCS-owy flow konfiguracji hostingu, nie
+klasyczny toast e-commerce) — cel ustalony słownie z użytkownikiem, nie
+portem z referencji.
 
 **Koszyk (i Kasa): obcięta nazwa produktu + „obcy" opis w wierszu
 (zaobserwowane na „Chłodzenie wodne CPU Silver Monkey X")** — kandydat
