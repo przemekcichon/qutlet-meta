@@ -8678,7 +8678,7 @@ sprawdzone `wp post get <ID> --field=post_content` + grep):
 - **Repo:** wyłącznie qutlet-theme/DB — potwierdzone przy realizacji: zero
   zmian w plikach repo (patterny już poprawne).
 
-## 🟨 FAZA 25 — Poprawki wizualne front-endu: nagłówek wyników wyszukiwania, podgląd nagłówka/stopki w edytorze (qutlet-theme)
+## 🟩 FAZA 25 — Poprawki wizualne front-endu: nagłówek wyników wyszukiwania, podgląd nagłówka/stopki w edytorze (qutlet-theme)
 
 Dwa punkty NIEZALEŻNE od siebie (żaden nie blokuje drugiego) — łączy je
 wyłącznie wspólny mianownik „drobne poprawki wizualne qutlet-theme
@@ -9021,7 +9021,7 @@ WEWNĘTRZNA spójność wizualna w edytorze przestaje mieć znaczenie.
 **Repo:** wyłącznie `qutlet-meta` (ten wpis planu — decyzja + rozbicie
 punktu na pod-punkty a/b). Zero kodu.
 
-### 🟡 P-25.3b — Domyślne `post-only` rendering mode dla page/post (qutlet-theme)
+### 🟢 P-25.3b — Domyślne `post-only` rendering mode dla page/post (qutlet-theme)
 
 Implementacja D-25.3.1: nowy hook `enqueue_block_editor_assets` w
 `qutlet-theme` rejestrujący skrypt (inline lub plik JS w `assets/js/`)
@@ -9116,24 +9116,35 @@ przesuwania layoutu). Bez ground-truth (odłożone do sesji planistycznej) —
 źródło dzisiejszego komunikatu (natywny toast/notice WooCommerce Blocks czy
 własny kod `qutlet-theme`) do ustalenia przy realizacji.
 
-**Koszyk: obcięta nazwa produktu + „obcy" opis w wierszu (zaobserwowane na
-„Chłodzenie wodne CPU Silver Monkey X")** — kandydat dopisany 2026-08-20
-(sesja P-25.3b, zdiagnozowane live przez Playwright/DevTools, nie zgadywane).
-Ten konkretny produkt (post 3810) ma niepusty `post_content` (pozostałe
-produkty w koszyku — pusty) — tekst ten zasila natywny slot WooCommerce
-Blocks `.wc-block-components-product-metadata__description` (Interactivity
-API, czyta `post_content` gdy `post_excerpt` puste), którego `qutlet-theme`
-nigdy nie stylizował (motyw jawnie układa w gridzie nazwę/tooltip/odznaki/
-cenę/ilość, ale nie ten kontener). Bez ograniczenia szerokości kontener
-opisu ląduje w kolumnie `auto` obok ceny i rozciąga ją do szerokości swojej
-treści (zmierzone: 434px), zabierając miejsce kolumnie `1fr` z nazwą (spadła
-do 104px) — stąd nazwa (mimo że sama krótka) ucina się przez regułę
-`max-width:80%` do pojedynczego słowa. Dwa osobne wątki do ustalenia przy
+**Koszyk (i Kasa): obcięta nazwa produktu + „obcy" opis w wierszu
+(zaobserwowane na „Chłodzenie wodne CPU Silver Monkey X")** — kandydat
+dopisany 2026-08-20 (sesja P-25.3b, zdiagnozowane live przez Playwright/
+DevTools na Koszyku, nie zgadywane; użytkownik potwierdza że dotyczy też
+Kasy — do zweryfikowania tam osobno przy realizacji, nie zakładać identyczne
+1:1). Ten konkretny produkt (post 3810) ma niepusty `post_content`
+(pozostałe produkty w koszyku — pusty) — tekst ten zasila natywny slot
+WooCommerce Blocks `.wc-block-components-product-metadata__description`
+(Interactivity API, czyta `post_content` gdy `post_excerpt` puste), którego
+`qutlet-theme` nigdy nie stylizował (motyw jawnie układa w gridzie nazwę/
+tooltip/odznaki/cenę/ilość, ale nie ten kontener). Bez ograniczenia
+szerokości kontener opisu ląduje w kolumnie `auto` obok ceny i rozciąga ją
+do szerokości swojej treści (zmierzone na Koszyku: 434px), zabierając
+miejsce kolumnie `1fr` z nazwą (spadła do 104px) — stąd nazwa (mimo że sama
+krótka) ucina się przez regułę `max-width:80%` do pojedynczego słowa. Kasa
+ma WŁASNY, analogiczny kontener (`.wc-block-components-order-summary-item__description`
+w podsumowaniu zamówienia, `style.css` już go częściowo stylizuje dla
+`.wc-block-components-product-name`/`.wc-block-cart-item__prices` wewnątrz)
+— prawdopodobnie ten sam wzorzec błędu (nieostylowany `__description`
+rozpychający layout), ale NIE zweryfikowane bezpośrednio — ground-truth na
+starcie realizacji musi to potwierdzić osobno na Kasie, nie kopiować
+diagnozy z Koszyka bez sprawdzenia. Trzy wątki do ustalenia przy
 realizacji: (1) czemu `post_content` tego produktu jest niepuste, skoro
 motyw renderuje opis z innych pól (import/AI? ręczna edycja?) — czy to
 oczekiwane dla części katalogu czy błąd pipeline'u; (2) jak ograniczyć/
-umiejscowić `.wc-block-components-product-metadata` w gridzie koszyka,
-żeby nie rozpychał kolumny z nazwą niezależnie od długości treści.
+umiejscowić `.wc-block-components-product-metadata` w gridzie koszyka, żeby
+nie rozpychał kolumny z nazwą niezależnie od długości treści; (3) to samo
+pytanie dla `.wc-block-components-order-summary-item__description` na
+Kasie, po potwierdzeniu że problem tam faktycznie występuje.
 
 **Kasa: link nagłówka „Wróć do zakupów" → „Wróć do koszyka"** — kandydat
 dopisany 2026-08-20 (sesja P-25.3b). Na stronie Kasy w nagłówku (dziś ten sam
