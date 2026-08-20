@@ -8678,6 +8678,177 @@ sprawdzone `wp post get <ID> --field=post_content` + grep):
 - **Repo:** wyłącznie qutlet-theme/DB — potwierdzone przy realizacji: zero
   zmian w plikach repo (patterny już poprawne).
 
+## 🟦 FAZA 25 — Poprawki wizualne front-endu: nagłówek wyników wyszukiwania, podgląd nagłówka/stopki w edytorze (qutlet-theme)
+
+Dwa punkty NIEZALEŻNE od siebie (żaden nie blokuje drugiego) — łączy je
+wyłącznie wspólny mianownik „drobne poprawki wizualne qutlet-theme
+zgłoszone/odkryte w tej samej sesji", ten sam wzorzec grupowania co FAZA 22/23.
+
+### 🟦 P-25.1 — Nagłówek strony wyników wyszukiwania
+
+**Zgłoszenie (sesja 2026-08-20):** P-23.4 zostawił notatkę „Do dopracowania"
+— nagłówek `search.php` (`.page-title` + nagłówki sekcji) reużywał czysto
+generycznej typografii bez własnego wzorca wizualnego, bo `design/vanilla`
+nie miał WTEDY żadnej strony-referencji dla wyszukiwarki. Przed tą sesją
+planistyczną w `design/vanilla` przybył nowy plik `wyniki-wyszukiwania.html`
+(prototyp) + towarzyszące zmiany w `css/style.css`, `js/app.js`, `js/data.js`,
+`js/templates.js`, `partials/header.html` (JS-demo pełnej strony wyników,
+statyczny `QT.CATALOG`/nowy `QT.POSTS`) — ta faza domyka wspomnianą notatkę.
+
+**Ground-truth (sesja 2026-08-20, `search.php` + `style.css` motywu vs
+prototyp):** struktura ogólna się zgadza (breadcrumb → `.page-head` z
+`h1.page-title` → sekcje Produkty/Wpisy blog → empty-state; sekcje reużywają
+gotowe karty `ProductCard`/`post-card`, P-8.3a/P-8.4) — zero nowych pól ACF/
+CPT, zero zmian po stronie `Search::restrict_query()`
+(`inc/features/Search/Search.php`, zawężenie `post_type` już działa,
+niezależne od tej poprawki). Różnice, wszystkie w warstwie
+prezentacji/PHP-markupu:
+1. Pod `h1` brakuje linii podsumowania (prototyp: `.search-summary`,
+   „**N wyników** — produkty i wpisy na blogu.") — dzisiejszy `search.php` nic
+   tam nie renderuje.
+2. Nagłówki sekcji („Produkty"/„Wpisy blog") dziś owinięte w
+   `.section-head-solo`/`.section-title` — klasy WSPÓŁDZIELONE z innymi
+   stronami (`woocommerce/myaccount/orders.php`,
+   `woocommerce/myaccount/my-account.php`, `patterns/home-categories.php`,
+   `inc/features/Home/blocks/featured-products/render.php`,
+   `patterns/blog-hero.php`,
+   `inc/features/Blog/blocks/related-posts/render.php`) — NIE dotykać ich
+   globalnie. Prototyp ma dedykowane, nowe klasy `.results-section`/
+   `.results-section-head` z licznikiem przy tytule (`.results-section-count`,
+   „N produktów"/„N wpisów") i linkiem „więcej" po prawej
+   (`.results-section-more`: Produkty → cała strefa okazji, Blog → cały blog).
+3. Globalny pusty stan: dziś JEDEN generyczny tekst „Brak wyników dla podanej
+   frazy" niezależnie od przyczyny. Prototyp rozróżnia DWA stany: pusta fraza
+   (`data-search-noquery`, „Wpisz, czego szukasz") vs zero wyników dla
+   niepustej frazy (`data-search-zero`, „Brak wyników dla „X"", z wstawioną
+   frazą) — realnie osiągalne, bo `.search` w headerze
+   (`parts/header.html:17`, `<form ... method="get">`) pozwala wysłać pusty
+   submit.
+4. Prototyp ma też komunikat pustej POJEDYNCZEJ sekcji (`.section-empty`, np.
+   „Brak produktów pasujących…") gdy jeden typ ma 0 wyników a drugi >0 — dziś
+   `search.php` w tej sytuacji całkiem POMIJA pustą sekcję (`if ( $has_products
+   )`/`if ( $has_posts )` owija całą `<section>`). **Rozstrzygnięte w tej
+   sesji planistycznej (D-25.1, decyzja użytkownika): zostajemy przy
+   dzisiejszym ukrywaniu pustej sekcji — `.section-empty` i ten fragment
+   prototypu ŚWIADOMIE NIE są portowane.** Świadome odejście od 1:1 prototypu
+   w tym jednym miejscu.
+
+Nowe klasy CSS w `design/vanilla/css/style.css` (diff tej sesji) bez
+odpowiednika w `style.css` motywu: `.search-summary` (+ `.search-summary b`),
+`.results-section` (+ `:first-of-type`), `.results-section-head` (+ `h2`),
+`.results-section-count`, `.results-section-more` (+ `:hover`);
+`.section-empty` istnieje w prototypie, ale (D-25.1 wyżej) NIE wchodzi do
+zakresu.
+
+**Zakres:**
+- CSS: dopisać do `style.css` motywu klasy wypisane wyżej (bez
+  `.section-empty`) — czysty port z `design/vanilla/css/style.css`, wartości
+  1:1, zero nowych decyzji wizualnych.
+- `search.php`: dodać linię `.search-summary` pod `h1` — wymaga REALNYCH
+  liczników wyników per typ (dziś kod śledzi tylko booleany
+  `$has_products`/`$has_posts`, trzeba dołożyć zliczanie w tej samej pętli/
+  `rewind_posts()`, reużywalne też dla `.results-section-count` w punkcie
+  niżej).
+- `search.php`: zamienić `.section-head-solo`/`.section-title` na
+  `.results-section`/`.results-section-head` z licznikiem i linkiem „więcej"
+  — DOKŁADNE docelowe URL-e (permalink Strefy Okazji, URL archiwum bloga) do
+  potwierdzenia w kodzie przy realizacji, NIE zgadywać z prototypu (tam to
+  statyczne `strefa-okazji.html`/`blog.html`).
+- `search.php`: rozróżnić globalny empty-state na pustą frazę vs zero wyników
+  (`empty( get_search_query() )` jako warunek) — port 1:1 z prototypu.
+- **Repo:** wyłącznie qutlet-theme (CSS + PHP markup `search.php`) — zero
+  pól ACF/CPT, potwierdzone ground-truth tej sesji. Punkt czysto-kodowy w
+  JEDNYM repo, bez pracy w `qutlet-meta` poza tym wpisem planu — flip 🟡
+  pomijamy całkowicie (wyjątek z „Realizacja punktu planu" w CLAUDE.md),
+  flip 🟢/🟩 wchodzi normalnie po merge'u.
+- **Zależności:** FAZA 23 (P-23.4 — pierwsza realizacja `search.php`/
+  `Search.php`, notatka „Do dopracowania").
+
+### 🟦 P-25.2 — Podgląd `parts/header.html`/`parts/footer.html` w edytorze Gutenberg
+
+**Zgłoszenie:** dopisane jako kandydat 2026-08-20 (sesja P-23.4) — użytkownik
+zgłosił, że nagłówek i stopka strony wyświetlają się niepoprawnie w podglądzie
+edytora blokowego (Site Editor / edytor Strony-Wpisu). Ówczesny wpis świadomie
+NIE robił ground-truth przyczyny („nie zgadywać mechanizmu, zrobić własną
+inwentaryzację") — zrobiony teraz, przy promowaniu do pełnego punktu.
+
+**Ground-truth (sesja 2026-08-20 — realna inwentaryzacja na żywej instalacji
+`loc.qutlet.pl`, Playwright MCP + odczyt DOM `iframe[name="editor-canvas"]`,
+NIE zgadywane):** przyczyna ZNALEZIONA i zweryfikowana bezpośrednio, mechanizm
+inny niż podejrzewany pierwotnie w notatce-kandydacie (JS `header-nav.js`
+niezainicjalizowany w iframe) — **zero błędów w konsoli JS**, więc to NIE
+problem inicjalizacji JS, tylko strukturalny problem DOM:
+
+1. `parts/header.html`/`parts/footer.html` dzielą POJEDYNCZE elementy HTML na
+   KILKA osobnych bloków `<!-- wp:html -->` (`core/html`, „Custom HTML"), z
+   blokami dynamicznymi (`qutlet/header-nav`, `qutlet/header-categories-band`,
+   `qutlet/header-mega-grid`, `qutlet/header-categories-mnav`,
+   `qutlet/footer-nav` ×3) wstawionymi POMIĘDZY fragmentami — np.
+   `<nav class="header-nav">` otwiera się w jednym bloku `wp:html`, a `</nav>`
+   zamyka dopiero w KOLEJNYM, osobnym bloku `wp:html`, z `qutlet/header-nav`
+   między nimi; analogicznie `<div class="mega" data-mega hidden>` otwiera się
+   w jednym fragmencie, zamyka w innym, z `qutlet/header-mega-grid` pomiędzy.
+   Ten sam wzorzec w `parts/footer.html` dla 3× `.footer-col`
+   (`qutlet/footer-nav {"menuLocation":"..."}`  pomiędzy fragmentami).
+2. Na FRONCIE to działa poprawnie: WP renderuje CAŁY szablon jako JEDEN
+   scalony ciąg HTML (`render_block()`), przeglądarka parsuje go RAZ —
+   „dzielone" tagi normalnie się domykają. **Front-end NIE jest dotknięty tym
+   problemem** (potwierdzone rozumowaniem z mechanizmu render_block, nie
+   wymaga osobnej weryfikacji — to czysto edytorska usterka).
+3. W edytorze blokowym każdy blok `core/html` renderuje swój podgląd we
+   WŁASNYM, osobnym, piaskownicowym `<iframe class="components-sandbox"
+   sandbox="allow-scripts allow-presentation" srcdoc="...">` — to STANDARDOWE,
+   wbudowane zachowanie rdzenia Gutenberga dla bloku „Custom HTML"
+   (zweryfikowane bezpośrednio: `doc.querySelectorAll('.wp-block-html')` →
+   każdy wrapper zawiera własny `<iframe>` z niezależnym `srcdoc`). Każdy
+   fragment parsowany jest jako IZOLOWANY mini-dokument — trik „dzielonego
+   tagu" nie ma jak się scalić między osobnymi iframe'ami.
+4. Potwierdzony efekt (inspekcja DOM + zrzut ekranu, Site Editor, fragment
+   szablonu `qutlet-theme//header`): przyciski koszyk/konto/hamburger
+   (otwarte `<nav class="header-nav">` w jednym fragmencie, zamknięte w
+   kolejnym, `qutlet/header-nav` pomiędzy) renderują się ROZŁĄCZNIE od
+   loga/wyszukiwarki — bez wspólnego kontekstu flex, jako pionowy stos. Panel
+   `.mega` (domyślnie `hidden`) — otwierający `<div ... hidden>` żyje w jednym
+   fragmencie, zamykający `</div>` w PÓŹNIEJSZYM — więc zawartość
+   `qutlet/header-mega-grid` renderuje się jako własny, ZAWSZE WIDOCZNY blok
+   najwyższego poziomu, POZA jakimkolwiek wrapperem `hidden` — widoczny na
+   stałe, rozwinięty pod pasem kategorii. Ten sam wzorzec potwierdzony w
+   `parts/footer.html` (4× `core/html` + 3× podgląd `qutlet/footer-nav`,
+   zgodnie z 3 punktami podziału `.footer-col`) — układ/grid kolumn stopki
+   analogicznie nie ma jak się scalić między izolowanymi iframe'ami.
+5. Kontrast potwierdzający mechanizm: same bloki dynamiczne `qutlet/*`
+   (rejestrowane w `assets/js/header-menu-blocks-editor.js`/
+   `footer-menu-blocks-editor.js`, `save: () => null`, własny `edit()` z
+   `ServerSideRender` w `useBlockProps({className:'qutlet-block-preview'})`)
+   renderują się w edytorze POPRAWNIE, inline, BEZ piaskownicy — `
+   ServerSideRender` dla prawdziwie zarejestrowanego bloku dynamicznego NIE
+   dostaje traktowania iframe'em jak „Custom HTML"; tylko dosłowne bloki
+   `core/html` je dostają.
+
+**Zakres:** realny fix wymaga przestania polegać na triku „dzielony tag między
+blokami" dla elementów, które muszą się zagnieżdżać w podglądzie edytora.
+Kierunki do rozważenia przy realizacji (NIE przesądzone tu, wymaga decyzji
+użytkownika co do skali):
+- (a) przenieść otaczający statyczny markup do WŁASNYCH bloków dynamicznych
+  (rozszerzyć już sprawdzony wzorzec `qutlet/header-nav`-podobny — każdy
+  samodzielny fragment nagłówka/stopki jako JEDEN blok dynamiczny z
+  `render.php` emitującym kompletny, samo-zagnieżdżony markup) — omija
+  piaskownicę „Custom HTML" całkowicie, zgodnie z już działającym wzorcem
+  `ServerSideRender`.
+- (b) scalić cały nagłówek/stopkę w JEDEN blok dynamiczny/render (większy
+  zakres, dotyka `HeaderNav`/`FooterMenu`/pasa kategorii/mega-grid naraz).
+- (c) świadomie zaakceptować rozjazd podglądu edytora jako znaną granicę
+  Gutenberga i NIE zmieniać kodu (front pozostaje poprawny) — potraktować
+  jako udokumentowane ograniczenie, jeśli edycja wizualna w Site Editorze nie
+  jest na tyle istotna dla użytkownika, by uzasadnić refaktor.
+  Skala realnej poprawki (od małej — odizolowanie zagnieżdżenia panelu `.mega`
+  — po dużą — przebudowa nagłówka/stopki na bloki dynamiczne) do potwierdzenia
+  z użytkownikiem na starcie realizacji.
+- **Repo:** wyłącznie qutlet-theme (rejestracja/render bloków, `parts/
+  header.html`/`parts/footer.html` = warstwa graficzna).
+- **Zależności:** FAZA 16 (`HeaderNav`, wzorzec bloków dynamicznych
+  nagłówka), FAZA 23 (P-23.1 — `FooterMenu`, analogiczny wzorzec stopki).
+
 ---
 
 ## Materiał referencyjny i kandydaci do dalszych faz
@@ -8719,17 +8890,9 @@ istniejącego celu nie ma sensu.
 P-23.3); **promowany do pełnego punktu P-23.6 (FAZA 23) 2026-08-20**, na
 prośbę użytkownika — nie jest już samym kandydatem, patrz P-23.6 wyżej.
 
-**Renderowanie `parts/header.html`/`parts/footer.html` w edytorze Gutenberg
-(Site Editor / edytor Strony-Wpisu) — kandydat dopisany 2026-08-20 (sesja
-P-23.4).** Zgłoszenie użytkownika: nagłówek i stopka strony wyświetlają się
-niepoprawnie w podglądzie edytora blokowego. **Ground-truth PRZYCZYNY NIE
-zrobiony w tej sesji** — nie zgadywać mechanizmu przy realizacji, zrobić
-własną inwentaryzację wg `docs/ground-truth.md` na starcie. Możliwe
-podejrzenie (DO ZWERYFIKOWANIA, nie zakładać z góry): bloki dynamiczne w
-`parts/header.html`/`parts/footer.html` (`qutlet/header-nav`,
-`qutlet/header-categories-band`, `qutlet/header-mega-grid` i in.) i/lub JS
-zależny od `assets/js/header-nav.js` (mega menu, dropdowny koszyk/konto,
-nawigacja mobilna — patrz komentarz w `parts/header.html`) nie
-inicjalizują się poprawnie w iframe edytora blokowego (inny kontekst
-JS/DOM niż front). Wymaga własnej sesji ground-truth przed rozpisaniem
-zakresu punktu.
+**Renderowanie `parts/header.html`/`parts/footer.html` w edytorze Gutenberg**
+— był tu jako kandydat od 2026-08-20 (sesja P-23.4, ground-truth przyczyny
+świadomie odłożony); **promowany do pełnego punktu P-25.2 (FAZA 25)
+2026-08-20**, na prośbę użytkownika, wraz z ground-truth przyczyny (mechanizm
+piaskownicowanych iframe'ów bloku „Custom HTML" przy dzielonych tagach) —
+nie jest już samym kandydatem, patrz P-25.2 wyżej.
