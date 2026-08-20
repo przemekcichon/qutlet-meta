@@ -8922,7 +8922,7 @@ header-mega-grid}/render.php` (rozszerzenie), nowy katalog
 najpierw. FAZA 16 (`HeaderMenu`, wzorzec bloków dynamicznych nagłówka), FAZA 23
 P-23.1 (`FooterMenu`, analogiczny wzorzec stopki).
 
-### 🟡 P-25.3a — Decyzja D-25.3.1: domyślne wyłączenie podglądu szablonu w edytorze Stron/Wpisów (qutlet-meta)
+### 🟢 P-25.3a — Decyzja D-25.3.1: domyślne wyłączenie podglądu szablonu w edytorze Stron/Wpisów (qutlet-meta)
 
 **Zgłoszenie:** follow-up dopisany jako kandydat 2026-08-20 (sesja P-25.2, po
 merge'u PR-ów #118/#50) — D-25.2.1/P-25.2 naprawiło potwierdzone usterki
