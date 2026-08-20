@@ -8457,6 +8457,19 @@ sesji planowania).
   warstwa graficzna, D-8.G1) — Relevanssi podpina się pod natywne query WP,
   zero potrzeby kodu w core.
 
+**Do dopracowania (dodane 2026-08-20, po pierwszej realizacji w PR
+qutlet-theme #46):** nagłówek strony wyników (`<h1 class="page-title">Wyniki
+wyszukiwania dla „X"</h1>` w `search.php`, oraz nagłówki sekcji „Produkty"/
+„Wpisy blog", `.section-title`) reużywa dziś czysto generycznej typografii
+współdzielonej z innymi stronami (`.page-title`/`.section-title`,
+`.section-head-solo`) bez własnego wzorca wizualnego — `design/vanilla` nie
+miał ŻADNEJ strony-referencji dla wyszukiwarki (ground-truth sesji
+2026-08-20), więc układ nagłówka złożono z gotowych klas, nie zaprojektowano
+celowo. Do wizualnego dopracowania po realnym review na żywo (spacing,
+hierarchia względem breadcrumb/wyniku liczby trafień, ewentualnie odróżnienie
+od nagłówka archiwum kategorii/Shopu, który używa tej samej klasy
+`.page-title`).
+
 ### P-23.5 — Favicona
 
 **Ground-truth (sesja 2026-08-19):** prototyp ma gotowy plik
@@ -8488,6 +8501,36 @@ karty/zakładki przeglądarki.
 - **Zależności:** brak (niezależne od reszty fazy, drobny, samodzielny
   punkt).
 - **Repo:** wyłącznie qutlet-theme.
+
+### P-23.6 — Baner newslettera w stopce
+
+**Ground-truth (P-23.3, sesja 2026-08-19 — promowane z „Kandydaci do dalszych
+faz" do pełnego punktu 2026-08-20, na prośbę użytkownika):** `parts/footer.html`
+ma OSOBNY, uproszczony formularz zapisu do newslettera (`.nlband-form`, tylko
+e-mail + przycisk „Dołączam", `data-nlband-form`, dziś `action="#"` —
+placeholder, D-8.G3) — jawnie NIE ten sam formularz co Strona `/newsletter/`.
+P-23.3 domknął TYLKO `/newsletter/` (Gravity Forms formularz ID 2 + dodatek
+Gravity Forms MailerLite) i świadomie zostawił baner w stopce poza zakresem
+(decyzja użytkownika w tamtej sesji).
+
+**Zakres:**
+- Podłączyć `.nlband-form` do TEGO SAMEGO mechanizmu zapisu co `/newsletter/`
+  (Gravity Forms + dodatek MailerLite, P-23.3) — e-mail wpisany w baner w
+  stopce ma zasilić TĘ SAMĄ listę/feed MailerLite, NIE tworzyć duplikat
+  osobnego zapisu (dwa niezależne miejsca zapisu do tej samej listy byłyby
+  błędem redakcyjnym, nie tylko technicznym).
+- **Otwarta decyzja [OTWARTE — potwierdzić przy realizacji, nie zgadywać]:**
+  konkretny mechanizm współdzielenia — do wyboru na realnym markupie GF/
+  MailerLite z P-23.3, np.: (a) redirect z banera na `/newsletter/` z
+  parametrem prewypełniającym pole e-mail GF, (b) osobny (mini) formularz GF
+  osadzony bezpośrednio w `parts/footer.html` z tym samym feedem MailerLite,
+  (c) inny mechanizm ujawniony przy realizacji. Żadna opcja nie jest
+  rekomendowana z góry — zależy od tego, co realnie wspiera zainstalowany
+  dodatek MailerLite.
+- **Zależności:** P-23.3 (formularz `/newsletter/`, Gravity Forms + dodatek
+  MailerLite już skonfigurowane i działające).
+- **Repo:** qutlet-theme (CSS/wiring `.nlband-form`) + ewentualny
+  config MailerLite poza repo, zależnie od wybranego mechanizmu.
 
 **Zależności (całej fazy):** FAZA 8 (`parts/header.html`, `parts/footer.html`,
 `page-kontakt.php`/`page-newsletter.php`, D-8.G1/D-8.G3, P-8.3a `ProductCard`),
@@ -8645,15 +8688,21 @@ KAŻDEJ dostępnej sztuki z GTIN, patrz D-22.4.4). Zależność przy realizacji:
 P-22.4 (sekcja `#ism`, cel scrolla CTA) musi istnieć wcześniej — CTA bez
 istniejącego celu nie ma sensu.
 
-**Baner `.nlband` w stopce (`parts/footer.html`, osobny uproszczony
-formularz zapisu do newslettera) — kandydat dopisany 2026-08-19 (sesja
-P-23.3).** P-23.3 domknął formularz zapisu na stronie `/newsletter/`
-(Gravity Forms, formularz ID 2) i świadomie zostawił `.nlband`
-POZA zakresem (decyzja użytkownika w tamtej sesji) — `.nlband-form` w
-`parts/footer.html` zostaje jako dotychczasowy placeholder
-(`action="#"`/`data-nlband-form`, D-8.G3). Ustalenie do wzięcia pod uwagę
-przy realizacji tego kandydata: e-mail wpisany w baner ma **przekazać się
-do/zasilić TEN SAM formularz `/newsletter/`** (np. redirect z parametrem
-prewypełniającym pole e-mail GF, albo współdzielony feed MailerLite), NIE
-tworzyć duplikat osobnego zapisu — inaczej dwa niezależne miejsca zapisu do
-tej samej listy.
+**Baner `.nlband` w stopce** — był tu jako kandydat od 2026-08-19 (sesja
+P-23.3); **promowany do pełnego punktu P-23.6 (FAZA 23) 2026-08-20**, na
+prośbę użytkownika — nie jest już samym kandydatem, patrz P-23.6 wyżej.
+
+**Renderowanie `parts/header.html`/`parts/footer.html` w edytorze Gutenberg
+(Site Editor / edytor Strony-Wpisu) — kandydat dopisany 2026-08-20 (sesja
+P-23.4).** Zgłoszenie użytkownika: nagłówek i stopka strony wyświetlają się
+niepoprawnie w podglądzie edytora blokowego. **Ground-truth PRZYCZYNY NIE
+zrobiony w tej sesji** — nie zgadywać mechanizmu przy realizacji, zrobić
+własną inwentaryzację wg `docs/ground-truth.md` na starcie. Możliwe
+podejrzenie (DO ZWERYFIKOWANIA, nie zakładać z góry): bloki dynamiczne w
+`parts/header.html`/`parts/footer.html` (`qutlet/header-nav`,
+`qutlet/header-categories-band`, `qutlet/header-mega-grid` i in.) i/lub JS
+zależny od `assets/js/header-nav.js` (mega menu, dropdowny koszyk/konto,
+nawigacja mobilna — patrz komentarz w `parts/header.html`) nie
+inicjalizują się poprawnie w iframe edytora blokowego (inny kontekst
+JS/DOM niż front). Wymaga własnej sesji ground-truth przed rozpisaniem
+zakresu punktu.
