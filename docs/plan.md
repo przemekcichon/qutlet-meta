@@ -8405,7 +8405,7 @@ i że domknięcie obu naraz jest poza zakresem P-8.5.
   zainstalowany) — inaczej niezależne od siebie.
 - **Repo:** qutlet-theme (CSS) + config/handoff poza repo (w tym MailerLite).
 
-### P-23.4 — Wyszukiwarka (Relevanssi, wersja darmowa)
+### 🟢 P-23.4 — Wyszukiwarka (Relevanssi, wersja darmowa)
 
 **Ground-truth (sesja 2026-08-19):** pole wyszukiwania w nagłówku
 (`parts/header.html`, `.search`, `<input type="search" placeholder="Szukaj:
