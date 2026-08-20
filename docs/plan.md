@@ -8678,7 +8678,7 @@ sprawdzone `wp post get <ID> --field=post_content` + grep):
 - **Repo:** wyłącznie qutlet-theme/DB — potwierdzone przy realizacji: zero
   zmian w plikach repo (patterny już poprawne).
 
-## 🟩 FAZA 25 — Poprawki wizualne front-endu: nagłówek wyników wyszukiwania, podgląd nagłówka/stopki w edytorze (qutlet-theme)
+## 🟨 FAZA 25 — Poprawki wizualne front-endu: nagłówek wyników wyszukiwania, podgląd nagłówka/stopki w edytorze (qutlet-theme)
 
 Dwa punkty NIEZALEŻNE od siebie (żaden nie blokuje drugiego) — łączy je
 wyłącznie wspólny mianownik „drobne poprawki wizualne qutlet-theme
@@ -8922,6 +8922,135 @@ header-mega-grid}/render.php` (rozszerzenie), nowy katalog
 najpierw. FAZA 16 (`HeaderMenu`, wzorzec bloków dynamicznych nagłówka), FAZA 23
 P-23.1 (`FooterMenu`, analogiczny wzorzec stopki).
 
+### 🟡 P-25.3a — Decyzja D-25.3.1: domyślne wyłączenie podglądu szablonu w edytorze Stron/Wpisów (qutlet-meta)
+
+**Zgłoszenie:** follow-up dopisany jako kandydat 2026-08-20 (sesja P-25.2, po
+merge'u PR-ów #118/#50) — D-25.2.1/P-25.2 naprawiło potwierdzone usterki
+STRUKTURALNE podglądu (rozerwane elementy, panel `.mega`/mobilne menu zawsze
+widoczne zamiast `hidden`), ale użytkownik zasygnalizował wątpliwość, czy sam
+FAKT renderowania nagłówka/stopki w edytorze treści Strony/Wpisu jest w ogóle
+pożądany — nie pamiętał, kiedy/dlaczego zaczęło się to dziać, wspominając że
+„wcześniej wyglądały dobrze". Ground-truth zrobiony teraz, przy promowaniu do
+pełnego punktu.
+
+**Ground-truth (a) — kiedy/dlaczego `parts/header.html`/`parts/footer.html`
+zaczęły renderować się w edytorze Strony/Wpisu (sesja 2026-08-20, `git log`
+w `qutlet-theme`, NIE zgadywane):**
+1. To NIE „zawsze tak działało" ani skutek jednej ukrytej zmiany do cofnięcia
+   — to natywne zachowanie WP Full Site Editing dla motywów blokowych: gdy
+   Strona/Wpis rozwiązuje się do szablonu blokowego zawierającego
+   `wp:template-part` dla nagłówka/stopki, edytor renderuje CAŁY rozwiązany
+   szablon w iframe dla dokładności WYSIWYG — utwardzone jeszcze bardziej
+   zmianą Gutenberga „post editor: always iframe" scaloną dla WP 7.1 (dokładnie
+   wersja tej instalacji — `wp core version` → `7.1`, zweryfikowane).
+2. Konkretna przyczyna dla 7 Stron z klasycznym PHP (`regulamin`, `kontakt`,
+   `jak-to-dziala`, `newsletter`, `pomoc`, `polityka-prywatnosci`,
+   `polityka-cookies`): commit `73c82b0` (`qutlet-theme`, 2026-08-02) —
+   „fix(theme): add templates/page.html so the block editor can show Page
+   content". PRZED tym commitem te Strony w edytorze pokazywały „Brak treści
+   do wyświetlenia" (fallback do `templates/index.html`, Query Loop bez
+   wyników) — nie „ładny podgląd bez nagłówka/stopki", tylko PUSTY canvas.
+   Fix świadomie dodał `templates/page.html` (`wp:template-part {"slug":
+   "header"}` + `wp:post-content` + `wp:template-part {"slug":"footer"}`)
+   właśnie po to, żeby w edytorze pojawił się realny kontekst treści —
+   zweryfikowane wtedy (commit message), że front-end tych 7 Stron renderuje
+   się przez klasyczne pliki `page-{slug}.php`, NIE przez `templates/page.html`
+   (`locate_block_template()` obcina kandydatów blokowych do specyficzności
+   PHP-matcha, `wp-includes/block-template.php:79-90`) — `templates/page.html`
+   był więc pomyślany jako „tylko dla edytora" dla TYCH 7 Stron. Wniosek:
+   „wcześniej wyglądały dobrze" nie jest ścisłe — przed fixem te Strony w
+   edytorze nie pokazywały NIC, nie ładny podgląd.
+3. Wyjątek potwierdzony ground-truth tej sesji (`wp post list --post_type=page`):
+   3 Strony (`refund_returns`, `privacy-policy` — domyślne strony prawne
+   WooCommerce, `sample-page` — domyślna próbka WP) NIE MAJĄ ani klasycznego
+   PHP, ani dedykowanego szablonu blokowego — realnie renderują się przez
+   `templates/page.html` RÓWNIEŻ na froncie (prawdopodobnie nieużywane w
+   praktyce, ale realnie istniejące). `templates/page.html` NIE jest więc
+   czysto „tylko-edytorski" — usunięcie z niego nagłówka/stopki zmieniłoby
+   front tych 3 Stron.
+4. Blog (`templates/single.html`, dodany `870bd28`/P-11.3) i
+   front-page/archiwa produktowe/koszyk/kasa/moje-konto — tam nagłówek/stopka
+   w edytorze są zgodne z rzeczywistym frontem (realne szablony blokowe
+   używane też na produkcji), więc podgląd tam jest poprawnym WYSIWYG, nie
+   artefaktem.
+
+**Ground-truth (b) — czy WP-core/Gutenberg pozwala wyłączyć podgląd
+nagłówka/stopki przy edycji treści bez wyłączania FSE całościowo
+(zweryfikowane NA ŻYWO na `loc.qutlet.pl`, WP 7.1, Playwright MCP — NIE z
+pamięci/dokumentacji ogólnej):** TAK — istnieje natywny, oficjalny mechanizm:
+- Ścieżka UI: edytor Strony/Wpisu → panel boczny „Strona" → wiersz „Szablon"
+  → przycisk „Opcje szablonu" → checkbox **„Wyświetl szablon"** („Show
+  template").
+- Odznaczenie natychmiast usuwa Header/Footer z canvasu ORAZ z Widoku listy —
+  canvas pokazuje WYŁĄCZNIE treść wpisu/strony (zweryfikowane zrzutami ekranu,
+  Strona „Regulamin" id 21).
+- Przetrwa pełne przeładowanie strony (nie efemeryczny stan JS) — potwierdzone.
+- Ustawienie PER-UŻYTKOWNIK (potwierdzone: przełączone na Stronie 21
+  obowiązywało też przy otwarciu zupełnie innej Strony „Kontakt" id 19, dla
+  tego samego użytkownika) — NIE per-post, NIE site-wide.
+- Front-end BEZ ŻADNEGO wpływu — to czysto klient-side preferencja edytora.
+- Mechanizm pod spodem (zweryfikowany bezpośrednim odczytem
+  `wp_usermeta.wp_persisted_preferences` po przełączeniu w UI): klucz
+  `core.renderingModes.<theme-slug>.<post-type>`, wartość `"template-locked"`
+  (widoczny, domyślny stan) vs `"post-only"` (ukryty) — np.
+  `{"core":{"renderingModes":{"qutlet-theme":{"page":"template-locked"}}}}`.
+- Oficjalne, publiczne API pakietu `@wordpress/preferences`
+  (`wp.data.dispatch('core/preferences').setDefaults(scope, defaults)`)
+  pozwala nadpisać WARTOŚĆ DOMYŚLNĄ tej preferencji dla użytkowników, którzy
+  jeszcze jej sami nie ustawili — to ścieżka techniczna do D-25.3.1 niżej.
+
+**D-25.3.1 (decyzja użytkownika, sesja 2026-08-20) [USTALONE]:** wybrany
+kierunek — wymusić `post-only` (ukryty podgląd szablonu) jako WARTOŚĆ
+DOMYŚLNĄ dla WSZYSTKICH użytkowników edytujących typy `page`/`post` w
+motywie `qutlet-theme`, przez mały skrypt JS
+(`wp.data.dispatch('core/preferences').setDefaults('core', { renderingModes:
+{ 'qutlet-theme': { page: 'post-only', post: 'post-only' } } })`)
+zarejestrowany hookiem `enqueue_block_editor_assets` w `qutlet-theme`.
+Odrzucone:
+(a) zostawić jak jest — usterki strukturalne już naprawione, ale użytkownik
+uznał sam FAKT nagłówka/stopki w edytorze treści za niepożądany szum,
+niezależnie od jakości ich renderu;
+(b) tylko udokumentować ręczny toggle per-użytkownik — zero kodu, ale nie
+rozwiązuje domyślnego doświadczenia nowych/pozostałych redaktorów bez ręcznej
+czynności;
+(c) większy refaktor bloków dla pełnej zgodności wizualnej W EDYTORZE (dawna
+opcja (b) z D-25.2.1) — odrzucona ponownie, teraz jest zbędna: skoro
+nagłówek/stopka mają być całkowicie ukryte podczas edycji treści, ich
+WEWNĘTRZNA spójność wizualna w edytorze przestaje mieć znaczenie.
+
+**Repo:** wyłącznie `qutlet-meta` (ten wpis planu — decyzja + rozbicie
+punktu na pod-punkty a/b). Zero kodu.
+
+### 🟡 P-25.3b — Domyślne `post-only` rendering mode dla page/post (qutlet-theme)
+
+Implementacja D-25.3.1: nowy hook `enqueue_block_editor_assets` w
+`qutlet-theme` rejestrujący skrypt (inline lub plik JS w `assets/js/`)
+wywołujący `wp.data.dispatch('core/preferences').setDefaults('core',
+{ renderingModes: { 'qutlet-theme': { page: 'post-only', post: 'post-only' }
+} })`. Umiejscowienie w strukturze slice'ów motywu — do ustalenia w
+ground-truth implementacji (prawdopodobnie nowy mały slice, np.
+`inc/features/EditorPreferences/`, spójnie z resztą `inc/features/`).
+
+**Weryfikacja przy realizacji (OBOWIĄZKOWA):**
+- Użytkownik BEZ wcześniej zapisanej preferencji (świeże konto/wyczyszczone
+  `wp_persisted_preferences`) otwierający edytor Strony/Wpisu widzi OD RAZU
+  tylko treść, bez ręcznego przełączania „Wyświetl szablon".
+- Użytkownik z JUŻ zapisaną preferencją `template-locked` (świadomy wcześniejszy
+  wybór, np. redaktor, który chce widzieć kontekst) NIE jest nadpisywany
+  wstecznie — `setDefaults` z definicji ustawia tylko wartość domyślną, nie
+  narusza zapisanych wartości użytkownika; potwierdzić bezpośrednio (nie
+  zakładać z góry), np. przez odczyt `wp_usermeta` przed/po dla obu
+  przypadków.
+- Front-end bez zmian (mechanizm czysto edytorski, zero wpływu na
+  `render_block()`/`get_query_template()`).
+- Dotyczy WYŁĄCZNIE typów `page`/`post` w motywie `qutlet-theme` — Site Editor
+  (edycja samych szablonów/`parts/header.html` wprost) NIE jest tym punktem
+  dotknięty (tam podgląd nagłówka/stopki jest pożądany, to kontekst pracy).
+- PHPStan na `qutlet-theme` bez nowych błędów.
+
+**Zależności:** P-25.3a (decyzja D-25.3.1 wyżej) — musi być zmergowana
+najpierw.
+
 ---
 
 ## Materiał referencyjny i kandydaci do dalszych faz
@@ -8971,36 +9100,9 @@ piaskownicowanych iframe'ów bloku „Custom HTML" przy dzielonych tagach) —
 nie jest już samym kandydatem, patrz P-25.2a/P-25.2b wyżej.
 
 **Podgląd nagłówka/stopki w edytorze — czy w ogóle powinien się tam
-renderować? (follow-up P-25.2)** — kandydat dopisany 2026-08-20 (sesja
-P-25.2, po merge'u obu PR-ów #118/#50). D-25.2.1/P-25.2 naprawiło
-POTWIERDZONE usterki STRUKTURALNE podglądu (rozerwane elementy —
-koszyk/konto/hamburger wypadające poza `<nav>`; panel `.mega`/mobilne menu
-renderujące się jako trwale widoczne zamiast `hidden`) — zweryfikowane
-Playwrightem, zmergowane, niezależna recenzja 🟢 CZYSTE. Użytkownik, patrząc
-na wynik (bloki nagłówka/stopki nadal układają się w edytorze PIONOWO, jako
-osobne fragmenty listy bloków, zamiast jednego spójnego poziomego paska jak
-na froncie — to ZNANE, zaakceptowane ograniczenie Site Editora przy
-podziale treści na wiele bloków/fragmentów `core/html`, NIE regresja tej
-sesji), zasygnalizował wątpliwość, czy to wystarczający stan „dokończenia"
-tematu. BEZ decyzji — trzy otwarte kierunki, wymagają ground-truth i wyboru
-w osobnej sesji:
-1. Zostawić jak jest — usterki strukturalne naprawione i zweryfikowane,
-   wizualny rozjazd MIĘDZY blokami (nie WEWNĄTRZ nich) to zaakceptowana
-   granica edytora; temat faktycznie zamknięty, bez dalszego kodu.
-2. Większy refaktor: scalić nagłówek/stopkę w mniejszą liczbę większych
-   bloków dynamicznych dla pełnej zgodności wizualnej z frontem W EDYTORZE
-   (to dokładnie odrzucona przy D-25.2.1 opcja (b) — użytkownik otwarcie
-   rozważa ją ponownie, świadomie większy zakres/ryzyko).
-3. Zbadać usunięcie `parts/header.html`/`parts/footer.html` z podglądu przy
-   edycji Stron/Wpisów całkowicie — użytkownik nie pamięta, kiedy/dlaczego
-   zaczęły się tam w ogóle renderować, i wspomina, że „wcześniej wyglądały
-   dobrze" (prawdopodobnie ZANIM FAZA 16/23 wprowadziły bloki dynamiczne
-   dzielące statyczny markup na fragmenty `core/html` — do potwierdzenia w
-   historii/ground-truth, NIE zgadywać). Wymaga zbadania: czy to w ogóle
-   sterowalne per-szablon w Gutenbergu/Site Editorze (np. wyłączenie
-   podglądu pełnego szablonu przy edycji treści Strony/Wpisu), jakie są
-   realne konsekwencje (utrata wizualnego kontekstu nagłówka/stopki przy
-   edycji treści) — zbadać jak działa DZIŚ i jakie opcje daje real
-   WP-core/Gutenberg, nie zakładać z góry wykonalności.
-**Zależności:** P-25.2a/P-25.2b (zmergowane — kontekst/przyczyna, na których
-się opiera ground-truth tego follow-upu).
+renderować? (follow-up P-25.2)** — był tu jako kandydat od 2026-08-20 (sesja
+P-25.2, po merge'u PR-ów #118/#50); **promowany do pełnego punktu
+P-25.3a/P-25.3b (FAZA 25) 2026-08-20**, wraz z ground-truth obu otwartych
+pytań (kiedy/dlaczego nagłówek/stopka zaczęły się renderować w edytorze;
+czy WP-core pozwala to wyłączyć bez rezygnacji z FSE) i decyzją D-25.3.1 —
+nie jest już samym kandydatem, patrz P-25.3a/P-25.3b wyżej.
