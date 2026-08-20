@@ -9134,3 +9134,10 @@ motyw renderuje opis z innych pól (import/AI? ręczna edycja?) — czy to
 oczekiwane dla części katalogu czy błąd pipeline'u; (2) jak ograniczyć/
 umiejscowić `.wc-block-components-product-metadata` w gridzie koszyka,
 żeby nie rozpychał kolumny z nazwą niezależnie od długości treści.
+
+**Kasa: link nagłówka „Wróć do zakupów" → „Wróć do koszyka"** — kandydat
+dopisany 2026-08-20 (sesja P-25.3b). Na stronie Kasy w nagłówku (dziś ten sam
+link/etykieta co na Koszyku — „Wróć do zakupów") ma być własny tekst „Wróć do
+koszyka" i przekierowanie do `/koszyk/`, zamiast do listy produktów. Strona
+Koszyka zostaje bez zmian (nadal „Wróć do zakupów"). Bez ground-truth
+(odłożone do sesji planistycznej).
