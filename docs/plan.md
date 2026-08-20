@@ -8236,7 +8236,7 @@ FAZA 12 (`ClassDefinitionsTaxonomy` — wzorzec dla P-22.5), P-9.2
 
 ---
 
-## 🟨 FAZA 23 — Uzupełnienia front-endu: menu stopki, formularze (Gravity Forms), wyszukiwarka (Relevanssi)
+## 🟩 FAZA 23 — Uzupełnienia front-endu: menu stopki, formularze (Gravity Forms), wyszukiwarka (Relevanssi)
 
 **Zgłoszenie (sesja 2026-08-19):** pięć niedokończonych/unwired elementów
 front-endu, większość już dziś widoczna w markupie jako świadomy placeholder
@@ -8511,7 +8511,7 @@ type="image/svg+xml">` w `wp_head` (priorytet 1), nowy slice
 Niezależna recenzja (`docs/review.md`): 🟢 CZYSTE. Zmergowany
 qutlet-theme PR #47.
 
-### P-23.6 — Baner newslettera w stopce
+### 🟢 P-23.6 — Baner newslettera w stopce
 
 **Ground-truth (P-23.3, sesja 2026-08-19 — promowane z „Kandydaci do dalszych
 faz" do pełnego punktu 2026-08-20, na prośbę użytkownika):** `parts/footer.html`
@@ -8540,6 +8540,24 @@ Gravity Forms MailerLite) i świadomie zostawił baner w stopce poza zakresem
   MailerLite już skonfigurowane i działające).
 - **Repo:** qutlet-theme (CSS/wiring `.nlband-form`) + ewentualny
   config MailerLite poza repo, zależnie od wybranego mechanizmu.
+
+**Rozstrzygnięte przy realizacji (sesja 2026-08-20, decyzja użytkownika):**
+wariant (a) — `.nlband-form` (`parts/footer.html` i bliźniaczy pattern
+`hero-newsletter-band.php`, ten sam komponent) zostaje zwykłym formularzem
+GET, `action="#"` → `action="/newsletter/"`, `name="email"` bez zmian —
+submit przekierowuje na `/newsletter/?email=…`, bez żadnej logiki JS ani
+własnego zapisu. Ground-truth `wp gf form get 2` przed zmianą: pole „Adres
+e-mail" (id 1) formularza GF ID 2 miało `allowsPrepopulate` nieustawione
+(domyślnie wyłączone). Włączone w DB (`wp gf form update 2 --file=…`,
+poza repo): `"allowsPrepopulate":true,"inputName":"email"` — natywny
+mechanizm GF czyta `?email=…` bez dodatkowego kodu. Zweryfikowane
+end-to-end (Playwright MCP, `loc.qutlet.pl`): wpisanie maila w baner w
+stopce → submit → `/newsletter/?email=…` → pole GF prewypełnione tą
+wartością; baner pozostaje ukryty na `/newsletter/` (`body.qt-hide-nlband`),
+więc widoczny jest tylko jeden, już wypełniony formularz — zero duplikatu
+zapisu do MailerLite. PHPStan czysty. Niezależna recenzja (`docs/review.md`):
+🟢 CZYSTE (własna weryfikacja DB + Playwright + PHPStan, nie na słowo
+wykonawcy). Zmergowany qutlet-theme PR #48.
 
 **Zależności (całej fazy):** FAZA 8 (`parts/header.html`, `parts/footer.html`,
 `page-kontakt.php`/`page-newsletter.php`, D-8.G1/D-8.G3, P-8.3a `ProductCard`),
