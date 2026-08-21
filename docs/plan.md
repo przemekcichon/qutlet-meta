@@ -10046,3 +10046,24 @@ konkretnego commita (przeszukać historię `ProductFilters.php`/
 taksonomia kategorii w tym widoku), i czy problem jest tylko wizualny czy
 sięga też do `ProductFilterQuery` (brakujący filtr = brak możliwości
 zawężenia po kategorii, nie tylko brak UI).
+
+**Komunikat „brak wyników" (filtr/kategoria bez produktów) rozciągnięty na
+całą szerokość ekranu** — kandydat dopisany 2026-08-21, zgłoszenie
+użytkownika ze zrzutem ekranu (widok kategorii „Komputery": pasek „Nie
+znaleziono produktów, których szukasz." pełną szerokością strony, wizualnie
+niespójny z resztą layoutu — np. sekcją newslettera niżej).
+
+**Ground-truth (potwierdzone w tej sesji, kod na dysku):** WooCommerce
+renderuje ten komunikat przez domyślny szablon
+`woocommerce/templates/loop/no-products-found.php`
+(`<div class="woocommerce-no-products-found">`, klasa `.woocommerce-info`) —
+`qutlet-theme` GO NIE NADPISUJE (brak `woocommerce/loop/no-products-found.php`
+w motywie) i nie ma żadnego CSS celującego w `.woocommerce-no-products-found`
+ani `.woocommerce-info` — stąd surowy, niestylowany wygląd WooCommerce.
+
+Użytkownik przygotuje osobno projekt graficzny w Claude Design (`design/vanilla`)
+— realizacja czeka na ten prototyp jako źródło prawdy dla wyglądu (analogicznie
+do reszty frontu). Do ustalenia przy najbliższej sesji planistycznej: czy to
+nadpisanie szablonu (`woocommerce/loop/no-products-found.php` w motywie) czy
+tylko CSS na istniejącym markupie, i czy komunikat ma się różnić między
+„brak wyników filtra" a „pusta kategoria" (dziś ten sam tekst dla obu).
