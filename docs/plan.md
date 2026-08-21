@@ -8975,7 +8975,7 @@ sprawdzone `wp post get <ID> --field=post_content` + grep):
 
 ## 🟩 FAZA 25 — Poprawki wizualne front-endu: nagłówek wyników wyszukiwania, podgląd nagłówka/stopki w edytorze (qutlet-theme)
 
-Trzy punkty NIEZALEŻNE od siebie (żaden nie blokuje drugiego) — łączy je
+Pięć punktów NIEZALEŻNYCH od siebie (żaden nie blokuje drugiego) — łączy je
 wyłącznie wspólny mianownik „drobne poprawki wizualne qutlet-theme
 zgłoszone/odkryte w tej samej sesji", ten sam wzorzec grupowania co FAZA 22/23.
 
@@ -9444,6 +9444,102 @@ N szt.</small>` + cena — zero pola opisu, tak samo jak w Koszyku.
   wchodzi normalnie po merge'u.
 - **Zależności:** brak (niezależny od P-25.1/P-25.2/P-25.3).
 
+### 🟦 P-25.5 — Kasa: link nagłówka „Wróć do koszyka" zamiast wspólnego „Kontynuuj zakupy"
+
+**Zgłoszenie:** kandydat dopisany 2026-08-20 (sesja P-25.3b) — na stronie Kasy
+w nagłówku (dziś ten sam link/etykieta co na Koszyku) ma być własny tekst
+„Wróć do koszyka" i przekierowanie do `/koszyk/`, zamiast do listy produktów.
+Strona Koszyka zostaje bez zmian.
+
+**Ground-truth (sesja planistyczna 2026-08-21, czytane z dysku:
+`qutlet-theme/parts/header-cart.html`, `templates/page-cart.html`,
+`templates/page-checkout.html`, `theme.json`, `style.css`,
+`inc/features/Cart/Cart.php`, `CartBlocksIntegration.php`,
+`inc/features/Checkout/Checkout.php`, `CheckoutBlocksIntegration.php`,
+WooCommerce core `woocommerce/templates/checkout/cart-errors.php`,
+`design/vanilla/koszyk.html`, `design/vanilla/kasa.html`):**
+
+*Wątek 1 — realne źródło dzisiejszego linku, korekta literału względem
+zgłoszenia.* Link „powrotu" w minimalnym nagłówku Koszyka/Kasy to WYŁĄCZNIE
+statyczny markup w `parts/header-cart.html:14-24` (`<!-- wp:html -->`, zero
+PHP/bloku dynamicznego) — NIE WooCommerce Blocks. Dzisiejszy literał to
+`Kontynuuj zakupy` (nie „Wróć do zakupów", jak podawało zgłoszenie kandydata
+— sama treść/intencja zgłoszenia bez zmian, chodzi o TEN SAM, jedyny link
+„powrotu" w nagłówku), `href="/"`, strzałka SVG w lewo, klasy `continue-link
+header-back-link` (`.continue-link.header-back-link{margin-top:0;margin-left:auto}`,
+`style.css:270`, bazowy wygląd dziedziczy z `.continue-link`, `style.css:2360`,
+port `design/vanilla/css/style.css:464`). Grep po `is_checkout()`/`is_cart()`/
+`header-cart` w `functions.php` i całym `inc/` — zero trafień: żaden PHP nie
+różnicuje dziś treści per strona.
+
+*Wątek 2 — to JEDEN współdzielony komponent, nie dwa niezależne.*
+`theme.json:82` rejestruje JEDEN slug `header-cart` („Header — koszyk
+(minimalny)"). `templates/page-cart.html:1` i `templates/page-checkout.html:1`
+referencują go IDENTYCZNIE (`<!-- wp:template-part
+{"slug":"header-cart","tagName":"header"} /-->`). Komentarz w samym
+`header-cart.html:3-12` dokumentuje to jako ŚWIADOMĄ decyzję z P-8.6b:
+„Reużyty bez zmian w `templates/page-checkout.html` (P-8.6b) — ta sama »bez
+rozpraszaczy« logika dotyczy kasy identycznie jak koszyka" — potwierdza
+dosłownie założenie zgłoszenia „dziś ten sam link/etykieta co na Koszyku".
+
+*Wątek 3 — brak natywnego filtra/hooka, bo nie ma czego filtrować.* FSE
+template part to czysty deklaratywny HTML (CLAUDE.md → „Architektura:
+vertical slice" — powierzchnia deklaratywna motywu, „bez zagnieżdżania") —
+nie istnieje mechanizm WP-core do warunkowania jego treści per-strona z
+poziomu samego pliku `.html`. Potwierdzone też negatywnie: `Cart.php`/
+`CartBlocksIntegration.php`/`Checkout.php`/`CheckoutBlocksIntegration.php`
+(jedyne miejsca, gdzie motyw dziś hookuje się w render Cart/Checkout Blocks)
+nie zawierają ANI JEDNEGO odwołania do `header-cart`/tego linku — cała
+istniejąca logika PHP tych slice'ów dotyczy Store API (`qutlet-klasa`) i
+tekstu potwierdzenia zamówienia, zero styku z nagłówkiem. Rozróżnienie treści
+per-strona wymaga więc DRUGIEGO pliku template-part (nowy slug), nie warunku
+w istniejącym — czysto deklaratywna operacja, zero nowego PHP.
+
+*Wątek 4 — brak wzorca w prototypie.* `design/vanilla/kasa.html` nie ma
+ŻADNEGO odpowiednika tego linku (grep: zero trafień na `continue-link`/
+„Kontynuuj zakupy"/„Wróć do koszyka"/`header-cart`) — w przeciwieństwie do
+większości innych punktów planu, ten nie jest portem z `design/vanilla`,
+tylko zmianą wyłącznie na realnej instalacji, na życzenie użytkownika.
+
+*Wątek 5 — WooCommerce Blocks ma WŁASNY, niezwiązany „Return to cart".*
+Natywny string `Return to cart` (`woocommerce/templates/checkout/cart-errors.php:25`)
+istnieje w rdzeniu Woo, ale renderuje się WYŁĄCZNIE w scenariuszu błędu
+koszyka na Kasie (`woocommerce_cart_has_errors`) — inny, rzadki przypadek,
+bez związku z nagłówkiem strony; nie dotyka go ten punkt.
+
+**Decyzje:**
+- **D-25.5.1 [USTALONE]:** nowy plik `parts/header-checkout.html` (kopia
+  `header-cart.html` z podmienionym linkiem: tekst „Wróć do koszyka" zamiast
+  „Kontynuuj zakupy", `href="/koszyk/"` zamiast `href="/"` — literał URL
+  spójny z istniejącym, analogicznym hardkodowanym `href="/koszyk/"` w
+  breadcrumbs TEGO SAMEGO pliku `templates/page-checkout.html:9`, ta sama
+  strzałka SVG/klasy `continue-link header-back-link` bez zmian), zarejestrowany
+  w `theme.json` (`templateParts`) jako osobny slug analogicznie do
+  `header-cart` (wątek 2/3).
+- **D-25.5.2 [USTALONE]:** `templates/page-checkout.html:1` przełączony na
+  nowy slug `header-checkout`; `templates/page-cart.html` i sam
+  `parts/header-cart.html` zostają BEZ ZMIAN (Koszyk nadal „Kontynuuj zakupy"
+  → `/`) — zgodnie ze zgłoszeniem.
+- **D-25.5.3 [USTALONE]:** zero zmian w `qutlet-core`/`qutlet-allegro`/
+  `qutlet-ai` i zero nowego PHP w `qutlet-theme` — czysto deklaratywna zmiana
+  warstwy FSE (D-8.G1 bez naruszenia), wątek 3.
+
+**Zakres:**
+- `qutlet-theme`: nowy `parts/header-checkout.html`, edycja `theme.json`
+  (rejestracja template-part), edycja `templates/page-checkout.html` (zmiana
+  referencji slugu). `parts/header-cart.html`/`templates/page-cart.html`
+  nietknięte.
+- Weryfikacja: Playwright — `/koszyk/` bez zmian („Kontynuuj zakupy" → `/`);
+  `/kasa/` (z produktem w koszyku, żeby ominąć ewentualny redirect pustego
+  koszyka) pokazuje „Wróć do koszyka" linkujące do `/koszyk/`.
+- **Repo:** wyłącznie `qutlet-theme` — potwierdzone ground-truth tej sesji
+  (zero pól ACF/CPT, zero glue do Woo, zero zmian pipeline'u). Punkt
+  czysto-kodowy w JEDNYM repo, bez pracy w `qutlet-meta` poza tym wpisem
+  planu — flip 🟡 pomijamy całkowicie (wyjątek z „Realizacja punktu planu" w
+  CLAUDE.md, wzorem P-22.6/P-25.4), flip 🟢 wchodzi normalnie po merge'u;
+  FAZA 25 (już zamknięta 🟩) tym punktem się wizualnie NIE otwiera ponownie.
+- **Zależności:** brak (niezależny od P-25.1…P-25.4).
+
 ---
 
 ## Materiał referencyjny i kandydaci do dalszych faz
@@ -9570,3 +9666,12 @@ link/etykieta co na Koszyku — „Wróć do zakupów") ma być własny tekst �
 koszyka" i przekierowanie do `/koszyk/`, zamiast do listy produktów. Strona
 Koszyka zostaje bez zmian (nadal „Wróć do zakupów"). Bez ground-truth
 (odłożone do sesji planistycznej).
+
+**Promowany do pełnego punktu P-25.5 (FAZA 25) 2026-08-21**, wraz z
+ground-truth pięciu wątków (realne źródło linku i korekta literału — dzisiejszy
+tekst to `Kontynuuj zakupy`, nie „Wróć do zakupów" jak podawało zgłoszenie,
+sama intencja bez zmian; potwierdzenie że to jeden współdzielony
+template-part; brak natywnego filtra bo FSE part jest czysto deklaratywny;
+brak wzorca w `design/vanilla/kasa.html`; niezwiązany natywny string Woo
+„Return to cart" tylko na błędzie koszyka) i decyzjami D-25.5.1…D-25.5.3 —
+nie jest już samym kandydatem, patrz P-25.5 wyżej.
