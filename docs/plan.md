@@ -9542,7 +9542,7 @@ bez związku z nagłówkiem strony; nie dotyka go ten punkt.
 
 ---
 
-## 🟨 FAZA 26 — Follow-up audytu bezpieczeństwa qutlet-theme (2026-08-21)
+## 🟩 FAZA 26 — Follow-up audytu bezpieczeństwa qutlet-theme (2026-08-21)
 
 Cel: trzy ustalenia z audytu bezpieczeństwa
 `docs/raporty-bezpieczenstwa/2026-08-21-raport-bezpieczenstwa.md` (wpis
@@ -9609,7 +9609,7 @@ wzorem P-22.6/P-25.4/P-25.5), flip 🟢 wchodzi normalnie po merge'u.
 
 ---
 
-### P-26.2 — Przeniesienie `Cart::register_store_api_data()` (+ 4 metody danych/schematu) z `qutlet-theme` do `qutlet-core`
+### 🟢 P-26.2 — Przeniesienie `Cart::register_store_api_data()` (+ 4 metody danych/schematu) z `qutlet-theme` do `qutlet-core`
 
 **Zgłoszenie:** kandydat dopisany 2026-08-21 (follow-up audytu
 bezpieczeństwa `qutlet-theme`, ustalenie architektoniczne #1 raportu) —
