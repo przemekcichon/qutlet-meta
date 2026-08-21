@@ -9444,7 +9444,7 @@ N szt.</small>` + cena — zero pola opisu, tak samo jak w Koszyku.
   wchodzi normalnie po merge'u.
 - **Zależności:** brak (niezależny od P-25.1/P-25.2/P-25.3).
 
-### 🟦 P-25.5 — Kasa: link nagłówka „Wróć do koszyka" zamiast wspólnego „Kontynuuj zakupy"
+### 🟢 P-25.5 — Kasa: link nagłówka „Wróć do koszyka" zamiast wspólnego „Kontynuuj zakupy"
 
 **Zgłoszenie:** kandydat dopisany 2026-08-20 (sesja P-25.3b) — na stronie Kasy
 w nagłówku (dziś ten sam link/etykieta co na Koszyku) ma być własny tekst
