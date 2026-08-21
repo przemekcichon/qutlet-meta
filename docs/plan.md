@@ -9557,7 +9557,7 @@ siebie — P-26.3 nie wymagał osobnej sesji planistycznej (zero decyzji do
 podjęcia, poprawka w pełni sprecyzowana już w raporcie), w odróżnieniu od
 P-26.1/P-26.2.
 
-### P-26.1 — Guard na brak `qutlet-core` przy odczycie `ClassDefinitionsTaxonomy` (dziś realny fatal error, nie tylko INFO)
+### 🟢 P-26.1 — Guard na brak `qutlet-core` przy odczycie `ClassDefinitionsTaxonomy` (dziś realny fatal error, nie tylko INFO)
 
 **Zgłoszenie:** kandydat dopisany 2026-08-21 (follow-up audytu bezpieczeństwa
 `qutlet-theme`, ustalenia architektoniczne #2/#3 raportu).
