@@ -9542,7 +9542,7 @@ bez związku z nagłówkiem strony; nie dotyka go ten punkt.
 
 ---
 
-## 🟩 FAZA 26 — Follow-up audytu bezpieczeństwa qutlet-theme (2026-08-21)
+## 🟨 FAZA 26 — Follow-up audytu bezpieczeństwa qutlet-theme (2026-08-21)
 
 Cel: trzy ustalenia z audytu bezpieczeństwa
 `docs/raporty-bezpieczenstwa/2026-08-21-raport-bezpieczenstwa.md` (wpis
@@ -9671,12 +9671,21 @@ całości + `qutlet-core/src/Pricing/ProductDiscountRateField.php` +
   zakładać, że `add_action()` zawsze zdąży.
 
 **Decyzje:**
-- **D-26.2.1 [USTALONE]:** `period_years_text()` DUPLIKOWANA (nie wyciągana
-  do współdzielonego pakietu) jako prywatna metoda nowej klasy core — jedna,
+- **D-26.2.1 [USTALONE, doprecyzowane 2026-08-21 po follow-upie niezależnej
+  recenzji]:** `period_years_text()` DUPLIKOWANA (nie wyciągana do
+  współdzielonego pakietu) jako prywatna metoda nowej klasy core — jedna,
   krótka, czysta funkcja formatująca; wprowadzanie mechanizmu współdzielenia
   kodu między repo dla jednej metody byłoby przedwczesną abstrakcją (repo nie
   mają dziś żadnego mechanizmu współdzielenia kodu poza Composerem
-  per-repo). `ProductPage::period_years_text()` w motywie zostaje BEZ ZMIAN.
+  per-repo). **Doprecyzowanie:** decyzja obejmuje też dwie prywatne metody
+  pomocnicze, bez których `period_years_text()` nie działa —
+  `period_months_text()` (fallback dla okresów niebędących pełną
+  wielokrotnością 12) i `pl_plural()` (polska odmiana liczebnika); ground-truth
+  przy realizacji ujawnił, że `ProductPage::period_years_text()` nie jest
+  samodzielna, więc duplikacja musiała objąć wszystkie trzy metody (stan
+  potwierdzony w `CartStoreApiData.php` — trzy prywatne metody, każda z
+  docblockiem `DUPLIKAT {@see ...}`). `ProductPage::period_years_text()`/
+  `period_months_text()`/`pl_plural()` w motywie zostają BEZ ZMIAN.
 - **D-26.2.2 [USTALONE]:** nowy slice `Cart/` w `qutlet-core` (`src/Cart/`) —
   ta sama nazwa folderu co `inc/features/Cart/` w motywie (CLAUDE.md → „ten
   sam feature nosi tę samą nazwę folderu we wszystkich repo"). Nazwa klasy do
@@ -9753,6 +9762,50 @@ raporcie z BAD/GOOD parą).
 wpisem planu — flip 🟡 pomijamy całkowicie (wyjątek z „Realizacja punktu
 planu" w `CLAUDE.md`, ten sam wzorzec co P-26.1), flip 🟢 wchodzi normalnie
 po merge'u.
+
+**Zależności:** brak.
+
+---
+
+### P-26.4 — Aktualizacja nieaktualnych komentarzy JS po przeniesieniu `Cart` → `CartStoreApiData` (P-26.2)
+
+**Zgłoszenie:** kandydat dopisany 2026-08-21 (follow-up niezależnej recenzji
+P-26.2, wątek 3, `docs/review.md`, PR-y `qutlet-core#38`/`qutlet-theme#58`).
+Promowany BEZ osobnej sesji planistycznej — jak P-26.3, nie ma tu żadnej
+decyzji do podjęcia (jedno repo, zero zależności, poprawka w pełni
+sprecyzowana już w recenzji: cztery konkretne linie).
+
+**Ground-truth (potwierdzone w sesji planistycznej 2026-08-21, kod na
+dysku):**
+- `qutlet-theme/assets/js/cart-block-filters.js:4` — nagłówek pliku:
+  „Czyta dane wystawione przez `Cart::cart_item_data()`/`cart_totals_data()`".
+- `qutlet-theme/assets/js/cart-block-filters.js:161` — komentarz przy
+  `item_savings_formatted`: „(...`cena_rynkowa_nowego` → `item_savings_formatted`
+  puste (PHP, `Cart::cart_item_data()`)...".
+- `qutlet-theme/assets/js/checkout-block-filters.js:78` — komentarz:
+  „...czytane z bytu klas stanu przez `Cart::cart_item_data()`...".
+- `qutlet-theme/assets/js/checkout-block-filters.js:147` — komentarz:
+  „...jak w `Cart::cart_totals_data()`.".
+- Wszystkie cztery odwołują się do metod, które po P-26.2 już nie istnieją w
+  `Cart` (przeniesione do `\Qutlet\Core\Cart\CartStoreApiData`). Świadomie
+  POZA zakresem P-26.2b (D-26.2 zakładało „zero zmian w JS" — kod czyta przez
+  Store API, agnostycznie względem tego, kto zarejestrował endpoint), ale
+  komentarze stały się mylące dla przyszłego czytelnika.
+
+**Decyzje:**
+- **D-26.4.1 [USTALONE]:** zaktualizować cztery referencje na
+  `\Qutlet\Core\Cart\CartStoreApiData::cart_item_data()`/`cart_totals_data()`
+  (albo równoważne skrócone odwołanie, do ustalenia przy realizacji per
+  konwencję już użytą w `qutlet-theme/inc/features/Checkout/Checkout.php`
+  po P-26.2b). Wyłącznie treść komentarzy — zero zmian w logice JS.
+
+**Zakres:** `qutlet-theme` — `assets/js/cart-block-filters.js` (linie ~4,
+~161) i `assets/js/checkout-block-filters.js` (linie ~78, ~147).
+
+**Repo:** wyłącznie `qutlet-theme`, zero pracy w `qutlet-meta` poza tym
+wpisem planu — flip 🟡 pomijamy całkowicie (wyjątek z „Realizacja punktu
+planu" w `CLAUDE.md`, ten sam wzorzec co P-26.1/P-26.3), flip 🟢 wchodzi
+normalnie po merge'u.
 
 **Zależności:** brak.
 
@@ -9960,6 +10013,25 @@ zablokowało merge'u P-26.2a/P-26.2b:
    `OrderStatusesTest.php` — nie wymówka wykonawcy, faktyczny stan), więc NIE
    jest to naruszenie, tylko luka epistemiczna warta odnotowania przy
    szerszej dyskusji o pokryciu testami core (poza zakresem samego P-26.2).
+
+**Rozstrzygnięcie sesji planistycznej 2026-08-21 (follow-up recenzji
+P-26.2), per wątek:**
+1. Zamknięte — dopisano zdanie do D-26.2.1 (`P-26.2` wyżej), doprecyzowujące
+   zakres duplikacji o `period_months_text()`/`pl_plural()`.
+2. Zamknięte jako lekcja procesowa, bez zmiany kodu — dopisano regułę do
+   sekcji „Punkt wielorepowy" w `CLAUDE.md` (osobny branch/PR w
+   `qutlet-meta`, niezależny od tej redakcji planu): zakres punktów
+   wielorepowych ma wymieniać też pliki niosące WYŁĄCZNIE referencję
+   dokumentacyjną do przenoszonego kodu.
+3. Promowany do pełnego punktu **P-26.4** (FAZA 26, wyżej) — wzorem P-26.3,
+   bez dalszej sesji planistycznej (jedno repo, zero zależności, w pełni
+   sprecyzowane) — nie jest już samym kandydatem.
+4. Pozostaje otwartym tematem BEZ własnego punktu — ground-truth 2026-08-21
+   potwierdził, że `qutlet-core/tests/` nadal ma jeden plik testowy; brak
+   testów dla `CartStoreApiData` to nie naruszenie P-26.2, tylko część
+   szerszej, nierozstrzygniętej dyskusji o pokryciu testami `qutlet-core` —
+   do podjęcia osobno, gdy/jeśli zapadnie decyzja o standardzie testowania
+   core.
 
 **Zniknęła sekcja „Kategoria" z panelu filtrów (mobile, `.filters-drawer`)**
 — kandydat dopisany 2026-08-21, zgłoszenie użytkownika ze zrzutem ekranu
