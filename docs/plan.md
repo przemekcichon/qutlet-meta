@@ -9960,3 +9960,17 @@ zablokowało merge'u P-26.2a/P-26.2b:
    `OrderStatusesTest.php` — nie wymówka wykonawcy, faktyczny stan), więc NIE
    jest to naruszenie, tylko luka epistemiczna warta odnotowania przy
    szerszej dyskusji o pokryciu testami core (poza zakresem samego P-26.2).
+
+**Zniknęła sekcja „Kategoria" z panelu filtrów (mobile, `.filters-drawer`)**
+— kandydat dopisany 2026-08-21, zgłoszenie użytkownika ze zrzutem ekranu
+(dropdown „Filtry" na widoku mobilnym: widoczne sekcje „Marka" — Gigabyte/
+Intel/Lenovo z licznikami — i „Cena" z suwakiem zakresu, ale BRAK sekcji
+„Kategoria", która wg `ProductFilters`/kontraktu §… powinna tam być).
+Użytkownik NIE wie, kiedy to się stało — brak ground-truth w tej sesji
+(świadomie odłożone, „nie inwestyguj w tej sesji"). Do ustalenia przy
+realizacji: czy zniknęła też z desktopowej wersji filtrów, czy to regresja
+konkretnego commita (przeszukać historię `ProductFilters.php`/
+`content-archive-product.php`/CSS `.filters-drawer`) czy raczej dane (pusta
+taksonomia kategorii w tym widoku), i czy problem jest tylko wizualny czy
+sięga też do `ProductFilterQuery` (brakujący filtr = brak możliwości
+zawężenia po kategorii, nie tylko brak UI).
