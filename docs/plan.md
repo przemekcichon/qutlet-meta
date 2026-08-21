@@ -10047,6 +10047,34 @@ taksonomia kategorii w tym widoku), i czy problem jest tylko wizualny czy
 sięga też do `ProductFilterQuery` (brakujący filtr = brak możliwości
 zawężenia po kategorii, nie tylko brak UI).
 
+**Ground-truth (sesja planistyczna 2026-08-21, kod na dysku + live na Local
+przez Playwright MCP):** literał `.filters-drawer` z raportu NIE istnieje w
+kodzie — jest jeden wspólny komponent `.drawer`
+(`woocommerce/loop/filters-and-sort.php`, `style.css:1089`,
+`assets/js/product-filters.js`), identyczny dla mobile i desktop
+(zweryfikowane na 390px i 1440px — ten sam markup/JS, brak osobnego układu
+inline na desktopie). Brak sekcji „Kategoria" na archiwum jednej kategorii
+to ŚWIADOMA decyzja **D-8.3c.2**, nie regresja: `ProductFilters::render()`
+(theme, `inc/features/ProductFilters/ProductFilters.php:303-305`) jawnie
+zeruje `$categories` gdy `is_product_category()`, a docblock klasy
+`ProductFilterQuery` (core) dokumentuje ten sam zamiar — facet „Kategoria"
+renderuje się WYŁĄCZNIE na Shopie (`/strefa-okazji/`, widok „wszystkie
+kategorie naraz"), bo na archiwum jednej kategorii kategoria jest już
+ustalona przez URL. Historia commitów obu plików (`git log`) nie pokazuje
+żadnej regresji — same commity dodające tę funkcjonalność (P-8.3b-theme/core,
+P-8.3c-theme/core) + jeden fix sanitizacji (`build_url()`, niezwiązany).
+Reprodukcja live (Playwright, mobile 390px): `/strefa-okazji/` → „Kategoria"
+renderuje się poprawnie, z licznikami (AGD drobne 16, Audio 30, …);
+`/product-category/audio/` → szuflada pokazuje TYLKO „Marka" i „Cena", bez
+„Kategoria" — 1:1 zgodne ze zrzutem użytkownika. Dane (`product_cat`, 20
+termów z licznikami > 0) są w porządku — to nie problem danowy, tylko
+zamierzony zakres facetu.
+
+**Rozstrzygnięcie (2026-08-21):** zamknięte jako NIE BUG, na potwierdzeniu
+użytkownika po ground-truth — zrzut ekranu pochodził z archiwum jednej
+kategorii, gdzie brak facetu „Kategoria" jest zgodny z zamierzonym
+kontraktem D-8.3c.2. Bez punktu implementacyjnego.
+
 **Komunikat „brak wyników" (filtr/kategoria bez produktów) rozciągnięty na
 całą szerokość ekranu** — kandydat dopisany 2026-08-21, zgłoszenie
 użytkownika ze zrzutem ekranu (widok kategorii „Komputery": pasek „Nie
