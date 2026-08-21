@@ -9914,3 +9914,49 @@ pełnego punktu P-26.2 (FAZA 26) 2026-08-21**, wraz z ground-truth kosztu
 przeniesienia (w tym jedynej realnej zależności do rozwiązania,
 `period_years_text()`) i decyzją o sekwencji PR-ów (D-26.2.3, core mergowany
 pierwszy) — nie jest już samym kandydatem, patrz P-26.2 wyżej.
+
+**Follow-up niezależnej recenzji P-26.2 (4 drobne ustalenia, żadne
+blokujące)** — kandydat dopisany 2026-08-21 (recenzja wg `docs/review.md`,
+osobna świeża sesja sub-agenta, read-only, PR-y `qutlet-core#38`/
+`qutlet-theme#58`; werdykt 🟡 WARUNKOWO, `Must-fix do merge`: brak). Cztery
+wątki do rozważenia przy najbliższej sesji planistycznej, żadne nie
+zablokowało merge'u P-26.2a/P-26.2b:
+1. **Doprecyzowanie D-26.2.1** — decyzja mówiła o duplikacji „jednej, krótkiej,
+   czystej funkcji formatującej" (`period_years_text()`), ale ground-truth
+   ujawnił w trakcie realizacji, że ta metoda w `ProductPage` NIE jest
+   samodzielna — wywołuje dwie prywatne metody pomocnicze
+   (`period_months_text()`, `pl_plural()`). Wykonawca zduplikował wszystkie
+   trzy jako prywatne w `CartStoreApiData` zamiast zatrzymać się i zapytać;
+   recenzent ocenił decyzję jako merytorycznie trafną (nie da się
+   zduplikować `period_years_text()` bez obu pomocniczych), ale formalnie
+   powinna była wrócić jako doprecyzowanie D-26.2.1, nie samodzielne
+   rozstrzygnięcie. Do zrobienia: dopisać do D-26.2.1 (`P-26.2` wyżej) zdanie,
+   że decyzja obejmuje też niezbędne prywatne helpery, żeby zapis planu
+   odzwierciedlał faktyczny zakres duplikacji.
+2. **Zakres punktu a pliki z samą referencją dokumentacyjną** — P-26.2b
+   dotknął też `qutlet-theme/inc/features/Checkout/Checkout.php` (1-liniowa
+   aktualizacja docblocka, referencja do przeniesionej klasy), mimo że plan
+   wymieniał do zmiany wyłącznie `Cart.php`. Zmiana kosmetyczna i uzasadniona
+   (bez niej docblock wskazywałby na nieistniejącą już metodę), ale to wciąż
+   plik spoza deklarowanego zakresu. Do rozważenia: przy opisywaniu zakresu
+   przyszłych punktów wielorepowych wymieniać też pliki niosące WYŁĄCZNIE
+   referencje dokumentacyjne do przenoszonego kodu.
+3. **Nieaktualne komentarze w JS** — `assets/js/cart-block-filters.js`
+   (linie ~4, ~161) i `assets/js/checkout-block-filters.js` (linie ~78, ~147)
+   w `qutlet-theme` nadal odwołują się do `Cart::cart_item_data()`/
+   `cart_totals_data()` — metod, które po P-26.2 już nie istnieją w tej
+   klasie (przeniesione do `\Qutlet\Core\Cart\CartStoreApiData`). Świadomie
+   POZA zakresem P-26.2b (D-26.2 zakładało „zero zmian w JS" — kod czyta
+   przez Store API, agnostycznie), ale komentarze stały się mylące. Do
+   zrobienia: drobny follow-up (osobny, nieblokujący PR w `qutlet-theme`) —
+   zaktualizować cztery referencje w komentarzach na nową lokalizację.
+4. **Brak testów jednostkowych dla logiki Store API koszyka** —
+   `CartStoreApiData::cart_item_data()`/`cart_totals_data()` (progi cenowe
+   stara/nowa cena, formatowanie PLN, polska odmiana liczebników w
+   `period_years_text()`/`period_months_text()`/`pl_plural()`) mają dziś
+   pokrycie wyłącznie statyczne (PHPStan, `php -l`), zero testów zachowania.
+   Recenzent potwierdził, że to zgodne z realnym precedensem repo (w całym
+   `qutlet-core/tests/` istnieje dziś jeden plik testowy,
+   `OrderStatusesTest.php` — nie wymówka wykonawcy, faktyczny stan), więc NIE
+   jest to naruszenie, tylko luka epistemiczna warta odnotowania przy
+   szerszej dyskusji o pokryciu testami core (poza zakresem samego P-26.2).
