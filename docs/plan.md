@@ -9675,3 +9675,85 @@ template-part; brak natywnego filtra bo FSE part jest czysto deklaratywny;
 brak wzorca w `design/vanilla/kasa.html`; niezwiązany natywny string Woo
 „Return to cart" tylko na błędzie koszyka) i decyzjami D-25.5.1…D-25.5.3 —
 nie jest już samym kandydatem, patrz P-25.5 wyżej.
+
+**Utwardzenie `ProductFilters::build_url()` — sanitizacja `$_GET` na wejściu,
+nie tylko escaping na wyjściu (defense-in-depth, nice-to-have)** — kandydat
+dopisany 2026-08-21 (audyt bezpieczeństwa `qutlet-theme`, ustalenie INFO-1).
+Dziś `$_GET['brand']`/`$_GET['category']`/`$_GET['condition']`/
+`$_GET['min_price']`/`$_GET['max_price']`/`$_GET['orderby']`
+(`inc/features/ProductFilters/ProductFilters.php:146-147`) przechodzą tylko
+przez `wp_unslash()` (bez `sanitize_text_field()`) i trafiają do
+`add_query_arg()`. NIE jest to dziś exploitable: jedyne miejsce, gdzie
+wynikowy URL trafia do HTML (`woocommerce/loop/filters-and-sort.php:69,74`)
+owija go w `esc_url()`, co neutralizuje payload PRZED renderem — łańcuch
+ataku jest przerwany na wyjściu, nie na wejściu; wartości nigdy nie trafiają
+do SQL (filtrowanie żyje w `qutlet-core::ProductFilterQuery`, poza zakresem
+tego repo). Nonce świadomie bez zmian (odczyt stanu filtrów do wyświetlenia,
+nie mutacja). Zmiana czysto kosmetyczna/nieobowiązkowa: dodać
+`sanitize_text_field()`/`array_map('sanitize_text_field', wp_unslash(...))`
+na wejściu, żeby nie polegać wyłącznie na jednym punkcie escapowania —
+obrona w głąb, nie łatanie realnej dziury. Pełny mechanizm i werdykt:
+`docs/raporty-bezpieczenstwa/2026-08-21-raport-bezpieczenstwa.md` (wpis
+„qutlet-theme").
+
+**Guard na brak `qutlet-core` przy odczycie `ClassDefinitionsTaxonomy` (dwa
+miejsca) — dziś realny fatal error, nie tylko INFO** — kandydat dopisany
+2026-08-21 (follow-up audytu bezpieczeństwa `qutlet-theme`, ustalenia
+architektoniczne #2/#3). `patterns/class-table.php:26` i
+`inc/features/ProductPage/ProductPage.php:239,250`
+(`condition_for_product()`/`all_condition_definitions()`) wołają
+`Qutlet\Core\ProductCondition\ClassDefinitionsTaxonomy::for_product()`/`::all()`
+BEZ ŻADNEGO guardu (`class_exists()`), a `functions.php::dependencies_met()`
+(linia 143) sprawdza obecność core WYŁĄCZNIE do wyświetlenia admin-notice —
+nie blokuje żadnej ścieżki renderu. Efekt przy wyłączonym `qutlet-core`:
+PHP Fatal Error (`Class "...ClassDefinitionsTaxonomy" not found`) na (a)
+stronie „jak to działa" (pattern wstawiony w `post_content`, ewaluowany
+leniwie przy renderze — zweryfikowane w `wp-includes/class-wp-block-patterns-registry.php:170-194`),
+(b) panelu wstawiania bloków w edytorze dla KAŻDEGO redaktora (inserter
+pobiera treść WSZYSTKICH zarejestrowanych patternów naraz, więc fatal w
+jednym pliku wywraca inserter globalnie), (c) **każdej** stronie produktu
+(`woocommerce/content-single-product.php:725`, akordeon „Klasyfikacja
+produktów", zasilany przez `ProductPage::all_condition_definitions()`) —
+ta trzecia ścieżka jest szersza niż pierwotnie ujęte ustalenie #2 z audytu
+(nie tylko pattern, cała strona produktu). WordPress złapie fatal swoim
+wbudowanym handlerem (`class-wp-fatal-error-handler.php`) i pokaże
+odwiedzającemu ogólny komunikat "critical error… recovery mode" (nie surowy
+PHP error), ale funkcjonalnie strona produktowa i „jak to działa" i tak nie
+działają do naprawy. Naprawa: `class_exists( 'Qutlet\Core\ProductCondition\ClassDefinitionsTaxonomy' )`
+guard w OBU miejscach — (1) `patterns/class-table.php` (return/pusty output
+gdy klasa nie istnieje) i (2) `ProductPage::condition_for_product()`/
+`all_condition_definitions()` (jeden guard w tych dwóch wrapperach pokrywa
+WSZYSTKICH pozostałych konsumentów w motywie — `content-single-product.php`,
+`Cart::cart_item_data()`/`cart_totals_data()`/`render_cart_menu()` — bo
+wszyscy oni czytają przez te dwie metody, nie przez core wprost). Ustalenie
+#3 z tego samego audytu (`article-product/render.php` → `wc_get_product()`)
+NIE wymaga analogicznej poprawki — ma już `function_exists('wc_get_product')`
+guard i degraduje się bezpiecznie przy wyłączonym WooCommerce.
+
+**Przeniesienie `Cart::register_store_api_data()` (+ 4 metody danych/schematu)
+z `qutlet-theme` do `qutlet-core`** — kandydat dopisany 2026-08-21 (follow-up
+audytu bezpieczeństwa `qutlet-theme`, ustalenie architektoniczne #1).
+`inc/features/Cart/Cart.php::register_store_api_data()` rejestruje hook
+`woocommerce_store_api_register_endpoint_data` (Store API WooCommerce) —
+formalnie „glue do Woo", które wg `CLAUDE.md` powinno żyć w `qutlet-core`,
+nie w motywie; dziś żyje w motywie (świadoma decyzja D-8.6a.1/D-12.G2 w
+kodzie, ale audyt bezpieczeństwa zgłosił granicę do ponownej decyzji, nie
+oceniał czy słusznej). Sprawdzone koszty przeniesienia — NISKIE:
+`cart_item_data()`/`cart_totals_data()`/oba schematy używają wyłącznie
+`ProductPage::acf_field()` (trywialny wrapper `get_field()`/`get_post_meta()`
+fallback, 1:1 wzorzec już używany w core, np. `Pricing/ProductDiscountRateField.php`)
+i `ProductPage::period_years_text()` (czysta funkcja formatująca liczby, zero
+zależności od warstwy widoku) — obie łatwo przenośne. JS-konsument
+(`assets/js/cart-block-filters.js`, `checkout-block-filters.js`) czyta dane
+WYŁĄCZNIE przez Store API (`wp.data.select('wc/store/cart')`, namespace
+`qutlet-klasa`) — jest agnostyczny względem tego, kto zarejestrował endpoint,
+więc **zero zmian w JS**. Do przeniesienia: `register_store_api_data()`,
+`cart_item_data()`, `cart_item_schema()`, `cart_totals_data()`,
+`cart_totals_schema()` + wiring `boot()` (5 metod, czysto danowe, zero
+markupu). W motywie ZOSTAJE (właściwe miejsce): `cart_fragments()`/
+`render_cart_menu()` (mini-koszyk headera, HTML/prezentacja) i
+`CartBlocksIntegration` (enqueue JS). Wymaga koordynacji dwóch repo (core
+dodaje rejestrację, motyw ją usuwa) — bez tego okno między merge'ami PR-ów
+zostawi koszyk/kasę bez odznak klasy stanu/cen rynkowych (regresja
+wizualna, nie fatal) — patrz „Punkt wielorepowy" w `CLAUDE.md` (dwa branche,
+dwa PR-y, jawna zależność).
