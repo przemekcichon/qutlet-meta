@@ -8350,6 +8350,25 @@ dotyczą wyłącznie strony pojedynczego produktu).
 
 ### 🟦 P-22.7 — Notyfikacja „dodano do koszyka": floating toast prawy-dół zamiast paska w treści strony
 
+**PRÓBA PORZUCONA (2026-08-21):** podejście z tej sesji zrealizowane, wdrożone
+na branchu `feat/p22-7-cart-toast` (`qutlet-theme`, PR #54) — pełna konwersja
+add-to-cart na AJAX (D-22.7.1/D-22.7.4/D-22.7.5) + floating toast na bazie klas
+WC Blocks (D-22.7.3/D-22.7.6), przeszło niezależną recenzję (jedno znalezisko
+🔴 — nieograniczony zasięg CSS do strony produktu — naprawione). Mimo to
+użytkownik ocenił po fakcie, że **wyszło źle** — konkretny powód NIE został
+podany w tej sesji, więc kolejna sesja planistyczna musi go ustalić wprost z
+użytkownikiem (dlaczego to podejście nie działa), a nie zgadywać. PR
+ZAMKNIĘTY BEZ MERGE'A, branch usunięty (lokalnie i na `origin`) — na `main`
+`qutlet-theme` nie wylądowała ŻADNA linijka z tej próby. Ground-truth Wątki
+1-7 niżej pozostają jako historyczna inwentaryzacja stanu kodu (hooki,
+selektory, mechanizm fragmentów) — WCIĄŻ prawdopodobnie aktualne jako fakty o
+kodzie, ale kolejna sesja MUSI zrobić własny ground-truth (kod mógł się
+zmienić) i nie może zakładać, że **Decyzje D-22.7.1…7 niżej wciąż obowiązują**
+— to one opisywały PORZUCONE podejście; nowa sesja planistyczna wybiera inny
+kierunek od zera (inny mechanizm i/lub inny wygląd), z tym punktem jako
+przestrogą „to konkretnie nie zadziałało", nie jako gotowym planem do
+powielenia.
+
 **Zgłoszenie:** kandydat dopisany 2026-08-20 (sesja P-25.3b, patrz „Materiał
 referencyjny i kandydaci" niżej) — dzisiejszy komunikat po dodaniu produktu do
 koszyka renderuje się jako pasek WEWNĄTRZ treści strony (nad breadcrumbs,
