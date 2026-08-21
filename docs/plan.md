@@ -9544,13 +9544,18 @@ bez związku z nagłówkiem strony; nie dotyka go ten punkt.
 
 ## 🟦 FAZA 26 — Follow-up audytu bezpieczeństwa qutlet-theme (2026-08-21)
 
-Cel: dwa ustalenia architektoniczne (#1/#2) z audytu bezpieczeństwa
+Cel: trzy ustalenia z audytu bezpieczeństwa
 `docs/raporty-bezpieczenstwa/2026-08-21-raport-bezpieczenstwa.md` (wpis
 „qutlet-theme") — żadne nie jest podatnością bezpieczeństwa (0 CRITICAL/
-WARNING w całym audycie), ale oba dotyczą tej samej relacji `qutlet-theme` ↔
-`qutlet-core::ProductCondition\ClassDefinitionsTaxonomy`, więc grupujemy je w
-jednej fazie (ten sam wzorzec grupowania „wspólny mianownik" co FAZA 22/23/25).
-Dwa punkty NIEZALEŻNE od siebie.
+WARNING w całym audycie). P-26.1/P-26.2 to dwa ustalenia architektoniczne
+(#1/#2 raportu), dotyczące tej samej relacji `qutlet-theme` ↔
+`qutlet-core::ProductCondition\ClassDefinitionsTaxonomy`; P-26.3 to trzecie,
+niezależne ustalenie (INFO-1 raportu, defense-in-depth). Grupujemy wszystkie
+trzy w jednej fazie, bo mają wspólne źródło — ten sam audyt (ten sam wzorzec
+grupowania „wspólny mianownik" co FAZA 22/23/25). Trzy punkty NIEZALEŻNE od
+siebie — P-26.3 nie wymagał osobnej sesji planistycznej (zero decyzji do
+podjęcia, poprawka w pełni sprecyzowana już w raporcie), w odróżnieniu od
+P-26.1/P-26.2.
 
 ### P-26.1 — Guard na brak `qutlet-core` przy odczycie `ClassDefinitionsTaxonomy` (dziś realny fatal error, nie tylko INFO)
 
@@ -9710,6 +9715,49 @@ tym brak zależności od innych punktów planu.
 
 ---
 
+### P-26.3 — Utwardzenie `ProductFilters::build_url()`: sanitizacja `$_GET` na wejściu (defense-in-depth)
+
+**Zgłoszenie:** kandydat dopisany 2026-08-21 (audyt bezpieczeństwa
+`qutlet-theme`, ustalenie INFO-1 raportu). Promowany BEZ osobnej sesji
+planistycznej — w odróżnieniu od P-26.1/P-26.2, nie ma tu żadnej decyzji do
+podjęcia (jedno repo, zero zależności, poprawka w pełni sprecyzowana już w
+raporcie z BAD/GOOD parą).
+
+**Ground-truth (z audytu bezpieczeństwa 2026-08-21, kod na dysku):**
+- `inc/features/ProductFilters/ProductFilters.php:146-147` (`build_url()`) —
+  `$_GET['brand']`/`$_GET['category']`/`$_GET['condition']`/
+  `$_GET['min_price']`/`$_GET['max_price']`/`$_GET['orderby']` przechodzą
+  WYŁĄCZNIE przez `wp_unslash()` (bez `sanitize_text_field()`) i trafiają do
+  `add_query_arg()`.
+- Dziś NIE jest to exploitable: jedyne miejsce, gdzie wynikowy URL trafia do
+  HTML (`woocommerce/loop/filters-and-sort.php:69,74`), owija go w
+  `esc_url()` PRZED renderem — łańcuch ataku jest przerwany na wyjściu.
+  Wartości nigdy nie trafiają do SQL (filtrowanie żyje w
+  `qutlet-core::ProductFilterQuery`, poza zakresem tego repo). Nonce
+  świadomie bez zmian (odczyt stanu filtrów do wyświetlenia, nie mutacja).
+- Zmiana jest czysto kosmetyczna/obrona-w-głąb: nie usuwa dziury (nie ma
+  jej), tylko przestaje polegać wyłącznie na jednym punkcie escapowania.
+
+**Decyzje:**
+- **D-26.3.1 [USTALONE]:** `array_map( 'sanitize_text_field', wp_unslash(
+  $_GET[ $key ] ) )` (albo `sanitize_text_field( wp_unslash( $_GET[ $key ]
+  ) )`, w zależności czy dany klucz bywa tablicą — do potwierdzenia przy
+  realizacji per klucz) na wejściu w `build_url()`, PRZED złożeniem
+  `add_query_arg()`. Bez zmiany zachowania `esc_url()` na wyjściu (zostaje
+  jako druga linia obrony, nie zamiennik).
+
+**Zakres:** `qutlet-theme` — `inc/features/ProductFilters/ProductFilters.php`
+(jedna metoda, `build_url()`).
+
+**Repo:** wyłącznie `qutlet-theme`, zero pracy w `qutlet-meta` poza tym
+wpisem planu — flip 🟡 pomijamy całkowicie (wyjątek z „Realizacja punktu
+planu" w `CLAUDE.md`, ten sam wzorzec co P-26.1), flip 🟢 wchodzi normalnie
+po merge'u.
+
+**Zależności:** brak.
+
+---
+
 ## Materiał referencyjny i kandydaci do dalszych faz
 
 ### Inwentarz endpointów Allegro (dostarczony przez użytkownika)
@@ -9844,25 +9892,13 @@ brak wzorca w `design/vanilla/kasa.html`; niezwiązany natywny string Woo
 „Return to cart" tylko na błędzie koszyka) i decyzjami D-25.5.1…D-25.5.3 —
 nie jest już samym kandydatem, patrz P-25.5 wyżej.
 
-**Utwardzenie `ProductFilters::build_url()` — sanitizacja `$_GET` na wejściu,
-nie tylko escaping na wyjściu (defense-in-depth, nice-to-have)** — kandydat
-dopisany 2026-08-21 (audyt bezpieczeństwa `qutlet-theme`, ustalenie INFO-1).
-Dziś `$_GET['brand']`/`$_GET['category']`/`$_GET['condition']`/
-`$_GET['min_price']`/`$_GET['max_price']`/`$_GET['orderby']`
-(`inc/features/ProductFilters/ProductFilters.php:146-147`) przechodzą tylko
-przez `wp_unslash()` (bez `sanitize_text_field()`) i trafiają do
-`add_query_arg()`. NIE jest to dziś exploitable: jedyne miejsce, gdzie
-wynikowy URL trafia do HTML (`woocommerce/loop/filters-and-sort.php:69,74`)
-owija go w `esc_url()`, co neutralizuje payload PRZED renderem — łańcuch
-ataku jest przerwany na wyjściu, nie na wejściu; wartości nigdy nie trafiają
-do SQL (filtrowanie żyje w `qutlet-core::ProductFilterQuery`, poza zakresem
-tego repo). Nonce świadomie bez zmian (odczyt stanu filtrów do wyświetlenia,
-nie mutacja). Zmiana czysto kosmetyczna/nieobowiązkowa: dodać
-`sanitize_text_field()`/`array_map('sanitize_text_field', wp_unslash(...))`
-na wejściu, żeby nie polegać wyłącznie na jednym punkcie escapowania —
-obrona w głąb, nie łatanie realnej dziury. Pełny mechanizm i werdykt:
-`docs/raporty-bezpieczenstwa/2026-08-21-raport-bezpieczenstwa.md` (wpis
-„qutlet-theme").
+**Utwardzenie `ProductFilters::build_url()` — sanitizacja `$_GET` na
+wejściu** — był tu jako kandydat od 2026-08-21 (audyt bezpieczeństwa
+`qutlet-theme`, ustalenie INFO-1); **promowany do pełnego punktu P-26.3
+(FAZA 26) 2026-08-21, BEZ osobnej sesji planistycznej** (na wyraźne pytanie
+użytkownika — zero decyzji do podjęcia, jedno repo, poprawka już w pełni
+sprecyzowana w raporcie z BAD/GOOD parą) — nie jest już samym kandydatem,
+patrz P-26.3 wyżej.
 
 **Guard na brak `qutlet-core` przy odczycie `ClassDefinitionsTaxonomy`** — był
 tu jako kandydat od 2026-08-21 (follow-up audytu bezpieczeństwa
