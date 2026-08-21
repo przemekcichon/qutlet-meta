@@ -36,6 +36,14 @@
       "sourceType": "github",
       "skillPath": "skills/wp-wpcli-and-ops/SKILL.md",
       "computedHash": "13231a1c83a82eff74946569ab247a279dfbe32b5ab4a328eaad7ab238e0ba85"
+    },
+    "wp-security-review": {
+      "source": "jorgerosal/wordpress-skills",
+      "sourceType": "github",
+      "sourceCommit": "8c964424d05ba34b3ea5641f7181d4c13829e06f",
+      "skillPath": "claude-skills/wp-security-review/SKILL.md",
+      "computedHash": "bccde14d610010c2846fd21063d66a157b1ca1fa6759f50b85a8a123bf4b3ecc",
+      "hashMethod": "sha256, LF-normalized file bytes (computed locally; not necessarily the same method used for the WordPress/agent-skills entries above, which this repo could not reproduce byte-for-byte)"
     }
   }
 }
