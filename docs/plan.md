@@ -9542,7 +9542,7 @@ bez związku z nagłówkiem strony; nie dotyka go ten punkt.
 
 ---
 
-## 🟨 FAZA 26 — Follow-up audytu bezpieczeństwa qutlet-theme (2026-08-21)
+## 🟩 FAZA 26 — Follow-up audytu bezpieczeństwa qutlet-theme (2026-08-21)
 
 Cel: trzy ustalenia z audytu bezpieczeństwa
 `docs/raporty-bezpieczenstwa/2026-08-21-raport-bezpieczenstwa.md` (wpis
@@ -9767,7 +9767,7 @@ po merge'u.
 
 ---
 
-### P-26.4 — Aktualizacja nieaktualnych komentarzy JS po przeniesieniu `Cart` → `CartStoreApiData` (P-26.2)
+### 🟢 P-26.4 — Aktualizacja nieaktualnych komentarzy JS po przeniesieniu `Cart` → `CartStoreApiData` (P-26.2)
 
 **Zgłoszenie:** kandydat dopisany 2026-08-21 (follow-up niezależnej recenzji
 P-26.2, wątek 3, `docs/review.md`, PR-y `qutlet-core#38`/`qutlet-theme#58`).
