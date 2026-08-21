@@ -9542,7 +9542,7 @@ bez związku z nagłówkiem strony; nie dotyka go ten punkt.
 
 ---
 
-## 🟦 FAZA 26 — Follow-up audytu bezpieczeństwa qutlet-theme (2026-08-21)
+## 🟨 FAZA 26 — Follow-up audytu bezpieczeństwa qutlet-theme (2026-08-21)
 
 Cel: trzy ustalenia z audytu bezpieczeństwa
 `docs/raporty-bezpieczenstwa/2026-08-21-raport-bezpieczenstwa.md` (wpis
@@ -9715,7 +9715,7 @@ tym brak zależności od innych punktów planu.
 
 ---
 
-### P-26.3 — Utwardzenie `ProductFilters::build_url()`: sanitizacja `$_GET` na wejściu (defense-in-depth)
+### 🟢 P-26.3 — Utwardzenie `ProductFilters::build_url()`: sanitizacja `$_GET` na wejściu (defense-in-depth)
 
 **Zgłoszenie:** kandydat dopisany 2026-08-21 (audyt bezpieczeństwa
 `qutlet-theme`, ustalenie INFO-1 raportu). Promowany BEZ osobnej sesji
