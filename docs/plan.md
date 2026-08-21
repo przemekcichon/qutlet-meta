@@ -9542,6 +9542,174 @@ bez związku z nagłówkiem strony; nie dotyka go ten punkt.
 
 ---
 
+## 🟦 FAZA 26 — Follow-up audytu bezpieczeństwa qutlet-theme (2026-08-21)
+
+Cel: dwa ustalenia architektoniczne (#1/#2) z audytu bezpieczeństwa
+`docs/raporty-bezpieczenstwa/2026-08-21-raport-bezpieczenstwa.md` (wpis
+„qutlet-theme") — żadne nie jest podatnością bezpieczeństwa (0 CRITICAL/
+WARNING w całym audycie), ale oba dotyczą tej samej relacji `qutlet-theme` ↔
+`qutlet-core::ProductCondition\ClassDefinitionsTaxonomy`, więc grupujemy je w
+jednej fazie (ten sam wzorzec grupowania „wspólny mianownik" co FAZA 22/23/25).
+Dwa punkty NIEZALEŻNE od siebie.
+
+### P-26.1 — Guard na brak `qutlet-core` przy odczycie `ClassDefinitionsTaxonomy` (dziś realny fatal error, nie tylko INFO)
+
+**Zgłoszenie:** kandydat dopisany 2026-08-21 (follow-up audytu bezpieczeństwa
+`qutlet-theme`, ustalenia architektoniczne #2/#3 raportu).
+
+**Ground-truth (potwierdzone ponownie w sesji planistycznej 2026-08-21, kod na
+dysku):**
+- `patterns/class-table.php:26` — `foreach ( ClassDefinitionsTaxonomy::all()
+  as $row )`, ZERO guardu.
+- `inc/features/ProductPage/ProductPage.php:238-250` —
+  `condition_for_product()`/`all_condition_definitions()` wołają
+  `ClassDefinitionsTaxonomy::for_product()`/`::all()` WPROST, zero guardu.
+  Wszyscy pozostali konsumenci w motywie (`content-single-product.php`,
+  `Cart::cart_item_data()`/`cart_totals_data()`/`render_cart_menu()`) czytają
+  WYŁĄCZNIE przez te dwie metody-wrappery — jeden guard w obu pokrywa całość.
+- `functions.php::check_dependencies()`/`dependencies_met()` (linie 125-145) —
+  potwierdzone: sprawdza `class_exists('WooCommerce') &&
+  defined('Qutlet\Core\VERSION')` WYŁĄCZNIE do wyświetlenia admin-notice
+  (`render_missing_dependencies_notice`), bez bail — nie blokuje żadnej
+  ścieżki renderu.
+- Fallback jest bezpieczny „za darmo", bez dodatkowej decyzji UI:
+  `content-single-product.php:725` (`foreach ($condition_definitions as
+  $row)`) na pustej tablicy renderuje po prostu pusty `<tbody>` pod
+  akordeonem „Klasyfikacja produktów". `null` z `for_product()` jest już
+  wszędzie obsłużony (np. `Cart::cart_item_data()`:
+  `null !== $definition ? ... : ''`).
+- Ustalenie #3 audytu (`article-product/render.php` → `wc_get_product()`) NIE
+  wymaga analogicznej poprawki — ma już `function_exists('wc_get_product')`
+  guard.
+
+**Decyzje:**
+- **D-26.1.1 [USTALONE]:** `class_exists(
+  'Qutlet\Core\ProductCondition\ClassDefinitionsTaxonomy' )` guard w DWÓCH
+  miejscach — (1) `patterns/class-table.php` (return wcześnie / pusty output
+  gdy brak klasy), (2) `ProductPage::condition_for_product()`/
+  `all_condition_definitions()` (guard w tych dwóch wrapperach, bez zmiany
+  sygnatur/typów zwracanych — `?array`/`array` bez zmian). Bez dodatkowego
+  fallbacku UI — pusty/null wynik jest już bezpiecznie obsłużony przez
+  wszystkich konsumentów (ground-truth wyżej).
+
+**Zakres:** `qutlet-theme` — `patterns/class-table.php`,
+`inc/features/ProductPage/ProductPage.php` (2 metody).
+
+**Repo:** wyłącznie `qutlet-theme`, zero pracy w `qutlet-meta` poza tym
+wpisem planu (brak zmiany `kontrakt-danych.md`, brak decyzji danowej) — flip
+🟡 pomijamy całkowicie (wyjątek z „Realizacja punktu planu" w `CLAUDE.md`,
+wzorem P-22.6/P-25.4/P-25.5), flip 🟢 wchodzi normalnie po merge'u.
+
+**Zależności:** brak.
+
+---
+
+### P-26.2 — Przeniesienie `Cart::register_store_api_data()` (+ 4 metody danych/schematu) z `qutlet-theme` do `qutlet-core`
+
+**Zgłoszenie:** kandydat dopisany 2026-08-21 (follow-up audytu
+bezpieczeństwa `qutlet-theme`, ustalenie architektoniczne #1 raportu) —
+`inc/features/Cart/Cart.php::register_store_api_data()` rejestruje hook
+`woocommerce_store_api_register_endpoint_data` (Store API WooCommerce),
+formalnie „glue do Woo", które wg `CLAUDE.md` powinno żyć w `qutlet-core`, nie
+w motywie. Dziś żyje w motywie jako świadoma decyzja (D-8.6a.1/D-12.G2 w
+kodzie) — audyt zgłosił granicę do ponownej decyzji; użytkownik zdecydował o
+przeniesieniu (sesja planistyczna 2026-08-21).
+
+**Ground-truth (potwierdzone w sesji planistycznej 2026-08-21, `Cart.php` w
+całości + `qutlet-core/src/Pricing/ProductDiscountRateField.php` +
+`qutlet-core/src/ProductCondition/MarketPriceField.php` +
+`qutlet-core.php::bootstrap()`):**
+- Do przeniesienia (5 metod, `Cart.php:101-290`):
+  `register_store_api_data()`, `cart_item_data()`, `cart_item_schema()`,
+  `cart_totals_data()`, `cart_totals_schema()` — czysto danowe, zero
+  markupu.
+- W motywie ZOSTAJE (właściwe miejsce): reszta `boot()`,
+  `enqueue_cart_fragments()`, `register_blocks_integration()`/
+  `CartBlocksIntegration` (enqueue JS, potwierdzone: dotyczy WYŁĄCZNIE
+  `woocommerce_blocks_cart_block_registration`, nie danych Store API),
+  `cart_fragments()`/`render_cart_menu()` (mini-koszyk headera,
+  HTML/prezentacja).
+- `cart_item_data()`/`cart_totals_data()` dziś czytają przez
+  `ProductPage::condition_for_product()` (forwarduje 1:1 do
+  `ClassDefinitionsTaxonomy::for_product()`, już w core — kod core-side ma
+  więc wołać `ClassDefinitionsTaxonomy::for_product()` BEZPOŚREDNIO, zero
+  potrzeby zależności od `qutlet-theme`) i
+  `ProductPage::acf_field('cena_rynkowa_nowego', $id)` (trywialny
+  `get_field()`/`get_post_meta()` fallback — core ma już kanoniczną stałą
+  tego meta key, {@see `ProductCondition\MarketPriceField::META_KEY`}, więc
+  kod core-side czyta `get_post_meta($id, MarketPriceField::META_KEY, true)`
+  wprost).
+- **Jedyna realna zależność do rozwiązania:**
+  `ProductPage::period_years_text(int $months): string` — czysta funkcja
+  formatująca (np. „12" → „1 rok"), używana przez `cart_item_data()` do
+  `gwarancja_text`/`reklamacja_text`. Zero zależności od WP/Woo/ACF, ale dziś
+  istnieje TYLKO w motywie, a motyw NIE MOŻE być zależnością core (kierunek
+  zależności jest odwrotny — core nie zna motywu). Ta sama metoda jest też
+  używana GDZIE INDZIEJ w motywie (render strony produktu, poza zakresem tego
+  przeniesienia) — zostaje tam bez zmian.
+- **Wzorzec stylu do naśladowania w core:**
+  `Pricing/ProductDiscountRateField.php` — `final class` z metodami
+  statycznymi, `init()` wołane z `qutlet-core.php::bootstrap()` na
+  `plugins_loaded`.
+- **Ryzyko kolejności hooków (nowe, do uwzględnienia w implementacji):**
+  dzisiejszy `Cart::boot()` (motyw) rejestruje się na
+  `woocommerce_blocks_loaded` z jawnym fallbackiem
+  (`did_action('woocommerce_blocks_loaded') ? wywołaj-natychmiast :
+  add_action(...)`) — bo ten hook odpala się z konstruktora `Bootstrap` Woo
+  Blocks, ZWYKLE na `plugins_loaded`, czyli PRZED tym, jak `functions.php`
+  motywu (ładowany na `setup_theme`, po `plugins_loaded`) zdąży się wykonać.
+  Ten sam problem dotyczy `qutlet-core`: jego własny bootstrap TEŻ jest na
+  `plugins_loaded` (`qutlet-core.php:52`) — kolejność względem
+  `woocommerce_blocks_loaded` (odpalanego przez INNĄ wtyczkę, WooCommerce, na
+  tym samym evencie) nie jest gwarantowana przez WP-core. Nowa klasa core
+  musi przenieść TEN SAM `did_action()`-fallback z `Cart::boot()`, nie
+  zakładać, że `add_action()` zawsze zdąży.
+
+**Decyzje:**
+- **D-26.2.1 [USTALONE]:** `period_years_text()` DUPLIKOWANA (nie wyciągana
+  do współdzielonego pakietu) jako prywatna metoda nowej klasy core — jedna,
+  krótka, czysta funkcja formatująca; wprowadzanie mechanizmu współdzielenia
+  kodu między repo dla jednej metody byłoby przedwczesną abstrakcją (repo nie
+  mają dziś żadnego mechanizmu współdzielenia kodu poza Composerem
+  per-repo). `ProductPage::period_years_text()` w motywie zostaje BEZ ZMIAN.
+- **D-26.2.2 [USTALONE]:** nowy slice `Cart/` w `qutlet-core` (`src/Cart/`) —
+  ta sama nazwa folderu co `inc/features/Cart/` w motywie (CLAUDE.md → „ten
+  sam feature nosi tę samą nazwę folderu we wszystkich repo"). Nazwa klasy do
+  ustalenia przy realizacji (ground-truth stylu innych slice'ów core),
+  funkcjonalnie odpowiednik dzisiejszych 5 metod + `init()`/`boot()` wiring.
+- **D-26.2.3 [USTALONE, sesja planistyczna 2026-08-21]:** sekwencja PR-ów —
+  JEDNA sesja realizacyjna, DWA PR-y otwarte równolegle (P-26.2a core,
+  P-26.2b theme), ale core PR mergowany PIERWSZY (Twoja decyzja) zanim
+  zmerguje się theme PR — minimalizuje okno bez odznak klasy stanu/cen
+  rynkowych w koszyku/kasie (regresja wizualna, nie fatal, patrz „Punkt
+  wielorepowy" w `CLAUDE.md`). Realizacja: najpierw P-26.2a (core) do stanu
+  gotowego do mergu, DOPIERO PO potwierdzeniu, że core PR może zostać
+  zmergowany, dokończ P-26.2b (theme) — nie odwrotnie.
+
+**Zakres:**
+- **P-26.2a (qutlet-core, PIERWSZY):** nowy `src/Cart/` z klasą przenoszącą
+  5 metod + wiring `init()`/`boot()` (D-26.2.2), wołany z
+  `qutlet-core.php::bootstrap()`. Guard kolejności hooków
+  `woocommerce_blocks_loaded` (ground-truth wyżej). `period_years_text()`
+  zduplikowana (D-26.2.1). Odczyt ceny rynkowej przez
+  `MarketPriceField::META_KEY`, odczyt definicji klasy przez
+  `ClassDefinitionsTaxonomy::for_product()` bezpośrednio.
+- **P-26.2b (qutlet-theme, DRUGI — zależny od P-26.2a):** usunięcie 5 metod +
+  wiringu z `Cart.php`; zostaje `boot()` (reszty), `enqueue_cart_fragments()`,
+  `register_blocks_integration()`, `cart_fragments()`/`render_cart_menu()`.
+  **Zero zmian w JS** (`assets/js/cart-block-filters.js`/
+  `checkout-block-filters.js` czytają WYŁĄCZNIE przez Store API, agnostyczne
+  względem tego, kto zarejestrował endpoint).
+
+**Repo:** `qutlet-core` (P-26.2a) + `qutlet-theme` (P-26.2b) — punkt
+wielorepowy, dwa branche, dwa PR-y, jawna zależność (P-26.2b nie mergować
+przed P-26.2a).
+
+**Zależności:** P-26.2b zależy od P-26.2a (kolejność merge'u, D-26.2.3). Poza
+tym brak zależności od innych punktów planu.
+
+---
+
 ## Materiał referencyjny i kandydaci do dalszych faz
 
 ### Inwentarz endpointów Allegro (dostarczony przez użytkownika)
@@ -9696,64 +9864,17 @@ obrona w głąb, nie łatanie realnej dziury. Pełny mechanizm i werdykt:
 `docs/raporty-bezpieczenstwa/2026-08-21-raport-bezpieczenstwa.md` (wpis
 „qutlet-theme").
 
-**Guard na brak `qutlet-core` przy odczycie `ClassDefinitionsTaxonomy` (dwa
-miejsca) — dziś realny fatal error, nie tylko INFO** — kandydat dopisany
-2026-08-21 (follow-up audytu bezpieczeństwa `qutlet-theme`, ustalenia
-architektoniczne #2/#3). `patterns/class-table.php:26` i
-`inc/features/ProductPage/ProductPage.php:239,250`
-(`condition_for_product()`/`all_condition_definitions()`) wołają
-`Qutlet\Core\ProductCondition\ClassDefinitionsTaxonomy::for_product()`/`::all()`
-BEZ ŻADNEGO guardu (`class_exists()`), a `functions.php::dependencies_met()`
-(linia 143) sprawdza obecność core WYŁĄCZNIE do wyświetlenia admin-notice —
-nie blokuje żadnej ścieżki renderu. Efekt przy wyłączonym `qutlet-core`:
-PHP Fatal Error (`Class "...ClassDefinitionsTaxonomy" not found`) na (a)
-stronie „jak to działa" (pattern wstawiony w `post_content`, ewaluowany
-leniwie przy renderze — zweryfikowane w `wp-includes/class-wp-block-patterns-registry.php:170-194`),
-(b) panelu wstawiania bloków w edytorze dla KAŻDEGO redaktora (inserter
-pobiera treść WSZYSTKICH zarejestrowanych patternów naraz, więc fatal w
-jednym pliku wywraca inserter globalnie), (c) **każdej** stronie produktu
-(`woocommerce/content-single-product.php:725`, akordeon „Klasyfikacja
-produktów", zasilany przez `ProductPage::all_condition_definitions()`) —
-ta trzecia ścieżka jest szersza niż pierwotnie ujęte ustalenie #2 z audytu
-(nie tylko pattern, cała strona produktu). WordPress złapie fatal swoim
-wbudowanym handlerem (`class-wp-fatal-error-handler.php`) i pokaże
-odwiedzającemu ogólny komunikat "critical error… recovery mode" (nie surowy
-PHP error), ale funkcjonalnie strona produktowa i „jak to działa" i tak nie
-działają do naprawy. Naprawa: `class_exists( 'Qutlet\Core\ProductCondition\ClassDefinitionsTaxonomy' )`
-guard w OBU miejscach — (1) `patterns/class-table.php` (return/pusty output
-gdy klasa nie istnieje) i (2) `ProductPage::condition_for_product()`/
-`all_condition_definitions()` (jeden guard w tych dwóch wrapperach pokrywa
-WSZYSTKICH pozostałych konsumentów w motywie — `content-single-product.php`,
-`Cart::cart_item_data()`/`cart_totals_data()`/`render_cart_menu()` — bo
-wszyscy oni czytają przez te dwie metody, nie przez core wprost). Ustalenie
-#3 z tego samego audytu (`article-product/render.php` → `wc_get_product()`)
-NIE wymaga analogicznej poprawki — ma już `function_exists('wc_get_product')`
-guard i degraduje się bezpiecznie przy wyłączonym WooCommerce.
+**Guard na brak `qutlet-core` przy odczycie `ClassDefinitionsTaxonomy`** — był
+tu jako kandydat od 2026-08-21 (follow-up audytu bezpieczeństwa
+`qutlet-theme`, ustalenia architektoniczne #2/#3); **promowany do pełnego
+punktu P-26.1 (FAZA 26) 2026-08-21**, wraz z ground-truth pełnego zasięgu
+fatal errora (strona produktu, nie tylko pattern „jak to działa") i decyzją
+D-26.1.1 — nie jest już samym kandydatem, patrz P-26.1 wyżej.
 
-**Przeniesienie `Cart::register_store_api_data()` (+ 4 metody danych/schematu)
-z `qutlet-theme` do `qutlet-core`** — kandydat dopisany 2026-08-21 (follow-up
-audytu bezpieczeństwa `qutlet-theme`, ustalenie architektoniczne #1).
-`inc/features/Cart/Cart.php::register_store_api_data()` rejestruje hook
-`woocommerce_store_api_register_endpoint_data` (Store API WooCommerce) —
-formalnie „glue do Woo", które wg `CLAUDE.md` powinno żyć w `qutlet-core`,
-nie w motywie; dziś żyje w motywie (świadoma decyzja D-8.6a.1/D-12.G2 w
-kodzie, ale audyt bezpieczeństwa zgłosił granicę do ponownej decyzji, nie
-oceniał czy słusznej). Sprawdzone koszty przeniesienia — NISKIE:
-`cart_item_data()`/`cart_totals_data()`/oba schematy używają wyłącznie
-`ProductPage::acf_field()` (trywialny wrapper `get_field()`/`get_post_meta()`
-fallback, 1:1 wzorzec już używany w core, np. `Pricing/ProductDiscountRateField.php`)
-i `ProductPage::period_years_text()` (czysta funkcja formatująca liczby, zero
-zależności od warstwy widoku) — obie łatwo przenośne. JS-konsument
-(`assets/js/cart-block-filters.js`, `checkout-block-filters.js`) czyta dane
-WYŁĄCZNIE przez Store API (`wp.data.select('wc/store/cart')`, namespace
-`qutlet-klasa`) — jest agnostyczny względem tego, kto zarejestrował endpoint,
-więc **zero zmian w JS**. Do przeniesienia: `register_store_api_data()`,
-`cart_item_data()`, `cart_item_schema()`, `cart_totals_data()`,
-`cart_totals_schema()` + wiring `boot()` (5 metod, czysto danowe, zero
-markupu). W motywie ZOSTAJE (właściwe miejsce): `cart_fragments()`/
-`render_cart_menu()` (mini-koszyk headera, HTML/prezentacja) i
-`CartBlocksIntegration` (enqueue JS). Wymaga koordynacji dwóch repo (core
-dodaje rejestrację, motyw ją usuwa) — bez tego okno między merge'ami PR-ów
-zostawi koszyk/kasę bez odznak klasy stanu/cen rynkowych (regresja
-wizualna, nie fatal) — patrz „Punkt wielorepowy" w `CLAUDE.md` (dwa branche,
-dwa PR-y, jawna zależność).
+**Przeniesienie `Cart::register_store_api_data()` z `qutlet-theme` do
+`qutlet-core`** — był tu jako kandydat od 2026-08-21 (follow-up audytu
+bezpieczeństwa `qutlet-theme`, ustalenie architektoniczne #1); **promowany do
+pełnego punktu P-26.2 (FAZA 26) 2026-08-21**, wraz z ground-truth kosztu
+przeniesienia (w tym jedynej realnej zależności do rozwiązania,
+`period_years_text()`) i decyzją o sekwencji PR-ów (D-26.2.3, core mergowany
+pierwszy) — nie jest już samym kandydatem, patrz P-26.2 wyżej.
