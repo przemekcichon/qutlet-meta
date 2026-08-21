@@ -208,7 +208,13 @@ Obowiązuje nawet przy lakonicznym poleceniu typu „zrealizuj P-x z planu".
 **Punkt wielorepowy:** repozytoria mają OSOBNE `origin` (osobne PR-y), więc punkt
 dotykający dwóch repo = dwa pod-punkty, dwa branche, dwa PR-y (z jawną zależnością)
 — nie jeden. Feature rozproszony (ta sama nazwa slice'a w kilku repo) prawie zawsze
-rozpada się na kilka punktów.
+rozpada się na kilka punktów. **Zakres każdego pod-punktu w planie ma wymieniać
+też pliki niosące WYŁĄCZNIE referencję dokumentacyjną do przenoszonego kodu**
+(np. docblock w innym repo/pliku wskazujący na przenoszoną klasę) — nie tylko
+pliki z realną zmianą logiki. Powód: przy P-26.2 realizacja objęła też
+1-liniową aktualizację docblocka w pliku spoza zadeklarowanego zakresu (trafna,
+bo inaczej wskazywałby na nieistniejącą już metodę), ale plan tego nie
+przewidział (follow-up niezależnej recenzji P-26.2, wątek 2, 2026-08-21).
 
 **Prompt startowy na następną sesję (handoff) MUSI zawierać:**
 - wskazanie następnego punktu z `docs/plan.md` (numer + tytuł) oraz jego zakres,
