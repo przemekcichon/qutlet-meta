@@ -10067,3 +10067,22 @@ do reszty frontu). Do ustalenia przy najbliższej sesji planistycznej: czy to
 nadpisanie szablonu (`woocommerce/loop/no-products-found.php` w motywie) czy
 tylko CSS na istniejącym markupie, i czy komunikat ma się różnić między
 „brak wyników filtra" a „pusta kategoria" (dziś ten sam tekst dla obu).
+
+**Piąte nieaktualne odwołanie do `Cart::` w komentarzu JS (przegapione przez
+P-26.4)** — kandydat dopisany 2026-08-21, ustalenie niezależnej recenzji
+`qutlet-theme#59` (P-26.4, `docs/review.md`). `assets/js/checkout-block-filters.js:5-6`
+(nagłówek pliku): „Czyta TE SAME dane Store API co koszyk
+(`item.extensions['qutlet-klasa']`, zarejestrowane raz w
+`inc/features/Cart/Cart.php` — D-12.G2, potwierdzone runtime: blok Checkout
+czyta z tego samego zasobu `wc/store/cart` co blok Cart)" — po P-26.2
+rejestracja Store API żyje w `\Qutlet\Core\Cart\CartStoreApiData`
+(`qutlet-core`), nie w `inc/features/Cart/Cart.php` (`qutlet-theme`), którego
+własny, już zaktualizowany docblock (`Cart.php:40-44`) to potwierdza. Ten sam
+gatunek staleness co cztery komentarze naprawione w P-26.4 — przegapiony i
+przez ground-truth P-26.4 w planie, i przez ground-truth wykonawcy tamtej
+sesji, złowiony dopiero przez recenzenta PR-a. Poprawka: zaktualizować
+odwołanie na `\Qutlet\Core\Cart\CartStoreApiData` (konwencja jak w P-26.4 —
+w pełni kwalifikowany namespace w backtickach, zgodnie z już użytą w
+`Checkout.php`/`Cart.php`), treść pozostałej części komentarza (D-12.G2,
+potwierdzenie runtime) bez zmian. Zakres: wyłącznie `qutlet-theme`, wyłącznie
+ten jeden komentarz — zero zmian w logice JS (ten sam wzorzec co P-26.4).
